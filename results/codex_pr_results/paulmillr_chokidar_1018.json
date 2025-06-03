@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "lib/fsevents-handler.js",
+"line": 134,
+"description": "createFSEventsInstance binds the callback via bindFSEventsCallback(cont, fsw) before 'cont' is assigned, so the callback receives 'undefined' and will throw when accessing cont.listeners."
+}
+]
+}

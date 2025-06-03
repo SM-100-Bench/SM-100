@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "weave/weave_server.py",
+"line": 197,
+"description": "Path validation in send_js is insecure. The code builds abspath from the user-supplied path without normalizing it (resolve()), so a request like /__weave/file/tmp/local-artifacts/../../etc/passwd passes the local_artifacts_path parent check and allows reading arbitrary files. This enables path traversal."
+}
+]
+}

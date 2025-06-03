@@ -1,0 +1,29 @@
+{
+"issues": [
+{
+"file": "server/data_backend/swift/swift.go",
+"line": 18,
+"description": "Global variable log is declared but never initialized. Calls such as log.EWarningf will dereference a nil pointer and panic."
+},
+{
+"file": "server/plik.go",
+"line": 719,
+"description": "The redirect function builds the Location header using req.URL.Scheme and req.URL.Host, which are empty for server requests. This results in malformed redirect URLs."
+},
+{
+"file": "server/data_backend/file/file.go",
+"line": 54,
+"description": "os.Create result is never closed in AddFile, leading to file descriptor leaks."
+},
+{
+"file": "server/metadata_backend/file/file.go",
+"line": 304,
+"description": "The global locks map is accessed without synchronization. Concurrent calls to Lock or Unlock may cause a race or panic."
+},
+{
+"file": "server/data_backend/file/file.go",
+"line": 118,
+"description": "getDirectoryFromUploadId slices uploadId[:2] without length checks; short IDs would trigger a runtime panic."
+}
+]
+}

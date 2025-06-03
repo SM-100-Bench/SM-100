@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "bleach/sanitizer.py",
+"line": 511,
+"description": "sanitize_uri_value interprets a URL like \"example.com:8000\" as having scheme \"example.com\" via urlparse(), causing such addresses to be rejected even when HTTP is allowed."
+},
+{
+"file": "bleach/sanitizer.py",
+"line": 86,
+"description": "convert_entity() converts numeric entities directly with int() and chr(). If the number exceeds Unicode’s valid range (e.g. '&#9999999999;'), chr() raises ValueError, leading to a crash when cleaning."
+}
+]
+}

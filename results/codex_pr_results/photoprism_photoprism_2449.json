@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "internal/photoprism/convert_avc.go",
+"line": 119,
+"description": "The FFmpeg command for the NVIDIA encoder specifies the frame rate (-r 30) before the input file, which sets the input rate rather than the output rate. This can lead to incorrect playback speed or dropped/duplicated frames."
+},
+{
+"file": "internal/photoprism/convert_avc.go",
+"line": 124,
+"description": "The NVIDIA branch passes -preset 15 to FFmpeg. h264_nvenc expects named preset values (e.g., p1, slow, default); numeric 15 may be invalid and could cause FFmpeg to fail."
+}
+]
+}

@@ -1,0 +1,24 @@
+{
+"issues": [
+{
+"file": "localstack/services/s3/v3/provider.py",
+"line": 2960,
+"description": "get_part_range() returns an invalid range for zero‑length objects (end becomes -1, producing \"bytes 0--1/0\"), which could break range handling for empty objects."
+},
+{
+"file": "localstack/services/s3/v3/provider.py",
+"line": 1786,
+"description": "upload_part_copy() calls parse_range_header() unconditionally. If CopySourceRange is missing, this raises an exception."
+},
+{
+"file": "localstack/services/s3/v3/provider.py",
+"line": 725,
+"description": "head_object() does not include a ContentRange header when returning partial content, which differs from AWS behaviour."
+},
+{
+"file": "localstack/services/s3/utils.py",
+"line": 782,
+"description": "validate_failed_precondition() compares If-Modified-Since with '<' instead of '<=', potentially missing 304 responses when timestamps match exactly."
+}
+]
+}

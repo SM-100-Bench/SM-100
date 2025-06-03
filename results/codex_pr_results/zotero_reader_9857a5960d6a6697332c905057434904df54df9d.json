@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "src/dom/epub/epub-view.ts",
+"line": 610,
+"description": "Method canNavigateToPreviousPage mistakenly calls this.flow.canNavigateToNextPage(), so it always reports ability to move forward instead of backward."
+},
+{
+"file": "src/dom/epub/flow.ts",
+"line": 350,
+"description": "PaginatedFlow.destroy() removes touch handlers but forgets to remove the keydown listener added in the constructor, leading to leaked event listeners when flow mode changes."
+}
+]
+}

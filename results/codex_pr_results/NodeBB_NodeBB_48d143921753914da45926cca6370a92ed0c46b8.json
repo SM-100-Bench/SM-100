@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "src/socket.io/index.js",
+"line": 30,
+"description": "requireModules() is asynchronous but its completion is not awaited before starting the socket server. Connections made before it finishes could occur with an empty Namespaces object, causing handlers to be missing."
+},
+{
+"file": "src/socket.io/index.js",
+"line": 128,
+"description": "Logs reference payload.name, which is never defined in the message object. This results in 'undefined' being logged and may hinder debugging."
+},
+{
+"file": "src/socket.io/index.js",
+"line": 175,
+"description": "Variable sessionID declared and then redeclared inside the callback at line 186, potentially confusing readers and risking mistakes if modified."
+}
+]
+}

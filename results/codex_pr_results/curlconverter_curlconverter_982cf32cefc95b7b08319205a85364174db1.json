@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "generators/python.js",
+"line": 25,
+"description": "The code uses request.data.startsWith('@'). startsWith is not available in older Node.js versions (e.g., Node < 4). Executing this on such environments will throw TypeError: request.data.startsWith is not a function."
+},
+{
+"file": "generators/python.js",
+"line": 27,
+"description": "When the curl command references a file (\"@\" syntax), the generated code opens the file with open() but never closes it, potentially leaking file descriptors."
+}
+]
+}

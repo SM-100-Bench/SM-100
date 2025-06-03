@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "auth/authzserver/resource_server.go",
+"line": 25,
+"description": "ValidateAccessToken only verifies the signature and basic claims but does not check token expiration or issuer. Expired or invalid tokens could be accepted."
+},
+{
+"file": "auth/authzserver/metadata_provider.go",
+"line": 49,
+"description": "HTTP response body from the external metadata endpoint is read without being closed, which can lead to resource leaks."
+}
+]
+}

@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "zstd/seqdec_amd64.go",
+"line": 63,
+"description": "Off-by-one when computing index of failing sequence. Should use len(seqs) - ctx.iteration - 1 to reference the sequence that caused the error."
+}
+]
+}

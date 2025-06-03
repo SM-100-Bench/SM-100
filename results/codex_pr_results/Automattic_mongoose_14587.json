@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "lib/model.js",
+"line": 3798,
+"description": "Returning immediately when validOps.length === 0 discards accumulated validationErrors. If all bulkWrite operations fail validation, the callback receives a success result without any indication of the errors."
+}
+]
+}

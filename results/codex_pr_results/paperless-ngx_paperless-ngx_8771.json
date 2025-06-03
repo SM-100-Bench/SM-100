@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "src-ui/src/app/components/manage/generic-list/generic-list.component.ts",
+"line": 123,
+"description": "The setter for nameFilter invokes this.nameFilterDebounce.next(nameFilter) but nameFilterDebounce is initialized in ngOnInit. Angular’s two-way binding can invoke the setter before ngOnInit runs, causing nameFilterDebounce to be undefined and leading to a runtime error."
+}
+]
+}

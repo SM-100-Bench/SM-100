@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "sign.js",
+"line": 76,
+"description": "Properties such as \"aud\", \"iss\", \"sub\", and \"jti\" are overwritten with undefined when the respective options are not provided. This removes claims from a payload that already contains them."
+},
+{
+"file": "sign.js",
+"line": 29,
+"description": "The README states that the option \"alg\" can be used as an alias for \"algorithm\", but sign.js only reads \"algorithm\", so specifying \"alg\" has no effect."
+},
+{
+"file": "sign.js",
+"line": 29,
+"description": "The algorithm set in options.header.alg overrides the validated options.algorithm without validation, allowing an unsupported or unintended algorithm value."
+}
+]
+}

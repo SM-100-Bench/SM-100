@@ -1,0 +1,24 @@
+{
+"issues": [
+{
+"file": "internal/linklogs/link_logs.go",
+"line": 34,
+"description": "Creating the log mount directory with os.Mkdir will fail if the directory already exists, which can happen on subsequent runs. This prevents log mounting after a restart."
+},
+{
+"file": "internal/linklogs/link_logs.go",
+"line": 40,
+"description": "Bind mounting with MS_BIND|MS_RDONLY does not guarantee a read-only mount on older kernels; an additional remount with MS_REMOUNT|MS_BIND|MS_RDONLY is required."
+},
+{
+"file": "internal/linklogs/link_logs.go",
+"line": 43,
+"description": "SetFileLabel is called after performing a read-only bind mount, so changing the SELinux label may fail due to the mount being read-only."
+},
+{
+"file": "server/sandbox_run_linux.go",
+"line": 575,
+"description": "MountPodLogs is invoked without registering a cleanup action in case sandbox creation fails, which can leave the log directory mounted on failure."
+}
+]
+}

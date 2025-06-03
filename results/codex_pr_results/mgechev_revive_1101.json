@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "lint/linter.go",
+"line": 175,
+"description": "Potential nil pointer dereference when the go.mod file lacks a 'go' directive, as modAst.Go can be nil before accessing modAst.Go.Version."
+},
+{
+"file": "lint/linter.go",
+"line": 183,
+"description": "retrieveModFile returns an error when dir is '.' or '/', even if go.mod exists in that directory, preventing detection of modules in current or root paths."
+}
+]
+}

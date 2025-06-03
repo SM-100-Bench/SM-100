@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "api/standard/http.go",
+"line": 55,
+"description": "Remote address parsing uses strings.LastIndex to split host and port but does not handle IPv6 addresses (e.g. \"[2001:db8::1]:80\" or \"2001:db8::1\"). As a result, IPv6 hosts are misidentified as names and ports are mis‑parsed."
+},
+{
+"file": "api/standard/http.go",
+"line": 88,
+"description": "Host header parsing also relies on strings.LastIndex(':') and fails for IPv6 hosts. Unbracketed IPv6 addresses or addresses with ports are split incorrectly, leading to wrong net.host.* attributes."
+}
+]
+}

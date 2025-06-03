@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "peewee.py",
+"line": 5135,
+"description": "New optional parameter constraint_name is inserted before related_name in ForeignKeyField.__init__, changing the positional argument order and breaking backward compatibility for code that supplied related_name positionally."
+}
+]
+}

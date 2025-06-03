@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "server/cmd/user.go",
+"line": 124,
+"description": "When creating a local user with a provided password, params.Password is never set, so CreateUserFromParams fails because it sees an empty password."
+},
+{
+"file": "server/common/config.go",
+"line": 206,
+"description": "The loop parsing DownloadDomainAlias reuses the variable name 'domainAlias' for the parsed value, so on error the original alias string is lost and the error message shows '<nil>'."
+},
+{
+"file": "webapp/js/ctrl/user.js",
+"line": 92,
+"description": "generatePassword uses undeclared variables 'pass' and 'i', creating globals and leaking state."
+}
+]
+}

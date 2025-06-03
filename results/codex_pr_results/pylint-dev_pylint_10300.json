@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "pylint/checkers/strings.py",
+"line": 912,
+"description": "visit_const now has two stacked @check_messages decorators. The second decorator replaces the first, so if 'consider-using-f-string' is disabled, the visit_const method will not run and 'redundant-u-string-prefix' will never be emitted."
+},
+{
+"file": "pylint/checkers/strings.py",
+"line": 960,
+"description": "_detect_replacable_format_call assumes node.parent.parent is a Call and directly accesses its args/keywords. For code such as '\"x\".format + y', parent.parent is a BinOp and this will raise AttributeError."
+}
+]
+}

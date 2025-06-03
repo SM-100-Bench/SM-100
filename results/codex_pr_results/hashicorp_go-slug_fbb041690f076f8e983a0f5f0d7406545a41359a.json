@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "internal/unpackinfo/unpackinfo.go",
+"line": 35,
+"description": "The path validation uses strings.HasPrefix to ensure the extracted file stays within dst. An entry like \"../dstOther/file\" will be normalized to a path outside dst (e.g., \"/tmp/dstOther/file\") but still share the dst prefix, bypassing the check and enabling directory traversal."
+},
+{
+"file": "slug.go",
+"line": 367,
+"description": "The gzip reader created in Unpack with gzip.NewReader is never closed, leading to a potential resource leak."
+}
+]
+}

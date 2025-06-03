@@ -1,0 +1,34 @@
+{
+"issues": [
+{
+"file": "starlette/response.py",
+"line": 43,
+"description": "Logic error in init_headers(): checks for existing header with in instead of not in, causing duplicate Content-Length and Content-Type headers to be appended."
+},
+{
+"file": "starlette/response.py",
+"line": 155,
+"description": "FileResponse.call always sends more_body as False, which will prematurely terminate streaming of large files."
+},
+{
+"file": "starlette/middleware/database.py",
+"line": 11,
+"description": "Uses non‑existent attributes of urlparse results (parsed.database, etc.), leading to AttributeError."
+},
+{
+"file": "starlette/middleware/database.py",
+"line": 20,
+"description": "Calling run_until_complete() may fail if the event loop is already running."
+},
+{
+"file": "starlette/middleware/database.py",
+"line": 25,
+"description": "call does not accept receive and send, so the middleware is not a valid ASGI application."
+},
+{
+"file": "starlette/multipart.py",
+"line": 20,
+"description": "References to names like default_stream_factory and MultiDict are missing imports, resulting in NameError when used."
+}
+]
+}

@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "core/events.go",
+"line": 256,
+"description": "The function syncRecordErrorEventWithModelErrorEvent assigns me.Error = re.Error instead of updating re.Error, so the RecordErrorEvent doesn't receive the error from ModelErrorEvent."
+},
+{
+"file": "core/events.go",
+"line": 320,
+"description": "syncCollectionErrorEventWithModelErrorEvent incorrectly sets me.Error = ce.Error; this leaves CollectionErrorEvent.Error unchanged when synchronizing from a ModelErrorEvent."
+}
+]
+}

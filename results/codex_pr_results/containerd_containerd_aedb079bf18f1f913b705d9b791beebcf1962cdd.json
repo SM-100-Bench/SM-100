@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "cmd/containerd-shim-runc-v2/task/service.go",
+"line": 125,
+"description": "The new containerInitExit map added to track exited init processes is never cleared (for example during container deletion). This retains references to removed containers and can lead to memory leaks."
+},
+{
+"file": "cmd/containerd-shim-runc-v2/task/service.go",
+"line": 696,
+"description": "In handleInitExit the shim waits indefinitely for runningExecs to reach zero after killing processes. If KillAll fails or a process never exits, the init exit event is never published, leaving the container in an inconsistent state."
+}
+]
+}

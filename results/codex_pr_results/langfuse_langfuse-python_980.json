@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "langfuse/client.py",
+"line": 2833,
+"description": "DatasetClient.init assigns self.runs = dataset.runs, but Dataset was refactored to no longer define a runs attribute. Instantiating DatasetClient will raise AttributeError."
+}
+]
+}

@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "zerver/views/users.py",
+"line": 300,
+"description": "Adding a role parameter to patch_bot_backend lets any bot owner call this endpoint and change their bot's role. Since access_bot_by_id only requires the caller to be the bot owner or a realm administrator, a regular member who owns a bot could promote that bot to an administrator, gaining elevated privileges via the bot's API key. The code lacks a check that the acting user is an administrator when changing roles, creating a privilege escalation vulnerability."
+}
+]
+}

@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "mount/mount_idmapped_linux.go",
+"line": 103,
+"description": "Opens the source mount using unix.OpenTree(-int(unix.EBADF), ...), but OpenTree expects AT_FDCWD or a valid directory file descriptor. Using -EBADF will always fail with EBADF, so IDMapMount will never succeed."
+},
+{
+"file": "mount/mount_linux.go",
+"line": 97,
+"description": "The result of prepareIDMappedOverlay is deferred with defer userNsCleanUp() even when the function returns a nil cleanup (e.g., on error). Calling a nil function in the defer chain will panic."
+}
+]
+}

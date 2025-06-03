@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "extractor.go",
+"line": 39,
+"description": "The error returned by match() is annotated but never returned. The function continues even when detection fails, leading to unexpected behavior."
+},
+{
+"file": "extractor.go",
+"line": 67,
+"description": "Extractor.Bz2 calls the package-level Tar() instead of e.Tar(), which bypasses the Extractor's FS field and ignores any custom filesystem implementation."
+}
+]
+}

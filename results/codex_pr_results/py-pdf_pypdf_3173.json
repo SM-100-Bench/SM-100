@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "pypdf/generic/_image_inline.py",
+"line": 259,
+"description": "The function is_followed_by_binary_data defaults operator_end to the 'length' parameter rather than the actual number of bytes read. If fewer than 'length' bytes remain (e.g., the stream ends with 'EMC'), operator_end - operator_start may exceed 3 and the function returns True even when the following bytes form a valid operator. This misclassification can cause extract_inline_default to skip valid image ends."
+}
+]
+}

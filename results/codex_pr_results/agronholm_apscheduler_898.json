@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "apscheduler/triggers/calendarinterval.py",
+"line": 69,
+"description": "Uses the constructor argument 'timezone' directly when constructing a 'time' object. If the argument is given as a string (the default is the string 'local'), this will raise a TypeError because 'tzinfo' expects a tzinfo instance."
+},
+{
+"file": "apscheduler/triggers/cron/init.py",
+"line": 128,
+"description": "Leftover debugging print statements (e.g. 'print(\"incrementing\", field.name)') will execute whenever the trigger computes the next fire time, producing unwanted output."
+},
+{
+"file": "apscheduler/validators.py",
+"line": 25,
+"description": "as_timezone() returns any tzinfo object as-is. Passing a pytz timezone will leave it unconverted even though the rest of the code assumes zoneinfo semantics, which can lead to incorrect datetime calculations."
+}
+]
+}

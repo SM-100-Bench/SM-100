@@ -1,0 +1,44 @@
+{
+"issues": [
+{
+"file": "public/js/angularjs/controllers/accounts.js",
+"line": 23,
+"description": "Module chain ends with a call to .directive() without parameters, which will throw a runtime exception."
+},
+{
+"file": "src/controllers/tickets.js",
+"line": 151,
+"description": "Group membership check uses _.any(ticket.group.members, user._id); Lodash will treat user._id as a callback and always return false, preventing legitimate access."
+},
+{
+"file": "src/controllers/accounts.js",
+"line": 109,
+"description": "After calling handleError, execution continues and may send multiple responses when an error occurs."
+},
+{
+"file": "src/routes/index.js",
+"line": 8,
+"description": "Variable declaration uses a semicolon before winston, leaving winston undefined and creating a global variable."
+},
+{
+"file": "src/views/subviews/singleticket.hbs",
+"line": 31,
+"description": "Template references /uploads/users/defaultprofile.jpg but the file added is defaultProfile.jpg (case mismatch)."
+},
+{
+"file": "src/views/subviews/editAccount.hbs",
+"line": 23,
+"description": "Image upload form posts to /account/uploadimage, but the route is /accounts/uploadimage, causing a 404."
+},
+{
+"file": "src/controllers/accounts.js",
+"line": 196,
+"description": "The uploadImage endpoint allows any authenticated user to upload files for any account without permission checks."
+},
+{
+"file": "src/controllers/api.js",
+"line": 19,
+"description": "The users.single endpoint returns the entire user object, exposing hashed passwords via the API."
+}
+]
+}

@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "lib/WebSocketServer.js",
+"line": 156,
+"description": "The patch removes the check for the presence of req.headers.upgrade. If this header is missing, calling req.headers.upgrade.toLowerCase() will throw a TypeError, which can crash the server."
+}
+]
+}

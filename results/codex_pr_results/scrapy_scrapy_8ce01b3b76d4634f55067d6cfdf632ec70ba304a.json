@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "scrapy/trunk/scrapy/core/downloader/responsetypes.py",
+"line": 31,
+"description": "Headers lookup uses 'Content-type' instead of the checked 'Content-Type', which will raise a KeyError when the header is present."
+},
+{
+"file": "scrapy/trunk/scrapy/core/downloader/responsetypes.py",
+"line": 18,
+"description": "from_mimetype() calls mimetype.split('/') without verifying that mimetype is not None, which will raise an AttributeError for unknown types."
+},
+{
+"file": "scrapy/trunk/scrapy/http/response/init.py",
+"line": 119,
+"description": "Response.replace() uses body=body or self.body, preventing callers from setting an empty body string."
+}
+]
+}

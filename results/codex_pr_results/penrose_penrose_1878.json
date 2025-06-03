@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "packages/examples/setupVitest.js",
+"line": 10,
+"description": "Overrides global.fetch with a function returning a Buffer Promise instead of a Response object. Code relying on the standard fetch API (e.g., expecting methods like arrayBuffer()) will fail, leading to runtime errors."
+}
+]
+}

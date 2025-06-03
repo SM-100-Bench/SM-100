@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "packages/core/src/utils/serializeNode.tsx",
+"line": 20,
+"description": "The added check if (!prop) rejects any falsy value, so valid props like 0, false, or empty strings will be omitted from serialization. These values should be preserved, otherwise the resulting serialized output could be incorrect."
+}
+]
+}

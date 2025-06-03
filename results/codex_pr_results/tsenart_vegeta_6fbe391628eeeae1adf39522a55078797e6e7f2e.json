@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "lib/attack.go",
+"line": 267,
+"description": "DNSCaching creates a single rand.Rand and uses it from multiple goroutines when dialing hosts concurrently. math/rand.Rand is not safe for concurrent use, leading to data races."
+},
+{
+"file": "lib/attack.go",
+"line": 309,
+"description": "DNSCaching’s DialContext launches multiple dial goroutines and returns the first successful connection without closing the others. If another dial succeeds after the function returns, its connection remains open, causing a connection leak."
+},
+{
+"file": "lib/attack.go",
+"line": 386,
+"description": "Attack closes the Attacker’s stop channel via Stop() when the attack ends. This permanently disables the Attacker, preventing it from being reused for subsequent attacks."
+}
+]
+}

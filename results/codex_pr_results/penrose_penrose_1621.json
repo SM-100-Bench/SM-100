@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "packages/core/src/compiler/Style.ts",
+"line": 480,
+"description": "When handling errors, values such as res.error[0] are assigned to a variable typed as SubstanceError. Because res.error is an array, the index access may be undefined, which violates strict typing and can cause a compile‑time error or runtime fault."
+}
+]
+}

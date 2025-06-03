@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "deluge/ui/web/json_api.py",
+"line": 572,
+"description": "Modified code divides by dirinfo['size'] when computing directory progress. If a torrent directory contains only zero-length files, dirinfo['size'] will be 0, leading to a ZeroDivisionError."
+}
+]
+}

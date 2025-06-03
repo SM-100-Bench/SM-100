@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "lib/request-handler.js",
+"line": 88,
+"description": "cacheIndex is built with the literal string \"match[0]\" (const cacheIndex = `match[0]?${stringified}`;) instead of using the variable value. This breaks the cache key computation and prevents proper caching."
+}
+]
+}

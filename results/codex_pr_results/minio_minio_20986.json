@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "cmd/sftp-server.go",
+"line": 156,
+"description": "authenticateSSHConnection calls validateKey even during password authentication when a CA key is configured. Since no public key is provided in this case, validateKey performs a type assertion on a nil interface, leading to a panic."
+},
+{
+"file": "cmd/sftp-server.go",
+"line": 231,
+"description": "processLDAPAuthentication only checks the sshPublicKey attribute if it exists. If the attribute is absent for an LDAP user, public‑key authentication succeeds without verifying the key, allowing any key to authenticate that user."
+}
+]
+}

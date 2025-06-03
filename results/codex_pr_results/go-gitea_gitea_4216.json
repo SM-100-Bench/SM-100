@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "models/repo.go",
+"line": 1574,
+"description": "Incorrect usage of xorm In() clause: uses In(\"issue_id=?\", issueIDs) which produces invalid SQL. Should be In(\"issue_id\", issueIDs)."
+}
+]
+}

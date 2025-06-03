@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "packages/nuqs/src/serializer.ts",
+"line": 56,
+"description": "Passing a URL or URLSearchParams to createSerializer() mutates the given object because splitBase returns the original searchParams instead of a copy."
+},
+{
+"file": "packages/nuqs/src/serializer.ts",
+"line": 53,
+"description": "splitBase() does not remove the fragment from string bases; query parameters following a '#' become part of the search value, yielding malformed URLs."
+}
+]
+}

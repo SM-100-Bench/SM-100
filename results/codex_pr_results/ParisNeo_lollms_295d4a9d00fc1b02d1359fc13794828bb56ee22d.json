@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "lollms/functions/calculator.py",
+"line": 10,
+"description": "User-provided expressions are evaluated with eval which enables arbitrary code execution despite restricted globals."
+},
+{
+"file": "lollms/functions/take_screen_shot.py",
+"line": 48,
+"description": "take_screenshot is defined with an unused self parameter, leading to a TypeError if the function is called without passing this argument."
+}
+]
+}

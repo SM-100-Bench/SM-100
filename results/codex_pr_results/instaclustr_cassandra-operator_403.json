@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "Makefile",
+"line": 18,
+"description": "The 'helm' target uses shell brace expansion (e.g., {configmap.yaml,role.yaml,role_binding.yaml}), which is not supported by /bin/sh. Since Make defaults to /bin/sh, this command may fail on systems where /bin/sh is not bash."
+},
+{
+"file": "pkg/controller/cassandrabackup/cassandrabackup_controller.go",
+"line": 186,
+"description": "A ticker created with time.NewTicker is never stopped when the loop ends, causing a goroutine leak every time a backup is triggered."
+}
+]
+}

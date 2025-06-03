@@ -1,0 +1,24 @@
+{
+"issues": [
+{
+"file": "starlette/middleware/wsgi.py",
+"line": 22,
+"description": "Uses sys.stdout for 'wsgi.errors'; WSGI spec expects a writable error stream such as sys.stderr."
+},
+{
+"file": "starlette/middleware/wsgi.py",
+"line": 31,
+"description": "SERVER_PORT is stored as an integer. WSGI environ variables should be strings, so this may break WSGI applications expecting a string."
+},
+{
+"file": "starlette/middleware/wsgi.py",
+"line": 108,
+"description": "start_response does not return the write callable required by the WSGI specification, which can break applications that rely on it."
+},
+{
+"file": "starlette/middleware/wsgi.py",
+"line": 132,
+"description": "The WSGI iterable is not closed after iteration; if the iterable has a close() method, resources may leak."
+}
+]
+}

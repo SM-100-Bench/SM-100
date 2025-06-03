@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "src/lib/create/from-string.js",
+"line": 150,
+"description": "obsOffsets defines CDT, CST, MDT, MST, PDT and PST with positive values (e.g., CDT: 5 * 60). These time zones are west of UTC and must be negative. Parsed dates will be offset in the wrong direction."
+},
+{
+"file": "src/lib/create/from-string.js",
+"line": 146,
+"description": "obsOffsets lacks an entry for the 'UT' timezone. When the string contains 'UT', calculateOffset returns undefined, leaving the parsed offset invalid."
+}
+]
+}

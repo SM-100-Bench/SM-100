@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "conf/lex.go",
+"line": 446,
+"description": "lexMapQuotedKey lacks EOF handling. If a map key is opened with a quote and not closed, lx.next() keeps returning EOF causing an infinite loop."
+},
+{
+"file": "conf/lex.go",
+"line": 448,
+"description": "lexMapQuotedKey accepts either quote character as a terminator, so keys started with one quote type can be closed with another, potentially leading to mis-parsed input."
+}
+]
+}

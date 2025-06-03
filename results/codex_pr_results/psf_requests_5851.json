@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "requests/utils.py",
+"line": 20,
+"description": "Opened ZipFile object is never closed, potentially leaking file handles."
+},
+{
+"file": "requests/utils.py",
+"line": 26,
+"description": "Existing file at extraction path is blindly trusted; an attacker could place a malicious file in the temporary directory and it would be used without verification."
+}
+]
+}

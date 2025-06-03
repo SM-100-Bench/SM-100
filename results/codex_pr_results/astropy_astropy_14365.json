@@ -1,0 +1,29 @@
+{
+"issues": [
+{
+"file": "astropy/io/ascii/qdp.py",
+"line": 26,
+"description": "_data_re contains unbalanced parentheses. It only compiles because the outer pattern closes the leftover ')', but compiling _data_re alone fails and this fragility may break future use."
+},
+{
+"file": "astropy/io/ascii/qdp.py",
+"line": 314,
+"description": "initial_comments and comments use .split('\n') which yields [''] when the string is empty, causing an extra blank comment line when writing files."
+},
+{
+"file": "astropy/io/ascii/qdp.py",
+"line": 326,
+"description": "Same as above—empty comment text split to [''] results in unnecessary comment lines during output."
+},
+{
+"file": "astropy/io/ascii/qdp.py",
+"line": 436,
+"description": "_write_table_qdp mutates the caller-supplied err_specs dictionary via .pop(), causing unexpected side effects."
+},
+{
+"file": "astropy/io/ascii/qdp.py",
+"line": 368,
+"description": "_understand_err_col accesses colnames[i-1] without checking i > 0; if the first column name ends with '_nerr' this reads the last element and triggers an incorrect 'Missing positive error' exception."
+}
+]
+}

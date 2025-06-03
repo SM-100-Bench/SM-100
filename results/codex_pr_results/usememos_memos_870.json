@@ -1,0 +1,44 @@
+{
+"issues": [
+{
+"file": "bin/server/cmd/root.go",
+"line": 78,
+"description": "Server.ResourceService is never initialized, so any request hitting resource routes will panic due to a nil interface"
+},
+{
+"file": "server/user.go",
+"line": 31,
+"description": "Route path is defined as \"user/me\" without a leading slash, resulting in an invalid URL like \"/apiuser/me\""
+},
+{
+"file": "server/webhook.go",
+"line": 59,
+"description": "Header \"Content-Type\" is set after WriteHeader when sending a resource, so the response will not contain the intended header"
+},
+{
+"file": "server/webhook.go",
+"line": 56,
+"description": "Route path \"r/:resourceId/:filename\" lacks a leading slash and will be registered incorrectly as \"/hr/...\""
+},
+{
+"file": "store/shortcut.go",
+"line": 69,
+"description": "INSERT statement contains a trailing comma after \"creator_id\", which causes a SQL syntax error"
+},
+{
+"file": "store/shortcut.go",
+"line": 208,
+"description": "deleteShortcut deletes from table \"saved_query\" instead of \"shortcut\""
+},
+{
+"file": "store/user.go",
+"line": 29,
+"description": "createUser builds an INSERT with placeholders but passes no arguments, leading to an argument count mismatch at runtime"
+},
+{
+"file": "store/seed/10001_schema.sql",
+"line": 26,
+"description": "Foreign keys in several tables reference a non‑existent table \"users\"; the table name created earlier is \"user\""
+}
+]
+}

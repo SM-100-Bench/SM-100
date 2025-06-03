@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "cmd/admin-handlers-users.go",
+"line": 1648,
+"description": "Error from AddUsersToGroup is stored in variable gerr but importError is called with err, causing incorrect error reporting."
+},
+{
+"file": "cmd/admin-handlers-users.go",
+"line": 1520,
+"description": "ImportIAM uses validateAdminSignature without checking ImportIAMAction permissions, letting any admin credential import IAM data."
+}
+]
+}

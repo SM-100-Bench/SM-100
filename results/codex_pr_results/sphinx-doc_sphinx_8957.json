@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "sphinx/util/parallel.py",
+"line": 53,
+"description": "process_thread() does not handle exceptions from precv.recv() or proc.start(). If the subprocess crashes or fails to send data, the semaphore is never released, potentially causing a deadlock when joining workers."
+}
+]
+}

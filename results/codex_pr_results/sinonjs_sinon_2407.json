@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "lib/sinon/spy-formatters.js",
+"line": 67,
+"description": "Modifies spy call arguments in place. calledArgs[j] is overwritten with a quoted value, altering spyInstance.getCall(i).args and corrupting recorded call data."
+},
+{
+"file": "lib/sinon/spy-formatters.js",
+"line": 71,
+"description": "Checks if (calledArgs[j]) and if (expectedArgs[j]) before quoting. Falsy values such as empty strings are skipped, so they won’t be quoted, giving inconsistent message output."
+}
+]
+}

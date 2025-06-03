@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "src/runtime/generator.ts",
+"line": 29,
+"description": "When script is a string, spreading it with { ...shellInput, cwd } results in an object without a command field. executeShellCommand expects a command string and will throw, causing generator execution to fail."
+}
+]
+}

@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "packages/yarnpkg-core/sources/Cache.ts",
+"line": 76,
+"description": "The RefCountedCache is initialized with zipFs => zipFs.discardAndClose, which returns the method instead of calling it. Consequently, when a cache entry is released, discardAndClose() is never executed and ZipFS handles remain open."
+}
+]
+}

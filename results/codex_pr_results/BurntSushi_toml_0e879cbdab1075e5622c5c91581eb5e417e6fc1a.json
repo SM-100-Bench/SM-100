@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "meta.go",
+"line": 136,
+"description": "Key.add now appends to the existing slice when there is spare capacity. This causes returned Keys to share the original slice's backing array, so later modifications to the original (e.g., parser context changes) can unintentionally alter previously created keys, corrupting metadata."
+}
+]
+}

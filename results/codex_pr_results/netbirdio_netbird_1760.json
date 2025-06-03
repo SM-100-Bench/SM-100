@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "client/internal/dns/upstream.go",
+"line": 164,
+"description": "probeAvailability appends to a shared multierror without synchronization while multiple goroutines execute, causing a race on the errors variable."
+},
+{
+"file": "client/internal/routemanager/client.go",
+"line": 232,
+"description": "Routes map obtained from Status is modified outside of Status's mutex, leading to potential data races."
+},
+{
+"file": "client/internal/dns/upstream.go",
+"line": 84,
+"description": "err is redeclared inside the loop, shadowing the outer variable used by the deferred checkUpstreamFails call. The outer error remains nil, preventing proper failure handling."
+}
+]
+}

@@ -1,0 +1,24 @@
+{
+"issues": [
+{
+"file": "thefuck/rules/dirty_untar.py",
+"line": 17,
+"description": "_tar_file returns the raw token that ends with a tar extension. When the tar command uses --file=archive.tar.gz, the returned value is --file=archive.tar.gz, causing file lookups to fail."
+},
+{
+"file": "thefuck/rules/dirty_untar.py",
+"line": 44,
+"description": "side_effect opens the archive with tarfile.TarFile, which does not auto-detect compressed formats. Compressed tar archives would raise ReadError."
+},
+{
+"file": "thefuck/rules/dirty_untar.py",
+"line": 45,
+"description": "Removing each archive member with os.remove will throw IsADirectoryError when directories are present in the archive."
+},
+{
+"file": "thefuck/rules/dirty_untar.py",
+"line": 1,
+"description": "Missing requires_output = False setting (used in similar dirty_unzip rule) could prevent the rule from running for long tar commands with no captured output."
+}
+]
+}

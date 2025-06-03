@@ -1,0 +1,34 @@
+{
+"issues": [
+{
+"file": "ui/packages/audio/src/Audio.svelte",
+"line": 107,
+"description": "References variable value even though it is commented out, causing a ReferenceError when handle_change executes."
+},
+{
+"file": "ui/packages/audio/src/Audio.svelte",
+"line": 60,
+"description": "inited is never set to true after calling prepare_audio(), so recording setup runs on every record() call and multiple event listeners accumulate."
+},
+{
+"file": "ui/packages/audio/src/Audio.svelte",
+"line": 65,
+"description": "onDestroy() unconditionally calls recorder.stop(); if recording was never started this throws an InvalidStateError."
+},
+{
+"file": "ui/packages/upload/src/Upload.svelte",
+"line": 22,
+"description": "updateDragging toggles the state on both dragenter and dragleave which can leave the UI in the wrong state when events nest."
+},
+{
+"file": "ui/packages/upload/src/Upload.svelte",
+"line": 51,
+"description": "Checks all_file_data.length to decide when loading is finished; because indexes may finish out of order this can dispatch before all files are read."
+},
+{
+"file": "ui/packages/workbench/src/routes/_Nav.svelte",
+"line": 34,
+"description": "href attribute uses the literal string '/{route}' instead of interpolating the route value."
+}
+]
+}

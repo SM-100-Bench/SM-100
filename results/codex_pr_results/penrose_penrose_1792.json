@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "packages/editor/src/state/callbacks.ts",
+"line": 96,
+"description": "Setting diagramWorkerState spreads the atom object instead of its current value, so the Recoil state may contain properties like key and default rather than just {id, running/optimizing}. This corrupts the stored value."
+},
+{
+"file": "packages/editor/src/state/callbacks.ts",
+"line": 155,
+"description": "Retrieves diagramWorkerState as a string, but the atom actually stores an object. Casting the entire object to string can lead to runtime errors when resampling."
+},
+{
+"file": "packages/editor/src/components/SegmentedSlider.tsx",
+"line": 72,
+"description": "currValue is initialized to totalSteps while the slider’s max is totalSteps - 1. This sets the input value outside its allowed range when it first renders."
+}
+]
+}

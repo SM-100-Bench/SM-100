@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "pypdf/_writer.py",
+"line": 2193,
+"description": "Cycle detection in clean_forms checks if elt in stack, which relies on equality. Different objects with identical dictionary contents may be considered equal, stopping recursion prematurely and skipping necessary cleanup. Identity checks should be used instead."
+},
+{
+"file": "pypdf/_writer.py",
+"line": 2186,
+"description": "The clean function increments the loop index even when an operation is deleted. This skips the operation immediately following a deletion, leaving some objects unprocessed."
+}
+]
+}

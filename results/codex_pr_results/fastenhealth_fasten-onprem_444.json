@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "frontend/src/app/directives/image-fallback.directive.spec.ts",
+"line": 5,
+"description": "ImageFallbackDirective requires an ElementRef parameter in its constructor, but the test instantiates it without any arguments. This causes a compile-time error."
+}
+]
+}

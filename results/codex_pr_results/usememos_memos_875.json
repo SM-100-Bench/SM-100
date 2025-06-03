@@ -1,0 +1,34 @@
+{
+"issues": [
+{
+"file": "web/src/labs/highlighter/index.ts",
+"line": 1,
+"description": "Replacing escapeRegExp with lodash.escape means RegExp metacharacters in the search keyword are no longer escaped. new RegExp(keyword) may throw when keyword contains characters like '(' or '*', leading to runtime errors."
+},
+{
+"file": "web/src/labs/highlighter/index.ts",
+"line": 24,
+"description": "Setting wrap.innerHTML to escape(html) causes the existing HTML to be escaped and displayed as text, so highlighting no longer works on rendered HTML."
+},
+{
+"file": "web/src/labs/marked/parser/Bold.ts",
+"line": 17,
+"description": "Escaping matchResult[1] before passing it to marked prevents nested markdown from being parsed, producing incorrect rendering."
+},
+{
+"file": "web/src/labs/marked/parser/BoldEmphasis.ts",
+"line": 17,
+"description": "Escaping matchResult[1] before parsing removes nested formatting support and alters expected output."
+},
+{
+"file": "web/src/labs/marked/parser/Emphasis.ts",
+"line": 17,
+"description": "Escaping matchResult[1] before parsing disables nested markdown and results in wrong output."
+},
+{
+"file": "web/src/labs/marked/parser/Link.ts",
+"line": 20,
+"description": "Escaping the link text before calling marked prevents nested markdown inside link labels from being parsed."
+}
+]
+}

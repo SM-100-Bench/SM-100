@@ -1,0 +1,39 @@
+{
+"issues": [
+{
+"file": "packages/inertia-react/src/useForm.js",
+"line": 145,
+"description": "The new setDefaults method relies on value ? { [key]: value } : key when updating defaults. If value is an empty string, it is treated as false and key is spread as an object, producing { '0': 'k', ... } instead of { key: '' }."
+},
+{
+"file": "packages/inertia-svelte/src/useForm.js",
+"line": 38,
+"description": "defaults() uses the same value ? { [key]: value } : key logic. Empty string values cause incorrect defaults (string characters become object keys)."
+},
+{
+"file": "packages/inertia-vue/src/form.js",
+"line": 34,
+"description": "defaults() also uses the value ? { [key]: value } : key pattern, so an empty string value results in malformed default data."
+},
+{
+"file": "packages/inertia-vue3/src/useForm.js",
+"line": 34,
+"description": "Like the other adapters, the defaults() method mis-handles empty string values due to the value ? { [key]: value } : key check."
+},
+{
+"file": "packages/inertia-svelte/src/useForm.js",
+"line": 178,
+"description": "defaults() updates the defaults variable without mutating the form store. Because isDirty is only recalculated when the store changes, calling defaults() leaves isDirty unchanged, leading to stale state."
+},
+{
+"file": "packages/inertia-vue/src/form.js",
+"line": 186,
+"description": "Changing defaults via defaults() does not trigger the watcher that updates isDirty, so the flag may remain outdated until another property changes."
+},
+{
+"file": "packages/inertia-vue3/src/useForm.js",
+"line": 200,
+"description": "The Vue 3 form helper has the same problem—defaults() mutates internal defaults without updating the reactive object, leaving isDirty inconsistent."
+}
+]
+}

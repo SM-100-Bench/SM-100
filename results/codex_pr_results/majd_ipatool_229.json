@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "cmd/auth.go",
+"line": 75,
+"description": "Password is written to verbose logs, exposing credentials to anyone with access to the logs."
+},
+{
+"file": "pkg/appstore/appstore_replicate_sinf.go",
+"line": 25,
+"description": "Temporary file opened for rewriting IPA is never closed before it is renamed, potentially causing file‑descriptor leaks or rename failures on Windows."
+},
+{
+"file": "pkg/appstore/appstore_replicate_sinf.go",
+"line": 94,
+"description": "replicateZip opens each entry of the source archive but never closes the resulting file handle, which can exhaust available descriptors when processing large IPAs."
+}
+]
+}

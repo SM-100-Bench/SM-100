@@ -1,0 +1,29 @@
+{
+"issues": [
+{
+"file": "addon/tern/tern.js",
+"line": 65,
+"description": "Memory leak: delDoc reattaches a 'change' handler with CodeMirror.on instead of removing it. Should use CodeMirror.off."
+},
+{
+"file": "addon/tern/tern.js",
+"line": 227,
+"description": "Incorrect value stored in cachedArgHints. 'start' property receives an argument index ('pos') instead of the cursor position, causing cmpPos to operate on an invalid object."
+},
+{
+"file": "addon/tern/tern.js",
+"line": 392,
+"description": "Sorting changes uses cmpPos on whole change objects (cmpPos(b, a)) rather than their start positions, resulting in NaN comparisons and unpredictable rename behavior."
+},
+{
+"file": "demo/tern.html",
+"line": 19,
+"description": "Loads multiple JavaScript files over plain HTTP, allowing man-in-the-middle modification of executed code."
+},
+{
+"file": "demo/tern.html",
+"line": 71,
+"description": "Mismatched closing tag '</textarea></p>'—opening '<p>' tag is missing."
+}
+]
+}

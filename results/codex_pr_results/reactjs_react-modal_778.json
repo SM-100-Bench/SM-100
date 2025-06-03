@@ -1,0 +1,24 @@
+{
+"issues": [
+{
+"file": "lib/components/Modal.js",
+"line": 13,
+"description": "getParentElement calls the parentSelector without verifying that it returns a valid DOM element. If the selector returns null or undefined, subsequent appendChild/removeChild operations will throw exceptions."
+},
+{
+"file": "lib/components/Modal.js",
+"line": 56,
+"description": "getDefaultProps introduces an ES6 arrow function (parentSelector: () => document.body). The lib directory is generally ES5, so this may break environments that do not support ES6 syntax."
+},
+{
+"file": "lib/components/Modal.js",
+"line": 72,
+"description": "componentWillReceiveProps removes this.node from currentParent without checking if the node is actually a child. If DOM manipulation elsewhere detaches this.node, removeChild will throw a NotFoundError."
+},
+{
+"file": "lib/components/Modal.js",
+"line": 86,
+"description": "componentWillUnmount calls removeChild on the element returned by parentSelector but does not verify that this.node is still its child. This could also raise a NotFoundError."
+}
+]
+}
