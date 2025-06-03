@@ -1,0 +1,349 @@
+Please review the following commit for potential bugs:
+
+```
+diff --git a/.yarn/versions/1137015d.yml b/.yarn/versions/1137015d.yml
+new file mode 100644
+index 000000000000..ca82f129ff62
+--- /dev/null
++++ b/.yarn/versions/1137015d.yml
+@@ -0,0 +1,34 @@
++releases:
++  "@yarnpkg/cli": minor
++  "@yarnpkg/core": minor
++
++declined:
++  - "@yarnpkg/plugin-compat"
++  - "@yarnpkg/plugin-constraints"
++  - "@yarnpkg/plugin-dlx"
++  - "@yarnpkg/plugin-essentials"
++  - "@yarnpkg/plugin-exec"
++  - "@yarnpkg/plugin-file"
++  - "@yarnpkg/plugin-git"
++  - "@yarnpkg/plugin-github"
++  - "@yarnpkg/plugin-http"
++  - "@yarnpkg/plugin-init"
++  - "@yarnpkg/plugin-interactive-tools"
++  - "@yarnpkg/plugin-link"
++  - "@yarnpkg/plugin-nm"
++  - "@yarnpkg/plugin-npm"
++  - "@yarnpkg/plugin-npm-cli"
++  - "@yarnpkg/plugin-pack"
++  - "@yarnpkg/plugin-patch"
++  - "@yarnpkg/plugin-pnp"
++  - "@yarnpkg/plugin-pnpm"
++  - "@yarnpkg/plugin-stage"
++  - "@yarnpkg/plugin-typescript"
++  - "@yarnpkg/plugin-version"
++  - "@yarnpkg/plugin-workspace-tools"
++  - "@yarnpkg/builder"
++  - "@yarnpkg/doctor"
++  - "@yarnpkg/extensions"
++  - "@yarnpkg/nm"
++  - "@yarnpkg/pnpify"
++  - "@yarnpkg/sdks"
+diff --git a/packages/yarnpkg-core/sources/Cache.ts b/packages/yarnpkg-core/sources/Cache.ts
+index f0883c874437..66d891cd1f8f 100644
+--- a/packages/yarnpkg-core/sources/Cache.ts
++++ b/packages/yarnpkg-core/sources/Cache.ts
+@@ -7,6 +7,7 @@ import fs                                                        from 'fs';
+ 
+ import {Configuration}                                           from './Configuration';
+ import {MessageName}                                             from './MessageName';
++import {RefCountedCache, RefCountedCacheEntry}                   from './RefCountedCache';
+ import {ReportError}                                             from './Report';
+ import * as hashUtils                                            from './hashUtils';
+ import * as miscUtils                                            from './miscUtils';
+@@ -72,6 +73,8 @@ export class Cache {
+     checksum: string | null,
+   ]>> = new Map();
+ 
++  private refCountedZipFsCache = new RefCountedCache<string, ZipFS>(zipFs => zipFs.discardAndClose);
++
+   /**
+    * To ensure different instances of `Cache` doesn't end up copying to the same
+    * temporary file this random ID is appended to the filename.
+@@ -467,14 +470,17 @@ export class Cache {
+     if (!shouldMock)
+       this.markedFiles.add(cachePath);
+ 
+-    let zipFs: ZipFS | undefined;
++    const createRefCount = () => this.refCountedZipFsCache.addOrCreate(cachePath, () => {
++      return shouldMock
++        ? makeMockPackage()
++        : new ZipFS(cachePath, {baseFs, readOnly: true});
++    });
+ 
+-    const zipFsBuilder = shouldMock
+-      ? () => makeMockPackage()
+-      : () => new ZipFS(cachePath, {baseFs, readOnly: true});
++    let refCountedCacheEntry: RefCountedCacheEntry<ZipFS> | undefined;
+ 
+     const lazyFs = new LazyFS<PortablePath>(() => miscUtils.prettifySyncErrors(() => {
+-      return zipFs = zipFsBuilder();
++      refCountedCacheEntry = createRefCount();
++      return refCountedCacheEntry.value;
+     }, message => {
+       return `Failed to open the cache entry for ${structUtils.prettyLocator(this.configuration, locator)}: ${message}`;
+     }), ppath);
+@@ -484,7 +490,7 @@ export class Cache {
+     const aliasFs = new AliasFS(cachePath, {baseFs: lazyFs, pathUtils: ppath});
+ 
+     const releaseFs = () => {
+-      zipFs?.discardAndClose();
++      refCountedCacheEntry?.release();
+     };
+ 
+     // We hide the checksum if the package presence is conditional, because it becomes unreliable
+diff --git a/packages/yarnpkg-core/sources/RefCountedCache.ts b/packages/yarnpkg-core/sources/RefCountedCache.ts
+new file mode 100644
+index 000000000000..aa7c4542b009
+--- /dev/null
++++ b/packages/yarnpkg-core/sources/RefCountedCache.ts
+@@ -0,0 +1,76 @@
++export type RefCountedCacheEntry<TValue> = {
++  value: TValue;
++  release: () => void;
++};
++
++/**
++ * A cache map with reference counting. This map is designed to handle
++ * a resource that has native/wasm handles which need to be release explicitly.
++ * It also requires the value to have a unique map to cache instanches
++ */
++export class RefCountedCache<TKey, TValue> {
++  private map = new Map<TKey, {value: TValue, refCount: number}>();
++
++  /**
++   * Creates a new RefCountedMap.
++   * @param releaseFunction The function to release the native resources.
++   */
++  constructor(private releaseFunction: (value: TValue) => void) {
++  }
++
++  /**
++   *
++   * @param key A unique key to indentify the instance in this Map
++   * @param createInstance The function to create a new instance of TValue if none already esists
++   * @returns The value form the cache (or newly created when not present) as well as the release function
++   * to call when the object is to be released.
++   */
++  addOrCreate(key: TKey, createInstance: () => TValue): RefCountedCacheEntry<TValue> {
++    const result = this.map.get(key);
++
++    if (typeof result !== `undefined`) {
++      if (result.refCount <= 0)
++        throw new Error(`Race condition in RefCountedMap. While adding a new key the refCount is: ${result.refCount} for ${JSON.stringify(key)}`);
++
++      result.refCount++;
++
++      return {
++        value: result.value,
++        release: () => this.release(key),
++      };
++    } else {
++      const newValue = createInstance();
++
++      this.map.set(key, {
++        refCount: 1,
++        value: newValue,
++      });
++
++      return {
++        value: newValue,
++        release: () => this.release(key),
++      };
++    }
++  }
++
++  /**
++   * Releases the object by decreasing the refcount. When the last reference is released (i.e. the refcount goes to 0)
++   * This function will call to the releaseFunction passed to the cache map to release the native resources.
++   */
++  private release(key: TKey): void {
++    const result = this.map.get(key);
++    if (!result)
++      throw new Error(`Unbalanced calls to release. No known instances of: ${JSON.stringify(key)}`);
++
++    const refCount = result.refCount;
++    if (refCount <= 0)
++      throw new Error(`Unbalanced calls to release. Too many release vs alloc refcount would become: ${refCount - 1} of ${JSON.stringify(key)}`);
++
++    if (refCount == 1) {
++      this.map.delete(key);
++      this.releaseFunction(result.value);
++    } else {
++      result.refCount--;
++    }
++  }
++}
+diff --git a/packages/yarnpkg-core/tests/RefCountedCache.test.ts b/packages/yarnpkg-core/tests/RefCountedCache.test.ts
+new file mode 100644
+index 000000000000..3d4cc23d29fe
+--- /dev/null
++++ b/packages/yarnpkg-core/tests/RefCountedCache.test.ts
+@@ -0,0 +1,149 @@
++import {RefCountedCache} from '../sources/RefCountedCache';
++
++describe(`RefCountedCache`, () => {
++  it(`should create value on first create`, () => {
++    const actions: Array<string> = [];
++    const cache = new RefCountedCache<string, string>((id => actions.push(`release ${id}`)));
++
++    const result = cache.addOrCreate(`a`, () => {
++      const result = `create a-1`; actions.push(result); return result;
++    });
++
++    expect(result.value).toBe(`create a-1`);
++    expect(actions).toStrictEqual([`create a-1`]);
++  });
++
++  it(`should release single value`, () => {
++    const actions: Array<string> = [];
++    const cache = new RefCountedCache<string, string>((id => actions.push(`release ${id}`)));
++
++    const result = cache.addOrCreate(`a`, () => {
++      const result = `create a-1`; actions.push(result); return result;
++    });
++
++    result.release();
++    expect(actions).toStrictEqual([`create a-1`, `release create a-1`]);
++  });
++
++  it(`should return first created value and only release on the last value`, () => {
++    const actions: Array<string> = [];
++    const cache = new RefCountedCache<string, string>((id => actions.push(`release ${id}`)));
++
++    const result1 = cache.addOrCreate(`a`, () => {
++      const result = `create a-1`; actions.push(result); return result;
++    });
++
++    expect(result1.value).toBe(`create a-1`);
++    expect(actions).toStrictEqual([`create a-1`]);
++
++    // Creating new value with same key should reuse the previous value.
++    const result2 = cache.addOrCreate(`a`, () => {
++      const result = `create a-2`; actions.push(result); return result;
++    });
++
++    expect(result2.value).toBe(`create a-1`);
++    expect(actions).toStrictEqual([`create a-1`]);
++
++    // releasing one should not call release function
++    result1.release();
++    expect(actions).toStrictEqual([`create a-1`]);
++
++    // releasing second should call release, but on the first created instance.
++    result2.release();
++    expect(actions).toStrictEqual([`create a-1`, `release create a-1`]);
++  });
++
++  it(`should handle multiple keys single value`, () => {
++    const actions: Array<string> = [];
++    const cache = new RefCountedCache<string, string>((id => actions.push(`release ${id}`)));
++
++    const result1 = cache.addOrCreate(`a`, () => {
++      const result = `create a-1`; actions.push(result); return result;
++    });
++
++    result1.release();
++
++    const result2 = cache.addOrCreate(`b`, () => {
++      const result = `create b-2`; actions.push(result); return result;
++    });
++
++    result2.release();
++
++    const result3 = cache.addOrCreate(`c`, () => {
++      const result = `create c-3`; actions.push(result); return result;
++    });
++
++    cache.addOrCreate(`d`, () => {
++      const result = `create d-4`; actions.push(result); return result;
++    });
++
++    const result5 = cache.addOrCreate(`e`, () => {
++      const result = `create e-5`; actions.push(result); return result;
++    });
++
++    result5.release();
++    // skipping release 4 release
++    result3.release();
++
++    expect(actions).toStrictEqual([
++      `create a-1`,
++      `release create a-1`,
++      `create b-2`,
++      `release create b-2`,
++      `create c-3`,
++      `create d-4`,
++      `create e-5`,
++      `release create e-5`,
++      `release create c-3`,
++    ]);
++  });
++
++  it(`should can create new instances after removing releasing value`, () => {
++    const actions: Array<string> = [];
++    const cache = new RefCountedCache<string, string>((id => actions.push(`release ${id}`)));
++
++    const result1 = cache.addOrCreate(`a`, () => {
++      const result = `create a-1`; actions.push(result); return result;
++    });
++
++    const result2 = cache.addOrCreate(`a`, () => {
++      const result = `create a-2`; actions.push(result); return result;
++    });
++
++    result1.release();
++    result2.release();
++
++    const result3 = cache.addOrCreate(`a`, () => {
++      const result = `create a-3`; actions.push(result); return result;
++    });
++
++    const result4 = cache.addOrCreate(`a`, () => {
++      const result = `create a-4`; actions.push(result); return result;
++    });
++
++    result4.release();
++    result3.release();
++
++    expect(actions).toStrictEqual([
++      `create a-1`,
++      `release create a-1`,
++      `create a-3`,
++      `release create a-3`,
++    ]);
++  });
++
++  it(`should throw when releasing too many times`, () => {
++    const actions: Array<string> = [];
++    const cache = new RefCountedCache<string, string>((id => actions.push(`release ${id}`)));
++
++    const result1 = cache.addOrCreate(`a`, () => {
++      const result = `create a-1`; actions.push(result); return result;
++    });
++
++    result1.release();
++
++    expect(() => {
++      result1.release();
++    }).toThrow(/No known instances of: "a"/);
++  });
++});
+
+```
+
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Report all of your findings in a single JSON object with the following format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

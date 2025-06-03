@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "deluge/ui/web/json_api.py",
+"line": 194,
+"description": "Missing check for 'content-type' header can cause AttributeError when header is absent."
+},
+{
+"file": "deluge/ui/web/pluginmanager.py",
+"line": 23,
+"description": "gather_info() uses getattr without default; raises AttributeError if plugin lacks 'debug_scripts'."
+},
+{
+"file": "deluge/ui/web/json_api.py",
+"line": 364,
+"description": "remove_listener() assumes listener exists; removing an unknown event causes exception."
+}
+]
+}

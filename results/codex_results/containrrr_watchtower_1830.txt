@@ -1,0 +1,29 @@
+{
+"issues": [
+{
+"file": "pkg/container/cgroup_id.go",
+"line": 11,
+"description": "The regular expression [0-9]+:.*:/docker/([a-f|0-9]{64}) mistakenly allows the '|' character. Container IDs consist only of hexadecimal digits, so the pattern should omit the pipe to avoid incorrect matches."
+},
+{
+"file": "internal/flags/flags.go",
+"line": 667,
+"description": "Uses fmt.Errorf(\"invalid log level: %e\", err) which applies the floating‑point %e verb to an error. This results in a malformed message such as %!e(error=...). Use %v or %w instead."
+},
+{
+"file": "pkg/notifications/preview/tplprev.go",
+"line": 18,
+"description": "Formats errors using %e in fmt.Errorf, producing invalid output (%!e(...)). Should format the error with %v or %w."
+},
+{
+"file": "pkg/container/mocks/ApiServer.go",
+"line": 25,
+"description": "Returns an error with fmt.Errorf(\"mock JSON file %q not found: %e\", absPath, err). The %e verb is inappropriate for errors and yields malformed text."
+},
+{
+"file": "cmd/notify-upgrade.go",
+"line": 44,
+"description": "Creates the temporary file in the root directory via os.CreateTemp(\"/\"). This can fail on systems where / isn’t writable and risks affecting the host filesystem."
+}
+]
+}

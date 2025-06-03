@@ -1,0 +1,2258 @@
+Please review the following commit for potential bugs:
+
+```
+diff --git a/scrapy/trunk/docs/ref/request-response.rst b/scrapy/trunk/docs/ref/request-response.rst
+index 7e416c82295..a94169ec313 100644
+--- a/scrapy/trunk/docs/ref/request-response.rst
++++ b/scrapy/trunk/docs/ref/request-response.rst
+@@ -18,6 +18,10 @@ across the system until they reach the Downloader, which executes the request
+ and returns a :class:`Response` object which goes back to the spider that
+ generated the request.
+ 
++Both Request and Response classes contains subclasses which adds additional
++functionality not required in the base classes. See
++:ref:`ref-request-subclasses` and :ref:`ref-response-subclasses` below.
++
+ Request objects
+ ===============
+ 
+@@ -37,8 +41,8 @@ Request objects
+     ``meta`` is a dict containing the initial values for the
+     :attr:`Request.meta` attribute. If passed, the dict will be shallow copied.
+ 
+-    ``body`` is a string containing the request body or None if the request
+-    doesn't contain a body (ex. GET requests)
++    ``body`` is a str or unicode containing the request body. If ``body`` is
++    a `unicode` it's encoded to str using the `encoding` passed.
+ 
+     ``headers`` is a multi-valued dict containing the headers of this request
+ 
+@@ -52,8 +56,8 @@ Request objects
+     be filtered by the scheduler. This is used when you want to perform an
+     identical request multiple times, for whatever reason
+ 
+-Attributes
+-----------
++Request Attributes
++------------------
+ 
+ .. attribute:: Request.url
+ 
+@@ -72,7 +76,7 @@ Attributes
+ 
+ .. attribute:: Request.body
+ 
+-    A string that contains the request body
++    A str that contains the request body
+ 
+ .. attribute:: Request.meta
+ 
+@@ -96,8 +100,8 @@ Attributes
+     Unlike the ``meta`` attribute, this dict is not copied at all when the
+     request is cloned using the ``copy()`` or ``replace()`` methods.
+ 
+-Methods
+--------
++Request Methods
++---------------
+ 
+ .. method:: Request.copy()
+ 
+@@ -114,10 +118,29 @@ Methods
+ 
+    Return a string with the raw HTTP representation of this response.
+ 
++.. _ref-request-subclasses:
++
++Request subclasses
++==================
++
++Here is the list of built-in Request subclasses. You can also subclass the
++Request class to implement your own functionality.
++
++FormRequest objects
++-------------------
++
++.. class:: FormRequest
++
++The FormRequest class adds a new parameter to the constructor:
++
++  `formdata` - a dictionary or list of (key, value) tuples (typically
++      containing HTML Form data) which will be urlencoded and assigned to the body
++      of the request.
++
+ Response objects
+ ================
+ 
+-.. class:: Response(url, status=200, headers=None, body=None)
++.. class:: Response(url, status=200, headers=None, body=None, meta=None, flags=None)
+ 
+     A :class:`Response` object represents an HTTP response, which is usually
+     downloaded (by the Downloader) and fed to the Spiders for processing.
+@@ -128,14 +151,18 @@ Response objects
+ 
+     ``status`` is an integer with the HTTP status of the response
+ 
+-    ``body`` is a string (or unicode) containing the response body
++    ``body`` is a str with the response body. It must be str, not unicode,
++    unless you're using a Response sublcass such as :class:`TextResponse`.
+ 
+     ``meta`` is a dict containing the initial values for the
+     :attr:`Response.meta` attribute. If passed, the dict will be shallow copied.
+ 
++    ``flags`` is a list containing the initial values for the
++    :attr:`Response.flags` attribute. If passed, the list will be shallow copied.
++
+ 
+-Attributes
+-----------
++Response Attributes
++-------------------
+ 
+ .. attribute:: Response.url
+ 
+@@ -152,7 +179,10 @@ Attributes
+ 
+ .. attribute:: Response.body
+ 
+-    The body of this Response.
++    A str containing the body of this Response. Keep in mind that Reponse.body
++    is always a str. If you want the unicode version use
++    :meth:`TextResponse.body_as_unicode` (only available in
++    :class:`TextResponse` and subclasses).
+ 
+ .. attribute:: Response.request
+ 
+@@ -178,14 +208,21 @@ Attributes
+     :attr:`Request.meta` attribute. See the :attr:`Request.meta` attribute for
+     more info.
+ 
++.. attribute:: Response.flags
++
++    A list that contains flags for this response. Flags are labels used for
++    tagging Responses. For example: `'cached'`, `'redirected`', etc. And
++    they're shown on the string representation of the Response (`__str__`
++    method) which is used by the engine for logging.
++
+ .. attribute:: Response.cache
+ 
+     A dict that contains arbitrary cached data for this response, similar to
+     the :attr:`Request.cache` attribute. See the :attr:`Request.cache`
+     attribute for more info.
+ 
+-Methods
+--------
++Response Methods
++----------------
+ 
+ .. method:: Response.copy()
+ 
+@@ -201,3 +238,101 @@ Methods
+ .. method:: Response.httprepr()
+ 
+    Return a string with the raw HTTP representation of this response.
++
++.. _ref-response-subclasses:
++
++Response subclasses
++===================
++
++Here is the list of available built-in Response subclasses. You can also
++subclass the Response class to implement your own functionality.
++
++.. class:: TextResponse
++
++The TextResponse class adds encoding capabilities to the base Response class.
++The base Response class is intended for binary data such as images or media
++files.
++
++:class:`TextResponse` supports the following constructor arguments, attributes
++nd methods in addition to the base Request ones. The remaining functionality is
++the same as for the :class:`Response` class and is not documented here.
++
++TextResponse
++------------
++
++TextResponse constructor arguments
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++
++    - `encoding` - a string which contains the encoding to use for this
++       TextResponse. If you create a TextResponse with a unicode body it will be
++       encoded using this encoding (remember the body attribute is always a
++       string). 
++
++       If encoding is `None` the encoding will be looked up in the headers anb
++       body instead.
++
++       It defaults to `None`.
++
++TextResponse attributes
++~~~~~~~~~~~~~~~~~~~~~~~
++
++.. attribute:: TextResponse.encoding
++
++   A string with the encoding of this Response. The encoding is resolved in the
++   following order: 
++
++   1. the encoding passed in the constructor `encoding` argument
++   2. the encoding declared in the Content-Type HTTP header
++   3. the encoding declared in the response body. The TextResponse class
++      doesn't provide any special functionality for this. However, the
++      :class:`HtmlResponse` and :class:`XmlResponse` classes do.
++   4. the encoding inferred by looking at the response body. This is the more
++      fragile method but also the last one tried.
++
++TextResponse methods
++~~~~~~~~~~~~~~~~~~~~
++
++.. method:: TextResponse.headers_encoding()
++
++    Returns a string with the encoding declared in the headers (ie. the
++    Content-Type HTTP header).
++
++.. method:: TextResponse.body_encoding()
++
++    Returns a string with the encoding of the body, either declared or inferred
++    from its contents. The body encoding declaration is implemented in
++    :class:`TextResponse` subclasses such as: :class:`HtmlResponse` or
++    :class:`XmlResponse`.
++
++.. method:: TextResponse.body_as_unicode()
++
++    Returns the body of the response as unicode. This is equivalent to::
++
++        response.body.encode(response.encoding)
++
++    But keep in mind that this is not equivalent to::
++    
++        unicode(response.body)
++    
++    Since in the latter case you would be using you system default encoding
++    (typically `ascii`) to convert the body to uniode instead of the response
++    encoding.
++
++HtmlResponse objects
++--------------------
++
++.. class:: HtmlResponse
++
++The HtmlResponse class is a subclass of :class:`TextResponse` which adds
++encoding auto-discovering by looking into the HTML meta http-equiv attribute.
++See :attr:`TextResponse.encoding`.
++
++XmlResponse objects
++-------------------
++
++.. class:: HtmlResponse
++
++The XmlResponse class is a subclass of :class:`TextResponse` which adds
++encoding auto-discovering by looking into the XML declaration line.
++See :attr:`TextResponse.encoding`.
++
+diff --git a/scrapy/trunk/scrapy/contrib/downloadermiddleware/cache.py b/scrapy/trunk/scrapy/contrib/downloadermiddleware/cache.py
+index 1fed30ff5bc..a27ea1c179b 100644
+--- a/scrapy/trunk/scrapy/contrib/downloadermiddleware/cache.py
++++ b/scrapy/trunk/scrapy/contrib/downloadermiddleware/cache.py
+@@ -11,18 +11,10 @@
+ from scrapy.http import Response, Headers
+ from scrapy.http.headers import headers_dict_to_raw
+ from scrapy.core.exceptions import NotConfigured, HttpException, IgnoreRequest
++from scrapy.core.downloader.responsetypes import responsetypes
+ from scrapy.utils.request import request_fingerprint
+ from scrapy.conf import settings
+ 
+-class CachedResponse(Response):
+-
+-    def __init__(self, *args, **kwargs):
+-        Response.__init__(self, *args, **kwargs)
+-        self.meta['cached'] = True
+-
+-    def __str__(self):
+-        return "(cached) " + Response.__str__(self)
+-
+ class CacheMiddleware(object):
+     def __init__(self):
+         if not settings['CACHE2_DIR']:
+@@ -129,7 +121,7 @@ def is_cached(self, domain, key):
+                 if datetime.datetime.utcnow() <= metadata['timestamp'] + datetime.timedelta(seconds=expiration_secs):
+                     return True
+                 else:
+-                    log.msg('dropping old cached response from %s' % metadata['timestamp'])
++                    log.msg('dropping old cached response from %s' % metadata['timestamp'], level=log.DEBUG)
+                     return False
+             else:
+                 # disabled cache expiration
+@@ -158,7 +150,10 @@ def retrieve_response(self, domain, key):
+         headers = Headers(responseheaders)
+         status = metadata['status']
+ 
+-        response = CachedResponse(url=url, headers=headers, status=status, body=responsebody)
++        respcls = responsetypes.from_headers(headers)
++        response = respcls(url=url, headers=headers, status=status, body=responsebody)
++        response.meta['cached'] = True
++        response.flags.append('cached')
+         return response
+ 
+     def store(self, domain, key, request, response):
+@@ -184,7 +179,7 @@ def store(self, domain, key, request, response):
+         with open(os.path.join(requestpath, 'response_headers'), 'w') as f:
+             f.write(headers_dict_to_raw(response.headers))
+         with open(os.path.join(requestpath, 'response_body'), 'w') as f:
+-            f.write(response.body.get_content())
++            f.write(response.body)
+         # request
+         with open(os.path.join(requestpath, 'request_headers'), 'w') as f:
+             f.write(headers_dict_to_raw(request.headers))
+diff --git a/scrapy/trunk/scrapy/contrib/downloadermiddleware/compression.py b/scrapy/trunk/scrapy/contrib/downloadermiddleware/compression.py
+index db3511bde38..8d702e61d2c 100644
+--- a/scrapy/trunk/scrapy/contrib/downloadermiddleware/compression.py
++++ b/scrapy/trunk/scrapy/contrib/downloadermiddleware/compression.py
+@@ -17,7 +17,7 @@ def process_response(self, request, response, spider):
+             content_encoding = response.headers.get('Content-Encoding')
+             if content_encoding:
+                 encoding = content_encoding[0].lower()
+-                raw_body = response.body.get_content()
++                raw_body = response.body
+                 decoded_body = self._decode(raw_body, encoding)
+                 response = response.replace(body=decoded_body)
+                 response.headers['Content-Encoding'] = content_encoding[1:]
+diff --git a/scrapy/trunk/scrapy/contrib/downloadermiddleware/redirect.py b/scrapy/trunk/scrapy/contrib/downloadermiddleware/redirect.py
+index bc334f08c12..ae7c0820446 100644
+--- a/scrapy/trunk/scrapy/contrib/downloadermiddleware/redirect.py
++++ b/scrapy/trunk/scrapy/contrib/downloadermiddleware/redirect.py
+@@ -23,10 +23,7 @@ def process_exception(self, request, exception, spider):
+             if status in ['302', '303']:
+                 redirected_url = urljoin(request.url, response.headers['location'][0])
+                 if not getattr(spider, "no_redirect", False):
+-                    redirected = request.copy()
+-                    redirected.url = redirected_url
+-                    redirected.method = 'GET'
+-                    redirected.body = None
++                    redirected = request.replace(url=redirected_url, method='GET', body=None)
+                     # This is needed to avoid redirection loops with requests that contain dont_filter = True
+                     # Example (9 May 2008): http://www.55max.com/product/001_photography.asp?3233,0,0,0,Michael+Banks
+                     if isinstance(redirected.dont_filter, int):
+@@ -45,8 +42,7 @@ def process_exception(self, request, exception, spider):
+             if status in ['301', '307']:
+                 redirected_url = urljoin(request.url, response.headers['location'][0])
+                 if not getattr(spider, "no_redirect", False):
+-                    redirected = request.copy()
+-                    redirected.url = redirected_url
++                    redirected = request.replace(url=redirected_url)
+                     # This is needed to avoid redirection loops with requests that contain dont_filter = True
+                     # Example (9 May 2008): http://www.55max.com/product/001_photography.asp?3233,0,0,0,Michael+Banks
+                     redirected.dont_filter = False
+@@ -57,7 +53,7 @@ def process_exception(self, request, exception, spider):
+ 
+     def process_response(self, request, response, spider):
+         if isinstance(response, Response):
+-            m = META_REFRESH_RE.search(response.body.to_string()[0:4096])
++            m = META_REFRESH_RE.search(response.body[0:4096])
+             if m and int(m.group(1)) < META_REFRESH_MAXSEC:
+                 redirected = request.copy()
+                 redirected.url = urljoin(request.url, m.group(2))
+diff --git a/scrapy/trunk/scrapy/contrib/history/middleware.py b/scrapy/trunk/scrapy/contrib/history/middleware.py
+index 1cc3fe0cce1..7107431286e 100644
+--- a/scrapy/trunk/scrapy/contrib/history/middleware.py
++++ b/scrapy/trunk/scrapy/contrib/history/middleware.py
+@@ -72,7 +72,7 @@ def record_visit(self, domain, request, response):
+         self.historydata.store(domain, key, url, parentkey, version, post_version)
+ 
+     def get_version(self, response):
+-        key = hashlib.sha1(response.body.to_string()).hexdigest()
++        key = hashlib.sha1(response.body).hexdigest()
+ 
+ def urlkey(url):
+     """Generate a 'key' for a given url
+diff --git a/scrapy/trunk/scrapy/contrib/history/scheduler.py b/scrapy/trunk/scrapy/contrib/history/scheduler.py
+index 835a5467a0b..1f4152675fc 100644
+--- a/scrapy/trunk/scrapy/contrib/history/scheduler.py
++++ b/scrapy/trunk/scrapy/contrib/history/scheduler.py
+@@ -102,4 +102,4 @@ def errback(error) :
+         return request
+ 
+     def get_version(self, response):
+-        key = hashlib.sha1(response.body.to_string()).hexdigest()
++        key = hashlib.sha1(response.body).hexdigest()
+diff --git a/scrapy/trunk/scrapy/contrib/pipeline/images.py b/scrapy/trunk/scrapy/contrib/pipeline/images.py
+index 87de0a76161..95ce8e14472 100644
+--- a/scrapy/trunk/scrapy/contrib/pipeline/images.py
++++ b/scrapy/trunk/scrapy/contrib/pipeline/images.py
+@@ -33,7 +33,7 @@ def media_downloaded(self, response, request, info):
+         mtype = self.MEDIA_TYPE
+         referer = request.headers.get('Referer')
+ 
+-        if not response or not response.body.to_string():
++        if not response or not response.body:
+             msg = 'Image (empty): Empty %s (no content) in %s referred in <%s>: no-content' \
+                     % (mtype, request, referer)
+             log.msg(msg, level=log.WARNING, domain=info.domain)
+@@ -172,7 +172,7 @@ def save_scaled_image(image, img_path, name, size):
+     thumb.save(filename, 'JPEG')
+ 
+ def save_image_with_thumbnails(response, path, thumbsizes, min_width=0, min_height=0):
+-    memoryfile = StringIO(response.body.to_string())
++    memoryfile = StringIO(response.body)
+     im = Image.open(memoryfile)
+     if im.mode != 'RGB':
+         log.msg("Found non-RGB image during scraping %s" % path, level=log.WARNING)
+@@ -183,7 +183,7 @@ def save_image_with_thumbnails(response, path, thumbsizes, min_width=0, min_heig
+     except Exception, ex:
+         log.msg("Image (processing-error): cannot process %s, so writing direct file: Error: %s" % (path, ex))
+         f = open(path, 'wb')
+-        f.write(response.body.to_string())
++        f.write(response.body)
+         f.close()
+     width, height = im.size
+     if width < min_width or height < min_height:
+diff --git a/scrapy/trunk/scrapy/contrib/pipeline/s3images.py b/scrapy/trunk/scrapy/contrib/pipeline/s3images.py
+index 50017dab1c4..152a5e45067 100644
+--- a/scrapy/trunk/scrapy/contrib/pipeline/s3images.py
++++ b/scrapy/trunk/scrapy/contrib/pipeline/s3images.py
+@@ -123,7 +123,7 @@ def _onsuccess(response):
+ 
+     def s3_store_image(self, response, url, info):
+         """Upload image to S3 storage"""
+-        buf = StringIO(response.body.to_string())
++        buf = StringIO(response.body)
+         image = Image.open(buf)
+         key = self.s3_image_key(url)
+         _, jpegbuf = self._s3_put_image(image, key, info)
+diff --git a/scrapy/trunk/scrapy/contrib/response/soup.py b/scrapy/trunk/scrapy/contrib/response/soup.py
+index a090cc098a7..1caa5c217ef 100644
+--- a/scrapy/trunk/scrapy/contrib/response/soup.py
++++ b/scrapy/trunk/scrapy/contrib/response/soup.py
+@@ -17,6 +17,6 @@ def __init__(self):
+ def getsoup(response, **kwargs):
+     # TODO: use different cache buckets depending on constructor parameters
+     if 'soup' not in response.cache:
+-        body = response.body.to_string() if response.body is not None else ""
++        body = response.body if response.body is not None else ""
+         response.cache['soup'] = BeautifulSoup(body, **kwargs)
+     return response.cache['soup']
+diff --git a/scrapy/trunk/scrapy/contrib_exp/downloadermiddleware/__init__.py b/scrapy/trunk/scrapy/contrib_exp/downloadermiddleware/__init__.py
+new file mode 100644
+index 00000000000..e69de29bb2d
+diff --git a/scrapy/trunk/scrapy/contrib/downloadermiddleware/decompression.py b/scrapy/trunk/scrapy/contrib_exp/downloadermiddleware/decompression.py
+similarity index 61%
+rename from scrapy/trunk/scrapy/contrib/downloadermiddleware/decompression.py
+rename to scrapy/trunk/scrapy/contrib_exp/downloadermiddleware/decompression.py
+index f66ec9eee49..fddc4bbb52d 100644
+--- a/scrapy/trunk/scrapy/contrib/downloadermiddleware/decompression.py
++++ b/scrapy/trunk/scrapy/contrib_exp/downloadermiddleware/decompression.py
+@@ -1,14 +1,19 @@
++""" This module implements the DecompressionMiddleware which tries to recognise
++and extract the potentially compressed responses that may arrive. 
++
++NOTE: This middleware needs a better name to avoid confusiong it with the
++CompressinMiddleware (in contrib.downloadermiddleware.compression).
++"""
++
+ import zipfile
+ import tarfile
+ import gzip
+ import bz2
+-try:
+-    from cStringIO import StringIO
+-except:
+-    from StringIO import StringIO
++from cStringIO import StringIO
+ 
+ from scrapy import log
+ from scrapy.http import Response
++from scrapy.core.downloader.responsetypes import responsetypes
+ 
+ class DecompressionMiddleware(object):
+     """ This middleware tries to recognise and extract the possibly compressed
+@@ -28,7 +33,9 @@ def is_tar(self, response):
+         except tarfile.ReadError:
+             return False
+         if tar_file.members:
+-            return response.replace(body=tar_file.extractfile(tar_file.members[0]).read())
++            body = body=tar_file.extractfile(tar_file.members[0]).read()
++            respcls = self._get_response_class(filename=tar_file.members[0].name, body=body)
++            return response.replace(body=body, cls=respcls)
+         else:
+             raise self.ArchiveIsEmpty
+ 
+@@ -39,7 +46,9 @@ def is_zip(self, response):
+             return False
+         namelist = zip_file.namelist()
+         if namelist:
+-            return response.replace(body=zip_file.read(namelist[0]))
++            body = zip_file.read(namelist[0])
++            respcls = self._get_response_class(filename=namelist[0], body=body)
++            return response.replace(body=body, cls=respcls)
+         else:
+             raise self.ArchiveIsEmpty
+ 
+@@ -49,21 +58,31 @@ def is_gzip(self, response):
+             decompressed_body = gzip_file.read()
+         except IOError:
+             return False
+-        return response.replace(body=decompressed_body)
++        respcls = self._get_response_class(body=decompressed_body)
++        return response.replace(body=decompressed_body, cls=respcls)
+ 
+     def is_bzip2(self, response):
+         try:
+             decompressed_body = bz2.decompress(self.body)
+         except IOError:
+             return False
+-        return response.replace(body=decompressed_body)
++        respcls = self._get_response_class(body=decompressed_body)
++        return response.replace(body=decompressed_body, cls=respcls)
++
++    def _get_response_class(self, filename=None, body=None):
++        respcls = Response
++        if filename is not None:
++            respcls = responsetypes.from_filename(filename)
++        if respcls is Response and body is not None:
++            respcls = responsetypes.from_body(body)
++        return respcls
+ 
+     def extract(self, response):
+         """ This method tries to decompress the given response, if possible,
+         and returns a tuple containing the resulting response, and the name
+         of the used decompressor """
+ 
+-        self.body = response.body.to_string()
++        self.body = response.body
+         self.archive = StringIO()
+         self.archive.write(self.body)
+ 
+diff --git a/scrapy/trunk/scrapy/core/downloader/handlers.py b/scrapy/trunk/scrapy/core/downloader/handlers.py
+index 212f09ebc52..cdbc1b95e64 100644
+--- a/scrapy/trunk/scrapy/core/downloader/handlers.py
++++ b/scrapy/trunk/scrapy/core/downloader/handlers.py
+@@ -23,6 +23,7 @@
+ from scrapy.conf import settings
+ 
+ from scrapy.core.downloader.dnscache import DNSCache
++from scrapy.core.downloader.responsetypes import responsetypes
+ 
+ default_timeout = settings.getint('DOWNLOAD_TIMEOUT')
+ default_agent = settings.get('USER_AGENT')
+@@ -63,7 +64,8 @@ def _create_response(body):
+         body = body or ''
+         status = int(factory.status)
+         headers = Headers(factory.response_headers)
+-        r = Response(url=request.url, status=status, headers=headers, body=body)
++        respcls = responsetypes.from_headers(headers)
++        r = respcls(url=request.url, status=status, headers=headers, body=body)
+         signals.send_catch_log(signal=signals.request_uploaded, sender='download_http', request=request, spider=spider)
+         signals.send_catch_log(signal=signals.response_downloaded, sender='download_http', response=r, spider=spider)
+         return r
+diff --git a/scrapy/trunk/scrapy/core/downloader/responsetypes.py b/scrapy/trunk/scrapy/core/downloader/responsetypes.py
+new file mode 100644
+index 00000000000..689f85eab4f
+--- /dev/null
++++ b/scrapy/trunk/scrapy/core/downloader/responsetypes.py
+@@ -0,0 +1,72 @@
++"""
++This module implements a class which returns the appropiate Response class
++based on different criterias.
++
++"""
++
++import mimetypes
++
++from scrapy.http import Response
++from scrapy.utils.misc import load_class
++from scrapy.utils.python import isbinarytext
++from scrapy.conf import settings
++
++class ResponseTypes(object):
++
++    CLASSES = {
++        'text/html': 'scrapy.http.HtmlResponse',
++        'text/xml': 'scrapy.http.XmlResponse',
++        'text': 'scrapy.http.TextResponse',
++    }
++
++    def __init__(self):
++        self.CLASSES.update(settings.get('RESPONSE_CLASSES', {}))
++        self.classes = {}
++        for mimetype, cls in self.CLASSES.iteritems():
++            self.classes[mimetype] = load_class(cls)
++
++    def from_mimetype(self, mimetype):
++        """Return the most appropiate Response class for the given mimetype"""
++        return self.classes.get(mimetype, self.classes.get(mimetype.split('/')[0], Response))
++
++    def from_content_type(self, content_type):
++        """Return the most appropiate Response class from an HTTP Content-Type
++        header """
++        mimetype = content_type.split(';')[0].strip().lower()
++        return self.from_mimetype(mimetype)
++
++    def from_headers(self, headers):
++        """Return the most appropiate Response class by looking at the HTTP
++        headers"""
++        if 'Content-Type' in headers:
++            return self.from_content_type(headers['Content-type'][0])
++        else:
++            return Response
++
++    def from_filename(self, filename):
++        """Return the most appropiate Response class from a file name"""
++        return self.from_mimetype(mimetypes.guess_type(filename)[0])
++
++    def from_url(self, url):
++        """Return the most appropiate Response class from a URL"""
++        return self.from_mimetype(mimetypes.guess_type(url)[0])
++
++    def from_body(self, body):
++        """Try to guess the appropiate response based on the body content. 
++        
++        This method is a bit magic and could be improved in the future, but
++        it's not meant to be used except for special cases where response types
++        cannot be guess using more straightforward methods.
++
++        """
++        chunk = body[:5000]
++        if isbinarytext(chunk):
++            return self.from_mimetype('application/octet-stream')
++        elif "<html>" in chunk.lower():
++            return self.from_mimetype('text/html')
++        elif "<?xml" in chunk.lower():
++            return self.from_mimetype('text/xml')
++        else:
++            return self.from_mimetype('text')
++
++responsetypes = ResponseTypes()
+diff --git a/scrapy/trunk/scrapy/http/__init__.py b/scrapy/trunk/scrapy/http/__init__.py
+index d1a3f7c328f..580681e49f8 100644
+--- a/scrapy/trunk/scrapy/http/__init__.py
++++ b/scrapy/trunk/scrapy/http/__init__.py
+@@ -7,5 +7,11 @@
+ 
+ from scrapy.http.url import Url
+ from scrapy.http.headers import Headers
++
+ from scrapy.http.request import Request
++from scrapy.http.request.form import FormRequest
++
+ from scrapy.http.response import Response
++from scrapy.http.response.html import HtmlResponse
++from scrapy.http.response.xml import XmlResponse
++from scrapy.http.response.text import TextResponse
+diff --git a/scrapy/trunk/scrapy/http/request.py b/scrapy/trunk/scrapy/http/request/__init__.py
+similarity index 88%
+rename from scrapy/trunk/scrapy/http/request.py
+rename to scrapy/trunk/scrapy/http/request/__init__.py
+index 07d060e4773..2377daa2c8b 100644
+--- a/scrapy/trunk/scrapy/http/request.py
++++ b/scrapy/trunk/scrapy/http/request/__init__.py
+@@ -20,7 +20,7 @@ class Request(object):
+     def __init__(self, url, callback=None, method='GET', headers=None, body=None, 
+                  cookies=None, meta=None, encoding='utf-8', dont_filter=None):
+ 
+-        self.encoding = encoding  # this one has to be set first
++        self._encoding = encoding  # this one has to be set first
+         self.method = method.upper()
+         self.set_url(url)
+         self.set_body(body)
+@@ -44,19 +44,20 @@ def set_url(self, url):
+     url = property(lambda x: x._url, set_url)
+ 
+     def set_body(self, body):
+-        # TODO: move dict constructor to another Request class
+-        if isinstance(body, dict):
+-            self._body = urllib.urlencode(body)
+-        elif body is None:
+-            self._body = None
+-        elif isinstance(body, str):
++        if isinstance(body, str):
+             self._body = body
+         elif isinstance(body, unicode):
+             self._body = body.encode(self.encoding)
++        elif body is None:
++            self._body = ''
+         else:
+-            raise TypeError("Request body must either str, unicode or None. Got: '%s'" % type(body).__name__)
++            raise TypeError("Request body must either str or unicode. Got: '%s'" % type(body).__name__)
+     body = property(lambda x: x._body, set_body)
+ 
++    @property
++    def encoding(self):
++        return self._encoding
++
+     def __str__(self):
+         if self.method == 'GET':
+             return "<%s>" % self.url
+@@ -108,7 +109,5 @@ def httprepr(self):
+         if self.headers:
+             s += self.headers.to_string() + "\r\n"
+         s += "\r\n"
+-        if self.body:
+-            s += self.body
+-            s += "\r\n"
++        s += self.body
+         return s
+diff --git a/scrapy/trunk/scrapy/http/request/form.py b/scrapy/trunk/scrapy/http/request/form.py
+new file mode 100644
+index 00000000000..1c8595be7eb
+--- /dev/null
++++ b/scrapy/trunk/scrapy/http/request/form.py
+@@ -0,0 +1,22 @@
++"""
++This module implements the FormRequest class which is a more covenient class
++(that Request) to generate Requests based on form data.
++
++See documentation in docs/ref/request-response.rst
++"""
++
++import urllib
++
++from scrapy.http.request import Request
++from scrapy.utils.python import unicode_to_str
++
++class FormRequest(Request):
++
++    def __init__(self, *args, **kwargs):
++        formdata = kwargs.pop('formdata', None)
++        Request.__init__(self, *args, **kwargs)
++        if formdata:
++            items = formdata.iteritems() if isinstance(formdata, dict) else formdata
++            query = [(unicode_to_str(k, self.encoding), unicode_to_str(v, self.encoding)) for k, v in items]
++            self.body = urllib.urlencode(query)
++            self.headers['Content-Type'] = 'application/x-www-form-urlencoded'
+diff --git a/scrapy/trunk/scrapy/http/response.py b/scrapy/trunk/scrapy/http/response.py
+deleted file mode 100644
+index 7896c001d29..00000000000
+--- a/scrapy/trunk/scrapy/http/response.py
++++ /dev/null
+@@ -1,186 +0,0 @@
+-"""
+-This module implements the Response class which is used to represent HTTP
+-esponses in Scrapy.
+-
+-See documentation in docs/ref/request-response.rst
+-"""
+-
+-import re
+-import copy
+-
+-from twisted.web.http import RESPONSES
+-from BeautifulSoup import UnicodeDammit
+-
+-from scrapy.http.url import Url
+-from scrapy.http.headers import Headers
+-
+-class Response(object):
+-
+-    _ENCODING_RE = re.compile(r'charset=([\w-]+)', re.I)
+-
+-    def __init__(self, url, status=200, headers=None, body=None, meta=None):
+-        self.url = Url(url)
+-        self.headers = Headers(headers or {})
+-        self.status = status
+-        if body is not None:
+-            assert isinstance(body, basestring), \
+-                "body must be basestring, got %s" % type(body).__name__
+-            self.body = _ResponseBody(body, self.headers_encoding())
+-        else:
+-            self.body = None
+-        self.cached = False
+-        self.request = None
+-        self.meta = {} if meta is None else dict(meta)
+-        self.cache = {}
+-
+-    def headers_encoding(self):
+-        content_type = self.headers.get('Content-Type')
+-        if content_type:
+-            encoding = self._ENCODING_RE.search(content_type[0])
+-            if encoding:
+-                return encoding.group(1)
+-
+-    def __repr__(self):
+-        return "Response(url=%s, headers=%s, status=%s, body=%s)" % \
+-                (repr(self.url), repr(self.headers), repr(self.status), repr(self.body))
+-
+-    def __str__(self):
+-        if self.status == 200:
+-            return "<%s>" % (self.url)
+-        else:
+-            return "<%d %s>" % (self.status, self.url)
+-
+-    def copy(self):
+-        """Return a copy of this Response"""
+-        return self.replace()
+-
+-    def replace(self, url=None, status=None, headers=None, body=None, meta=None):
+-        """Create a new Response with the same attributes except for those
+-        given new values.
+-        """
+-        new = self.__class__(url=url or self.url,
+-                             status=status or self.status,
+-                             headers=headers or copy.deepcopy(self.headers),
+-                             meta=meta or self.meta)
+-        if body is None:
+-            new.body = copy.deepcopy(self.body)
+-        else:
+-            new.body = _ResponseBody(body, self.headers_encoding())
+-        return new
+-
+-    def httprepr(self):
+-        """
+-        Return raw HTTP response representation (as string). This is provided
+-        only for reference, since it's not the exact stream of bytes that was
+-        received (that's not exposed by Twisted).
+-        """
+-
+-        s  = "HTTP/1.1 %s %s\r\n" % (self.status, RESPONSES[self.status])
+-        if self.headers:
+-            s += self.headers.to_string() + "\r\n"
+-        s += "\r\n"
+-        if self.body:
+-            s += self.body.to_string()
+-            s += "\r\n"
+-        return s
+-
+-class _ResponseBody(object):
+-    """The body of an HTTP response. 
+-    
+-    WARNING: This is a private class and could be removed in the future without
+-    previous notice. Do not use it this class from outside this module, use
+-    the Response class instead.
+-
+-    Currently, the main purpose of this class is to handle conversion to
+-    unicode and various character encodings.
+-    """
+-
+-    _template = r'''%s\s*=\s*["']?\s*%s\s*["']?'''
+-
+-    _httpequiv_re = _template % ('http-equiv', 'Content-Type')
+-    _content_re   = _template % ('content', r'(?P<mime>[^;]+);\s*charset=(?P<charset>[\w-]+)')
+-    _encoding_re  = _template % ('encoding', r'(?P<charset>[\w-]+)')
+-
+-    XMLDECL_RE  = re.compile(r'<\?xml\s.*?%s' % _encoding_re, re.I)
+-
+-    METATAG_RE  = re.compile(r'<meta\s+%s\s+%s' % (_httpequiv_re, _content_re), re.I)
+-    METATAG_RE2 = re.compile(r'<meta\s+%s\s+%s' % (_content_re, _httpequiv_re), re.I)
+-
+-    def __init__(self, content, declared_encoding=None):
+-        self._content = content
+-        self._unicode_content = None
+-        self.declared_encoding = declared_encoding
+-        self._expected_encoding = None
+-        self._actual_encoding = None
+-
+-    def to_string(self, encoding=None):
+-        """Get the body as a string. If an encoding is specified, the
+-        body will be encoded using that encoding.
+-        """
+-        if encoding in (None, self.declared_encoding, self._actual_encoding):
+-            return self._content
+-        # should we cache this decode?
+-        return self.to_unicode().encode(encoding)
+-
+-    def to_unicode(self):
+-        """Return body as unicode string"""
+-        if self._unicode_content:
+-            return self._unicode_content
+-        proposed = self.get_expected_encoding()
+-        dammit = UnicodeDammit(self._content, [proposed])
+-        self._actual_encoding = dammit.originalEncoding
+-        # FIXME sometimes dammit.unicode fails, even when it recognizes the encoding correctly
+-        self._unicode_content = dammit.unicode
+-        return self._unicode_content
+-
+-    def get_content(self):
+-        """Return original content bytes"""
+-        return self._content
+-
+-    def get_declared_encoding(self):
+-        """Get the value of the declared encoding passed to the
+-        constructor.
+-        """
+-        return self.declared_encoding
+-
+-    def get_real_encoding(self):
+-        """Get the real encoding, by trying first the expected and then the
+-        actual encoding.
+-        """
+-        if self.get_expected_encoding():
+-            result = self.get_expected_encoding()
+-        else:
+-            self.to_unicode()
+-            result = self._actual_encoding
+-        return result
+-
+-    def get_expected_encoding(self):
+-        """Get the expected encoding for the page. This is the declared
+-        encoding, or the meta tag encoding.
+-        """
+-        if self._expected_encoding:
+-            return self._expected_encoding
+-        proposed = self.declared_encoding
+-        if not proposed:
+-            chunk = self._content[:5000]
+-            match = self.XMLDECL_RE.search(chunk) or self.METATAG_RE.search(chunk) or self.METATAG_RE2.search(chunk)
+-            if match:
+-                proposed = match.group("charset")
+-        self._expected_encoding = proposed
+-        return proposed
+-
+-    def __repr__(self):
+-        return "_ResponseBody(content=%s, declared_encoding=%s)" % (repr(self._content), repr(self.declared_encoding))
+-
+-    def __str__(self):
+-        return self.to_string()
+-
+-    def __unicode__(self):
+-        return self.to_unicode()
+-
+-    def __len__(self):
+-        return len(self._content)
+-
+-    def __eq__(self, other):
+-        return self._content == other._content and self.declared_encoding == other.declared_encoding
+-
+diff --git a/scrapy/trunk/scrapy/http/response/__init__.py b/scrapy/trunk/scrapy/http/response/__init__.py
+new file mode 100644
+index 00000000000..1dfb046e521
+--- /dev/null
++++ b/scrapy/trunk/scrapy/http/response/__init__.py
+@@ -0,0 +1,79 @@
++"""
++This module implements the Response class which is used to represent HTTP
++responses in Scrapy.
++
++See documentation in docs/ref/request-response.rst
++"""
++
++import copy
++
++from twisted.web.http import RESPONSES
++
++from scrapy.http.url import Url
++from scrapy.http.headers import Headers
++
++class Response(object):
++
++    def __init__(self, url, status=200, headers=None, body='', meta=None, flags=None):
++        self.url = Url(url)
++        self.headers = Headers(headers or {})
++        self.status = status
++        self.set_body(body)
++        self.cached = False
++        self.request = None
++        self.meta = {} if meta is None else dict(meta)
++        self.flags = [] if flags is None else list(flags)
++        self.cache = {}
++
++    def set_body(self, body):
++        if isinstance(body, str):
++            self._body = body
++        elif isinstance(body, unicode):
++            raise TypeError("Cannot assign a unicode body to a raw Response. Use TextResponse, HtmlResponse, etc")
++        elif body is None:
++            self._body = ''
++        else:
++            raise TypeError("Response body must either str or unicode. Got: '%s'" % type(body).__name__)
++    body = property(lambda x: x._body, set_body)
++
++    def __repr__(self):
++        return "%s(url=%s, headers=%s, status=%s, body=%s)" % \
++                (type(self).__name__, repr(self.url), repr(self.headers), repr(self.status), repr(self.body))
++
++    def __str__(self):
++        flags = "(%s) " % ",".join(self.flags) if self.flags else ""
++        status = "%d " % self.status + " " if self.status != 200 else ""
++        return "%s<%s%s>" % (flags, status, self.url)
++
++    def copy(self):
++        """Return a copy of this Response"""
++        return self.replace()
++
++    def replace(self, url=None, status=None, headers=None, body=None, meta=None, flags=None, cls=None, **kwargs):
++        """Create a new Response with the same attributes except for those
++        given new values.
++        """
++        if cls is None:
++            cls = self.__class__
++        new = cls(url=url or self.url,
++                  status=status or self.status,
++                  headers=headers or copy.deepcopy(self.headers),
++                  body=body or self.body,
++                  meta=meta or self.meta,
++                  flags=flags or self.flags,
++                  **kwargs)
++        return new
++
++    def httprepr(self):
++        """
++        Return raw HTTP response representation (as string). This is provided
++        only for reference, since it's not the exact stream of bytes that was
++        received (that's not exposed by Twisted).
++        """
++
++        s  = "HTTP/1.1 %s %s\r\n" % (self.status, RESPONSES[self.status])
++        if self.headers:
++            s += self.headers.to_string() + "\r\n"
++        s += "\r\n"
++        s += self.body
++        return s
+diff --git a/scrapy/trunk/scrapy/http/response/html.py b/scrapy/trunk/scrapy/http/response/html.py
+new file mode 100644
+index 00000000000..a3c6d9ecfb7
+--- /dev/null
++++ b/scrapy/trunk/scrapy/http/response/html.py
+@@ -0,0 +1,35 @@
++"""
++This module implements the HtmlResponse class which adds encoding
++discovering through HTML encoding declarations to the TextResponse class.
++
++See documentation in docs/ref/request-response.rst
++"""
++
++import re
++
++from BeautifulSoup import UnicodeDammit
++
++from scrapy.http.response.text import TextResponse
++from scrapy.utils.python import memoizemethod
++
++class HtmlResponse(TextResponse):
++
++    _template = r'''%s\s*=\s*["']?\s*%s\s*["']?'''
++
++    _httpequiv_re = _template % ('http-equiv', 'Content-Type')
++    _content_re   = _template % ('content', r'(?P<mime>[^;]+);\s*charset=(?P<charset>[\w-]+)')
++    _encoding_re  = _template % ('encoding', r'(?P<charset>[\w-]+)')
++
++    METATAG_RE  = re.compile(r'<meta\s+%s\s+%s' % (_httpequiv_re, _content_re), re.I)
++    METATAG_RE2 = re.compile(r'<meta\s+%s\s+%s' % (_content_re, _httpequiv_re), re.I)
++
++    def body_encoding(self):
++        return self._body_declared_encoding() or self._body_inferred_encoding()
++
++    @memoizemethod('cache')
++    def _body_declared_encoding(self):
++        chunk = self.body[:5000]
++        match = self.METATAG_RE.search(chunk) or self.METATAG_RE2.search(chunk)
++        return match.group('charset') if match else None
++
++
+diff --git a/scrapy/trunk/scrapy/http/response/text.py b/scrapy/trunk/scrapy/http/response/text.py
+new file mode 100644
+index 00000000000..847c9f888c4
+--- /dev/null
++++ b/scrapy/trunk/scrapy/http/response/text.py
+@@ -0,0 +1,75 @@
++"""
++This module implements the TextResponse class which adds encoding handling and
++discovering (through HTTP headers) to base Response class.
++
++See documentation in docs/ref/request-response.rst
++"""
++
++import re
++
++from BeautifulSoup import UnicodeDammit
++
++from scrapy.http.response import Response
++from scrapy.utils.python import memoizemethod
++
++class TextResponse(Response):
++
++    _ENCODING_RE = re.compile(r'charset=([\w-]+)', re.I)
++
++    def __init__(self, url, status=200, headers=None, body=None, meta=None, flags=None, encoding=None):
++        self._encoding = encoding
++        if isinstance(body, unicode):
++            if encoding is None:
++                clsname = self.__class__.__name__
++                raise TypeError("To instantiate a %s with unicode body you must specify the encoding" % clsname)
++            body = body.encode(encoding)
++        Response.__init__(self, url, status, headers, body, meta, flags)
++
++    def set_body(self, body):
++        if isinstance(body, str):
++            self._body = body
++        elif isinstance(body, unicode):
++            self._body = body.encode(self._encoding)
++        elif body is None:
++            self._body = None
++        else:
++            raise TypeError("Request body must either str, unicode or None. Got: '%s'" % type(body).__name__)
++    body = property(lambda x: x._body, set_body)
++
++    def replace(self, *args, **kwargs):
++        kwargs.setdefault('encoding', self.encoding)
++        return Response.replace(self, *args, **kwargs)
++
++    @property
++    def encoding(self):
++        return self._encoding or self.headers_encoding() or self.body_encoding()
++
++    @memoizemethod('cache')
++    def headers_encoding(self, headers=None):
++        if headers is None:
++            headers = self.headers
++        content_type = headers.get('Content-Type')
++        if content_type:
++            encoding = self._ENCODING_RE.search(content_type[0])
++            if encoding:
++                return encoding.group(1)
++
++    @memoizemethod('cache')
++    def body_as_unicode(self):
++        """Return body as unicode"""
++        possible_encodings = (self._encoding, self.headers_encoding(), self._body_declared_encoding())
++        dammit = UnicodeDammit(self.body, possible_encodings)
++        self.cache['body_inferred_encoding'] = dammit.originalEncoding
++        # XXX: sometimes dammit.unicode fails, even when it recognizes the encoding correctly
++        return dammit.unicode
++
++    def body_encoding(self):
++        return self._body_inferred_encoding()
++
++    def _body_inferred_encoding(self):
++        if 'body_inferred_encoding' not in self.cache:
++            self.body_as_unicode()
++        return self.cache['body_inferred_encoding']
++
++    def _body_declared_encoding(self):
++        return None
+diff --git a/scrapy/trunk/scrapy/http/response/xml.py b/scrapy/trunk/scrapy/http/response/xml.py
+new file mode 100644
+index 00000000000..330c0a6a92b
+--- /dev/null
++++ b/scrapy/trunk/scrapy/http/response/xml.py
+@@ -0,0 +1,29 @@
++"""
++This module implements the XmlResponse class which adds encoding
++discovering through XML encoding declarations to the TextResponse class.
++
++See documentation in docs/ref/request-response.rst
++"""
++
++import re
++
++from BeautifulSoup import UnicodeDammit
++
++from scrapy.http.response.text import TextResponse
++from scrapy.utils.python import memoizemethod
++
++class XmlResponse(TextResponse):
++
++    _template = r'''%s\s*=\s*["']?\s*%s\s*["']?'''
++    _encoding_re  = _template % ('encoding', r'(?P<charset>[\w-]+)')
++    XMLDECL_RE  = re.compile(r'<\?xml\s.*?%s' % _encoding_re, re.I)
++
++    def body_encoding(self):
++        return self._body_declared_encoding() or self._body_inferred_encoding()
++
++    @memoizemethod('cache')
++    def _body_declared_encoding(self):
++        chunk = self.body[:5000]
++        match = self.XMLDECL_RE.search(chunk)
++        return match.group('charset') if match else None
++
+diff --git a/scrapy/trunk/scrapy/link/__init__.py b/scrapy/trunk/scrapy/link/__init__.py
+index a906da9526c..0f93132a88d 100644
+--- a/scrapy/trunk/scrapy/link/__init__.py
++++ b/scrapy/trunk/scrapy/link/__init__.py
+@@ -58,9 +58,7 @@ def _extract_links(self, response_text, response_url, response_encoding):
+ 
+     def extract_links(self, response):
+         # wrapper needed to allow to work directly with text
+-        return self._extract_links(response.body.to_string(),
+-            response.url,
+-            response.body.get_real_encoding())
++        return self._extract_links(response.body, response.url, response.encoding)
+ 
+     def reset(self):
+         FixedSGMLParser.reset(self)
+diff --git a/scrapy/trunk/scrapy/link/extractors.py b/scrapy/trunk/scrapy/link/extractors.py
+index 7dbf317d993..b6335ef998f 100644
+--- a/scrapy/trunk/scrapy/link/extractors.py
++++ b/scrapy/trunk/scrapy/link/extractors.py
+@@ -55,7 +55,7 @@ def extract_links(self, response):
+         if self.restrict_xpaths:
+             hxs = HtmlXPathSelector(response)
+             html_slice = ''.join(''.join(html_fragm for html_fragm in hxs.x(xpath_expr).extract()) for xpath_expr in self.restrict_xpaths)
+-            links = self._extract_links(html_slice, response.url, response.body.get_real_encoding())
++            links = self._extract_links(html_slice, response.url, response.encoding)
+         else:
+             links = LinkExtractor.extract_links(self, response)
+ 
+diff --git a/scrapy/trunk/scrapy/replay/__init__.py b/scrapy/trunk/scrapy/replay/__init__.py
+index 7abee0dc762..7e9cd25252a 100644
+--- a/scrapy/trunk/scrapy/replay/__init__.py
++++ b/scrapy/trunk/scrapy/replay/__init__.py
+@@ -133,7 +133,7 @@ def item_passed(self, item, spider):
+             self.passed_new[str(item.guid)] = item
+ 
+     def response_received(self, response, spider):
+-        key = hashlib.sha1(response.body.to_string()).hexdigest()
++        key = hashlib.sha1(response.body).hexdigest()
+         if (self.recording or self.updating) and key:
+             self.responses_old[key] = response.copy()
+         elif key:
+diff --git a/scrapy/trunk/scrapy/tests/test_adaptors.py b/scrapy/trunk/scrapy/tests/test_adaptors.py
+index 09d43364f78..07bc2c3cc5d 100644
+--- a/scrapy/trunk/scrapy/tests/test_adaptors.py
++++ b/scrapy/trunk/scrapy/tests/test_adaptors.py
+@@ -5,7 +5,7 @@
+ 
+ from scrapy.item.adaptors import AdaptorPipe
+ from scrapy.contrib_exp import adaptors
+-from scrapy.http import Response, Headers
++from scrapy.http import HtmlResponse, Headers
+ from scrapy.xpath.selector import HtmlXPathSelector, XmlXPathSelector
+ from scrapy.link import Link
+ 
+@@ -43,7 +43,7 @@ def setUp(self):
+     def get_selector(self, domain, url, sample_filename, headers=None, selector=HtmlXPathSelector):
+         sample_filename = os.path.join(self.samplesdir, sample_filename)
+         body = file(sample_filename).read()
+-        response = Response(url=url, headers=Headers(headers), status=200, body=body)
++        response = HtmlResponse(url=url, headers=Headers(headers), status=200, body=body)
+         return selector(response)
+ 
+     def test_extract(self):
+@@ -125,7 +125,7 @@ def test_extract_image_links(self):
+                            <a onclick="javascript: opensomething('dummy/my_html2.html');">something2</a>
+                          </div>
+                        </body></html>"""
+-        sample_response = Response('http://foobar.com/dummy', body=test_data)
++        sample_response = HtmlResponse('http://foobar.com/dummy', body=test_data)
+         sample_selector = HtmlXPathSelector(sample_response)
+         sample_adaptor = adaptors.ExtractImageLinks(response=sample_response)
+ 
+diff --git a/scrapy/trunk/scrapy/tests/test_contrib_response_soup.py b/scrapy/trunk/scrapy/tests/test_contrib_response_soup.py
+index c07b268732b..92bca7f044e 100644
+--- a/scrapy/trunk/scrapy/tests/test_contrib_response_soup.py
++++ b/scrapy/trunk/scrapy/tests/test_contrib_response_soup.py
+@@ -23,7 +23,7 @@ def test_response_soup(self):
+ 
+         # when body is None, an empty soup should be returned
+         r1 = Response('http://www.example.com')
+-        assert r1.body is None
++        assert r1.body == ""
+         assert isinstance(r1.getsoup(), BeautifulSoup)
+ 
+     def test_response_soup_caching(self):
+diff --git a/scrapy/trunk/scrapy/tests/test_middleware_decompression.py b/scrapy/trunk/scrapy/tests/test_downloadermiddleware_decompression.py
+similarity index 67%
+rename from scrapy/trunk/scrapy/tests/test_middleware_decompression.py
+rename to scrapy/trunk/scrapy/tests/test_downloadermiddleware_decompression.py
+index 1ec5b786ae4..c140f281141 100644
+--- a/scrapy/trunk/scrapy/tests/test_middleware_decompression.py
++++ b/scrapy/trunk/scrapy/tests/test_downloadermiddleware_decompression.py
+@@ -1,7 +1,7 @@
+ import os
+ from unittest import TestCase, main
+-from scrapy.http import Response
+-from scrapy.contrib.downloadermiddleware.decompression import DecompressionMiddleware
++from scrapy.http import Response, XmlResponse
++from scrapy.contrib_exp.downloadermiddleware.decompression import DecompressionMiddleware
+ 
+ def setUp():
+     datadir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sample_data', 'compressed')
+@@ -25,19 +25,23 @@ class ScrapyDecompressionTest(TestCase):
+ 
+     def test_tar(self):
+         response, format = self.middleware.extract(self.test_responses['tar'])
+-        self.assertEqual(response.body.to_string(), self.uncompressed_body)
++        assert isinstance(response, XmlResponse)
++        self.assertEqual(response.body, self.uncompressed_body)
+ 
+     def test_zip(self):
+         response, format = self.middleware.extract(self.test_responses['zip'])
+-        self.assertEqual(response.body.to_string(), self.uncompressed_body)
++        assert isinstance(response, XmlResponse)
++        self.assertEqual(response.body, self.uncompressed_body)
+ 
+     def test_gz(self):
+         response, format = self.middleware.extract(self.test_responses['xml.gz'])
+-        self.assertEqual(response.body.to_string(), self.uncompressed_body)
++        assert isinstance(response, XmlResponse)
++        self.assertEqual(response.body, self.uncompressed_body)
+ 
+     def test_bz2(self):
+         response, format = self.middleware.extract(self.test_responses['xml.bz2'])
+-        self.assertEqual(response.body.to_string(), self.uncompressed_body)
++        assert isinstance(response, XmlResponse)
++        self.assertEqual(response.body, self.uncompressed_body)
+ 
+ if __name__ == '__main__':
+     main()
+diff --git a/scrapy/trunk/scrapy/tests/test_middleware_retry.py b/scrapy/trunk/scrapy/tests/test_downloadermiddleware_retry.py
+similarity index 100%
+rename from scrapy/trunk/scrapy/tests/test_middleware_retry.py
+rename to scrapy/trunk/scrapy/tests/test_downloadermiddleware_retry.py
+diff --git a/scrapy/trunk/scrapy/tests/test_groupfilter.py b/scrapy/trunk/scrapy/tests/test_groupfilter.py
+new file mode 100644
+index 00000000000..4ff2ff644d2
+--- /dev/null
++++ b/scrapy/trunk/scrapy/tests/test_groupfilter.py
+@@ -0,0 +1,27 @@
++import unittest
++from scrapy.core.scheduler import GroupFilter
++
++class GroupFilterTest(unittest.TestCase):
++
++    def test_groupfilter(self):
++        k1 = "id1"
++        k2 = "id1"
++
++        f = GroupFilter()
++        f.open("mygroup")
++        self.assertTrue(f.add("mygroup", k1))
++        self.assertFalse(f.add("mygroup", k1))
++        self.assertFalse(f.add("mygroup", k2))
++
++        f.open('anothergroup')
++        self.assertTrue(f.add("anothergroup", k1))
++        self.assertFalse(f.add("anothergroup", k1))
++        self.assertFalse(f.add("anothergroup", k2))
++
++        f.close('mygroup')
++        f.open('mygroup')
++        self.assertTrue(f.add("mygroup", k2))
++        self.assertFalse(f.add("mygroup", k1))
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/scrapy/trunk/scrapy/tests/test_http_request.py b/scrapy/trunk/scrapy/tests/test_http_request.py
+index 60411ac6a95..580da4d4be6 100644
+--- a/scrapy/trunk/scrapy/tests/test_http_request.py
++++ b/scrapy/trunk/scrapy/tests/test_http_request.py
+@@ -1,6 +1,5 @@
+ import unittest
+-from scrapy.http import Request, Headers, Url
+-from scrapy.core.scheduler import GroupFilter
++from scrapy.http import Request, FormRequest, Headers, Url
+ 
+ class RequestTest(unittest.TestCase):
+ 
+@@ -30,26 +29,6 @@ def test_init(self):
+         assert r.headers is not headers
+         self.assertEqual(r.headers["caca"], "coco")
+ 
+-    def test_groupfilter(self):
+-        k1 = "id1"
+-        k2 = "id1"
+-
+-        f = GroupFilter()
+-        f.open("mygroup")
+-        self.assertTrue(f.add("mygroup", k1))
+-        self.assertFalse(f.add("mygroup", k1))
+-        self.assertFalse(f.add("mygroup", k2))
+-
+-        f.open('anothergroup')
+-        self.assertTrue(f.add("anothergroup", k1))
+-        self.assertFalse(f.add("anothergroup", k1))
+-        self.assertFalse(f.add("anothergroup", k2))
+-
+-        f.close('mygroup')
+-        f.open('mygroup')
+-        self.assertTrue(f.add("mygroup", k2))
+-        self.assertFalse(f.add("mygroup", k1))
+-
+     def test_headers(self):
+         # Different ways of setting headers attribute
+         url = 'http://www.scrapy.org'
+@@ -108,7 +87,7 @@ def test_url(self):
+ 
+     def test_body(self):
+         r1 = Request(url="http://www.example.com/")
+-        assert r1.body is None
++        assert r1.body == ''
+ 
+         r2 = Request(url="http://www.example.com/", body="")
+         assert isinstance(r2.body, str)
+@@ -166,7 +145,7 @@ def test_replace(self):
+         r2 = r1.replace(method="POST", body="New body", headers=hdrs)
+         self.assertEqual(r1.url, r2.url)
+         self.assertEqual((r1.method, r2.method), ("GET", "POST"))
+-        self.assertEqual((r1.body, r2.body), (None, "New body"))
++        self.assertEqual((r1.body, r2.body), ('', "New body"))
+         self.assertEqual((r1.headers, r2.headers), ({}, hdrs))
+ 
+     def test_httprepr(self):
+@@ -174,7 +153,26 @@ def test_httprepr(self):
+         self.assertEqual(r1.httprepr(), 'GET http://www.example.com HTTP/1.1\r\nHost: www.example.com\r\n\r\n')
+ 
+         r1 = Request("http://www.example.com", method='POST', headers={"Content-type": "text/html"}, body="Some body")
+-        self.assertEqual(r1.httprepr(), 'POST http://www.example.com HTTP/1.1\r\nHost: www.example.com\r\nContent-Type: text/html\r\n\r\nSome body\r\n')
++        self.assertEqual(r1.httprepr(), 'POST http://www.example.com HTTP/1.1\r\nHost: www.example.com\r\nContent-Type: text/html\r\n\r\nSome body')
++
++    def test_form_request(self):
++
++        # empty formdata
++        r1 = FormRequest("http://www.example.com", formdata={})
++        self.assertEqual(r1.body, '')
++
++        # using default encoding (utf-8)
++        data = {'one': 'two', 'price': '\xc2\xa3 100'}
++        r2 = FormRequest("http://www.example.com", formdata=data)
++        self.assertEqual(r2.encoding, 'utf-8')
++        self.assertEqual(r2.body, 'price=%C2%A3+100&one=two')
++        self.assertEqual(r2.headers['Content-Type'], 'application/x-www-form-urlencoded')
++
++        # using custom encoding
++        data = {'price': u'\xa3 100'}
++        r3 = FormRequest("http://www.example.com", formdata=data, encoding='latin1')
++        self.assertEqual(r3.encoding, 'latin1')
++        self.assertEqual(r3.body, 'price=%A3+100')
+ 
+ if __name__ == "__main__":
+     unittest.main()
+diff --git a/scrapy/trunk/scrapy/tests/test_http_response.py b/scrapy/trunk/scrapy/tests/test_http_response.py
+index 76c3f1d4e4f..c92aa5cad82 100644
+--- a/scrapy/trunk/scrapy/tests/test_http_response.py
++++ b/scrapy/trunk/scrapy/tests/test_http_response.py
+@@ -1,6 +1,5 @@
+ import unittest
+-from scrapy.http import Response, Headers, Url
+-from scrapy.http.response import _ResponseBody
++from scrapy.http import Response, TextResponse, HtmlResponse, XmlResponse, Headers, Url
+ 
+ class ResponseTest(unittest.TestCase):
+ 
+@@ -9,10 +8,10 @@ def test_init(self):
+         self.assertRaises(Exception, Response)
+         self.assertTrue(isinstance(Response('http://example.com/'), Response))
+         # body can be str or None but not ResponseBody
+-        self.assertTrue(isinstance(Response('http://example.com/', body=None), Response))
++        self.assertTrue(isinstance(Response('http://example.com/', body=''), Response))
+         self.assertTrue(isinstance(Response('http://example.com/', body='body'), Response))
+         # test presence of all optional parameters
+-        self.assertTrue(isinstance(Response('http://example.com/', headers={}, status=200, body=None), Response))
++        self.assertTrue(isinstance(Response('http://example.com/', headers={}, status=200, body=''), Response))
+ 
+         r = Response("http://www.example.com")
+         assert isinstance(r.url, Url)
+@@ -38,9 +37,13 @@ def test_copy(self):
+         
+         r1 = Response("http://www.example.com", body="Some body")
+         r1.meta['foo'] = 'bar'
++        r1.flags.append('cached')
+         r1.cache['lala'] = 'lolo'
+         r2 = r1.copy()
+ 
++        self.assertEqual(r1.status, r2.status)
++        self.assertEqual(r1.body, r2.body)
++
+         assert r1.cache
+         assert not r2.cache
+ 
+@@ -48,14 +51,14 @@ def test_copy(self):
+         assert r1.meta is not r2.meta, "meta must be a shallow copy, not identical"
+         self.assertEqual(r1.meta, r2.meta)
+ 
++        # make sure flags list is shallow copied
++        assert r1.flags is not r2.flags, "flags must be a shallow copy, not identical"
++        self.assertEqual(r1.flags, r2.flags)
++
+         # make sure headers attribute is shallow copied
+         assert r1.headers is not r2.headers, "headers must be a shallow copy, not identical"
+         self.assertEqual(r1.headers, r2.headers)
+ 
+-        # make sure body is shallow copied
+-        assert r1.body is not r2.body, "body must be a shallow copy, not identical"
+-        self.assertEqual(r1.body, r2.body)
+-
+     def test_copy_inherited_classes(self):
+         """Test Response children copies preserve their class"""
+ 
+@@ -72,38 +75,116 @@ def test_replace(self):
+         hdrs = Headers({"key": "value"})
+         r1 = Response("http://www.example.com")
+         r2 = r1.replace(status=301, body="New body", headers=hdrs)
+-        assert r1.body is None
+-        assert isinstance(r2.body, _ResponseBody)
++        assert r1.body == ''
+         self.assertEqual(r1.url, r2.url)
+         self.assertEqual((r1.status, r2.status), (200, 301))
+-        self.assertEqual((r1.body, r2.body.to_string()), (None, "New body"))
++        self.assertEqual((r1.body, r2.body), ('', "New body"))
+         self.assertEqual((r1.headers, r2.headers), ({}, hdrs))
+ 
++        r1 = TextResponse("http://www.example.com", body="hello", encoding="cp852")
++        r2 = r1.replace(url="http://www.example.com/other")
++        r3 = r1.replace(url="http://www.example.com/other", encoding="latin1")
++
++        assert isinstance(r2, TextResponse)
++        self.assertEqual(r2.url, "http://www.example.com/other")
++        self.assertEqual(r2.encoding, "cp852")
++        self.assertEqual(r3.url, "http://www.example.com/other")
++        self.assertEqual(r3.encoding, "latin1")
++
+     def test_httprepr(self):
+         r1 = Response("http://www.example.com")
+         self.assertEqual(r1.httprepr(), 'HTTP/1.1 200 OK\r\n\r\n')
+ 
+         r1 = Response("http://www.example.com", status=404, headers={"Content-type": "text/html"}, body="Some body")
+-        self.assertEqual(r1.httprepr(), 'HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\nSome body\r\n')
+-        
+-class ResponseBodyTest(unittest.TestCase):
+-    unicode_string = u'\u043a\u0438\u0440\u0438\u043b\u043b\u0438\u0447\u0435\u0441\u043a\u0438\u0439 \u0442\u0435\u043a\u0441\u0442'
++        self.assertEqual(r1.httprepr(), 'HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\nSome body')
+ 
+     def test_encoding(self):
+-        original_string = self.unicode_string.encode('cp1251')
+-        cp1251_body     = _ResponseBody(original_string, 'cp1251')
+-
+-        # check to_unicode
+-        self.assertTrue(isinstance(cp1251_body.to_unicode(), unicode))
+-        self.assertEqual(cp1251_body.to_unicode(), self.unicode_string)
+-
+-        # check to_string using default encoding (declared when created)
+-        self.assertTrue(isinstance(cp1251_body.to_string(), str))
+-        self.assertEqual(cp1251_body.to_string(), original_string)
++        unicode_string = u'\u043a\u0438\u0440\u0438\u043b\u043b\u0438\u0447\u0435\u0441\u043a\u0438\u0439 \u0442\u0435\u043a\u0441\u0442'
++        self.assertRaises(TypeError, Response, 'http://www.example.com', body=u'unicode body')
++
++        original_string = unicode_string.encode('cp1251')
++        r1 = TextResponse('http://www.example.com', body=original_string, encoding='cp1251')
++
++        # check body_as_unicode
++        self.assertTrue(isinstance(r1.body_as_unicode(), unicode))
++        self.assertEqual(r1.body_as_unicode(), unicode_string)
++
++    def _assert_response_values(self, response, encoding, body):
++        if isinstance(body, unicode):
++            body_unicode = body
++            body_str = body.encode(encoding)
++        else:
++            body_unicode = body.decode(encoding)
++            body_str = body
++
++        assert isinstance(response.body, str)
++        self.assertEqual(response.encoding, encoding)
++        self.assertEqual(response.body, body_str)
++        self.assertEqual(response.body_as_unicode(), body_unicode)
++
++    def test_text_response(self):
++        r1 = TextResponse("http://www.example.com", headers={"Content-type": ["text/html; charset=utf-8"]}, body="\xc2\xa3")
++        r2 = TextResponse("http://www.example.com", encoding='utf-8', body=u"\xa3")
++        r3 = TextResponse("http://www.example.com", headers={"Content-type": ["text/html; charset=iso-8859-1"]}, body="\xa3")
++        r4 = TextResponse("http://www.example.com", body="\xa2\xa3")
++
++        self.assertEqual(r1.headers_encoding(), "utf-8")
++        self.assertEqual(r2.headers_encoding(), None)
++        self.assertEqual(r2.encoding, 'utf-8')
++        self.assertEqual(r3.headers_encoding(), "iso-8859-1")
++        self.assertEqual(r3.encoding, 'iso-8859-1')
++        self.assertEqual(r4.headers_encoding(), None)
++        assert r4.body_encoding() is not None and r4.body_encoding() != 'ascii'
++        self._assert_response_values(r1, 'utf-8', u"\xa3")
++        self._assert_response_values(r2, 'utf-8', u"\xa3")
++        self._assert_response_values(r3, 'iso-8859-1', u"\xa3")
++
++        # TextResponse (and subclasses) must be passed a encoding when instantiating with unicode bodies
++        self.assertRaises(TypeError, TextResponse, "http://www.example.com", body=u"\xa3")
++
++    def test_html_encoding(self):
++        
++        body = """<html><head><title>Some page</title><meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
++        </head><body>Price: \xa3100</body></html>'
++        """
++        r1 = HtmlResponse("http://www.example.com", body=body)
++        self._assert_response_values(r1, 'iso-8859-1', body)
++
++        body = """<?xml version="1.0" encoding="iso-8859-1"?>
++        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
++        Price: \xa3100
++        """
++        r2 = HtmlResponse("http://www.example.com", body=body)
++        self._assert_response_values(r2, 'iso-8859-1', body)
++
++        # for conflicting declarations headers must take precedence
++        body = """<html><head><title>Some page</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
++        </head><body>Price: \xa3100</body></html>'
++        """
++        r3 = HtmlResponse("http://www.example.com", headers={"Content-type": ["text/html; charset=iso-8859-1"]}, body=body)
++        self._assert_response_values(r3, 'iso-8859-1', body)
++
++        # make sure replace() preserves the encoding of the original response
++        body = "New body \xa3"
++        r4 = r3.replace(body=body)
++        self._assert_response_values(r4, 'iso-8859-1', body)
++
++    def test_xml_encoding(self):
++
++        body = "<xml></xml>"
++        r1 = XmlResponse("http://www.example.com", body=body)
++        # XXX: we may want to swtich default XmlResponse encoding to utf-8
++        self._assert_response_values(r1, 'ascii', body)
++
++        body = """<?xml version="1.0" encoding="iso-8859-1"?><xml></xml>"""
++        r2 = XmlResponse("http://www.example.com", body=body)
++        self._assert_response_values(r2, 'iso-8859-1', body)
++
++        # make sure replace() preserves the encoding of the original response
++        body = "New body \xa3"
++        r3 = r2.replace(body=body)
++        self._assert_response_values(r3, 'iso-8859-1', body)
+ 
+-        # check to_string using arbitrary encoding
+-        self.assertTrue(isinstance(cp1251_body.to_string('utf-8'), str))
+-        self.assertEqual(cp1251_body.to_string('utf-8'), self.unicode_string.encode('utf-8'))
+ 
+ if __name__ == "__main__":
+     unittest.main()
+diff --git a/scrapy/trunk/scrapy/tests/test_libxml2.py b/scrapy/trunk/scrapy/tests/test_libxml2.py
+index af363342fb1..e9d82d91273 100644
+--- a/scrapy/trunk/scrapy/tests/test_libxml2.py
++++ b/scrapy/trunk/scrapy/tests/test_libxml2.py
+@@ -1,16 +1,13 @@
+-from unittest import TestCase, main
++import unittest
++
+ import libxml2
+-from scrapy.http import Response
+ 
+-class Libxml2Test(TestCase):
+-    def setUp(self):
+-        libxml2.debugMemory(1)
++from scrapy.http import TextResponse
++from scrapy.utils.test import libxml2debug
+ 
+-    def tearDown(self):
+-        libxml2.cleanupParser()
+-        leaked_bytes = libxml2.debugMemory(0)
+-        assert leaked_bytes == 0, "libxml2 memory leak detected: %d bytes" % leaked_bytes
++class Libxml2Test(unittest.TestCase):
+ 
++    @libxml2debug
+     def test_xpath(self):
+         #this test will fail in version 2.6.27 but passes on 2.6.29+
+         html = "<td>1<b>2</b>3</td>"
+@@ -19,25 +16,21 @@ def test_xpath(self):
+         self.assertEquals(result, ['1', '2', '3'])
+         node.freeDoc()
+ 
+-class ResponseLibxml2DocTest(TestCase):
+-    def setUp(self):
+-        libxml2.debugMemory(1)
+-
+-    def tearDown(self):
+-        libxml2.cleanupParser()
+-        leaked_bytes = libxml2.debugMemory(0)
+-        assert leaked_bytes == 0, "libxml2 memory leak detected: %d bytes" % leaked_bytes
++class ResponseLibxml2DocTest(unittest.TestCase):
+ 
++    @libxml2debug
+     def test_getlibxml2doc(self):
+         # test to simulate '\x00' char in body of html page
+-        #this method don't should raise TypeError Exception
+-        from scrapy.core.manager import scrapymanager
+-        scrapymanager.configure()
++        #this method shouldn't raise TypeError Exception
++
++        # make sure we load the libxml2 extension
++        from scrapy.extension import extensions
++        extensions.load() # 
+ 
+         self.body_content = 'test problematic \x00 body'
+-        response = Response('http://example.com/catalog/product/blabla-123',
++        response = TextResponse('http://example.com/catalog/product/blabla-123',
+                             headers={'Content-Type': 'text/plain; charset=utf-8'}, body=self.body_content)
+         response.getlibxml2doc()
+ 
+ if __name__ == "__main__":
+-    main()
++    unittest.main()
+diff --git a/scrapy/trunk/scrapy/tests/test_link.py b/scrapy/trunk/scrapy/tests/test_link.py
+index f137d218ab0..e2a1ead6cbb 100644
+--- a/scrapy/trunk/scrapy/tests/test_link.py
++++ b/scrapy/trunk/scrapy/tests/test_link.py
+@@ -1,7 +1,7 @@
+ import os
+ import unittest
+ 
+-from scrapy.http.response import Response
++from scrapy.http import HtmlResponse
+ from scrapy.link import LinkExtractor, Link
+ from scrapy.link.extractors import RegexLinkExtractor
+ from scrapy.contrib.link_extractors import HTMLImageLinkExtractor
+@@ -15,7 +15,7 @@ def test_basic(self):
+         <p><a href="../othercat.html">Other category</a></p>
+         <p><a href="/" /></p>
+         </body></html>"""
+-        response = Response("http://example.org/somepage/index.html", body=html)
++        response = HtmlResponse("http://example.org/somepage/index.html", body=html)
+ 
+         lx = LinkExtractor()  # default: tag=a, attr=href
+         self.assertEqual(lx.extract_links(response),
+@@ -28,7 +28,7 @@ def test_base_url(self):
+         html = """<html><head><title>Page title<title><base href="http://otherdomain.com/base/" />
+         <body><p><a href="item/12.html">Item 12</a></p>
+         </body></html>"""
+-        response = Response("http://example.org/somepage/index.html", body=html)
++        response = HtmlResponse("http://example.org/somepage/index.html", body=html)
+ 
+         lx = LinkExtractor()  # default: tag=a, attr=href
+         self.assertEqual(lx.extract_links(response),
+@@ -37,10 +37,10 @@ def test_base_url(self):
+     def test_extraction_encoding(self):
+         base_path = os.path.join(os.path.dirname(__file__), 'sample_data', 'link_extractor')
+         body = open(os.path.join(base_path, 'linkextractor_noenc.html'), 'r').read()
+-        response_utf8 = Response(url='http://example.com/utf8', body=body, headers={'Content-Type': ['text/html; charset=utf-8']})
+-        response_noenc = Response(url='http://example.com/noenc', body=body)
++        response_utf8 = HtmlResponse(url='http://example.com/utf8', body=body, headers={'Content-Type': ['text/html; charset=utf-8']})
++        response_noenc = HtmlResponse(url='http://example.com/noenc', body=body)
+         body = open(os.path.join(base_path, 'linkextractor_latin1.html'), 'r').read()
+-        response_latin1 = Response(url='http://example.com/latin1', body=body)
++        response_latin1 = HtmlResponse(url='http://example.com/latin1', body=body)
+ 
+         lx = LinkExtractor()
+         self.assertEqual(lx.extract_links(response_utf8),
+@@ -67,7 +67,7 @@ class RegexLinkExtractorTestCase(unittest.TestCase):
+     def setUp(self):
+         base_path = os.path.join(os.path.dirname(__file__), 'sample_data', 'link_extractor')
+         body = open(os.path.join(base_path, 'regex_linkextractor.html'), 'r').read()
+-        self.response = Response(url='http://example.com/index', body=body)
++        self.response = HtmlResponse(url='http://example.com/index', body=body)
+ 
+     def test_urls_type(self):
+         '''Test that the resulting urls are regular strings and not a unicode objects'''
+@@ -146,7 +146,7 @@ class HTMLImageLinkExtractorTestCase(unittest.TestCase):
+     def setUp(self):
+         base_path = os.path.join(os.path.dirname(__file__), 'sample_data', 'link_extractor')
+         body = open(os.path.join(base_path, 'image_linkextractor.html'), 'r').read()
+-        self.response = Response(url='http://example.com/index', body=body)
++        self.response = HtmlResponse(url='http://example.com/index', body=body)
+ 
+     def tearDown(self):
+         del self.response
+diff --git a/scrapy/trunk/scrapy/tests/test_spiders/testplugin.py b/scrapy/trunk/scrapy/tests/test_spiders/testspider.py
+similarity index 89%
+rename from scrapy/trunk/scrapy/tests/test_spiders/testplugin.py
+rename to scrapy/trunk/scrapy/tests/test_spiders/testspider.py
+index d47264db271..98ab4f0e2d5 100644
+--- a/scrapy/trunk/scrapy/tests/test_spiders/testplugin.py
++++ b/scrapy/trunk/scrapy/tests/test_spiders/testspider.py
+@@ -28,11 +28,11 @@ def parse(self, response):
+ 
+     def parse_item(self, response):
+         item = ScrapedItem()
+-        m = self.name_re.search(response.body.to_string())
++        m = self.name_re.search(response.body)
+         if m:
+             item.name = m.group(1)
+         item.url = response.url
+-        m = self.price_re.search(response.body.to_string())
++        m = self.price_re.search(response.body)
+         if m:
+             item.price = m.group(1)
+         return [item]
+diff --git a/scrapy/trunk/scrapy/tests/test_utils_iterators.py b/scrapy/trunk/scrapy/tests/test_utils_iterators.py
+index 70cf9502847..80343ba9ba3 100644
+--- a/scrapy/trunk/scrapy/tests/test_utils_iterators.py
++++ b/scrapy/trunk/scrapy/tests/test_utils_iterators.py
+@@ -3,10 +3,12 @@
+ import libxml2
+ 
+ from scrapy.utils.iterators import csviter, xmliter
+-from scrapy.http import Response
++from scrapy.http import XmlResponse, TextResponse
+ 
+ class UtilsXmlTestCase(unittest.TestCase):
+     ### NOTE: Encoding issues have been found with BeautifulSoup for utf-16 files, utf-16 test removed ###
++    # pablo: Tests shouldn't be removed, but commented with proper steps on how
++    # to reproduce the missing functionality
+     def test_iterator(self):
+         body = """<?xml version="1.0" encoding="UTF-8"?>\
+             <products xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="someschmea.xsd">\
+@@ -20,7 +22,7 @@ def test_iterator(self):
+               </product>\
+             </products>"""
+ 
+-        response = Response(url="http://example.com", body=body)
++        response = XmlResponse(url="http://example.com", body=body)
+         attrs = []
+         for x in xmliter(response, 'product'):
+             attrs.append((x.x("@id").extract(), x.x("name/text()").extract(), x.x("./type/text()").extract()))
+@@ -53,7 +55,7 @@ def test_iterator_namespaces(self):
+                 </channel>
+             </rss>
+         """
+-        response = Response(url='http://mydummycompany.com', body=body)
++        response = XmlResponse(url='http://mydummycompany.com', body=body)
+         my_iter = xmliter(response, 'item')
+ 
+         node = my_iter.next()
+@@ -83,7 +85,7 @@ class UtilsCsvTestCase(unittest.TestCase):
+     def test_iterator_defaults(self):
+         body = open(self.sample_feed_path).read()
+ 
+-        response = Response(url="http://example.com/", body=body)
++        response = TextResponse(url="http://example.com/", body=body)
+         csv = csviter(response)
+ 
+         result = [row for row in csv]
+@@ -101,7 +103,7 @@ def test_iterator_defaults(self):
+     def test_iterator_delimiter(self):
+         body = open(self.sample_feed_path).read().replace(',', '\t')
+ 
+-        response = Response(url="http://example.com/", body=body)
++        response = TextResponse(url="http://example.com/", body=body)
+         csv = csviter(response, delimiter='\t')
+ 
+         self.assertEqual([row for row in csv],
+@@ -114,7 +116,7 @@ def test_iterator_headers(self):
+         sample = open(self.sample_feed_path).read().splitlines()
+         headers, body = sample[0].split(','), '\n'.join(sample[1:])
+ 
+-        response = Response(url="http://example.com/", body=body)
++        response = TextResponse(url="http://example.com/", body=body)
+         csv = csviter(response, headers=headers)
+ 
+         self.assertEqual([row for row in csv],
+@@ -127,7 +129,7 @@ def test_iterator_falserow(self):
+         body = open(self.sample_feed_path).read()
+         body = '\n'.join((body, 'a,b', 'a,b,c,d'))
+ 
+-        response = Response(url="http://example.com/", body=body)
++        response = TextResponse(url="http://example.com/", body=body)
+         csv = csviter(response)
+ 
+         self.assertEqual([row for row in csv],
+@@ -139,7 +141,7 @@ def test_iterator_falserow(self):
+     def test_iterator_exception(self):
+         body = open(self.sample_feed_path).read()
+ 
+-        response = Response(url="http://example.com/", body=body)
++        response = TextResponse(url="http://example.com/", body=body)
+         iter = csviter(response)
+         iter.next()
+         iter.next()
+diff --git a/scrapy/trunk/scrapy/tests/test_utils_python.py b/scrapy/trunk/scrapy/tests/test_utils_python.py
+index 5533e1cc64f..3f2fc3afdf7 100644
+--- a/scrapy/trunk/scrapy/tests/test_utils_python.py
++++ b/scrapy/trunk/scrapy/tests/test_utils_python.py
+@@ -1,6 +1,6 @@
+ import unittest
+ 
+-from scrapy.utils.python import str_to_unicode, unicode_to_str
++from scrapy.utils.python import str_to_unicode, unicode_to_str, memoizemethod, isbinarytext
+ 
+ class UtilsPythonTestCase(unittest.TestCase):
+     def test_str_to_unicode(self):
+@@ -29,5 +29,37 @@ def test_unicode_to_str(self):
+         # converting a strange object should raise TypeError
+         self.assertRaises(TypeError, unicode_to_str, unittest)
+ 
++    def test_memoizemethod(self):
++        class A(object):
++            def __init__(self):
++                self.cache = {}
++
++            @memoizemethod('cache')
++            def heavyfunc(self, arg1=None, arg2=None):
++                return [arg1, arg2]
++
++        a = A()
++        one = a.heavyfunc()
++        two = a.heavyfunc()
++        three = a.heavyfunc('two')
++        four = a.heavyfunc('two')
++        assert one is two
++        assert one is not three
++        assert three is four
++
++    def test_isbinarytext(self):
++
++        # basic tests
++        assert not isbinarytext("hello")
++
++        # utf-16 strings contain null bytes
++        assert not isbinarytext(u"hello".encode('utf-16')) 
++
++        # one with encoding
++        assert not isbinarytext("<div>Price \xa3</div>")
++
++        # finally some real binary bytes
++        assert isbinarytext("\x02\xa3")
++
+ if __name__ == "__main__":
+     unittest.main()
+diff --git a/scrapy/trunk/scrapy/tests/test_utils_response.py b/scrapy/trunk/scrapy/tests/test_utils_response.py
+index 701bf60ea95..13779a431d1 100644
+--- a/scrapy/trunk/scrapy/tests/test_utils_response.py
++++ b/scrapy/trunk/scrapy/tests/test_utils_response.py
+@@ -1,9 +1,9 @@
+ import unittest
+-from scrapy.http.response import Response
++from scrapy.http import Response, TextResponse
+ from scrapy.utils.response import body_or_str, get_base_url
+ 
+ class ResponseUtilsTest(unittest.TestCase):
+-    dummy_response = Response(url='http://example.org/', body='dummy_response')
++    dummy_response = TextResponse(url='http://example.org/', body='dummy_response')
+ 
+     def test_body_or_str_input(self):
+         self.assertTrue(isinstance(body_or_str(self.dummy_response), basestring))
+diff --git a/scrapy/trunk/scrapy/tests/test_xpath.py b/scrapy/trunk/scrapy/tests/test_xpath.py
+index 8d5afa77c45..ca9dfce274e 100644
+--- a/scrapy/trunk/scrapy/tests/test_xpath.py
++++ b/scrapy/trunk/scrapy/tests/test_xpath.py
+@@ -3,23 +3,17 @@
+ 
+ import libxml2
+ 
+-from scrapy.http import Response
++from scrapy.http import TextResponse, HtmlResponse, XmlResponse
+ from scrapy.xpath.selector import XmlXPathSelector, HtmlXPathSelector
++from scrapy.utils.test import libxml2debug
+ 
+ class XPathTestCase(unittest.TestCase):
+ 
+-    def setUp(self):
+-        libxml2.debugMemory(1)
+-
+-    def tearDown(self):
+-        libxml2.cleanupParser()
+-        leaked_bytes = libxml2.debugMemory(0) 
+-        assert leaked_bytes == 0, "libxml2 memory leak detected: %d bytes" % leaked_bytes
+-
++    @libxml2debug
+     def test_selector_simple(self):
+         """Simple selector tests"""
+         body = "<p><input name='a'value='1'/><input name='b'value='2'/></p>"
+-        response = Response(url="http://example.com", body=body)
++        response = TextResponse(url="http://example.com", body=body)
+         xpath = HtmlXPathSelector(response)
+ 
+         xl = xpath.x('//input')
+@@ -40,6 +34,7 @@ def test_selector_simple(self):
+         self.assertEqual([x.extract() for x in xpath.x("concat(//input[@name='a']/@value, //input[@name='b']/@value)")],
+                          [u'12'])
+ 
++    @libxml2debug
+     def test_selector_same_type(self):
+         """Test XPathSelector returning the same type in x() method"""
+         text = '<p>test<p>'
+@@ -48,6 +43,7 @@ def test_selector_same_type(self):
+         assert isinstance(HtmlXPathSelector(text=text).x("//p")[0], 
+                           HtmlXPathSelector)
+ 
++    @libxml2debug
+     def test_selector_xml_html(self):
+         """Test that XML and HTML XPathSelector's behave differently"""
+ 
+@@ -60,6 +56,7 @@ def test_selector_xml_html(self):
+         self.assertEqual(HtmlXPathSelector(text=text).x("//div").extract(),
+                          [u'<div><img src="a.jpg"><p>Hello</p></div>'])
+ 
++    @libxml2debug
+     def test_selector_nested(self):
+         """Nested selector tests"""
+         body = """<body>
+@@ -75,7 +72,7 @@ def test_selector_nested(self):
+                     </div>
+                   </body>"""
+ 
+-        response = Response(url="http://example.com", body=body)
++        response = HtmlResponse(url="http://example.com", body=body)
+         x = HtmlXPathSelector(response)
+ 
+         divtwo = x.x('//div[@class="two"]')
+@@ -88,6 +85,7 @@ def test_selector_nested(self):
+         self.assertEqual(divtwo.x("./li").extract(),
+                          [])
+ 
++    @libxml2debug
+     def test_selector_re(self):
+         body = """<div>Name: Mary
+                     <ul>
+@@ -100,7 +98,7 @@ def test_selector_re(self):
+                   </div>
+ 
+                """
+-        response = Response(url="http://example.com", body=body)
++        response = HtmlResponse(url="http://example.com", body=body)
+         x = HtmlXPathSelector(response)
+ 
+         name_re = re.compile("Name: (\w+)")
+@@ -109,6 +107,7 @@ def test_selector_re(self):
+         self.assertEqual(x.x("//ul/li").re("Age: (\d+)"),
+                          ["10", "20"])
+ 
++    @libxml2debug
+     def test_selector_over_text(self):
+         hxs = HtmlXPathSelector(text='<root>lala</root>')
+         self.assertEqual(hxs.extract(),
+@@ -123,6 +122,7 @@ def test_selector_over_text(self):
+                          [u'<root>lala</root>'])
+ 
+ 
++    @libxml2debug
+     def test_selector_namespaces_simple(self):
+         body = """
+         <test xmlns:somens="http://scrapy.org">
+@@ -131,7 +131,7 @@ def test_selector_namespaces_simple(self):
+         </test>
+         """
+ 
+-        response = Response(url="http://example.com", body=body)
++        response = XmlResponse(url="http://example.com", body=body)
+         x = XmlXPathSelector(response)
+         
+         x.register_namespace("somens", "http://scrapy.org")
+@@ -139,6 +139,7 @@ def test_selector_namespaces_simple(self):
+                          ['<somens:a id="foo"/>'])
+ 
+ 
++    @libxml2debug
+     def test_selector_namespaces_multiple(self):
+         body = """<?xml version="1.0" encoding="UTF-8"?>
+ <BrowseNode xmlns="http://webservices.amazon.com/AWSECommerceService/2005-10-05"
+@@ -149,7 +150,7 @@ def test_selector_namespaces_multiple(self):
+     <p:SecondTestTag><material/><price>90</price><p:name>Dried Rose</p:name></p:SecondTestTag>
+ </BrowseNode>
+         """
+-        response = Response(url="http://example.com", body=body)
++        response = XmlResponse(url="http://example.com", body=body)
+         x = XmlXPathSelector(response)
+ 
+         x.register_namespace("xmlns", "http://webservices.amazon.com/AWSECommerceService/2005-10-05")
+@@ -162,6 +163,7 @@ def test_selector_namespaces_multiple(self):
+         self.assertEqual(x.x("//p:SecondTestTag").x("./xmlns:price/text()")[0].extract(), '90')
+         self.assertEqual(x.x("//p:SecondTestTag/xmlns:material").extract()[0], '<material/>')
+ 
++    @libxml2debug
+     def test_http_header_encoding_precedence(self):
+         # u'\xa3'     = pound symbol in unicode
+         # u'\xc2\xa3' = pound symbol in utf-8
+@@ -176,11 +178,12 @@ def test_http_header_encoding_precedence(self):
+         html_utf8 = html.encode(encoding)
+ 
+         headers = {'Content-Type': ['text/html; charset=utf-8']}
+-        response = Response(url="http://example.com", headers=headers, body=html_utf8)
++        response = HtmlResponse(url="http://example.com", headers=headers, body=html_utf8)
+         x = HtmlXPathSelector(response)
+         self.assertEquals(x.x("//span[@id='blank']/text()").extract(),
+                           [u'\xa3'])
+ 
++    @libxml2debug
+     def test_null_bytes(self):
+         hxs = HtmlXPathSelector(text='<root>la\x00la</root>')
+         self.assertEqual(hxs.extract(),
+@@ -190,6 +193,7 @@ def test_null_bytes(self):
+         self.assertEqual(xxs.extract(),
+                          u'<root>lala</root>')
+ 
++    @libxml2debug
+     def test_unquote(self):
+         xmldoc = '\n'.join((
+             '<root>',
+diff --git a/scrapy/trunk/scrapy/tests/test_xpath_extension.py b/scrapy/trunk/scrapy/tests/test_xpath_extension.py
+index 8880dcbc751..9e63192c240 100644
+--- a/scrapy/trunk/scrapy/tests/test_xpath_extension.py
++++ b/scrapy/trunk/scrapy/tests/test_xpath_extension.py
+@@ -1,6 +1,6 @@
+ import unittest
+ 
+-from scrapy.http import Response
++from scrapy.http import HtmlResponse
+ from scrapy.xpath.extension import ResponseLibxml2
+ 
+ class ResponseLibxml2Test(unittest.TestCase):
+@@ -9,7 +9,7 @@ def setUp(self):
+         ResponseLibxml2()
+ 
+     def test_response_libxml2_caching(self):
+-        r1 = Response('http://www.example.com', body='<html><head></head><body></body></html>')
++        r1 = HtmlResponse('http://www.example.com', body='<html><head></head><body></body></html>')
+         r2 = r1.copy()
+ 
+         doc1 = r1.getlibxml2doc()
+diff --git a/scrapy/trunk/scrapy/utils/python.py b/scrapy/trunk/scrapy/utils/python.py
+index cd3be792edb..abbb819021c 100644
+--- a/scrapy/trunk/scrapy/utils/python.py
++++ b/scrapy/trunk/scrapy/utils/python.py
+@@ -111,3 +111,57 @@ def _chunk_iter():
+             return (offset + matches[-1].span()[0], offset + matches[-1].span()[1])
+     return None
+ 
++def memoizemethod(cacheattr):
++    """A memoize decorator for methods, which caches calls to instance methods
++    into an attribute of the same instance (which must be dict). Calls with
++    different arguments will be cached in different buckets.
++
++    This has the advantage that, when the instance is collected (by the garbage
++    collector) the cache is collected as well.
++
++    Descriptors are required to implement this functionality. See why at:
++    http://blog.ianbicking.org/2008/10/24/decorators-and-descriptors/
++
++    Example:
++
++    class A(object):
++            def __init__(self):
++            self.cache = {}
++            @memoizemethod('cache')
++        def calculate(self, arg1, arg2):
++            # expensive code here
++
++    All calls to calculate() method of A instances will be cached in their
++    cache (instance) attribute, which must be a dict.
++
++    """
++
++    class MemoizeMethod(object):
++
++        def __init__(self, function):
++            self.function = function
++
++        def __get__(self, obj, objtype=None):
++            if obj is None:
++                return self
++            new_func = self.function.__get__(obj, objtype)
++            return self.__class__(new_func)
++
++        def __call__(self, *args, **kwargs):
++            method = self.function
++            cache = getattr(method.im_self, cacheattr)
++            key = (method.im_func, tuple(args), frozenset(kwargs.items()))
++            if key not in cache:
++                cache[key] = method(*args, **kwargs)
++            return cache[key]
++
++    return MemoizeMethod
++
++_BINARYCHARS = set(map(chr, range(32))) - set(["\0", "\t", "\n", "\r"])
++
++def isbinarytext(text):
++    """Return True if the given text is considered binary, or false
++    otherwise, by looking for binary bytes at their chars
++    """
++    assert isinstance(text, str), "text must be str, got '%s'" % type(text).__name__
++    return any(c in _BINARYCHARS for c in text)
+diff --git a/scrapy/trunk/scrapy/utils/response.py b/scrapy/trunk/scrapy/utils/response.py
+index ede0250e18e..97304e57e7c 100644
+--- a/scrapy/trunk/scrapy/utils/response.py
++++ b/scrapy/trunk/scrapy/utils/response.py
+@@ -9,7 +9,7 @@
+ def body_or_str(obj, unicode=True):
+     assert isinstance(obj, (Response, basestring)), "obj must be Response or basestring, not %s" % type(obj).__name__
+     if isinstance(obj, Response):
+-        return obj.body.to_unicode() if unicode else obj.body.to_string()
++        return obj.body_as_unicode() if unicode else obj.body
+     elif isinstance(obj, str):
+         return obj.decode('utf-8') if unicode else obj
+     else:
+@@ -22,6 +22,6 @@ def get_base_url(response):
+     # benchmark using timeit we got (for 50 repetitions) 0.0017 seconds
+     # using re and 0.7452 using xpath
+     if 'base_url' not in response.cache:
+-        match = BASEURL_RE.search(response.body.to_string()[0:4096])
++        match = BASEURL_RE.search(response.body[0:4096])
+         response.cache['base_url'] = match.group(1) if match else response.url
+     return response.cache['base_url']
+diff --git a/scrapy/trunk/scrapy/utils/test.py b/scrapy/trunk/scrapy/utils/test.py
+new file mode 100644
+index 00000000000..a60f0649f0e
+--- /dev/null
++++ b/scrapy/trunk/scrapy/utils/test.py
+@@ -0,0 +1,28 @@
++"""
++This module contains some assorted functions used in tests
++"""
++
++import os
++
++import libxml2
++
++def libxml2debug(testfunction):
++    """Decorator for debugging libxml2 memory leaks inside a function.
++    
++    We've found libxml2 memory leaks are something very weird, and can happen
++    sometimes depending on the order where tests are run. So this decorator
++    enables libxml2 memory leaks debugging only when the environment variable
++    LIBXML2_DEBUGLEAKS is set.
++
++    """
++    def newfunc(*args, **kwargs):
++        libxml2.debugMemory(1)
++        testfunction(*args, **kwargs)
++        libxml2.cleanupParser()
++        leaked_bytes = libxml2.debugMemory(0) 
++        assert leaked_bytes == 0, "libxml2 memory leak detected: %d bytes" % leaked_bytes
++
++    if 'LIBXML2_DEBUGLEAKS' in os.environ:
++        return newfunc
++    else:
++        return testfunction
+diff --git a/scrapy/trunk/scrapy/xpath/constructors.py b/scrapy/trunk/scrapy/xpath/constructors.py
+index e6ca7fdccd6..3dcd3b80964 100644
+--- a/scrapy/trunk/scrapy/xpath/constructors.py
++++ b/scrapy/trunk/scrapy/xpath/constructors.py
+@@ -14,18 +14,26 @@
+                       libxml2.HTML_PARSE_NOERROR + \
+                       libxml2.HTML_PARSE_NOWARNING
+ 
++def body_as_utf8(response):
++    if response.encoding in ('utf-8', 'utf8'):
++        return response.body
++    else:
++        return response.body_as_unicode().encode('utf-8')
++        
+ def xmlDoc_from_html(response):
+     """Return libxml2 doc for HTMLs"""
++    utf8body = body_as_utf8(response)
+     try:
+-        lxdoc = libxml2.htmlReadDoc(response.body.to_string('utf-8'), response.url, 'utf-8', html_parser_options)
++        lxdoc = libxml2.htmlReadDoc(utf8body, response.url, 'utf-8', html_parser_options)
+     except TypeError:  # libxml2 doesn't parse text with null bytes
+-        lxdoc = libxml2.htmlReadDoc(response.body.to_string('utf-8').replace("\x00", ""), response.url, 'utf-8', html_parser_options)
++        lxdoc = libxml2.htmlReadDoc(utf8body.replace("\x00", ""), response.url, 'utf-8', html_parser_options)
+     return lxdoc
+ 
+ def xmlDoc_from_xml(response):
++    utf8body = body_as_utf8(response)
+     """Return libxml2 doc for XMLs"""
+     try:
+-        lxdoc = libxml2.readDoc(response.body.to_string('utf-8'), response.url, 'utf-8', xml_parser_options)
++        lxdoc = libxml2.readDoc(utf8body, response.url, 'utf-8', xml_parser_options)
+     except TypeError:  # libxml2 doesn't parse text with null bytes
+-        lxdoc = libxml2.readDoc(response.body.to_string('utf-8').replace("\x00", ""), response.url, 'utf-8', xml_parser_options)
++        lxdoc = libxml2.readDoc(utf8body.replace("\x00", ""), response.url, 'utf-8', xml_parser_options)
+     return lxdoc
+diff --git a/scrapy/trunk/scrapy/xpath/selector.py b/scrapy/trunk/scrapy/xpath/selector.py
+index fd8f89a2165..43397093970 100644
+--- a/scrapy/trunk/scrapy/xpath/selector.py
++++ b/scrapy/trunk/scrapy/xpath/selector.py
+@@ -1,6 +1,6 @@
+ import libxml2
+ 
+-from scrapy.http import Response
++from scrapy.http import TextResponse
+ from scrapy.xpath.extension import Libxml2Document
+ from scrapy.xpath.constructors import xmlDoc_from_html, xmlDoc_from_xml
+ from scrapy.utils.python import flatten, unicode_to_str
+@@ -28,7 +28,7 @@ def __init__(self, response=None, text=None, node=None, parent=None, expr=None,
+                 self.doc = Libxml2Document(response, constructor=constructor)
+             self.xmlNode = self.doc.xmlDoc
+         elif text:
+-            response = Response(url=None, body=unicode_to_str(text))
++            response = TextResponse(url=None, body=unicode_to_str(text))
+             self.doc = Libxml2Document(response, constructor=constructor)
+             self.xmlNode = self.doc.xmlDoc
+         self.expr = expr
+
+```
+
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Report all of your findings in a single JSON object with the following format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

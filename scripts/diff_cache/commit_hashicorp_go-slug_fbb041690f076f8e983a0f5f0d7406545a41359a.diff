@@ -1,0 +1,82 @@
+diff --git a/internal/unpackinfo/unpackinfo.go b/internal/unpackinfo/unpackinfo.go
+index 6973e99..01ef29d 100644
+--- a/internal/unpackinfo/unpackinfo.go
++++ b/internal/unpackinfo/unpackinfo.go
+@@ -34,11 +34,14 @@ func NewUnpackInfo(dst string, header *tar.Header) (UnpackInfo, error) {
+ 	path := header.Name
+ 
+ 	if path[0] == '/' {
+-		path = path[1:]
++		path = strings.TrimPrefix(path, "/")
+ 	}
+ 	path = filepath.Join(dst, path)
+ 
+ 	// Check for paths outside our directory, they are forbidden
++	if len(dst) > 0 && !strings.HasSuffix(dst, "/") {
++		dst += "/"
++	}
+ 	target := filepath.Clean(path)
+ 	if !strings.HasPrefix(target, dst) {
+ 		return UnpackInfo{}, errors.New("invalid filename, traversal with \"..\" outside of current directory")
+@@ -65,7 +68,7 @@ func NewUnpackInfo(dst string, header *tar.Header) (UnpackInfo, error) {
+ 			// Parent directory structure is incomplete. Technically this
+ 			// means from here upward cannot be a symlink, so we cancel the
+ 			// remaining path tests.
+-			break
++			continue
+ 		}
+ 		if err != nil {
+ 			return UnpackInfo{}, fmt.Errorf("failed to evaluate path %q: %w", header.Name, err)
+diff --git a/internal/unpackinfo/unpackinfo_test.go b/internal/unpackinfo/unpackinfo_test.go
+index 98af6ca..8222138 100644
+--- a/internal/unpackinfo/unpackinfo_test.go
++++ b/internal/unpackinfo/unpackinfo_test.go
+@@ -54,6 +54,48 @@ func TestNewUnpackInfo(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("disallow zipslip extended", func(t *testing.T) {
++		dst := t.TempDir()
++
++		err := os.Symlink("..", path.Join(dst, "subdir"))
++		if err != nil {
++			t.Fatalf("failed to create temp symlink: %s", err)
++		}
++
++		_, err = NewUnpackInfo(dst, &tar.Header{
++			Name:     "foo/../subdir/escapes",
++			Typeflag: tar.TypeReg,
++		})
++
++		if err == nil {
++			t.Fatal("expected error, got nil")
++		}
++
++		expected := "through symlink"
++		if !strings.Contains(err.Error(), expected) {
++			t.Fatalf("expected error to contain %q, got %q", expected, err)
++		}
++	})
++
++	t.Run("stay in dst", func(t *testing.T) {
++		tmp := t.TempDir()
++		dst := path.Join(tmp, "dst")
++
++		_, err := NewUnpackInfo(dst, &tar.Header{
++			Name:     "../dst2/escapes",
++			Typeflag: tar.TypeReg,
++		})
++
++		if err == nil {
++			t.Fatal("expected error, got nil")
++		}
++
++		expected := "traversal with \"..\" outside of current"
++		if !strings.Contains(err.Error(), expected) {
++			t.Fatalf("expected error to contain %q, got %q", expected, err)
++		}
++	})
++
+ 	t.Run("disallow strange types", func(t *testing.T) {
+ 		_, err := NewUnpackInfo("test", &tar.Header{
+ 			Name:     "subdir/escapes",

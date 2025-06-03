@@ -1,0 +1,52 @@
+diff --git a/changelog.md b/changelog.md
+index c1a4cdf8a15..afeb2239667 100644
+--- a/changelog.md
++++ b/changelog.md
+@@ -1,6 +1,12 @@
+ Changelog
+ =========
+ 
++## v.2.6.2 - 16 Jun, 2016
++
++Bugfixes
++
++-  Fixed individual callbacks of a transaction not being called (2.6.0 regression)
++
+ ## v.2.6.1 - 02 Jun, 2016
+ 
+ Bugfixes
+diff --git a/lib/multi.js b/lib/multi.js
+index f80526b5c29..63f5d210856 100644
+--- a/lib/multi.js
++++ b/lib/multi.js
+@@ -36,6 +36,7 @@ function pipeline_transaction_command (self, command_obj, index) {
+         // Keep track of who wants buffer responses:
+         // By the time the callback is called the command_obj got the buffer_args attribute attached
+         self.wants_buffers[index] = command_obj.buffer_args;
++        command_obj.callback = tmp;
+     };
+     self._client.internal_send_command(command_obj);
+ }
+diff --git a/test/multi.spec.js b/test/multi.spec.js
+index 1b13642a3e7..1f2bbb1b818 100644
+--- a/test/multi.spec.js
++++ b/test/multi.spec.js
+@@ -393,6 +393,7 @@ describe("The 'multi' method", function () {
+                     var arr2 = ['some manner of key', 'otherTypes'];
+                     var arr3 = [5768, 'multibarx', 'multifoox'];
+                     var arr4 = ['mset', [578, 'multibar'], helper.isString('OK')];
++                    var called = false;
+                     client.multi([
+                         arr4,
+                         [['mset', 'multifoo2', 'multibar2', 'multifoo3', 'multibar3'], helper.isString('OK')],
+@@ -411,8 +412,10 @@ describe("The 'multi' method", function () {
+                     .mget('multifoo2', ['multifoo3', 'multifoo'], function (err, res) {
+                         assert(res[0], 'multifoo3');
+                         assert(res[1], 'multifoo');
++                        called = true;
+                     })
+                     .exec(function (err, replies) {
++                        assert(called);
+                         assert.equal(arr.length, 3);
+                         assert.equal(arr2.length, 2);
+                         assert.equal(arr3.length, 3);

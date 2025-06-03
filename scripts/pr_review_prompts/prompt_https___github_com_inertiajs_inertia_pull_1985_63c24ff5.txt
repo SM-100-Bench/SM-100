@@ -1,0 +1,268 @@
+Please review the following commit for potential bugs:
+
+```
+diff --git a/packages/inertia-react/index.d.ts b/packages/inertia-react/index.d.ts
+index 371e298a5..1a3a01bbc 100755
+--- a/packages/inertia-react/index.d.ts
++++ b/packages/inertia-react/index.d.ts
+@@ -87,6 +87,9 @@ export interface InertiaFormProps<TForm = Record<string, any>> {
+ 	recentlySuccessful: boolean
+ 	setData: setDataByObject<TForm> & setDataByMethod<TForm> & setDataByKeyValuePair<TForm>
+ 	transform: (callback: (data: TForm) => TForm) => void
++    setDefaults(): void
++    setDefaults(field: keyof TForm, value: string): void
++    setDefaults(fields: Record<keyof TForm, string>): void
+ 	reset: (...fields: (keyof TForm)[]) => void
+ 	clearErrors: (...fields: (keyof TForm)[]) => void
+     setError(field: keyof TForm, value: string): void
+diff --git a/packages/inertia-react/src/useForm.js b/packages/inertia-react/src/useForm.js
+index 951291f29..5e3d42810 100644
+--- a/packages/inertia-react/src/useForm.js
++++ b/packages/inertia-react/src/useForm.js
+@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
+ export default function useForm(...args) {
+   const isMounted = useRef(null)
+   const rememberKey = typeof args[0] === 'string' ? args[0] : null
+-  const defaults = (typeof args[0] === 'string' ? args[1] : args[0]) || {}
++  const [defaults, setDefaults] = useState((typeof args[0] === 'string' ? args[1] : args[0]) || {})
+   const cancelToken = useRef(null)
+   const recentlySuccessfulTimeoutId = useRef(null)
+   const [data, setData] = rememberKey ? useRemember(defaults, `${rememberKey}:data`) : useState(defaults)
+@@ -144,6 +144,16 @@ export default function useForm(...args) {
+     transform(callback) {
+       transform = callback
+     },
++    setDefaults(key, value) {
++      if (typeof key === 'undefined') {
++        setDefaults(() => data)
++      } else {
++        setDefaults(defaults => ({
++          ... defaults,
++          ... (value ? { [key]: value } : key),
++        }))
++      }
++    },
+     reset(...fields) {
+       if (fields.length === 0) {
+         setData(defaults)
+diff --git a/packages/inertia-svelte/src/useForm.js b/packages/inertia-svelte/src/useForm.js
+index 77b563752..d6c697615 100644
+--- a/packages/inertia-svelte/src/useForm.js
++++ b/packages/inertia-svelte/src/useForm.js
+@@ -38,6 +38,20 @@ function useForm(...args) {
+ 
+       return this
+     },
++    defaults(key, value) {
++      if (typeof key === 'undefined') {
++        defaults = Object.assign(defaults, this.data())
++
++        return this
++      }
++
++      defaults = Object.assign(
++        defaults,
++        value ? ({ [key]: value }) : key,
++      )
++
++      return this
++    },
+     reset(...fields) {
+       if (fields.length === 0) {
+         this.setStore(defaults)
+diff --git a/packages/inertia-vue/index.d.ts b/packages/inertia-vue/index.d.ts
+index 65cf42e06..3e89d9ff9 100755
+--- a/packages/inertia-vue/index.d.ts
++++ b/packages/inertia-vue/index.d.ts
+@@ -77,6 +77,9 @@ export interface InertiaFormProps<TForm> {
+   recentlySuccessful: boolean
+   data(): TForm
+   transform(callback: (data: TForm) => object): this
++  defaults(): this
++  defaults(field: keyof TForm, value: string): this
++  defaults(fields: Record<keyof TForm, string>): this
+   reset(...fields: (keyof TForm)[]): this
+   clearErrors(...fields: (keyof TForm)[]): this
+   setError(field: keyof TForm, value: string): this
+diff --git a/packages/inertia-vue/src/form.js b/packages/inertia-vue/src/form.js
+index ea3cca3a7..0e442b7b3 100644
+--- a/packages/inertia-vue/src/form.js
++++ b/packages/inertia-vue/src/form.js
+@@ -34,6 +34,19 @@ export default function(...args) {
+ 
+       return this
+     },
++    defaults(key, value) {
++      if (typeof key === 'undefined') {
++        defaults = this.data()
++      } else {
++        defaults = Object.assign(
++          {},
++          cloneDeep(defaults),
++          value ? ({[key]: value}) : key,
++        )
++      }
++
++      return this
++    },
+     reset(...fields) {
+       let clonedDefaults = cloneDeep(defaults)
+       if (fields.length === 0) {
+diff --git a/packages/inertia-vue/tests/app/Pages/FormHelper/Data.vue b/packages/inertia-vue/tests/app/Pages/FormHelper/Data.vue
+index 9860b4884..478ef3d6f 100644
+--- a/packages/inertia-vue/tests/app/Pages/FormHelper/Data.vue
++++ b/packages/inertia-vue/tests/app/Pages/FormHelper/Data.vue
+@@ -21,6 +21,10 @@
+     <span @click="resetAll" class="reset">Reset all data</span>
+     <span @click="resetOne" class="reset-one">Reset one field</span>
+ 
++    <span @click="reassign" class="reassign">Reassign current as defaults</span>
++    <span @click="reassignObject" class="reassign-object">Reassign default values</span>
++    <span @click="reassignSingle" class="reassign-single">Reassign single default</span>
++
+     <span class="errors-status">Form has {{ form.hasErrors ? '' : 'no ' }}errors</span>
+   </div>
+ </template>
+@@ -44,7 +48,19 @@ export default {
+     },
+     resetOne() {
+       this.form.reset('handle')
+-    }
++    },
++    reassign() {
++      this.form.defaults()
++    },
++    reassignObject() {
++      this.form.defaults({
++        handle: 'updated handle',
++        remember: true
++      })
++    },
++    reassignSingle() {
++      this.form.defaults('name', 'single value')
++    },
+   }
+ }
+ </script>
+diff --git a/packages/inertia-vue/tests/cypress/integration/form-helper.test.js b/packages/inertia-vue/tests/cypress/integration/form-helper.test.js
+index 85b3a9da4..c672ef9d6 100644
+--- a/packages/inertia-vue/tests/cypress/integration/form-helper.test.js
++++ b/packages/inertia-vue/tests/cypress/integration/form-helper.test.js
+@@ -377,6 +377,63 @@ describe('Form Helper', () => {
+       cy.get('.handle_error').should('have.text', 'The Handle was invalid')
+       cy.get('.remember_error').should('not.exist')
+     })
++
++    describe('Update "reset" defaults', () => {
++      beforeEach(() => {
++        cy.get('#name').should('have.value', 'foo')
++        cy.get('#handle').should('have.value', 'example')
++        cy.get('#remember').should('not.be.checked')
++      })
++
++      it('can assign the current values as the new defaults', () => {
++        cy.get('#name').clear().type('A')
++        cy.get('#handle').clear().type('B')
++        cy.get('#remember').check()
++
++        cy.get('.reassign').click()
++
++        cy.get('#name').clear().type('foo')
++        cy.get('#handle').clear().type('example')
++        cy.get('#remember').uncheck()
++        cy.get('#name').should('have.value', 'foo')
++        cy.get('#handle').should('have.value', 'example')
++        cy.get('#remember').should('not.be.checked')
++
++        cy.get('.reset').click()
++
++        cy.get('#name').should('have.value', 'A')
++        cy.get('#handle').should('have.value', 'B')
++        cy.get('#remember').should('be.checked')
++      })
++
++      it('can assign new defaults for multiple fields', () => {
++        cy.get('.reassign-object').click()
++
++        cy.get('#name').should('have.value', 'foo')
++        cy.get('#handle').should('have.value', 'example')
++        cy.get('#remember').should('not.be.checked')
++        cy.get('.reset-one').click()
++        cy.get('#name').should('have.value', 'foo')
++        cy.get('#handle').should('have.value', 'updated handle')
++        cy.get('#remember').should('not.be.checked')
++        cy.get('.reset').click()
++        cy.get('#name').should('have.value', 'foo')
++        cy.get('#handle').should('have.value', 'updated handle')
++        cy.get('#remember').should('be.checked')
++      })
++
++      it('can assign new default for a single field', () => {
++        cy.get('.reassign-single').click()
++
++        cy.get('#name').should('have.value', 'foo')
++        cy.get('#handle').should('have.value', 'example')
++        cy.get('#remember').should('not.be.checked')
++        cy.get('.reset').click()
++        cy.get('#name').should('have.value', 'single value')
++        cy.get('#handle').should('have.value', 'example')
++        cy.get('#remember').should('not.be.checked')
++      })
++    })
+   })
+ 
+   describe('Events', () => {
+diff --git a/packages/inertia-vue3/index.d.ts b/packages/inertia-vue3/index.d.ts
+index da1a86e4b..443487541 100644
+--- a/packages/inertia-vue3/index.d.ts
++++ b/packages/inertia-vue3/index.d.ts
+@@ -67,6 +67,9 @@ export interface InertiaFormProps<TForm> {
+   recentlySuccessful: boolean
+   data(): TForm
+   transform(callback: (data: TForm) => object): this
++  defaults(): this
++  defaults(field: keyof TForm, value: string): this
++  defaults(fields: Record<keyof TForm, string>): this
+   reset(...fields: (keyof TForm)[]): this
+   clearErrors(...fields: (keyof TForm)[]): this
+   setError(field: keyof TForm, value: string): this
+diff --git a/packages/inertia-vue3/src/useForm.js b/packages/inertia-vue3/src/useForm.js
+index 65da4f99d..900a2e543 100644
+--- a/packages/inertia-vue3/src/useForm.js
++++ b/packages/inertia-vue3/src/useForm.js
+@@ -34,6 +34,19 @@ export default function useForm(...args) {
+ 
+       return this
+     },
++    defaults(key, value) {
++      if (typeof key === 'undefined') {
++        defaults = this.data()
++      } else {
++        defaults = Object.assign(
++          {},
++          cloneDeep(defaults),
++          value ? ({ [key]: value }) : key,
++        )
++      }
++
++      return this
++    },
+     reset(...fields) {
+       let clonedDefaults = cloneDeep(defaults)
+       if (fields.length === 0) {
+
+```
+
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Report all of your findings in a single JSON object with the following format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "session_id": "devin-826bccd054364af68f8750e274047d47",
+  "issues": [
+    {
+      "file": "cmd/admin-handlers-users.go",
+      "line": 1565,
+      "description": "Resource leak: In ExportIAM function, error from io.Copy() is logged but not returned, causing the function to continue execution even after a write failure"
+    },
+    {
+      "file": "cmd/admin-handlers-users.go",
+      "line": 1991,
+      "description": "Logic error: In ImportIAM function, hasSpaceBE() is called with svcAcctReq.AccessKey but the error response doesn't include the user identifier in the error message"
+    },
+    {
+      "file": "cmd/admin-handlers-users.go",
+      "line": 1952,
+      "description": "Logic error: In ImportIAM function, when adding users to a group, the error passed to importError is 'err' (from outer scope) instead of 'gerr' (the actual error from AddUsersToGroup)"
+    },
+    {
+      "file": "cmd/admin-handlers-users.go",
+      "line": 1821,
+      "description": "Variable reuse: The 'data' variable is reused for reading policy file content, overwriting the original request body data, which could cause issues if the variable is used elsewhere"
+    },
+    {
+      "file": "cmd/admin-handlers-users.go",
+      "line": 2003,
+      "description": "Null pointer dereference: In ImportIAM function, 'err' is used in importErrorWithAPIErr but may be nil at this point, as it's not set in the current scope"
+    },
+    {
+      "file": "cmd/admin-handlers-users.go",
+      "line": 1910,
+      "description": "Null pointer dereference: In ImportIAM function, 'err' is used in importErrorWithAPIErr but may be nil at this point, as it's not set in the current scope"
+    },
+    {
+      "file": "cmd/admin-handlers-users.go",
+      "line": 1869,
+      "description": "Null pointer dereference: In ImportIAM function, 'err' is used in importErrorWithAPIErr but may be nil at this point, as it's not set in the current scope"
+    },
+    {
+      "file": "cmd/admin-handlers-users.go",
+      "line": 1877,
+      "description": "Null pointer dereference: In ImportIAM function, 'err' is used in importErrorWithAPIErr but may be nil at this point, as it's not set in the current scope"
+    },
+    {
+      "file": "cmd/admin-handlers-users.go",
+      "line": 1884,
+      "description": "Null pointer dereference: In ImportIAM function, 'err' is used in importErrorWithAPIErr but may be nil at this point, as it's not set in the current scope"
+    },
+    {
+      "file": "cmd/admin-handlers-users.go",
+      "line": 1544,
+      "description": "Resource leak: In ExportIAM function, zipWriter.Close() is deferred but errors from Close() are not checked, potentially hiding write failures"
+    },
+    {
+      "file": "cmd/admin-handlers-users.go",
+      "line": 1819,
+      "description": "Resource leak: In ImportIAM function, f.Close() is deferred but errors from Close() are not checked"
+    },
+    {
+      "file": "cmd/admin-bucket-handlers.go",
+      "line": 16,
+      "description": "Logic error: Changed error handling in ImportBucketMetadataHandler to pass empty entity string, which changes the error message format"
+    }
+  ]
+}

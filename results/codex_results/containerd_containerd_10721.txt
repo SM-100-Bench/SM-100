@@ -1,0 +1,24 @@
+{
+"issues": [
+{
+"file": "core/mount/mount_linux.go",
+"line": 238,
+"description": "Loop iterates over 'unprivilegedFlags' using range without capturing the value, so 'flag' becomes the index. This causes incorrect detection of mount flags."
+},
+{
+"file": "core/mount/mount_unix.go",
+"line": 78,
+"description": "Error from unmountFUSE is ignored; if the FUSE helper fails, the function falls back to regular unmount without reporting the original failure."
+},
+{
+"file": "core/mount/mount_idmapped_utils_linux.go",
+"line": 70,
+"description": "Error message references '/proc/%d/user/ns', but the actual path used is '/proc/%d/ns/user', leading to misleading diagnostics."
+},
+{
+"file": "core/mount/mount_idmapped_utils_linux_go122.go",
+"line": 72,
+"description": "Error message references '/proc/%d/user/ns', but the actual path used is '/proc/%d/ns/user', leading to misleading diagnostics."
+}
+]
+}

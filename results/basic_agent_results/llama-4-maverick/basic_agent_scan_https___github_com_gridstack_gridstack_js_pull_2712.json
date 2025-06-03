@@ -1,0 +1,1 @@
+{"repo_id": "gridstack_gridstack.js_2712", "bugs": [{"description": "Potential null pointer exception", "file": "src/dd-manager.ts", "line": 5}, {"description": "Potential type mismatch in gridstack.ts", "file": "src/gridstack.ts", "line": 9}], "updated_files": {}}

@@ -1,0 +1,40 @@
+{
+  "session_id": "devin-e2b3bdd82b504649892d41bda352fbfb",
+  "issues": [
+    {
+      "file": "addon/tern/tern.js",
+      "line": 212,
+      "description": "Bug in findDoc function: variable 'n' is used in the return statement but should be 'name'. This will cause an error when adding a new document without a name."
+    },
+    {
+      "file": "addon/tern/tern.js",
+      "line": 168,
+      "description": "Incorrect event listener removal in delDoc function: uses CodeMirror.on instead of CodeMirror.off, which will add another listener instead of removing it, causing memory leaks."
+    },
+    {
+      "file": "addon/tern/tern.js",
+      "line": 492,
+      "description": "Syntax error: double semicolons after 'chs = perFile[file];;' - while not causing immediate issues, it's a code smell."
+    },
+    {
+      "file": "addon/tern/tern.js",
+      "line": 522,
+      "description": "Variable 'offsetLines' is redeclared, shadowing the previous declaration at line 506, which could lead to unexpected behavior."
+    },
+    {
+      "file": "addon/tern/tern.js",
+      "line": 423,
+      "description": "In jumpBack function, there's no check if doc.doc exists before using it in the moveTo call, potentially causing null reference errors."
+    },
+    {
+      "file": "demo/tern.html",
+      "line": 658,
+      "description": "Security vulnerability: Loading scripts from external domains over HTTP (not HTTPS), which can lead to man-in-the-middle attacks."
+    },
+    {
+      "file": "addon/tern/tern.js",
+      "line": 458,
+      "description": "In findContext function, variable 'end' is conditionally declared using 'var', which could lead to unexpected scoping issues."
+    }
+  ]
+}

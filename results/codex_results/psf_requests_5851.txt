@@ -1,0 +1,19 @@
+{
+  "issues": [
+    {
+      "file": "requests/cookies.py",
+      "line": 115,
+      "description": "MockResponse.getheaders() ignores the return value from self._headers.getheaders(), so callers receive None."
+    },
+    {
+      "file": "requests/packages.py",
+      "line": 25,
+      "description": "Chardet submodules are aliased to the same key ('requests.packages.chardet'), so individual submodules are not exposed."
+    },
+    {
+      "file": "requests/utils.py",
+      "line": 259,
+      "description": "extract_zipped_paths opens ZipFile without closing it, causing a possible file handle leak."
+    }
+  ]
+}

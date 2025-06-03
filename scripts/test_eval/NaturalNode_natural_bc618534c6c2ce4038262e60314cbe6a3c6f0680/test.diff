@@ -1,0 +1,19 @@
+diff --git a/spec/SentimentAnalyzer_spec.js b/spec/SentimentAnalyzer_spec.js
+index 485d4abb3..bf96fdb3f 100644
+--- a/spec/SentimentAnalyzer_spec.js
++++ b/spec/SentimentAnalyzer_spec.js
+@@ -99,6 +99,14 @@ const testConfigurations = [
+       { sentence: 'G-Eazy released his expansive third album, The Beautiful & Damned, in December with hit singles "No Limit" and "Him & I." The album featured guest appearances from Cardi B, A$AP Rocky, Charlie Puth and Halsey, and debuted at Number Three on the Billboard 200.', score: 0.022727272727272728 }
+     ]
+   },
++  {
++    language: 'English',
++    stemmer: 'PorterStemmer',
++    vocabularyType: 'pattern',
++    testSentences: [
++      { sentence: 'constructor hasOwnProperty toString setPrototypeOf', score: 0 }
++    ]
++  },
+   {
+     language: 'French',
+     stemmer: 'PorterStemmerFr',

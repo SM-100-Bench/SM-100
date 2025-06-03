@@ -1,0 +1,18 @@
+Please review the code in the tsenart_vegeta_6fbe391628eeeae1adf39522a55078797e6e7f2e repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Library Core subsystem (consisting of 'lib/attack.go', 'lib/attack_fuzz.go', 'lib/histogram.go', 'lib/metrics.go', 'lib/pacer.go', 'lib/reporters.go', 'lib/results.go', 'lib/results_easyjson.go', 'lib/results_fuzz.go', 'lib/targets.go', 'lib/targets_easyjson.go', 'lib/targets_fuzz.go', 'lib/util_fuzz.go')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

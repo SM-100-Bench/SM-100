@@ -1,0 +1,184 @@
+diff --git a/cmd/root.go b/cmd/root.go
+index 48961d2fe..eef13ce37 100644
+--- a/cmd/root.go
++++ b/cmd/root.go
+@@ -33,6 +33,7 @@ var (
+ 	scheduleSpec      string
+ 	cleanup           bool
+ 	noRestart         bool
++	noPull            bool
+ 	monitorOnly       bool
+ 	enableLabel       bool
+ 	disableContainers []string
+@@ -110,7 +111,7 @@ func PreRun(cmd *cobra.Command, _ []string) {
+ 		log.Fatal(err)
+ 	}
+ 
+-	noPull, _ := f.GetBool("no-pull")
++	noPull, _ = f.GetBool("no-pull")
+ 	includeStopped, _ := f.GetBool("include-stopped")
+ 	includeRestarting, _ := f.GetBool("include-restarting")
+ 	reviveStopped, _ := f.GetBool("revive-stopped")
+@@ -122,7 +123,6 @@ func PreRun(cmd *cobra.Command, _ []string) {
+ 	}
+ 
+ 	client = container.NewClient(container.ClientOptions{
+-		PullImages:        !noPull,
+ 		IncludeStopped:    includeStopped,
+ 		ReviveStopped:     reviveStopped,
+ 		RemoveVolumes:     removeVolumes,
+@@ -187,7 +187,7 @@ func Run(c *cobra.Command, names []string) {
+ 			metrics.RegisterScan(metric)
+ 		}, updateLock)
+ 		httpAPI.RegisterFunc(updateHandler.Path, updateHandler.Handle)
+-		// If polling isn't enabled the scheduler is never started and
++		// If polling isn't enabled the scheduler is never started, and
+ 		// we need to trigger the startup messages manually.
+ 		if !unblockHTTPAPI {
+ 			writeStartupMessage(c, time.Time{}, filterDesc)
+@@ -367,6 +367,7 @@ func runUpdatesWithNotifications(filter t.Filter) *metrics.Metric {
+ 		LifecycleHooks:  lifecycleHooks,
+ 		RollingRestart:  rollingRestart,
+ 		LabelPrecedence: labelPrecedence,
++		NoPull:          noPull,
+ 	}
+ 	result, err := actions.Update(client, updateParams)
+ 	if err != nil {
+diff --git a/pkg/container/client.go b/pkg/container/client.go
+index 51868e4a1..c6c37deb3 100644
+--- a/pkg/container/client.go
++++ b/pkg/container/client.go
+@@ -57,7 +57,6 @@ func NewClient(opts ClientOptions) Client {
+ 
+ // ClientOptions contains the options for how the docker client wrapper should behave
+ type ClientOptions struct {
+-	PullImages        bool
+ 	RemoveVolumes     bool
+ 	IncludeStopped    bool
+ 	ReviveStopped     bool
+diff --git a/pkg/container/client_test.go b/pkg/container/client_test.go
+index bcb261af1..4e7540913 100644
+--- a/pkg/container/client_test.go
++++ b/pkg/container/client_test.go
+@@ -70,7 +70,8 @@ var _ = Describe("the client", func() {
+ 			It("should gracefully fail with a useful message", func() {
+ 				c := dockerClient{}
+ 				pinnedContainer := MockContainer(WithImageName("sha256:fa5269854a5e615e51a72b17ad3fd1e01268f278a6684c8ed3c5f0cdce3f230b"))
+-				c.PullImage(context.Background(), pinnedContainer)
++				err := c.PullImage(context.Background(), pinnedContainer)
++				Expect(err).To(MatchError(`container uses a pinned image, and cannot be updated by watchtower`))
+ 			})
+ 		})
+ 	})
+@@ -144,7 +145,7 @@ var _ = Describe("the client", func() {
+ 				mockServer.AppendHandlers(mocks.GetContainerHandlers(&mocks.Watchtower, &mocks.Running)...)
+ 				client := dockerClient{
+ 					api:           docker,
+-					ClientOptions: ClientOptions{PullImages: false},
++					ClientOptions: ClientOptions{},
+ 				}
+ 				containers, err := client.ListContainers(filters.NoFilter)
+ 				Expect(err).NotTo(HaveOccurred())
+@@ -158,7 +159,7 @@ var _ = Describe("the client", func() {
+ 				filter := filters.FilterByNames([]string{"lollercoaster"}, filters.NoFilter)
+ 				client := dockerClient{
+ 					api:           docker,
+-					ClientOptions: ClientOptions{PullImages: false},
++					ClientOptions: ClientOptions{},
+ 				}
+ 				containers, err := client.ListContainers(filter)
+ 				Expect(err).NotTo(HaveOccurred())
+@@ -171,7 +172,7 @@ var _ = Describe("the client", func() {
+ 				mockServer.AppendHandlers(mocks.GetContainerHandlers(&mocks.Watchtower, &mocks.Running)...)
+ 				client := dockerClient{
+ 					api:           docker,
+-					ClientOptions: ClientOptions{PullImages: false},
++					ClientOptions: ClientOptions{},
+ 				}
+ 				containers, err := client.ListContainers(filters.WatchtowerContainersFilter)
+ 				Expect(err).NotTo(HaveOccurred())
+@@ -184,7 +185,7 @@ var _ = Describe("the client", func() {
+ 				mockServer.AppendHandlers(mocks.GetContainerHandlers(&mocks.Stopped, &mocks.Watchtower, &mocks.Running)...)
+ 				client := dockerClient{
+ 					api:           docker,
+-					ClientOptions: ClientOptions{PullImages: false, IncludeStopped: true},
++					ClientOptions: ClientOptions{IncludeStopped: true},
+ 				}
+ 				containers, err := client.ListContainers(filters.NoFilter)
+ 				Expect(err).NotTo(HaveOccurred())
+@@ -197,7 +198,7 @@ var _ = Describe("the client", func() {
+ 				mockServer.AppendHandlers(mocks.GetContainerHandlers(&mocks.Watchtower, &mocks.Running, &mocks.Restarting)...)
+ 				client := dockerClient{
+ 					api:           docker,
+-					ClientOptions: ClientOptions{PullImages: false, IncludeRestarting: true},
++					ClientOptions: ClientOptions{IncludeRestarting: true},
+ 				}
+ 				containers, err := client.ListContainers(filters.NoFilter)
+ 				Expect(err).NotTo(HaveOccurred())
+@@ -210,7 +211,7 @@ var _ = Describe("the client", func() {
+ 				mockServer.AppendHandlers(mocks.GetContainerHandlers(&mocks.Watchtower, &mocks.Running)...)
+ 				client := dockerClient{
+ 					api:           docker,
+-					ClientOptions: ClientOptions{PullImages: false, IncludeRestarting: false},
++					ClientOptions: ClientOptions{IncludeRestarting: false},
+ 				}
+ 				containers, err := client.ListContainers(filters.NoFilter)
+ 				Expect(err).NotTo(HaveOccurred())
+@@ -224,7 +225,7 @@ var _ = Describe("the client", func() {
+ 					mockServer.AppendHandlers(mocks.GetContainerHandlers(&consumerContainerRef)...)
+ 					client := dockerClient{
+ 						api:           docker,
+-						ClientOptions: ClientOptions{PullImages: false},
++						ClientOptions: ClientOptions{},
+ 					}
+ 					container, err := client.GetContainer(consumerContainerRef.ContainerID())
+ 					Expect(err).NotTo(HaveOccurred())
+@@ -238,7 +239,7 @@ var _ = Describe("the client", func() {
+ 					mockServer.AppendHandlers(mocks.GetContainerHandlers(&consumerContainerRef)...)
+ 					client := dockerClient{
+ 						api:           docker,
+-						ClientOptions: ClientOptions{PullImages: false},
++						ClientOptions: ClientOptions{},
+ 					}
+ 					container, err := client.GetContainer(consumerContainerRef.ContainerID())
+ 					Expect(err).NotTo(HaveOccurred())
+@@ -253,7 +254,7 @@ var _ = Describe("the client", func() {
+ 			It("should include container id field", func() {
+ 				client := dockerClient{
+ 					api:           docker,
+-					ClientOptions: ClientOptions{PullImages: false},
++					ClientOptions: ClientOptions{},
+ 				}
+ 
+ 				// Capture logrus output in buffer
+@@ -320,7 +321,7 @@ var _ = Describe("the client", func() {
+ 			It(`should omit the container ID alias`, func() {
+ 				client := dockerClient{
+ 					api:           docker,
+-					ClientOptions: ClientOptions{PullImages: false, IncludeRestarting: false},
++					ClientOptions: ClientOptions{IncludeRestarting: false},
+ 				}
+ 				container := MockContainer(WithImageName("docker.io/prefix/imagename:latest"))
+ 
+diff --git a/pkg/notifications/shoutrrr.go b/pkg/notifications/shoutrrr.go
+index de59d623d..cc3a93166 100644
+--- a/pkg/notifications/shoutrrr.go
++++ b/pkg/notifications/shoutrrr.go
+@@ -60,7 +60,7 @@ func (n *shoutrrrTypeNotifier) GetNames() []string {
+ 	return names
+ }
+ 
+-// GetNames returns a list of URLs for notification services that has been added
++// GetURLs returns a list of URLs for notification services that has been added
+ func (n *shoutrrrTypeNotifier) GetURLs() []string {
+ 	return n.Urls
+ }
+@@ -73,7 +73,7 @@ func (n *shoutrrrTypeNotifier) AddLogHook() {
+ 	n.receiving = true
+ 	log.AddHook(n)
+ 
+-	// Do the sending in a separate goroutine so we don't block the main process.
++	// Do the sending in a separate goroutine, so we don't block the main process.
+ 	go sendNotifications(n)
+ }
+ 

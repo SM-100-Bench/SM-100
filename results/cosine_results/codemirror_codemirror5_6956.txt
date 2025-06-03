@@ -1,0 +1,229 @@
+{
+  "issues": [
+    {
+      "file": "addon/dialog/dialog.js",
+      "line": 103,
+      "description": "Potential XSS vulnerability: Directly sets innerHTML from external sources. If the dialog is created using untrusted input, this could introduce XSS."
+    },
+    {
+      "file": "addon/edit/closebrackets.js",
+      "line": 322,
+      "description": "Uncaught exception risk: Accesses `cm.state.closeBrackets` without null-check in event handlers. If feature is toggled off mid-lifecycle, may throw."
+    },
+    {
+      "file": "addon/display/autorefresh.js",
+      "line": 28,
+      "description": "Resource leak: Event listeners and timers set on the window/document are not always removed when the editor is destroyed, which could lead to memory leaks."
+    },
+    {
+      "file": "addon/display/fullscreen.js",
+      "line": 120,
+      "description": "Resource leak: 'resize' event listeners on window are not always properly removed on detach, which could cause memory leaks or unexpected handler invocations."
+    },
+    {
+      "file": "addon/display/panel.js",
+      "line": 87,
+      "description": "Potential crash: Relies on parentNode without null-checking; if the panel element is removed unexpectedly, this could cause a TypeError."
+    },
+    {
+      "file": "addon/scroll/scrollpastend.js",
+      "line": 45,
+      "description": "Incorrect behavior: Assumes editor has at least one line; code may fail or behave incorrectly on empty documents."
+    },
+    {
+      "file": "addon/lint/lint.js",
+      "line": 200,
+      "description": "Uncaught exception risk: Calls user-provided 'getAnnotations' callback without try/catch. Exceptions here may break lint UI or editor."
+    },
+    {
+      "file": "addon/merge/merge.js",
+      "line": 650,
+      "description": "Resource leak: Event listeners for scrolling and changes are not always removed when merge view is destroyed, leading to memory leaks."
+    },
+    {
+      "file": "addon/mode/simple.js",
+      "line": 218,
+      "description": "Incorrect behavior: Doesn't check for null/undefined in input before accessing properties, which can cause runtime exceptions."
+    },
+    {
+      "file": "addon/runmode/colorize.js",
+      "line": 86,
+      "description": "Potential XSS: Directly injects highlight output as innerHTML into the DOM. If runmode is used on untrusted input, this is a vector for XSS."
+    },
+    {
+      "file": "addon/fold/foldgutter.js",
+      "line": 107,
+      "description": "Resource leak: Event listeners (mousedown, touchstart) on gutter are not always removed when the editor is destroyed, potentially causing memory leaks."
+    },
+    {
+      "file": "addon/search/search.js",
+      "line": 238,
+      "description": "Potential XSS/security bug: Replacement text is inserted into the editor without any sanitization. If the replacement is from an untrusted source, this could allow code injection."
+    },
+    {
+      "file": "addon/search/searchcursor.js",
+      "line": 84,
+      "description": "Incorrect behavior: Regular expressions from user input are passed directly to RegExp constructor—if not sanitized, this can throw exceptions or be used for ReDoS attacks."
+    },
+    {
+      "file": "addon/hint/show-hint.js",
+      "line": 310,
+      "description": "Memory/resource leak: Does not always remove global event listeners (mousedown, blur, keydown) on the window/document, which can lead to memory leaks and unwanted behavior."
+    },
+    {
+      "file": "addon/mode/overlay.js",
+      "line": 143,
+      "description": "Incorrect logic: The overlay mode may not correctly handle null or undefined states, possibly leading to exceptions during mode switching."
+    },
+    {
+      "file": "addon/lint/html-lint.js",
+      "line": 30,
+      "description": "Uncaught exception risk: Assumes 'window.HTMLHint' is available; if not, will throw a ReferenceError and break linting."
+    },
+    {
+      "file": "addon/lint/javascript-lint.js",
+      "line": 31,
+      "description": "Uncaught exception risk: Assumes 'window.JSHINT' is present; if missing, throws and breaks linting UI."
+    },
+    {
+      "file": "addon/lint/json-lint.js",
+      "line": 27,
+      "description": "Uncaught exception risk: Assumes 'window.jsonlint' exists; if not, a ReferenceError will be thrown."
+    },
+    {
+      "file": "addon/lint/yaml-lint.js",
+      "line": 27,
+      "description": "Uncaught exception risk: Assumes 'window.jsyaml' exists; if not, throws and disables linting."
+    },
+    {
+      "file": "addon/tern/tern.js",
+      "line": 98,
+      "description": "Potential security risk: Accepts arbitrary 'workerScript' URLs, which could allow loading malicious code if not properly controlled."
+    },
+    {
+      "file": "addon/selection/mark-selection.js",
+      "line": 102,
+      "description": "Resource leak: Selection change event listeners are not always removed when the editor instance is destroyed, which can lead to memory leaks."
+    },
+    {
+      "file": "addon/fold/brace-fold.js",
+      "line": 50,
+      "description": "Incorrect edge-case handling: Fails to handle unmatched or nested braces robustly, which can lead to exceptions or infinite loops in pathological input."
+    },
+    {
+      "file": "addon/edit/closetag.js",
+      "line": 88,
+      "description": "Incorrect behavior: Assumes existence of certain XML/HTML mode state; may throw exceptions or insert incorrect tags if used with unsupported modes."
+    },
+    {
+      "file": "addon/edit/continuelist.js",
+      "line": 63,
+      "description": "Uncaught exception risk: Assumes line content matches expected Markdown list format; malformed input may lead to exceptions."
+    },
+    {
+      "file": "addon/display/rulers.js",
+      "line": 72,
+      "description": "DOM manipulation bug: Does not check if ruler parent node exists before attempting removal; may throw if DOM is unexpectedly altered externally."
+    },
+    {
+      "file": "addon/fold/xml-fold.js",
+      "line": 94,
+      "description": "Incorrect behavior: Fails to handle malformed XML/HTML gracefully, which could result in exceptions or incorrect folding."
+    },
+    {
+      "file": "addon/scroll/annotatescrollbar.js",
+      "line": 55,
+      "description": "Memory leak: Custom scrollbar annotation elements are not always removed when switching documents or destroying editor, causing DOM bloat."
+    },
+    {
+      "file": "addon/selection/selection-pointer.js",
+      "line": 44,
+      "description": "Event handler risk: Touch event handlers added at global scope are not always removed, causing leaks and possible unintended side effects."
+    },
+    {
+      "file": "addon/edit/matchtags.js",
+      "line": 113,
+      "description": "Edge-case exception: Assumes well-formed tags and mode state; malformed input or non-HTML/XML mode can throw exceptions."
+    },
+    {
+      "file": "addon/fold/markdown-fold.js",
+      "line": 32,
+      "description": "Incorrect behavior: Does not handle code blocks or nested lists robustly; may miss folds or break on edge cases, causing UI inconsistencies."
+    },
+    {
+      "file": "addon/display/placeholder.js",
+      "line": 46,
+      "description": "Resource leak: The placeholder DOM element is not always removed on editor destroy; in rare cases, this can cause DOM bloat or visual artifacts."
+    },
+    {
+      "file": "addon/edit/matchbrackets.js",
+      "line": 272,
+      "description": "Edge-case exception: Assumes code is in a supported language/mode with brackets; using in unsupported custom modes can throw exceptions."
+    },
+    {
+      "file": "addon/fold/comment-fold.js",
+      "line": 28,
+      "description": "Incorrect behavior: Does not robustly validate start/end markers, which can cause infinite loops or missed folds with malformed comments."
+    },
+    {
+      "file": "addon/edit/trailingspace.js",
+      "line": 54,
+      "description": "Performance/resource bug: Uses a polling timer that is not always cleared when document is unloaded or editor destroyed, causing leaks."
+    },
+    {
+      "file": "addon/mode/loadmode.js",
+      "line": 39,
+      "description": "Security risk: Loads and executes arbitrary script URLs if provided, which can be a vector for arbitrary code execution if URLs are untrusted."
+    },
+    {
+      "file": "addon/mode/multiplex.js",
+      "line": 104,
+      "description": "Uncaught exception risk: Does not check for null/undefined in mode states, can throw if used with unexpected mode configurations."
+    },
+    {
+      "file": "addon/mode/runmode.js",
+      "line": 67,
+      "description": "Potential XSS: Output of runmode is inserted into DOM as innerHTML without sanitization, allowing XSS if input is untrusted."
+    },
+    {
+      "file": "addon/scroll/simplescrollbars.js",
+      "line": 201,
+      "description": "Memory leak: Custom scrollbar DOM elements and event listeners may persist if the editor is detached without cleanup."
+    },
+    {
+      "file": "addon/hint/javascript-hint.js",
+      "line": 43,
+      "description": "Security risk: Uses eval to parse JavaScript code for completion hints, which is unsafe if input is attacker-controlled."
+    },
+    {
+      "file": "addon/hint/html-hint.js",
+      "line": 120,
+      "description": "Incorrect behavior: Assumes well-formed HTML for tag completion; malformed HTML may cause infinite loops or stack overflows."
+    },
+    {
+      "file": "addon/fold/indent-fold.js",
+      "line": 27,
+      "description": "Incorrect handling of edge cases: Indentation-based folding assumes consistent indentation; malformed or mixed-indentation documents can cause folding logic to fail or throw."
+    },
+    {
+      "file": "addon/hint/sql-hint.js",
+      "line": 77,
+      "description": "Incorrect behavior: SQL auto-completion logic does not handle quoted identifiers or multiline SQL robustly, leading to possible exceptions or missed completions."
+    },
+    {
+      "file": "addon/hint/xml-hint.js",
+      "line": 92,
+      "description": "Incorrect behavior: Assumes well-formed XML structure; malformed XML may cause exceptions during hint computation."
+    },
+    {
+      "file": "addon/comment/comment.js",
+      "line": 47,
+      "description": "Edge-case exception: If editor mode does not define comment tokens, the comment/uncomment logic can throw or behave incorrectly."
+    },
+    {
+      "file": "addon/comment/continuecomment.js",
+      "line": 63,
+      "description": "Incorrect logic: Assumes the previous line contains a comment; can throw or misbehave if used in non-comment context or unsupported language."
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+Please review the code in the root-gg_plik_490 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Server Command Line Tools subsystem (consisting of 'server/cmd/clean.go', 'server/cmd/export.go', 'server/cmd/file.go', 'server/cmd/import.go', 'server/cmd/root.go', 'server/cmd/token.go', 'server/cmd/user.go')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

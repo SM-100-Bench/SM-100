@@ -1,0 +1,1 @@
+{"repo_id": "Pylons_waitress_377", "bugs": [{"description": "Potential unhandled socket closure in channel handling", "file": "src/waitress/channel.py", "line": 120}], "updated_files": {}}

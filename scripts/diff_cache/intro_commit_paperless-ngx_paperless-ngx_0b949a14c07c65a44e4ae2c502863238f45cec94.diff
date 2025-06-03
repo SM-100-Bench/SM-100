@@ -1,0 +1,362 @@
+diff --git a/src-ui/messages.xlf b/src-ui/messages.xlf
+index d71bdbc2e9c..1e89a940819 100644
+--- a/src-ui/messages.xlf
++++ b/src-ui/messages.xlf
+@@ -394,53 +394,60 @@
+           <context context-type="linenumber">2</context>
+         </context-group>
+       </trans-unit>
++      <trans-unit id="ddb40946e790522301687ecddb9ce1cb8ad40dd1" datatype="html">
++        <source>Filter by:</source>
++        <context-group purpose="location">
++          <context context-type="sourcefile">src/app/components/manage/tag-list/tag-list.component.html</context>
++          <context context-type="linenumber">8</context>
++        </context-group>
++      </trans-unit>
+       <trans-unit id="cff1428d10d59d14e45edec3c735a27b5482db59" datatype="html">
+         <source>Name</source>
+         <context-group purpose="location">
+           <context context-type="sourcefile">src/app/components/manage/tag-list/tag-list.component.html</context>
+-          <context context-type="linenumber">13</context>
++          <context context-type="linenumber">9</context>
+         </context-group>
+       </trans-unit>
+       <trans-unit id="8fa4d523f7b91df4390120b85ed0406138273e1a" datatype="html">
+         <source>Color</source>
+         <context-group purpose="location">
+           <context context-type="sourcefile">src/app/components/manage/tag-list/tag-list.component.html</context>
+-          <context context-type="linenumber">14</context>
++          <context context-type="linenumber">20</context>
+         </context-group>
+       </trans-unit>
+       <trans-unit id="d0c4488f742efeba0915e90e285a022da813deff" datatype="html">
+         <source>Matching</source>
+         <context-group purpose="location">
+           <context context-type="sourcefile">src/app/components/manage/tag-list/tag-list.component.html</context>
+-          <context context-type="linenumber">15</context>
++          <context context-type="linenumber">21</context>
+         </context-group>
+       </trans-unit>
+       <trans-unit id="9bcf8d20d23c111eca1431abd2d2ce0de324499c" datatype="html">
+         <source>Document count</source>
+         <context-group purpose="location">
+           <context context-type="sourcefile">src/app/components/manage/tag-list/tag-list.component.html</context>
+-          <context context-type="linenumber">16</context>
++          <context context-type="linenumber">22</context>
+         </context-group>
+       </trans-unit>
+       <trans-unit id="030b4423b92167200e39519599f9b863b4f7c62c" datatype="html">
+         <source>Actions</source>
+         <context-group purpose="location">
+           <context context-type="sourcefile">src/app/components/manage/tag-list/tag-list.component.html</context>
+-          <context context-type="linenumber">17</context>
++          <context context-type="linenumber">23</context>
+         </context-group>
+       </trans-unit>
+       <trans-unit id="9d51b3c90afda70700229d1b8a55371c13cb3bce" datatype="html">
+         <source>Documents</source>
+         <context-group purpose="location">
+           <context context-type="sourcefile">src/app/components/manage/tag-list/tag-list.component.html</context>
+-          <context context-type="linenumber">32</context>
++          <context context-type="linenumber">38</context>
+         </context-group>
+       </trans-unit>
+       <trans-unit id="28f86ffd419b869711aa13f5e5ff54be6d70731c" datatype="html">
+         <source>Edit</source>
+         <context-group purpose="location">
+           <context context-type="sourcefile">src/app/components/manage/tag-list/tag-list.component.html</context>
+-          <context context-type="linenumber">37</context>
++          <context context-type="linenumber">43</context>
+         </context-group>
+       </trans-unit>
+       <trans-unit id="4990731724078522539" datatype="html">
+@@ -713,7 +720,7 @@
+         <source>Last correspondence</source>
+         <context-group purpose="location">
+           <context context-type="sourcefile">src/app/components/manage/correspondent-list/correspondent-list.component.html</context>
+-          <context context-type="linenumber">15</context>
++          <context context-type="linenumber">22</context>
+         </context-group>
+       </trans-unit>
+       <trans-unit id="1234709746630139322" datatype="html">
+@@ -976,13 +983,6 @@
+           <context context-type="linenumber">46</context>
+         </context-group>
+       </trans-unit>
+-      <trans-unit id="ddb40946e790522301687ecddb9ce1cb8ad40dd1" datatype="html">
+-        <source>Filter by:</source>
+-        <context-group purpose="location">
+-          <context context-type="sourcefile">src/app/components/document-list/filter-editor/filter-editor.component.html</context>
+-          <context context-type="linenumber">4</context>
+-        </context-group>
+-      </trans-unit>
+       <trans-unit id="02d184c288f567825a1fcbf83bcd3099a10853d5" datatype="html">
+         <source>Filter tags</source>
+         <context-group purpose="location">
+@@ -1670,35 +1670,35 @@
+         <source>Automatic</source>
+         <context-group purpose="location">
+           <context context-type="sourcefile">src/app/components/manage/generic-list/generic-list.component.ts</context>
+-          <context context-type="linenumber">33</context>
++          <context context-type="linenumber">39</context>
+         </context-group>
+       </trans-unit>
+       <trans-unit id="5044611416737085530" datatype="html">
+         <source>Do you really want to delete this element?</source>
+         <context-group purpose="location">
+           <context context-type="sourcefile">src/app/components/manage/generic-list/generic-list.component.ts</context>
+-          <context context-type="linenumber">76</context>
++          <context context-type="linenumber">97</context>
+         </context-group>
+       </trans-unit>
+       <trans-unit id="8371896857609524947" datatype="html">
+         <source>Associated documents will not be deleted.</source>
+         <context-group purpose="location">
+           <context context-type="sourcefile">src/app/components/manage/generic-list/generic-list.component.ts</context>
+-          <context context-type="linenumber">83</context>
++          <context context-type="linenumber">104</context>
+         </context-group>
+       </trans-unit>
+       <trans-unit id="7022070615528435141" datatype="html">
+         <source>Delete</source>
+         <context-group purpose="location">
+           <context context-type="sourcefile">src/app/components/manage/generic-list/generic-list.component.ts</context>
+-          <context context-type="linenumber">85</context>
++          <context context-type="linenumber">106</context>
+         </context-group>
+       </trans-unit>
+       <trans-unit id="5467489005440577210" datatype="html">
+         <source>Error while deleting element: <x id="PH" equiv-text="JSON.stringify(error.error)"/></source>
+         <context-group purpose="location">
+           <context context-type="sourcefile">src/app/components/manage/generic-list/generic-list.component.ts</context>
+-          <context context-type="linenumber">93</context>
++          <context context-type="linenumber">114</context>
+         </context-group>
+       </trans-unit>
+       <trans-unit id="5851669019930456395" datatype="html">
+diff --git a/src-ui/src/app/components/manage/correspondent-list/correspondent-list.component.html b/src-ui/src/app/components/manage/correspondent-list/correspondent-list.component.html
+index ffe260d73c7..4cbafb817fa 100644
+--- a/src-ui/src/app/components/manage/correspondent-list/correspondent-list.component.html
++++ b/src-ui/src/app/components/manage/correspondent-list/correspondent-list.component.html
+@@ -2,8 +2,15 @@
+   <button type="button" class="btn btn-sm btn-outline-primary" (click)="openCreateDialog()" i18n>Create</button>
+ </app-page-header>
+ 
+-<div class="row m-0 justify-content-end">
+-  <ngb-pagination [pageSize]="25" [collectionSize]="collectionSize" [(page)]="page" (pageChange)="reloadData()" aria-label="Default pagination"></ngb-pagination>
++<div class="row">
++  <div class="col-md mb-2 mb-xl-0">
++    <div class="form-inline d-flex align-items-center">
++      <label class="text-muted mr-2 mb-0" i18n>Filter by:</label>
++      <input class="form-control form-control-sm flex-fill w-auto" type="text" [(ngModel)]="nameFilter" placeholder="Name" i18n-placeholder>
++    </div>
++  </div>
++
++  <ngb-pagination class="col-auto" [pageSize]="25" [collectionSize]="collectionSize" [(page)]="page" (pageChange)="reloadData()" aria-label="Default pagination"></ngb-pagination>
+ </div>
+ 
+ <table class="table table-striped border shadow-sm">
+diff --git a/src-ui/src/app/components/manage/document-type-list/document-type-list.component.html b/src-ui/src/app/components/manage/document-type-list/document-type-list.component.html
+index dd6e86592f9..613cc4fd423 100644
+--- a/src-ui/src/app/components/manage/document-type-list/document-type-list.component.html
++++ b/src-ui/src/app/components/manage/document-type-list/document-type-list.component.html
+@@ -2,9 +2,15 @@
+   <button type="button" class="btn btn-sm btn-outline-primary" (click)="openCreateDialog()" i18n>Create</button>
+ </app-page-header>
+ 
+-<div class="row m-0 justify-content-end">
+-  <ngb-pagination [pageSize]="25" [collectionSize]="collectionSize" [(page)]="page" (pageChange)="reloadData()"
+-  aria-label="Default pagination"></ngb-pagination>
++<div class="row">
++  <div class="col-md mb-2 mb-xl-0">
++    <div class="form-inline d-flex align-items-center">
++      <label class="text-muted mr-2 mb-0" i18n>Filter by:</label>
++      <input class="form-control form-control-sm flex-fill w-auto" type="text" [(ngModel)]="nameFilter" placeholder="Name" i18n-placeholder>
++    </div>
++  </div>
++
++  <ngb-pagination class="col-auto" [pageSize]="25" [collectionSize]="collectionSize" [(page)]="page" (pageChange)="reloadData()" aria-label="Default pagination"></ngb-pagination>
+ </div>
+ 
+ <table class="table table-striped border shadow-sm">
+diff --git a/src-ui/src/app/components/manage/generic-list/generic-list.component.ts b/src-ui/src/app/components/manage/generic-list/generic-list.component.ts
+index e1d5226f374..7c5dbc8e314 100644
+--- a/src-ui/src/app/components/manage/generic-list/generic-list.component.ts
++++ b/src-ui/src/app/components/manage/generic-list/generic-list.component.ts
+@@ -1,17 +1,19 @@
+-import { Directive, OnInit, QueryList, ViewChildren } from '@angular/core';
++import { Directive, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
+ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
++import { Subject, Subscription } from 'rxjs';
++import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+ import { MatchingModel, MATCHING_ALGORITHMS, MATCH_AUTO } from 'src/app/data/matching-model';
+ import { ObjectWithId } from 'src/app/data/object-with-id';
+ import { SortableDirective, SortEvent } from 'src/app/directives/sortable.directive';
+-import { AbstractPaperlessService } from 'src/app/services/rest/abstract-paperless-service';
++import { AbstractNameFilterService } from 'src/app/services/rest/abstract-name-filter-service';
+ import { ToastService } from 'src/app/services/toast.service';
+ import { ConfirmDialogComponent } from '../../common/confirm-dialog/confirm-dialog.component';
+ 
+ @Directive()
+-export abstract class GenericListComponent<T extends ObjectWithId> implements OnInit {
++export abstract class GenericListComponent<T extends ObjectWithId> implements OnInit, OnDestroy {
+ 
+   constructor(
+-    private service: AbstractPaperlessService<T>,
++    private service: AbstractNameFilterService<T>,
+     private modalService: NgbModal,
+     private editDialogComponent: any,
+     private toastService: ToastService) {
+@@ -28,6 +30,10 @@ export abstract class GenericListComponent<T extends ObjectWithId> implements On
+   public sortField: string
+   public sortReverse: boolean
+ 
++  private nameFilterDebounce: Subject<string>
++  private subscription: Subscription
++  private _nameFilter: string
++
+   getMatching(o: MatchingModel) {
+     if (o.matching_algorithm == MATCH_AUTO) {
+       return $localize`Automatic`
+@@ -44,12 +50,27 @@ export abstract class GenericListComponent<T extends ObjectWithId> implements On
+     this.reloadData()
+   }
+ 
++
+   ngOnInit(): void {
+     this.reloadData()
++
++    this.nameFilterDebounce = new Subject<string>()
++
++    this.subscription = this.nameFilterDebounce.pipe(
++      debounceTime(400),
++      distinctUntilChanged()
++    ).subscribe(title => {
++      this._nameFilter = title
++      this.reloadData()
++    })
++  }
++
++  ngOnDestroy() {
++    this.subscription.unsubscribe()
+   }
+ 
+   reloadData() {
+-    this.service.list(this.page, null, this.sortField, this.sortReverse).subscribe(c => {
++    this.service.listFiltered(this.page, null, this.sortField, this.sortReverse, this._nameFilter).subscribe(c => {
+       this.data = c.results
+       this.collectionSize = c.count
+     });
+@@ -95,4 +116,12 @@ export abstract class GenericListComponent<T extends ObjectWithId> implements On
+     }
+     )
+   }
++
++  get nameFilter() {
++    return this._nameFilter
++  }
++
++  set nameFilter(nameFilter: string) {
++    this.nameFilterDebounce.next(nameFilter)
++  }
+ }
+diff --git a/src-ui/src/app/components/manage/tag-list/tag-list.component.html b/src-ui/src/app/components/manage/tag-list/tag-list.component.html
+index 4af22b3cdb2..036beccbc74 100644
+--- a/src-ui/src/app/components/manage/tag-list/tag-list.component.html
++++ b/src-ui/src/app/components/manage/tag-list/tag-list.component.html
+@@ -2,9 +2,15 @@
+   <button type="button" class="btn btn-sm btn-outline-primary" (click)="openCreateDialog()" i18n>Create</button>
+ </app-page-header>
+ 
+-<div class="row m-0 justify-content-end">
+-  <ngb-pagination [pageSize]="25" [collectionSize]="collectionSize" [(page)]="page" (pageChange)="reloadData()"
+-    aria-label="Default pagination"></ngb-pagination>
++<div class="row">
++  <div class="col-md mb-2 mb-xl-0">
++    <div class="form-inline d-flex align-items-center">
++      <label class="text-muted mr-2 mb-0" i18n>Filter by:</label>
++      <input class="form-control form-control-sm flex-fill w-auto" type="text" [(ngModel)]="nameFilter" placeholder="Name" i18n-placeholder>
++    </div>
++  </div>
++
++  <ngb-pagination class="col-auto" [pageSize]="25" [collectionSize]="collectionSize" [(page)]="page" (pageChange)="reloadData()" aria-label="Default pagination"></ngb-pagination>
+ </div>
+ 
+ <table class="table table-striped border shadow-sm">
+diff --git a/src-ui/src/app/services/rest/abstract-name-filter-service.ts b/src-ui/src/app/services/rest/abstract-name-filter-service.ts
+new file mode 100644
+index 00000000000..d605fef49d8
+--- /dev/null
++++ b/src-ui/src/app/services/rest/abstract-name-filter-service.ts
+@@ -0,0 +1,14 @@
++import { ObjectWithId } from 'src/app/data/object-with-id'
++import { AbstractPaperlessService } from './abstract-paperless-service'
++
++export abstract class AbstractNameFilterService<T extends ObjectWithId> extends AbstractPaperlessService<T> {
++
++  listFiltered(page?: number, pageSize?: number, sortField?: string, sortReverse?: boolean, nameFilter?: string) {
++    let params = {}
++    if (nameFilter) {
++      params = {'name__icontains': nameFilter}
++    }
++    return this.list(page, pageSize, sortField, sortReverse, params)
++  }
++
++}
+diff --git a/src-ui/src/app/services/rest/correspondent.service.ts b/src-ui/src/app/services/rest/correspondent.service.ts
+index a609b7dd89b..7eac2497199 100644
+--- a/src-ui/src/app/services/rest/correspondent.service.ts
++++ b/src-ui/src/app/services/rest/correspondent.service.ts
+@@ -1,12 +1,12 @@
+ import { HttpClient } from '@angular/common/http';
+ import { Injectable } from '@angular/core';
+ import { PaperlessCorrespondent } from 'src/app/data/paperless-correspondent';
+-import { AbstractPaperlessService } from './abstract-paperless-service';
++import { AbstractNameFilterService } from './abstract-name-filter-service';
+ 
+ @Injectable({
+   providedIn: 'root'
+ })
+-export class CorrespondentService extends AbstractPaperlessService<PaperlessCorrespondent> {
++export class CorrespondentService extends AbstractNameFilterService<PaperlessCorrespondent> {
+ 
+   constructor(http: HttpClient) {
+     super(http, 'correspondents')
+diff --git a/src-ui/src/app/services/rest/document-type.service.ts b/src-ui/src/app/services/rest/document-type.service.ts
+index a3ba0d85876..4f5b7d0cebf 100644
+--- a/src-ui/src/app/services/rest/document-type.service.ts
++++ b/src-ui/src/app/services/rest/document-type.service.ts
+@@ -1,12 +1,12 @@
+ import { HttpClient } from '@angular/common/http';
+ import { Injectable } from '@angular/core';
+ import { PaperlessDocumentType } from 'src/app/data/paperless-document-type';
+-import { AbstractPaperlessService } from './abstract-paperless-service';
++import { AbstractNameFilterService } from './abstract-name-filter-service';
+ 
+ @Injectable({
+   providedIn: 'root'
+ })
+-export class DocumentTypeService extends AbstractPaperlessService<PaperlessDocumentType> {
++export class DocumentTypeService extends AbstractNameFilterService<PaperlessDocumentType> {
+ 
+   constructor(http: HttpClient) {
+     super(http, 'document_types')
+diff --git a/src-ui/src/app/services/rest/tag.service.ts b/src-ui/src/app/services/rest/tag.service.ts
+index b4151dbb9cc..7bc55b0c94a 100644
+--- a/src-ui/src/app/services/rest/tag.service.ts
++++ b/src-ui/src/app/services/rest/tag.service.ts
+@@ -1,12 +1,12 @@
+ import { HttpClient } from '@angular/common/http';
+ import { Injectable } from '@angular/core';
+ import { PaperlessTag } from 'src/app/data/paperless-tag';
+-import { AbstractPaperlessService } from './abstract-paperless-service';
++import { AbstractNameFilterService } from './abstract-name-filter-service';
+ 
+ @Injectable({
+   providedIn: 'root'
+ })
+-export class TagService extends AbstractPaperlessService<PaperlessTag> {
++export class TagService extends AbstractNameFilterService<PaperlessTag> {
+ 
+   constructor(http: HttpClient) {
+     super(http, 'tags')

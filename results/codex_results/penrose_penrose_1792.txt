@@ -1,0 +1,29 @@
+{
+"issues": [
+{
+"file": "packages/editor/src/utils/downloadUtils.ts",
+"line": 72,
+"description": "Adds a WebSocket 'message' listener for each image fetch but never removes it. Repeated calls accumulate listeners and leak memory."
+},
+{
+"file": "packages/editor/src/components/ExamplesBrowser.tsx",
+"line": 34,
+"description": "Cropped viewBox parsing uses indexes 3 and 4 instead of 2 and 3, producing NaN dimensions and incorrect cropping."
+},
+{
+"file": "packages/editor/src/components/ExamplesBrowser.tsx",
+"line": 69,
+"description": "SVG previews from external sources are injected with dangerouslySetInnerHTML without sanitization, enabling potential XSS."
+},
+{
+"file": "packages/editor/src/components/RogerPanel.tsx",
+"line": 136,
+"description": "WebSocket message handler checks 'parsed.kind !== "trio_file" && parsed.token !== token', allowing unrelated messages through and leaking listeners."
+},
+{
+"file": "packages/editor/src/App.tsx",
+"line": 329,
+"description": "Adds a 'beforeunload' event listener without cleanup; may lead to duplicate handlers if component remounts."
+}
+]
+}

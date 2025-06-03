@@ -1,0 +1,28 @@
+diff --git a/test/issue1100_test.go b/test/issue1100_test.go
+new file mode 100644
+index 000000000..4e3f9f69e
+--- /dev/null
++++ b/test/issue1100_test.go
+@@ -0,0 +1,22 @@
++package test
++
++import (
++	"testing"
++
++	"github.com/mgechev/revive/lint"
++	"github.com/mgechev/revive/rule"
++)
++
++func TestIssue1100(t *testing.T) {
++	args := []any{map[string]any{
++		"maxLitCount": "2",
++		"allowStrs":   "\"\"",
++		"allowInts":   "0,1,2",
++		"allowFloats": "0.0,1.0",
++		"ignoreFuncs": "os\\.(CreateFile|WriteFile|Chmod|FindProcess),\\.Println,ignoredFunc,\\.Info",
++	}}
++
++	testRule(t, "goUnknown/issue1100", &rule.AddConstantRule{}, &lint.RuleConfig{
++		Arguments: args,
++	})
++}

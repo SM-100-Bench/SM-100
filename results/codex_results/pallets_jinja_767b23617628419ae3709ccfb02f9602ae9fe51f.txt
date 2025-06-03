@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "src/jinja2/environment.py",
+"line": 409,
+"description": "overlay() sets parameter 'enable_async' default to False. When called without this parameter, rv.is_async becomes False, unexpectedly disabling async support for the new environment."
+},
+{
+"file": "src/jinja2/runtime.py",
+"line": 587,
+"description": "LoopContext.repr accesses self.length. In AsyncLoopContext this is an async property, so repr(async_loop_context) includes an unawaited coroutine."
+}
+]
+}

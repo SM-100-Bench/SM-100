@@ -1,0 +1,18 @@
+Please review the code in the hashicorp_go-slug_fbb041690f076f8e983a0f5f0d7406545a41359a repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Unpacking Utilities subsystem (consisting of 'internal/unpackinfo/lchtimes_darwin.go', 'internal/unpackinfo/lchtimes_linux32.go', 'internal/unpackinfo/lchtimes_linux64.go', 'internal/unpackinfo/lchtimes_others.go', 'internal/unpackinfo/unpackinfo.go')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

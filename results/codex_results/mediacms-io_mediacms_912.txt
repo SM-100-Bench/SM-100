@@ -1,0 +1,44 @@
+{
+"issues": [
+{
+"file": "frontend/src/static/js/components/comments/Comments.jsx",
+"line": 296,
+"description": "Comment text is inserted into the DOM using dangerouslySetInnerHTML without sanitization, allowing XSS if the server does not clean the input."
+},
+{
+"file": "frontend/src/static/js/components/page-layout/PageHeader/SearchField.js",
+"line": 98,
+"description": "Search prediction titles are rendered via dangerouslySetInnerHTML; if the backend returns unsanitized text, users can inject HTML/JavaScript."
+},
+{
+"file": "frontend/src/static/js/components/video-player/VideoPlayerByPageLink.jsx",
+"line": 159,
+"description": "Server‑provided summary text is written to innerHTML directly, leading to potential XSS vulnerabilities."
+},
+{
+"file": "frontend/src/static/js/components/media-viewer/AudioViewer/index.js",
+"line": 107,
+"description": "Media title and thumbnail markup are inserted into innerHTML without escaping, enabling script injection if values are not sanitized server-side."
+},
+{
+"file": "frontend/src/static/js/components/media-viewer/VideoViewer/index.js",
+"line": 189,
+"description": "Media title and author profile values are written to innerHTML; malicious data could cause cross-site scripting."
+},
+{
+"file": "frontend/src/static/js/components/_shared/popup/PopupContent.jsx",
+"line": 19,
+"description": "Uses the non‑standard ev.path property to detect outside clicks, which fails in browsers that do not implement ev.path."
+},
+{
+"file": "frontend/src/static/js/utils/helpers/dom.js",
+"line": 28,
+"description": "requestAnimationFrame helper omits the standard window.requestAnimationFrame, which may leave the constant undefined in some browsers."
+},
+{
+"file": "frontend/src/static/js/utils/stores/PageStore.js",
+"line": 6,
+"description": "uniqid() replaces every character in a string with a long replacement value, producing extremely large IDs and wasting memory."
+}
+]
+}

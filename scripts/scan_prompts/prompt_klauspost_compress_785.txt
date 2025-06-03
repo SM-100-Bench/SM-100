@@ -1,0 +1,19 @@
+Please review the code in the klauspost_compress_785 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. zstd subsystem (consisting of 'zstd/README.md', 'zstd/_generate/gen.go', 'zstd/_generate/gen_fse.go', 'zstd/bitreader.go', 'zstd/bitwriter.go', 'zstd/blockdec.go', 'zstd/blockenc.go', 'zstd/blocktype_string.go', 'zstd/bytebuf.go', 'zstd/bytereader.go', 'zstd/decodeheader.go', 'zstd/decoder.go', 'zstd/decoder_options.go', 'zstd/dict.go', 'zstd/enc_base.go', 'zstd/enc_best.go', 'zstd/enc_better.go', 'zstd/enc_dfast.go', 'zstd/enc_fast.go', 'zstd/encoder.go', 'zstd/encoder_options.go', 'zstd/framedec.go', 'zstd/frameenc.go', 'zstd/fse_decoder.go', 'zstd/fse_decoder_amd64.go', 'zstd/fse_decoder_amd64.s', 'zstd/fse_decoder_generic.go', 'zstd/fse_encoder.go', 'zstd/fse_predefined.go', 'zstd/hash.go', 'zstd/history.go', 'zstd/internal/xxhash/LICENSE.txt', 'zstd/internal/xxhash/README.md', 'zstd/internal/xxhash/xxhash.go', 'zstd/internal/xxhash/xxhash_amd64.s', 'zstd/internal/xxhash/xxhash_arm64.s', 'zstd/internal/xxhash/xxhash_asm.go', 'zstd/internal/xxhash/xxhash_other.go', 'zstd/internal/xxhash/xxhash_safe.go', 'zstd/seqdec.go', 'zstd/seqdec_amd64.go', 'zstd/seqdec_amd64.s', 'zstd/seqdec_generic.go', 'zstd/seqenc.go', 'zstd/snappy.go', 'zstd/testdata/delta/source.txt', 'zstd/testdata/delta/target.txt', 'zstd/zip.go', 'zstd/zstd.go')
+2. internal subsystem (consisting of 'internal/cpuinfo/cpuinfo.go', 'internal/cpuinfo/cpuinfo_amd64.go', 'internal/cpuinfo/cpuinfo_amd64.s', 'internal/fuzz/helpers.go', 'internal/lz4ref/block.go', 'internal/lz4ref/errors.go', 'internal/snapref/decode.go', 'internal/snapref/decode_other.go', 'internal/snapref/encode.go', 'internal/snapref/encode_other.go', 'internal/snapref/snappy.go')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

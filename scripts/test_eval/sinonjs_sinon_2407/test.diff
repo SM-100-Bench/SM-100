@@ -1,0 +1,32 @@
+diff --git a/test/assert-test.js b/test/assert-test.js
+index 95e49d8ad..7fcd282e5 100644
+--- a/test/assert-test.js
++++ b/test/assert-test.js
+@@ -2172,7 +2172,7 @@ describe("assert", function () {
+                     "expected doSomething to be called once and with exact arguments \n" +
+                     "Call 1:\n"
+                 }${color.red("4")}\n${color.red("3")}\n${color.red(
+-                    inspect(JSON.stringify('"bob"'))
++                    inspect('"bob"')
+                 )}\nCall 2:`
+             );
+         });
+@@ -2188,6 +2188,18 @@ describe("assert", function () {
+             );
+         });
+ 
++        it("assert.calledWith message is idempotent", function () {
++            this.obj.doSomething("hey");
++
++            this.message("calledWith", this.obj.doSomething, "");
++            this.message("calledWith", this.obj.doSomething, "");
++            this.message("calledWith", this.obj.doSomething, "");
++            assert.contains(
++                this.message("calledWith", this.obj.doSomething, ""),
++                '"hey"'
++            );
++        });
++
+         it("assert.alwaysCalledWithExactly exception message", function () {
+             this.obj.doSomething(1, 3, "hey");
+             this.obj.doSomething(1, 3);

@@ -1,0 +1,1209 @@
+Please review the following commit for potential bugs:
+
+```
+diff --git a/Makefile b/Makefile
+index 6003e655..2c057864 100644
+--- a/Makefile
++++ b/Makefile
+@@ -16,7 +16,11 @@ operator:
+ 
+ .PHONY: helm
+ helm:
+-	cp deploy/crds/*_crd.yaml helm/cassandra-operator/templates && ./buildenv/create-helm-repo
++	cp deploy/crds/*_crd.yaml helm/cassandra-operator/crds \
++	    && cp deploy/{configmap.yaml,role.yaml,role_binding.yaml} helm/cassandra-operator/templates \
++	    && cp deploy/cassandra/{psp.yaml,psp_performance.yaml} helm/cassandra/templates \
++	    && ./buildenv/create-helm-repo
++
+ 
+ # Build Docker images
+ .PHONY: docker
+diff --git a/buildenv/create-helm-repo b/buildenv/create-helm-repo
+index 0abb062f..8161a55f 100755
+--- a/buildenv/create-helm-repo
++++ b/buildenv/create-helm-repo
+@@ -2,7 +2,7 @@
+ 
+ cd $(dirname "$BASH_SOURCE")/../helm
+ 
+-HELM_OPERATOR_CRDS="cassandra-operator/templates"
++HELM_OPERATOR_CRDS="cassandra-operator/crds"
+ OPERATOR_CRDS="../deploy/crds"
+ 
+ function md5SumFile() {
+diff --git a/deploy/crds.yaml b/deploy/crds.yaml
+index 96978e21..bf877bdd 100644
+--- a/deploy/crds.yaml
++++ b/deploy/crds.yaml
+@@ -175,6 +175,8 @@ spec:
+               type: string
+             dataVolumeClaimSpec:
+               type: object
++            deletePVCs:
++              type: boolean
+             dummyVolume:
+               type: object
+             fsGroup:
+diff --git a/deploy/crds/cassandraoperator_v1alpha1_cassandradatacenter_crd.yaml b/deploy/crds/cassandraoperator_v1alpha1_cassandradatacenter_crd.yaml
+index b7bcb581..39e730d6 100644
+--- a/deploy/crds/cassandraoperator_v1alpha1_cassandradatacenter_crd.yaml
++++ b/deploy/crds/cassandraoperator_v1alpha1_cassandradatacenter_crd.yaml
+@@ -39,6 +39,8 @@ spec:
+               type: string
+             dataVolumeClaimSpec:
+               type: object
++            deletePVCs:
++              type: boolean
+             dummyVolume:
+               type: object
+             fsGroup:
+diff --git a/doc/helm.md b/doc/helm.md
+index bb9be7b8..8628fae5 100644
+--- a/doc/helm.md
++++ b/doc/helm.md
+@@ -13,7 +13,7 @@ To install via helm follow the steps below:
+ 
+  1) Install the operator
+     ```
+-    $ helm install helm/cassandra-operator -n cassandra-operator 
++    $ helm install helm/cassandra-operator --namespace cassandra-operator 
+     ```
+ 
+  1) Create a Cassandra cluster (remember to check the `helm/cassandra/values.yaml` for correct values)
+@@ -23,7 +23,7 @@ To install via helm follow the steps below:
+ 
+ The Helm templates are relatively independent and can also be used to generate the deployments yaml files:
+ ```
+-$ helm template helm/cassandra-operator -n cassandra-operator
++$ helm template helm/cassandra-operator
+ ```
+ 
+ ### Custom Namespace support via helm templates
+diff --git a/doc/op_guide.md b/doc/op_guide.md
+index 709049ee..7fe30e47 100644
+--- a/doc/op_guide.md
++++ b/doc/op_guide.md
+@@ -205,6 +205,25 @@ might be handy for cases like performance testing or similar if you do not care
+ 
+ Use `Memory` medium with care as the `sizeLimit` eats memory from your limits. 
+ 
++### Deletion of persistence volume claims
++
++Lets see how a common scenario with scaling works. If you want to scale from 
++1 node to e.g. 2 nodes (just for the sake of the argument), there will 
++be another PVC for the second pod which will be bound to respective PV. Upon scaling down, 
++the latest pod is deleted but the persistence volume is not. It stays behind. Now if you 
++want to scale back to 2 nodes again, it would reuse the same PVC but the data 
++there would not make sense anymore. The second node was _decommissioned_ and it is 
++not meant to be the part of the cluster anymore. On such bootstrapping, Cassandra would 
++complain that that node was decommissioned and it tries to re-join a cluster, which is illegal to do 
++(under normal circumstances).
++
++To overcome this situation, there is the possibility to delete PVCs after a pod 
++is deleted automatically. By default, this is turned off and one can turn it on by 
++flag `deletePVCs`. If this flag is set to `true`, upon pod's deletion, its PVC will be 
++automatically deleted and PV will be recycled (or retained, but does it make sense?). 
++Similarly, if the whole data center is deleted, all pods are terminated and all PVCs would be deleted too 
++if this option is active. This functionality is done via _finalizers_.
++
+ [aks]: https://azure.microsoft.com/en-in/services/kubernetes-service/
+ [gke]: https://console.cloud.google.com/kubernetes
+ [crds]: https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#customresourcedefinitions
+diff --git a/docker/cassandra-operator/Dockerfile b/docker/cassandra-operator/Dockerfile
+index a4c419d9..7967a174 100644
+--- a/docker/cassandra-operator/Dockerfile
++++ b/docker/cassandra-operator/Dockerfile
+@@ -25,9 +25,10 @@ RUN cd cmd/manager \
+         -o /tmp/cassandra-operator
+ 
+ # Build final image
+-FROM scratch
++FROM alpine:3.11.2
+ 
+ COPY --from=builder /tmp/cassandra-operator .
+ COPY --from=builder /etc/passwd /etc/passwd
+ USER 999
++RUN mkdir -p /tmp
+ CMD ["./cassandra-operator"]
+diff --git a/helm/cassandra-0.1.0.tgz b/helm/cassandra-0.1.0.tgz
+index 623f3378..8b0a7371 100644
+Binary files a/helm/cassandra-0.1.0.tgz and b/helm/cassandra-0.1.0.tgz differ
+diff --git a/helm/cassandra-operator-0.1.0.tgz b/helm/cassandra-operator-0.1.0.tgz
+index c9a12100..5e90908b 100644
+Binary files a/helm/cassandra-operator-0.1.0.tgz and b/helm/cassandra-operator-0.1.0.tgz differ
+diff --git a/helm/cassandra-operator/templates/cassandraoperator_v1alpha1_cassandrabackup_crd.yaml b/helm/cassandra-operator/crds/cassandraoperator_v1alpha1_cassandrabackup_crd.yaml
+similarity index 100%
+rename from helm/cassandra-operator/templates/cassandraoperator_v1alpha1_cassandrabackup_crd.yaml
+rename to helm/cassandra-operator/crds/cassandraoperator_v1alpha1_cassandrabackup_crd.yaml
+diff --git a/helm/cassandra-operator/templates/cassandraoperator_v1alpha1_cassandracluster_crd.yaml b/helm/cassandra-operator/crds/cassandraoperator_v1alpha1_cassandracluster_crd.yaml
+similarity index 100%
+rename from helm/cassandra-operator/templates/cassandraoperator_v1alpha1_cassandracluster_crd.yaml
+rename to helm/cassandra-operator/crds/cassandraoperator_v1alpha1_cassandracluster_crd.yaml
+diff --git a/helm/cassandra-operator/templates/cassandraoperator_v1alpha1_cassandradatacenter_crd.yaml b/helm/cassandra-operator/crds/cassandraoperator_v1alpha1_cassandradatacenter_crd.yaml
+similarity index 96%
+rename from helm/cassandra-operator/templates/cassandraoperator_v1alpha1_cassandradatacenter_crd.yaml
+rename to helm/cassandra-operator/crds/cassandraoperator_v1alpha1_cassandradatacenter_crd.yaml
+index 2e624c1c..39e730d6 100644
+--- a/helm/cassandra-operator/templates/cassandraoperator_v1alpha1_cassandradatacenter_crd.yaml
++++ b/helm/cassandra-operator/crds/cassandraoperator_v1alpha1_cassandradatacenter_crd.yaml
+@@ -39,6 +39,10 @@ spec:
+               type: string
+             dataVolumeClaimSpec:
+               type: object
++            deletePVCs:
++              type: boolean
++            dummyVolume:
++              type: object
+             fsGroup:
+               format: int64
+               type: integer
+diff --git a/helm/cassandra-operator/templates/configmap.yaml b/helm/cassandra-operator/templates/configmap.yaml
+new file mode 100644
+index 00000000..f4aca2b6
+--- /dev/null
++++ b/helm/cassandra-operator/templates/configmap.yaml
+@@ -0,0 +1,11 @@
++apiVersion: v1
++kind: ConfigMap
++metadata:
++  name: cassandra-operator-default-config
++data:
++  nodes: "3"
++  cassandraImage: gcr.io/cassandra-operator/cassandra:3.11.5
++  sidecarImage: gcr.io/cassandra-operator/cassandra-sidecar:latest
++  memory: 1Gi
++  disk: 1Gi
++  diskMedium: ""
+diff --git a/helm/cassandra-operator/templates/psp.yaml b/helm/cassandra-operator/templates/psp.yaml
+index 4ae2a0eb..3ad2930b 100644
+--- a/helm/cassandra-operator/templates/psp.yaml
++++ b/helm/cassandra-operator/templates/psp.yaml
+@@ -38,5 +38,5 @@ spec:
+     ranges:
+       - min: 1
+         max: 65535
+-  readOnlyRootFilesystem: true
++  readOnlyRootFilesystem: false
+ {{- end }}
+\ No newline at end of file
+diff --git a/helm/cassandra-operator/templates/role.yaml b/helm/cassandra-operator/templates/role.yaml
+new file mode 100644
+index 00000000..8a21ceb6
+--- /dev/null
++++ b/helm/cassandra-operator/templates/role.yaml
+@@ -0,0 +1,71 @@
++apiVersion: rbac.authorization.k8s.io/v1
++kind: Role
++metadata:
++  creationTimestamp: null
++  name: cassandra-operator
++rules:
++- apiGroups:
++  - ""
++  resources:
++  - pods
++  - services
++  - services/finalizers
++  - endpoints
++  - persistentvolumeclaims
++  - events
++  - configmaps
++  - secrets
++  verbs:
++  - '*'
++- apiGroups:
++  - apps
++  resources:
++  - deployments
++  - daemonsets
++  - replicasets
++  - statefulsets
++  verbs:
++  - '*'
++- apiGroups:
++  - monitoring.coreos.com
++  resources:
++  - servicemonitors
++  verbs:
++  - get
++  - create
++- apiGroups:
++  - apps
++  resourceNames:
++  - cassandra-operator
++  resources:
++  - deployments/finalizers
++  verbs:
++  - update
++- apiGroups:
++  - ""
++  resources:
++  - pods
++  verbs:
++  - get
++- apiGroups:
++  - apps
++  resources:
++  - replicasets
++  verbs:
++  - get
++- apiGroups:
++  - cassandraoperator.instaclustr.com
++  resources:
++  - '*'
++  - cassandraclusters
++  - cassandrabackups
++  verbs:
++  - '*'
++- apiGroups:
++  - policy
++  resources:
++  - podsecuritypolicies
++  verbs:
++  - use
++  resourceNames:
++  - cassandra-operator
+diff --git a/helm/cassandra-operator/templates/role_binding.yaml b/helm/cassandra-operator/templates/role_binding.yaml
+new file mode 100644
+index 00000000..254be12a
+--- /dev/null
++++ b/helm/cassandra-operator/templates/role_binding.yaml
+@@ -0,0 +1,11 @@
++kind: RoleBinding
++apiVersion: rbac.authorization.k8s.io/v1
++metadata:
++  name: cassandra-operator
++subjects:
++- kind: ServiceAccount
++  name: cassandra-operator
++roleRef:
++  kind: Role
++  name: cassandra-operator
++  apiGroup: rbac.authorization.k8s.io
+diff --git a/helm/cassandra-operator/values.yaml b/helm/cassandra-operator/values.yaml
+index 6fbde83a..797070a7 100644
+--- a/helm/cassandra-operator/values.yaml
++++ b/helm/cassandra-operator/values.yaml
+@@ -7,11 +7,12 @@ replicaCount: 1
+ apiVersion: stable.instaclustr.com/v1
+ 
+ image:
+-  repository: cassandra-operator
+-#  repository: gcr.io/cassandra-operator/cassandra-operator
++  repository: gcr.io/cassandra-operator/cassandra-operator
+   tag: latest
+   pullPolicy: IfNotPresent
+ 
++#imagePullSecret: regcred
++
+ resources: {}
+   # Suggested resource limits for the operator itself (not cassandra), works with a reasonable sized minikube.
+ #  limits:
+@@ -25,10 +26,10 @@ nodeSelector: {}
+ 
+ rbacEnable: true
+ 
+-pspEnable: false
++pspEnable: true
+ 
+ tolerations: []
+ 
+ affinity: {}
+ 
+-namespace: "default"
+\ No newline at end of file
++namespace: "default"
+diff --git a/helm/cassandra/templates/psp.yaml b/helm/cassandra/templates/psp.yaml
+new file mode 100644
+index 00000000..b47163ff
+--- /dev/null
++++ b/helm/cassandra/templates/psp.yaml
+@@ -0,0 +1,68 @@
++apiVersion: v1
++kind: ServiceAccount
++metadata:
++  name: cassandra
++---
++apiVersion: rbac.authorization.k8s.io/v1
++kind: Role
++metadata:
++  name: cassandra
++rules:
++- apiGroups: ['policy']
++  resources: ['podsecuritypolicies']
++  verbs:     ['use']
++  resourceNames:
++  - cassandra
++---
++kind: RoleBinding
++apiVersion: rbac.authorization.k8s.io/v1
++metadata:
++  name: cassandra
++subjects:
++  - kind: ServiceAccount
++    name: cassandra
++roleRef:
++  kind: Role
++  name: cassandra
++  apiGroup: rbac.authorization.k8s.io
++---
++apiVersion: policy/v1beta1
++kind: PodSecurityPolicy
++metadata:
++  name: cassandra
++  annotations:
++    seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'docker/default'
++    seccomp.security.alpha.kubernetes.io/defaultProfileName:  'docker/default'
++spec:
++  privileged: false
++  allowPrivilegeEscalation: false
++  requiredDropCapabilities:
++  - KILL
++  - MKNOD
++  - SETUID
++  - SETGID
++  volumes:
++  - 'configMap'
++  - 'emptyDir'
++  - 'projected'
++  - 'secret'
++  - 'downwardAPI'
++  - 'persistentVolumeClaim'
++  hostNetwork: false
++  hostIPC: false
++  hostPID: false
++  runAsUser:
++    rule: 'MustRunAsNonRoot'
++  seLinux:
++    rule: 'RunAsAny'
++  supplementalGroups:
++    rule: 'MustRunAs'
++    ranges:
++    - min: 1
++      max: 65535
++  fsGroup:
++    rule: 'MustRunAs'
++    ranges:
++    - min: 1
++      max: 65535
++  readOnlyRootFilesystem: false
+diff --git a/helm/cassandra/templates/psp_performance.yaml b/helm/cassandra/templates/psp_performance.yaml
+new file mode 100644
+index 00000000..c1acd74d
+--- /dev/null
++++ b/helm/cassandra/templates/psp_performance.yaml
+@@ -0,0 +1,71 @@
++apiVersion: v1
++kind: ServiceAccount
++metadata:
++  name: cassandra-performance
++---
++apiVersion: rbac.authorization.k8s.io/v1
++kind: Role
++metadata:
++  name: cassandra-performance
++rules:
++- apiGroups: ['policy']
++  resources: ['podsecuritypolicies']
++  verbs:     ['use']
++  resourceNames:
++  - cassandra-performance
++---
++kind: RoleBinding
++apiVersion: rbac.authorization.k8s.io/v1
++metadata:
++  name: cassandra-performance
++subjects:
++  - kind: ServiceAccount
++    name: cassandra-performance
++roleRef:
++  kind: Role
++  name: cassandra-performance
++  apiGroup: rbac.authorization.k8s.io
++---
++apiVersion: policy/v1beta1
++kind: PodSecurityPolicy
++metadata:
++  name: cassandra-performance
++  annotations:
++    seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'docker/default'
++    seccomp.security.alpha.kubernetes.io/defaultProfileName:  'docker/default'
++spec:
++  privileged: true
++  allowPrivilegeEscalation: true
++  allowedCapabilities:
++  - IPC_LOCK
++  - SYS_RESOURCE
++  requiredDropCapabilities:
++  - KILL
++  - MKNOD
++  - SETUID
++  - SETGID
++  volumes:
++  - 'configMap'
++  - 'emptyDir'
++  - 'projected'
++  - 'secret'
++  - 'downwardAPI'
++  - 'persistentVolumeClaim'
++  hostNetwork: false
++  hostIPC: false
++  hostPID: false
++  runAsUser:
++    rule: 'RunAsAny'
++  seLinux:
++    rule: 'RunAsAny'
++  supplementalGroups:
++    rule: 'MustRunAs'
++    ranges:
++    - min: 1
++      max: 65535
++  fsGroup:
++    rule: 'MustRunAs'
++    ranges:
++    - min: 1
++      max: 65535
++  readOnlyRootFilesystem: false
+diff --git a/helm/cassandra/values.yaml b/helm/cassandra/values.yaml
+index 9a0eb880..d0c91499 100644
+--- a/helm/cassandra/values.yaml
++++ b/helm/cassandra/values.yaml
+@@ -12,8 +12,8 @@ image:
+ #  sidecarRepository: cassandra-sidecar
+ 
+ # Published images
+-  cassandraRepository: gcr.io/cassandra-operator/cassandra-dev
+-  sidecarRepository: gcr.io/cassandra-operator/cassandra-sidecar-dev
++  cassandraRepository: gcr.io/cassandra-operator/cassandra
++  sidecarRepository: gcr.io/cassandra-operator/cassandra-sidecar
+   cassandraTag: 3.11.5
+   sidecarTag: latest
+ 
+diff --git a/helm/index.yaml b/helm/index.yaml
+index 06903ff7..846ac7f7 100644
+--- a/helm/index.yaml
++++ b/helm/index.yaml
+@@ -3,10 +3,10 @@ entries:
+   cassandra:
+   - apiVersion: v1
+     appVersion: "1.0"
+-    created: "2019-10-04T14:29:07.88860552+09:30"
++    created: "2020-01-10T16:07:11.500824266+01:00"
+     description: A Helm chart for creating Cassandra clusters using the Cassandra
+       operator
+-    digest: 3d33b4744768d533bfb992f2332ce7a85a225554ec155061c30ebb1f60c06ed3
++    digest: 575af9f1990159be9e973717c41c73201d82353054f7da169661c495c290b6e7
+     home: https://www.instaclustr.com
+     keywords:
+     - operator
+@@ -26,9 +26,9 @@ entries:
+   cassandra-operator:
+   - apiVersion: v1
+     appVersion: "1.0"
+-    created: "2019-10-04T14:29:07.889076693+09:30"
++    created: "2020-01-10T16:07:11.501401256+01:00"
+     description: A Helm chart for Cassandra Operator for Kubernetes by Instaclustr
+-    digest: 39d2f8f2bb61ab710154f1ae2558574da8226c1729fc6f387c6feea8e227d1ba
++    digest: 5381899a8055413e903b013a105bc6b693866ec464ce6f0a73c59dbc3ce85827
+     home: https://www.instaclustr.com
+     keywords:
+     - operator
+@@ -45,4 +45,4 @@ entries:
+     urls:
+     - cassandra-operator-0.1.0.tgz
+     version: 0.1.0
+-generated: "2019-10-04T14:29:07.888107843+09:30"
++generated: "2020-01-10T16:07:11.500219768+01:00"
+diff --git a/pkg/apis/cassandraoperator/v1alpha1/cassandradatacenter_types.go b/pkg/apis/cassandraoperator/v1alpha1/cassandradatacenter_types.go
+index 58c1c6e7..b2eb6c20 100644
+--- a/pkg/apis/cassandraoperator/v1alpha1/cassandradatacenter_types.go
++++ b/pkg/apis/cassandraoperator/v1alpha1/cassandradatacenter_types.go
+@@ -20,6 +20,7 @@ type CassandraDataCenterSpec struct {
+ 	UserConfigMapVolumeSource      *v1.ConfigMapVolumeSource     `json:"userConfigMapVolumeSource,omitempty"`
+ 	Resources                      *v1.ResourceRequirements      `json:"resources,omitempty"`
+ 	DummyVolume                    *v1.EmptyDirVolumeSource      `json:"dummyVolume,omitempty"`
++	DeletePVCs                     bool                          `json:"deletePVCs,omitempty"`
+ 	DataVolumeClaimSpec            *v1.PersistentVolumeClaimSpec `json:"dataVolumeClaimSpec,omitempty"`
+ 	OptimizeKernelParams           bool                          `json:"optimizeKernelParams,omitempty"`
+ 	PrometheusSupport              bool                          `json:"prometheusSupport,omitempty"`
+diff --git a/pkg/apis/cassandraoperator/v1alpha1/zz_generated.openapi.go b/pkg/apis/cassandraoperator/v1alpha1/zz_generated.openapi.go
+index 6032a8ec..66d92fc2 100644
+--- a/pkg/apis/cassandraoperator/v1alpha1/zz_generated.openapi.go
++++ b/pkg/apis/cassandraoperator/v1alpha1/zz_generated.openapi.go
+@@ -388,6 +388,12 @@ func schema_pkg_apis_cassandraoperator_v1alpha1_CassandraDataCenterSpec(ref comm
+ 							Ref: ref("k8s.io/api/core/v1.EmptyDirVolumeSource"),
+ 						},
+ 					},
++					"deletePVCs": {
++						SchemaProps: spec.SchemaProps{
++							Type:   []string{"boolean"},
++							Format: "",
++						},
++					},
+ 					"dataVolumeClaimSpec": {
+ 						SchemaProps: spec.SchemaProps{
+ 							Ref: ref("k8s.io/api/core/v1.PersistentVolumeClaimSpec"),
+diff --git a/pkg/controller/cassandrabackup/cassandrabackup_controller.go b/pkg/controller/cassandrabackup/cassandrabackup_controller.go
+index ef428100..e2c579a4 100644
+--- a/pkg/controller/cassandrabackup/cassandrabackup_controller.go
++++ b/pkg/controller/cassandrabackup/cassandrabackup_controller.go
+@@ -40,7 +40,11 @@ func Add(mgr manager.Manager) error {
+ 
+ // newReconciler returns a new reconcile.Reconciler
+ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
+-	return &ReconcileCassandraBackup{client: mgr.GetClient(), scheme: mgr.GetScheme()}
++	return &ReconcileCassandraBackup{
++		client:   mgr.GetClient(),
++		scheme:   mgr.GetScheme(),
++		recorder: mgr.GetRecorder("cassandrabackup-controller"),
++	}
+ }
+ 
+ // add adds a new Controller to mgr with r as the reconcile.Reconciler
+@@ -104,9 +108,9 @@ func (r *ReconcileCassandraBackup) Reconcile(request reconcile.Request) (reconci
+ 	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
+ 	if err != nil {
+ 		if errors.IsNotFound(err) {
+-			// Request object not found, could have been deleted after reconcile request.
+-			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
+-			// Return and don't requeue
++			// if the resource is not found, that means all of
++			// the finalizers have been removed, and the resource has been deleted,
++			// so there is nothing left to do.
+ 			return reconcile.Result{}, nil
+ 		}
+ 		// Error reading the object - requeue the request.
+@@ -125,6 +129,13 @@ func (r *ReconcileCassandraBackup) Reconcile(request reconcile.Request) (reconci
+ 	cdc := &cassandraoperatorv1alpha1.CassandraDataCenter{}
+ 	if err := r.client.Get(context.TODO(), types.NamespacedName{Name: instance.Spec.CDC, Namespace: instance.Namespace}, cdc); err != nil {
+ 		if errors.IsNotFound(err) {
++
++			r.recorder.Event(
++				instance,
++				corev1.EventTypeWarning,
++				"FailureEvent",
++				fmt.Sprintf("cdc %s to backup not found", instance.Spec.CDC))
++
+ 			return reconcile.Result{}, nil
+ 		}
+ 		return reconcile.Result{}, err
+@@ -146,7 +157,7 @@ func (r *ReconcileCassandraBackup) Reconcile(request reconcile.Request) (reconci
+ 	syncedInstance := &syncedInstance{backup: instance, client: r.client}
+ 
+ 	for _, sc := range sidecarClients {
+-		go backup(wg, sc, syncedInstance, podIpHostnameMap[sc.Host], reqLogger)
++		go backup(wg, sc, syncedInstance, podIpHostnameMap[sc.Host], reqLogger, r.recorder)
+ 	}
+ 
+ 	wg.Wait()
+@@ -166,7 +177,7 @@ func backup(
+ 	instance *syncedInstance,
+ 	podHostname string,
+ 	logging logr.Logger,
+-) {
++	recorder record.EventRecorder) {
+ 
+ 	defer wg.Done()
+ 
+@@ -191,12 +202,22 @@ func backup(
+ 				instance.updateStatus(podHostname, r)
+ 
+ 				if r.State == operations.FAILED {
+-					logging.Info(fmt.Sprintf("Backup operation %v on node %s has failed", operationID, podHostname))
++
++					recorder.Event(instance.backup,
++						corev1.EventTypeWarning,
++						"FailureEvent",
++						fmt.Sprintf("Backup operation %v on node %s has failed", operationID, podHostname))
++
+ 					break
+ 				}
+ 
+ 				if r.State == operations.COMPLETED {
+-					logging.Info(fmt.Sprintf("Backup operation %v on node %s was completed successfully", operationID, podHostname))
++
++					recorder.Event(instance.backup,
++						corev1.EventTypeNormal,
++						"SuccessEvent",
++						fmt.Sprintf("Backup operation %v on node %s was completed.", operationID, podHostname))
++
+ 					break
+ 				}
+ 			}
+diff --git a/pkg/controller/cassandradatacenter/cassandradatacenter_controller.go b/pkg/controller/cassandradatacenter/cassandradatacenter_controller.go
+index b7e3f6b1..9b9d2b49 100644
+--- a/pkg/controller/cassandradatacenter/cassandradatacenter_controller.go
++++ b/pkg/controller/cassandradatacenter/cassandradatacenter_controller.go
+@@ -3,9 +3,12 @@ package cassandradatacenter
+ import (
+ 	"context"
+ 	"errors"
++	"fmt"
+ 	"strconv"
+ 	"time"
+ 
++	"k8s.io/client-go/tools/record"
++
+ 	"github.com/go-logr/logr"
+ 	cassandraoperatorv1alpha1 "github.com/instaclustr/cassandra-operator/pkg/apis/cassandraoperator/v1alpha1"
+ 	"github.com/instaclustr/cassandra-operator/pkg/sidecar"
+@@ -34,7 +37,11 @@ func Add(mgr manager.Manager) error {
+ 
+ // newReconciler returns a new reconcile.Reconciler
+ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
+-	return &ReconcileCassandraDataCenter{client: mgr.GetClient(), scheme: mgr.GetScheme()}
++	return &ReconcileCassandraDataCenter{
++		client:   mgr.GetClient(),
++		scheme:   mgr.GetScheme(),
++		recorder: mgr.GetRecorder("cassandradatacenter-controller"),
++	}
+ }
+ 
+ // add adds a new Controller to mgr with r as the reconcile.Reconciler
+@@ -52,7 +59,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
+ 	}
+ 
+ 	// Watch for changes to secondary resource Pods and requeue the owner CassandraDataCenter
+-	for _, t := range []runtime.Object{&corev1.Service{}, &v1beta2.StatefulSet{}, &corev1.ConfigMap{}} {
++	for _, t := range []runtime.Object{&corev1.Service{}, &v1beta2.StatefulSet{}} {
+ 		requestForOwnerHandler := &handler.EnqueueRequestForOwner{
+ 			IsController: true,
+ 			OwnerType:    &cassandraoperatorv1alpha1.CassandraDataCenter{},
+@@ -73,8 +80,9 @@ var _ reconcile.Reconciler = &ReconcileCassandraDataCenter{}
+ type ReconcileCassandraDataCenter struct {
+ 	// This client, initialized using mgr.Client() above, is a split client
+ 	// that reads objects from the cache and writes to the apiserver
+-	client client.Client
+-	scheme *runtime.Scheme
++	client   client.Client
++	scheme   *runtime.Scheme
++	recorder record.EventRecorder
+ }
+ 
+ type reconciliationRequestContext struct {
+@@ -85,6 +93,7 @@ type reconciliationRequestContext struct {
+ 	operation      scalingOperation
+ 	allPods        []corev1.Pod
+ 	sidecarClients map[*corev1.Pod]*sidecar.Client
++	recorder       record.EventRecorder
+ }
+ 
+ type scalingOperation string
+@@ -108,12 +117,26 @@ func (r *ReconcileCassandraDataCenter) Reconcile(request reconcile.Request) (rec
+ 	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
+ 	if err != nil {
+ 		if k8sErrors.IsNotFound(err) {
+-			// Request object not found, could have been deleted after reconcile request.
+-			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
+-			// Return and don't requeue
++			// if the resource is not found, that means all of
++			// the finalizers have been removed, and the resource has been deleted,
++			// so there is nothing left to do.
+ 			return reconcile.Result{}, nil
+ 		}
+ 		// Error reading the object - requeue the request.
++		return reconcile.Result{}, fmt.Errorf("could not fetch CassandraDataCenter instance: %s", err)
++	}
++
++	if finalized, err := r.finalizeIfNecessary(reqLogger, instance); err != nil {
++		return reconcile.Result{}, err
++	} else if finalized {
++		return reconcile.Result{}, nil
++	}
++
++	if err := r.addFinalizer(reqLogger, instance); err != nil {
++		return reconcile.Result{}, err
++	}
++
++	if err := r.finalizeDeletedPods(reqLogger, instance); err != nil {
+ 		return reconcile.Result{}, err
+ 	}
+ 
+@@ -305,6 +328,7 @@ func newReconciliationContext(r *ReconcileCassandraDataCenter, reqLogger logr.Lo
+ 		allPods:                      allPods,
+ 		sidecarClients:               sidecar.SidecarClients(allPods, &sidecar.DefaultSidecarClientOptions),
+ 		logger:                       reqLogger,
++		recorder:                     r.recorder,
+ 	}
+ 
+ 	// update the stateful sets
+diff --git a/pkg/controller/cassandradatacenter/finalizers.go b/pkg/controller/cassandradatacenter/finalizers.go
+new file mode 100644
+index 00000000..9008c404
+--- /dev/null
++++ b/pkg/controller/cassandradatacenter/finalizers.go
+@@ -0,0 +1,184 @@
++package cassandradatacenter
++
++import (
++	"context"
++	"fmt"
++
++	"github.com/go-logr/logr"
++	cassandraoperatorv1alpha1 "github.com/instaclustr/cassandra-operator/pkg/apis/cassandraoperator/v1alpha1"
++	corev1 "k8s.io/api/core/v1"
++
++	"k8s.io/apimachinery/pkg/labels"
++	"sigs.k8s.io/controller-runtime/pkg/client"
++)
++
++const pvcDeletionFinalizer = "finalizer.pvcs.cassandraoperator.instaclustr.com"
++
++func (r *ReconcileCassandraDataCenter) deletePersistenceVolumeClaim(reqLogger logr.Logger, pvc corev1.PersistentVolumeClaim) error {
++	if err := r.client.Delete(context.TODO(), &pvc); err != nil {
++		reqLogger.Info(fmt.Sprintf("Unable to delete pvc %s.", pvc.Name))
++		return err
++	} else {
++		reqLogger.Info(fmt.Sprintf("Successfully submitted deletion of pvc %s.", pvc.Name))
++	}
++
++	return nil
++}
++
++type pvcFilterFunc func(corev1.PersistentVolumeClaim) bool
++
++func (r *ReconcileCassandraDataCenter) getPVCs(
++	instance *cassandraoperatorv1alpha1.CassandraDataCenter,
++	filterFn *pvcFilterFunc,
++) ([]corev1.PersistentVolumeClaim, error) {
++	pvcList := &corev1.PersistentVolumeClaimList{}
++
++	if err := r.client.List(context.TODO(), &client.ListOptions{
++		Namespace: instance.Namespace,
++		LabelSelector: labels.SelectorFromSet(map[string]string{
++			"cassandra-operator.instaclustr.com/datacenter": instance.Name,
++		}),
++	}, pvcList); err != nil {
++		return nil, err
++	} else {
++
++		if filterFn == nil {
++			return pvcList.Items, nil
++		}
++
++		var filterPVCs []corev1.PersistentVolumeClaim
++
++		for _, pvc := range pvcList.Items {
++			if (*filterFn)(pvc) {
++				filterPVCs = append(filterPVCs, pvc)
++			}
++		}
++
++		return filterPVCs, nil
++	}
++}
++
++func (r *ReconcileCassandraDataCenter) finalizePVCs(reqLogger logr.Logger, instance *cassandraoperatorv1alpha1.CassandraDataCenter) error {
++
++	pvcList := corev1.PersistentVolumeClaimList{}
++
++	if err := r.client.List(context.TODO(), &client.ListOptions{
++		Namespace: instance.Namespace,
++		LabelSelector: labels.SelectorFromSet(map[string]string{
++			"cassandra-operator.instaclustr.com/datacenter": instance.Name,
++		}),
++	}, &pvcList); err != nil {
++		return err
++	}
++
++	if !instance.Spec.DeletePVCs {
++		return nil
++	}
++
++	for _, pvc := range pvcList.Items {
++		if err := r.deletePersistenceVolumeClaim(reqLogger, pvc); err != nil {
++			return err
++		}
++	}
++
++	return nil
++}
++
++func (r *ReconcileCassandraDataCenter) addFinalizer(reqLogger logr.Logger, instance *cassandraoperatorv1alpha1.CassandraDataCenter) error {
++	if !contains(instance.GetFinalizers(), pvcDeletionFinalizer) && instance.Spec.DeletePVCs {
++		reqLogger.Info("Adding Finalizer for the CassandraDataCenter")
++		instance.SetFinalizers(append(instance.GetFinalizers(), pvcDeletionFinalizer))
++
++		err := r.client.Update(context.TODO(), instance)
++		if err != nil {
++			reqLogger.Error(err, "Failed to update CassandraDataCenter with finalizer "+pvcDeletionFinalizer)
++			return err
++		}
++	}
++	return nil
++}
++
++func (r *ReconcileCassandraDataCenter) finalizeIfNecessary(reqLogger logr.Logger, instance *cassandraoperatorv1alpha1.CassandraDataCenter) (bool, error) {
++	if instance.GetDeletionTimestamp() == nil {
++		return false, nil
++	}
++
++	if contains(instance.GetFinalizers(), pvcDeletionFinalizer) {
++		if err := r.finalizePVCs(reqLogger, instance); err != nil {
++			return false, err
++		} else {
++			r.recorder.Event(
++				instance,
++				corev1.EventTypeNormal,
++				"SuccessEvent",
++				fmt.Sprintf("%s was finalized.", instance.Name))
++		}
++
++		instance.SetFinalizers(remove(instance.GetFinalizers(), pvcDeletionFinalizer))
++
++		if err := r.client.Update(context.TODO(), instance); err != nil {
++			return false, err
++		}
++
++		return true, nil
++	}
++
++	return false, nil
++}
++
++func (r *ReconcileCassandraDataCenter) finalizeDeletedPods(reqLogger logr.Logger, instance *cassandraoperatorv1alpha1.CassandraDataCenter) error {
++	if deletedPods, err := AllDeletedPods(r.client, instance); err != nil {
++		return err
++	} else {
++		if len(deletedPods) == 0 {
++			return nil
++		}
++
++		for _, pod := range deletedPods {
++			r.recorder.Event(
++				instance,
++				corev1.EventTypeNormal,
++				"SuccessEvent",
++				fmt.Sprintf("Decommissioning of %s was successful.", pod.Name))
++		}
++
++		if !instance.Spec.DeletePVCs {
++			return nil
++		}
++
++		if existingPVCs, err := r.getPVCs(instance, nil); err != nil {
++			return err
++		} else {
++			for _, pod := range deletedPods {
++				for _, volume := range pod.Spec.Volumes {
++					podsPVC := volume.VolumeSource.PersistentVolumeClaim
++					if podsPVC != nil {
++						for _, c := range existingPVCs {
++							if c.Name == podsPVC.ClaimName {
++								if err := r.deletePersistenceVolumeClaim(reqLogger, c); err != nil {
++
++									r.recorder.Event(
++										instance,
++										corev1.EventTypeWarning,
++										"FailureEvent",
++										fmt.Sprintf("Deletion of PVC %s failed: %v", c.Name, err))
++
++									return err
++								}
++
++								r.recorder.Event(
++									instance,
++									corev1.EventTypeNormal,
++									"SuccessEvent",
++									fmt.Sprintf("Deletion of PVC %s was successful.", c.Name))
++								break
++							}
++						}
++					}
++				}
++			}
++		}
++	}
++
++	return nil
++}
+diff --git a/pkg/controller/cassandradatacenter/helpers.go b/pkg/controller/cassandradatacenter/helpers.go
+index 803e70dd..67cd7cb6 100644
+--- a/pkg/controller/cassandradatacenter/helpers.go
++++ b/pkg/controller/cassandradatacenter/helpers.go
+@@ -12,7 +12,7 @@ import (
+ 	"sigs.k8s.io/controller-runtime/pkg/client"
+ )
+ 
+-func sortAscending(sets []v1.StatefulSet) (s []v1.StatefulSet) {
++func sortStatefulSetsAscending(sets []v1.StatefulSet) (s []v1.StatefulSet) {
+ 	// Sort sets from lowest to highest numerically by the number of the nodes in the set
+ 	sort.SliceStable(sets, func(i, j int) bool {
+ 		return sets[i].Status.Replicas < sets[j].Status.Replicas
+@@ -20,7 +20,7 @@ func sortAscending(sets []v1.StatefulSet) (s []v1.StatefulSet) {
+ 	return sets
+ }
+ 
+-func sortDescending(sets []v1.StatefulSet) (s []v1.StatefulSet) {
++func sortStatefulSetsDescending(sets []v1.StatefulSet) (s []v1.StatefulSet) {
+ 	// Sort sets from highest to lowest numerically by the number of the nodes in the set
+ 	sort.SliceStable(sets, func(i, j int) bool {
+ 		return sets[i].Status.Replicas > sets[j].Status.Replicas
+@@ -32,6 +32,21 @@ func AllPodsInCDC(c client.Client, cdc *v1alpha1.CassandraDataCenter) ([]corev1.
+ 	return getPods(c, cdc.Namespace, DataCenterLabels(cdc))
+ }
+ 
++func AllDeletedPods(c client.Client, cdc *v1alpha1.CassandraDataCenter) ([]corev1.Pod, error) {
++	if pods, err := AllPodsInCDC(c, cdc); err != nil {
++		return nil, err
++	} else {
++		var deletedPods []corev1.Pod
++		for _, pod := range pods {
++			if pod.GetDeletionTimestamp() != nil {
++				deletedPods = append(deletedPods, pod)
++			}
++		}
++
++		return deletedPods, nil
++	}
++}
++
+ func AllPodsInRack(c client.Client, namespace string, rackLabels map[string]string) ([]corev1.Pod, error) {
+ 	return getPods(c, namespace, rackLabels)
+ }
+@@ -86,3 +101,21 @@ func rackExist(name string, sets []v1.StatefulSet) bool {
+ func boolPointer(b bool) *bool {
+ 	return &b
+ }
++
++func contains(list []string, s string) bool {
++	for _, v := range list {
++		if v == s {
++			return true
++		}
++	}
++	return false
++}
++
++func remove(list []string, s string) []string {
++	for i, v := range list {
++		if v == s {
++			list = append(list[:i], list[i+1:]...)
++		}
++	}
++	return list
++}
+diff --git a/pkg/controller/cassandradatacenter/services.go b/pkg/controller/cassandradatacenter/services.go
+index a83a24fa..5289bed7 100644
+--- a/pkg/controller/cassandradatacenter/services.go
++++ b/pkg/controller/cassandradatacenter/services.go
+@@ -36,11 +36,21 @@ func createOrUpdatePrometheusService(rctx *reconciliationRequestContext) (*corev
+ 	})
+ 
+ 	if err != nil {
++		rctx.recorder.Event(
++			prometheusService,
++			corev1.EventTypeWarning,
++			"FailureEvent",
++			fmt.Sprintf("Prometheus service %s failed to be created / updated ", prometheusService.Name))
+ 		return nil, err
+ 	}
+ 
+ 	// Only log if something has changed
+ 	if opresult != controllerutil.OperationResultNone {
++		rctx.recorder.Event(
++			prometheusService,
++			corev1.EventTypeNormal,
++			"SuccessEvent",
++			fmt.Sprintf("Service %s %s.", prometheusService.Name, opresult))
+ 		logger.Info(fmt.Sprintf("Service %s %s.", prometheusService.Name, opresult))
+ 	}
+ 
+@@ -50,8 +60,6 @@ func createOrUpdatePrometheusService(rctx *reconciliationRequestContext) (*corev
+ func createOrUpdateNodesService(rctx *reconciliationRequestContext) (*corev1.Service, error) {
+ 	nodesService := &corev1.Service{ObjectMeta: DataCenterResourceMetadata(rctx.cdc, "nodes")}
+ 
+-	logger := rctx.logger.WithValues("Service.Name", nodesService.Name)
+-
+ 	opresult, err := controllerutil.CreateOrUpdate(context.TODO(), rctx.client, nodesService, func(_ runtime.Object) error {
+ 		nodesService.Spec = corev1.ServiceSpec{
+ 			ClusterIP: "None",
+@@ -67,12 +75,21 @@ func createOrUpdateNodesService(rctx *reconciliationRequestContext) (*corev1.Ser
+ 	})
+ 
+ 	if err != nil {
++		rctx.recorder.Event(
++			nodesService,
++			corev1.EventTypeWarning,
++			"FailureEvent",
++			fmt.Sprintf("Service %s failed to be created / updated ", nodesService.Name))
+ 		return nil, err
+ 	}
+ 
+ 	// Only log if something has changed
+ 	if opresult != controllerutil.OperationResultNone {
+-		logger.Info(fmt.Sprintf("Service %s %s.", nodesService.Name, opresult))
++		rctx.recorder.Event(
++			nodesService,
++			corev1.EventTypeNormal,
++			"SuccessEvent",
++			fmt.Sprintf("Service %s %s.", nodesService.Name, opresult))
+ 	}
+ 
+ 	return nodesService, err
+@@ -81,8 +98,6 @@ func createOrUpdateNodesService(rctx *reconciliationRequestContext) (*corev1.Ser
+ func createOrUpdateSeedNodesService(rctx *reconciliationRequestContext) (*corev1.Service, error) {
+ 	seedNodesService := &corev1.Service{ObjectMeta: DataCenterResourceMetadata(rctx.cdc, "seeds")}
+ 
+-	logger := rctx.logger.WithValues("Service.Name", seedNodesService.Name)
+-
+ 	opresult, err := controllerutil.CreateOrUpdate(context.TODO(), rctx.client, seedNodesService, func(_ runtime.Object) error {
+ 		seedNodesService.Spec = corev1.ServiceSpec{
+ 			ClusterIP:                "None",
+@@ -103,12 +118,21 @@ func createOrUpdateSeedNodesService(rctx *reconciliationRequestContext) (*corev1
+ 	})
+ 
+ 	if err != nil {
++		rctx.recorder.Event(
++			seedNodesService,
++			corev1.EventTypeWarning,
++			"FailureEvent",
++			fmt.Sprintf("Seed nodes service %s failed to be created / updated ", seedNodesService.Name))
+ 		return nil, err
+ 	}
+ 
+ 	// Only log if something has changed
+ 	if opresult != controllerutil.OperationResultNone {
+-		logger.Info(fmt.Sprintf("Service %s %s.", seedNodesService.Name, opresult))
++		rctx.recorder.Event(
++			seedNodesService,
++			corev1.EventTypeNormal,
++			"SuccessEvent",
++			fmt.Sprintf("Seed nodes sevice %s %s.", seedNodesService.Name, opresult))
+ 	}
+ 
+ 	return seedNodesService, err
+diff --git a/pkg/controller/cassandradatacenter/statefulset.go b/pkg/controller/cassandradatacenter/statefulset.go
+index 7a92cf53..751da27f 100644
+--- a/pkg/controller/cassandradatacenter/statefulset.go
++++ b/pkg/controller/cassandradatacenter/statefulset.go
+@@ -50,7 +50,7 @@ func createOrUpdateStatefulSet(rctx *reconciliationRequestContext, configVolume
+ 		}
+ 
+ 		emptyDirVolume := newEmptyDirVolume(rctx.cdc.Spec.DummyVolume)
+-		dataVolumeClaim := newDataVolumeClaim(rctx.cdc.Spec.DataVolumeClaimSpec)
++		dataVolumeClaim := newPersistenceVolumeClaim(rctx.cdc.Spec.DataVolumeClaimSpec)
+ 		podInfoVolume := newPodInfoVolume()
+ 		backupSecretVolume := newBackupSecretVolume(rctx)
+ 		userSecretVolume := newUserSecretVolume(rctx)
+@@ -409,19 +409,23 @@ func newEmptyDirVolume(emptyDir *corev1.EmptyDirVolumeSource) *corev1.Volume {
+ 	}
+ }
+ 
+-func newDataVolumeClaim(dataVolumeClaimSpec *corev1.PersistentVolumeClaimSpec) *corev1.PersistentVolumeClaim {
++func newPersistenceVolumeClaim(persistentVolumeClaimSpec *corev1.PersistentVolumeClaimSpec) *corev1.PersistentVolumeClaim {
+ 
+-	if dataVolumeClaimSpec == nil {
++	if persistentVolumeClaimSpec == nil {
+ 		return nil
+ 	}
+ 
+ 	return &corev1.PersistentVolumeClaim{
+ 		ObjectMeta: metav1.ObjectMeta{Name: "data-volume"},
+-		Spec:       *dataVolumeClaimSpec,
++		Spec:       *persistentVolumeClaimSpec,
+ 	}
+ }
+ 
+-func scaleStatefulSet(rctx *reconciliationRequestContext, existingStatefulSet *v1beta2.StatefulSet, newStatefulSetSpec *v1beta2.StatefulSetSpec, rack *cluster.Rack) error {
++func scaleStatefulSet(
++	rctx *reconciliationRequestContext,
++	existingStatefulSet *v1beta2.StatefulSet,
++	newStatefulSetSpec *v1beta2.StatefulSetSpec,
++	rack *cluster.Rack) error {
+ 
+ 	var (
+ 		currentSpecReplicas, // number of replicas set in the current spec
+@@ -452,17 +456,42 @@ func scaleStatefulSet(rctx *reconciliationRequestContext, existingStatefulSet *v
+ 	// Scale
+ 	if desiredSpecReplicas > currentSpecReplicas {
+ 		// Scale up
++
++		rctx.recorder.Event(
++			rctx.cdc,
++			corev1.EventTypeNormal,
++			"SuccessEvent",
++			fmt.Sprintf("Scaling up %s from %d to %d nodes.", rctx.cdc.Name, currentSpecReplicas, desiredSpecReplicas))
++
+ 		existingStatefulSet.Spec = *newStatefulSetSpec
+ 		return controllerutil.SetControllerReference(rctx.cdc, existingStatefulSet, rctx.scheme)
+ 	} else if desiredSpecReplicas < currentSpecReplicas {
++
++		rctx.recorder.Event(
++			rctx.cdc,
++			corev1.EventTypeNormal,
++			"SuccessEvent",
++			fmt.Sprintf("Scaling down %s from %d to %d nodes.", rctx.cdc.Name, currentSpecReplicas, desiredSpecReplicas))
++
+ 		// Scale down
+ 		newestPod := podsInRack[len(podsInRack)-1]
+ 		if len(decommissionedNodes) == 0 {
+ 			log.Info("No Cassandra nodes have been decommissioned. Decommissioning the newest one " + newestPod.Name)
+ 			if clientForNewestPod := sidecar.ClientFromPods(rctx.sidecarClients, newestPod); clientForNewestPod != nil {
+ 				if _, err := clientForNewestPod.StartOperation(&sidecar.DecommissionRequest{}); err != nil {
+-					return fmt.Errorf("unable to decommission node %s: %v", newestPod.Name, err)
++
++					rctx.recorder.Event(
++						rctx.cdc,
++						corev1.EventTypeWarning,
++						"FailureEvent",
++						fmt.Sprintf("Node %s was unable to be decommissioned: %v", newestPod.Name, err))
+ 				}
++
++				rctx.recorder.Event(
++					rctx.cdc,
++					corev1.EventTypeNormal,
++					"SuccessEvent",
++					fmt.Sprintf("Decommissioning of node %s was started.", newestPod.Name))
+ 			} else {
+ 				return fmt.Errorf("client for pod %s to decommission does not exist", newestPod.Name)
+ 			}
+@@ -476,7 +505,11 @@ func scaleStatefulSet(rctx *reconciliationRequestContext, existingStatefulSet *v
+ 
+ 			existingStatefulSet.Spec = *newStatefulSetSpec
+ 		} else {
+-			return fmt.Errorf("skipping StatefulSet reconciliation as the DataCenter contains more than one decommissioned Cassandra node: %s", podsToString(decommissionedNodes))
++			rctx.recorder.Event(
++				rctx.cdc,
++				corev1.EventTypeWarning,
++				"FailureEvent",
++				fmt.Sprintf("Unable to decommission a node as than one Cassandra node is already decommissioned."))
+ 		}
+ 	}
+ 
+@@ -620,7 +653,6 @@ func findRackToReconcile(rctx *reconciliationRequestContext) (*cluster.Rack, err
+ 	for _, sts := range rctx.sets {
+ 		rack := racksDistribution.GetRack(sts.Labels[rackKey])
+ 		if rack == nil {
+-			log.Info(fmt.Sprintf("couldn't find the rack %v in the distribution\n", sts.Labels[rackKey]))
+ 			continue
+ 		}
+ 		if rack.Replicas != *sts.Spec.Replicas {
+@@ -650,9 +682,9 @@ func getStatefulSets(rctx *reconciliationRequestContext) ([]v1.StatefulSet, erro
+ 	}
+ 
+ 	if rctx.operation == scalingUp {
+-		return sortAscending(sts.Items), nil
++		return sortStatefulSetsAscending(sts.Items), nil
+ 	} else if rctx.operation == scalingDown {
+-		return sortDescending(sts.Items), nil
++		return sortStatefulSetsDescending(sts.Items), nil
+ 	}
+ 
+ 	// if all nodes present or not scaling, no need to sort
+
+```
+
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Report all of your findings in a single JSON object with the following format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

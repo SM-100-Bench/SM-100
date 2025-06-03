@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "lib/line_wrapper.js",
+"line": 10,
+"description": "wordSpacing is set using a strict equality check, which yields a boolean instead of preserving numeric input. This leads to incorrect spacing calculations when options.wordSpacing is non-zero."
+},
+{
+"file": "lib/data.js",
+"line": 98,
+"description": "writeString iterates one character past the end of the string, causing charCodeAt to return NaN and writing invalid byte values."
+},
+{
+"file": "lib/data.js",
+"line": 117,
+"description": "readLongLong and writeLongLong manipulate 64‑bit integers using JavaScript numbers, which cannot precisely represent values above 2^53 and may lead to corrupted results."
+}
+]
+}

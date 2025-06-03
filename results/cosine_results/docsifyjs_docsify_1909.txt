@@ -1,0 +1,1 @@
+{ "issues": [ { "file": "src/core/event/scroll.js", "line": 135, "description": "Multiple scroll event handlers may be attached due to using new anonymous functions in dom.on/dom.off. This can cause performance issues and event handler leaks. The same function reference must be used for both removing and adding event listeners." } ] }

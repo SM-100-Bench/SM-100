@@ -1,0 +1,913 @@
+diff --git a/.size-limit.json b/.size-limit.json
+index e2ca3d1d..228b548b 100644
+--- a/.size-limit.json
++++ b/.size-limit.json
+@@ -1,10 +1,10 @@
+ [
+   {
+     "path": "dist/index.cjs",
+-    "limit": "35.3 KB"
++    "limit": "35.5 KB"
+   },
+   {
+     "path": "dist/index.js",
+-    "limit": "33.7 KB"
++    "limit": "33.9 KB"
+   }
+ ]
+diff --git a/src/Document/Document.ts b/src/Document/Document.ts
+index a8f370bd..d476b284 100644
+--- a/src/Document/Document.ts
++++ b/src/Document/Document.ts
+@@ -93,9 +93,9 @@ export class Document {
+   readonly screen: Screen
+   readonly createCanvas: CreateCanvas
+   readonly createImage: CreateImage
+-  readonly definitions: Record<string, Element> = {}
+-  readonly styles: Record<string, Record<string, Property>> = {}
+-  readonly stylesSpecificity: Record<string, string> = {}
++  readonly definitions: Map<string, Element> = new Map()
++  readonly styles: Map<string, Map<string, Property>> = new Map()
++  readonly stylesSpecificity: Map<string, string> = new Map()
+   readonly images: ImageElement[] = []
+   readonly fonts: SVGFontLoader[] = []
+   private readonly emSizeStack: number[] = []
+diff --git a/src/Document/Element.ts b/src/Document/Element.ts
+index b8906fef..2b38208d 100644
+--- a/src/Document/Element.ts
++++ b/src/Document/Element.ts
+@@ -11,9 +11,9 @@ export abstract class Element {
+   static readonly ignoreChildTypes = ['title']
+ 
+   readonly type: string = ''
+-  readonly attributes: Record<string, Property> = {}
+-  readonly styles: Record<string, Property> = {}
+-  readonly stylesSpecificity: Record<string, string> = {}
++  readonly attributes: Map<string, Property> = new Map()
++  readonly styles: Map<string, Property> = new Map()
++  readonly stylesSpecificity: Map<string, string> = new Map()
+   animationFrozen = false
+   animationFrozenValue = ''
+   parent: Element | null = null
+@@ -32,7 +32,7 @@ export abstract class Element {
+     Array.from(node.attributes).forEach((attribute) => {
+       const nodeName = normalizeAttributeName(attribute.nodeName)
+ 
+-      this.attributes[nodeName] = new Property(document, nodeName, attribute.value)
++      this.attributes.set(nodeName, new Property(document, nodeName, attribute.value))
+     })
+ 
+     this.addStylesFromStyleDefinition()
+@@ -52,7 +52,7 @@ export abstract class Element {
+         const [name, value] = style.split(':').map(_ => _.trim())
+ 
+         if (name) {
+-          this.styles[name] = new Property(document, name, value)
++          this.styles.set(name, new Property(document, name, value))
+         }
+       })
+     }
+@@ -62,8 +62,8 @@ export abstract class Element {
+ 
+     // add id
+     if (id.hasValue()) {
+-      if (!definitions[id.getString()]) {
+-        definitions[id.getString()] = this
++      if (!definitions.has(id.getString())) {
++        definitions.set(id.getString(), this)
+       }
+     }
+ 
+@@ -85,12 +85,12 @@ export abstract class Element {
+   }
+ 
+   getAttribute(name: string, createIfNotExists = false): Property {
+-    const attr = this.attributes[name]
++    const attr = this.attributes.get(name)
+ 
+     if (!attr && createIfNotExists) {
+       const attr = new Property(this.document, name, '')
+ 
+-      this.attributes[name] = attr
++      this.attributes.set(name, attr)
+ 
+       return attr
+     }
+@@ -101,9 +101,9 @@ export abstract class Element {
+   getHrefAttribute(): Property {
+     let href: Property | undefined
+ 
+-    for (const key in this.attributes) {
++    for (const [key, value] of this.attributes) {
+       if (key === 'href' || key.endsWith(':href')) {
+-        href = this.attributes[key]
++        href = value
+         break
+       }
+     }
+@@ -112,7 +112,7 @@ export abstract class Element {
+   }
+ 
+   getStyle(name: string, createIfNotExists = false, skipAncestors = false): Property {
+-    const style = this.styles[name]
++    const style = this.styles.get(name)
+ 
+     if (style) {
+       return style
+@@ -121,7 +121,7 @@ export abstract class Element {
+     const attr = this.getAttribute(name)
+ 
+     if (attr.hasValue()) {
+-      this.styles[name] = attr // move up to me to cache
++      this.styles.set(name, attr) // move up to me to cache
+       return attr
+     }
+ 
+@@ -140,7 +140,7 @@ export abstract class Element {
+     if (createIfNotExists) {
+       const style = new Property(this.document, name, '')
+ 
+-      this.styles[name] = style
++      this.styles.set(name, style)
+ 
+       return style
+     }
+@@ -250,29 +250,25 @@ export abstract class Element {
+       styles,
+       stylesSpecificity
+     } = this.document
+-    let styleProp: Property | undefined
+ 
+-    for (const selector in styles) {
++    for (const [selector, style] of styles) {
+       if (!selector.startsWith('@') && this.matchesSelector(selector)) {
+-        const style = styles[selector]
+-        const specificity = stylesSpecificity[selector]
++        const specificity = stylesSpecificity.get(selector)
+ 
+         if (style) {
+-          for (const name in style) {
+-            let existingSpecificity = this.stylesSpecificity[name]
++          for (const [name, styleProp] of style) {
++            let existingSpecificity = this.stylesSpecificity.get(name)
+ 
+             if (typeof existingSpecificity === 'undefined') {
+               existingSpecificity = '000'
+             }
+ 
+             if (specificity && specificity >= existingSpecificity) {
+-              styleProp = style[name]
+-
+               if (styleProp) {
+-                this.styles[name] = styleProp
++                this.styles.set(name, styleProp)
+               }
+ 
+-              this.stylesSpecificity[name] = specificity
++              this.stylesSpecificity.set(name, specificity)
+             }
+           }
+         }
+diff --git a/src/Document/FontElement.ts b/src/Document/FontElement.ts
+index c692cafb..01039855 100644
+--- a/src/Document/FontElement.ts
++++ b/src/Document/FontElement.ts
+@@ -8,8 +8,8 @@ export class FontElement extends Element {
+   override type = 'font'
+   readonly isArabic: boolean = false
+   readonly missingGlyph: MissingGlyphElement | undefined
+-  readonly glyphs: Record<string, GlyphElement> = {}
+-  readonly arabicGlyphs: Record<string, Partial<Record<ArabicForm, GlyphElement>>> = {}
++  readonly glyphs: Map<string, GlyphElement> = new Map()
++  readonly arabicGlyphs: Map<string, Map<ArabicForm, GlyphElement>> = new Map()
+   readonly horizAdvX: number
+   readonly isRTL: boolean = false
+   readonly fontFace: FontFaceElement | undefined
+@@ -33,7 +33,7 @@ export class FontElement extends Element {
+         const fontFamilyStyle = child.getStyle('font-family')
+ 
+         if (fontFamilyStyle.hasValue()) {
+-          definitions[fontFamilyStyle.getString()] = this
++          definitions.set(fontFamilyStyle.getString(), this)
+         }
+       } else
+       if (child instanceof MissingGlyphElement) {
+@@ -44,17 +44,16 @@ export class FontElement extends Element {
+           this.isRTL = true
+           this.isArabic = true
+ 
+-          const arabicGlyph = this.arabicGlyphs[child.unicode]
++          let arabicGlyph = this.arabicGlyphs.get(child.unicode)
+ 
+           if (typeof arabicGlyph === 'undefined') {
+-            this.arabicGlyphs[child.unicode] = {
+-              [child.arabicForm]: child
+-            }
+-          } else {
+-            arabicGlyph[child.arabicForm] = child
++            arabicGlyph = new Map()
++            this.arabicGlyphs.set(child.unicode, arabicGlyph)
+           }
++
++          arabicGlyph.set(child.arabicForm, child)
+         } else {
+-          this.glyphs[child.unicode] = child
++          this.glyphs.set(child.unicode, child)
+         }
+       }
+     }
+diff --git a/src/Document/GradientElement.ts b/src/Document/GradientElement.ts
+index 7386e5ab..9f35631a 100644
+--- a/src/Document/GradientElement.ts
++++ b/src/Document/GradientElement.ts
+@@ -80,58 +80,58 @@ export abstract class GradientElement extends Element {
+       const rootView = viewPort.getRoot()
+       const rect = new RectElement(document)
+ 
+-      rect.attributes.x = new Property(
++      rect.attributes.set('x', new Property(
+         document,
+         'x',
+         -MAX_VIRTUAL_PIXELS / 3.0
+-      )
+-      rect.attributes.y = new Property(
++      ))
++      rect.attributes.set('y', new Property(
+         document,
+         'y',
+         -MAX_VIRTUAL_PIXELS / 3.0
+-      )
+-      rect.attributes.width = new Property(
++      ))
++      rect.attributes.set('width', new Property(
+         document,
+         'width',
+         MAX_VIRTUAL_PIXELS
+-      )
+-      rect.attributes.height = new Property(
++      ))
++      rect.attributes.set('height', new Property(
+         document,
+         'height',
+         MAX_VIRTUAL_PIXELS
+-      )
++      ))
+ 
+       const group = new GElement(document)
+ 
+-      group.attributes.transform = new Property(
++      group.attributes.set('transform', new Property(
+         document,
+         'transform',
+         this.getAttribute('gradientTransform').getValue()
+-      )
++      ))
+       group.children = [rect]
+ 
+       const patternSvg = new SVGElement(document)
+ 
+-      patternSvg.attributes.x = new Property(
++      patternSvg.attributes.set('x', new Property(
+         document,
+         'x',
+         0
+-      )
+-      patternSvg.attributes.y = new Property(
++      ))
++      patternSvg.attributes.set('y', new Property(
+         document,
+         'y',
+         0
+-      )
+-      patternSvg.attributes.width = new Property(
++      ))
++      patternSvg.attributes.set('width', new Property(
+         document,
+         'width',
+         rootView.width
+-      )
+-      patternSvg.attributes.height = new Property(
++      ))
++      patternSvg.attributes.set('height', new Property(
+         document,
+         'height',
+         rootView.height
+-      )
++      ))
+       patternSvg.children = [group]
+ 
+       const patternCanvas = document.createCanvas(rootView.width, rootView.height)
+diff --git a/src/Document/MarkerElement.ts b/src/Document/MarkerElement.ts
+index a0570779..86d1688c 100644
+--- a/src/Document/MarkerElement.ts
++++ b/src/Document/MarkerElement.ts
+@@ -35,46 +35,46 @@ export class MarkerElement extends Element {
+     const markerSvg = new SVGElement(this.document)
+ 
+     markerSvg.type = this.type
+-    markerSvg.attributes.viewBox = new Property(
++    markerSvg.attributes.set('viewBox', new Property(
+       this.document,
+       'viewBox',
+       this.getAttribute('viewBox').getValue()
+-    )
+-    markerSvg.attributes.refX = new Property(
++    ))
++    markerSvg.attributes.set('refX', new Property(
+       this.document,
+       'refX',
+       this.getAttribute('refX').getValue()
+-    )
+-    markerSvg.attributes.refY = new Property(
++    ))
++    markerSvg.attributes.set('refY', new Property(
+       this.document,
+       'refY',
+       this.getAttribute('refY').getValue()
+-    )
+-    markerSvg.attributes.width = new Property(
++    ))
++    markerSvg.attributes.set('width', new Property(
+       this.document,
+       'width',
+       this.getAttribute('markerWidth').getValue()
+-    )
+-    markerSvg.attributes.height = new Property(
++    ))
++    markerSvg.attributes.set('height', new Property(
+       this.document,
+       'height',
+       this.getAttribute('markerHeight').getValue()
+-    )
+-    markerSvg.attributes.overflow = new Property(
++    ))
++    markerSvg.attributes.set('overflow', new Property(
+       this.document,
+       'overflow',
+       this.getAttribute('overflow').getValue()
+-    )
+-    markerSvg.attributes.fill = new Property(
++    ))
++    markerSvg.attributes.set('fill', new Property(
+       this.document,
+       'fill',
+       this.getAttribute('fill').getColor('black')
+-    )
+-    markerSvg.attributes.stroke = new Property(
++    ))
++    markerSvg.attributes.set('stroke', new Property(
+       this.document,
+       'stroke',
+       this.getAttribute('stroke').getValue('none')
+-    )
++    ))
+     markerSvg.children = this.children
+ 
+     markerSvg.render(ctx)
+diff --git a/src/Document/PatternElement.ts b/src/Document/PatternElement.ts
+index 900b1305..7b54301e 100644
+--- a/src/Document/PatternElement.ts
++++ b/src/Document/PatternElement.ts
+@@ -19,26 +19,26 @@ export class PatternElement extends Element {
+       null
+     )
+ 
+-    patternSvg.attributes.viewBox = new Property(
++    patternSvg.attributes.set('viewBox', new Property(
+       this.document,
+       'viewBox',
+       this.getAttribute('viewBox').getValue()
+-    )
+-    patternSvg.attributes.width = new Property(
++    ))
++    patternSvg.attributes.set('width', new Property(
+       this.document,
+       'width',
+       `${width}px`
+-    )
+-    patternSvg.attributes.height = new Property(
++    ))
++    patternSvg.attributes.set('height', new Property(
+       this.document,
+       'height',
+       `${height}px`
+-    )
+-    patternSvg.attributes.transform = new Property(
++    ))
++    patternSvg.attributes.set('transform', new Property(
+       this.document,
+       'transform',
+       this.getAttribute('patternTransform').getValue()
+-    )
++    ))
+     patternSvg.children = this.children
+ 
+     const patternCanvas = this.document.createCanvas(width, height)
+@@ -54,25 +54,25 @@ export class PatternElement extends Element {
+     }
+ 
+     if (parentOpacityProp.hasValue()) {
+-      this.styles['fill-opacity'] = parentOpacityProp
++      this.styles.set('fill-opacity', parentOpacityProp)
+     } else {
+-      Reflect.deleteProperty(this.styles, 'fill-opacity')
++      this.styles.delete('fill-opacity')
+     }
+ 
+     // render 3x3 grid so when we transform there's no white space on edges
+     for (let x = -1; x <= 1; x++) {
+       for (let y = -1; y <= 1; y++) {
+         patternCtx.save()
+-        patternSvg.attributes.x = new Property(
++        patternSvg.attributes.set('x', new Property(
+           this.document,
+           'x',
+           x * patternCanvas.width
+-        )
+-        patternSvg.attributes.y = new Property(
++        ))
++        patternSvg.attributes.set('y', new Property(
+           this.document,
+           'y',
+           y * patternCanvas.height
+-        )
++        ))
+         patternSvg.render(patternCtx)
+         patternCtx.restore()
+       }
+diff --git a/src/Document/StyleElement.ts b/src/Document/StyleElement.ts
+index b918242e..aaa21ff7 100644
+--- a/src/Document/StyleElement.ts
++++ b/src/Document/StyleElement.ts
+@@ -48,7 +48,7 @@ export class StyleElement extends Element {
+           return
+         }
+ 
+-        const props = document.styles[cssClass] || {}
++        const props = document.styles.get(cssClass) || new Map<string, Property>()
+ 
+         cssProps.forEach((cssProp) => {
+           const prop = cssProp.indexOf(':')
+@@ -56,16 +56,16 @@ export class StyleElement extends Element {
+           const value = cssProp.substr(prop + 1, cssProp.length - prop).trim()
+ 
+           if (name && value) {
+-            props[name] = new Property(document, name, value)
++            props.set(name, new Property(document, name, value))
+           }
+         })
+ 
+-        document.styles[cssClass] = props
+-        document.stylesSpecificity[cssClass] = getSelectorSpecificity(cssClass)
++        document.styles.set(cssClass, props)
++        document.stylesSpecificity.set(cssClass, getSelectorSpecificity(cssClass))
+ 
+         if (cssClass === '@font-face') { //  && !nodeEnv
+-          const fontFamily = props['font-family'].getString().replace(/"|'/g, '')
+-          const srcs = props.src.getString().split(',')
++          const fontFamily = props.get('font-family').getString().replace(/"|'/g, '')
++          const srcs = props.get('src').getString().split(',')
+ 
+           srcs.forEach((src) => {
+             if (src.indexOf('format("svg")') > 0) {
+diff --git a/src/Document/TextElement.ts b/src/Document/TextElement.ts
+index 227bdf3f..0c0ac327 100644
+--- a/src/Document/TextElement.ts
++++ b/src/Document/TextElement.ts
+@@ -130,9 +130,9 @@ export class TextElement extends RenderedElement {
+         arabicForm = 'initial'
+       }
+ 
+-      glyph = font.arabicGlyphs[char]?.[arabicForm] || font.glyphs[char]
++      glyph = font.arabicGlyphs.get(char)?.get(arabicForm) || font.glyphs.get(char)
+     } else {
+-      glyph = font.glyphs[char]
++      glyph = font.glyphs.get(char)
+     }
+ 
+     if (!glyph) {
+diff --git a/src/Document/UseElement.ts b/src/Document/UseElement.ts
+index 48eee693..cef2a50a 100644
+--- a/src/Document/UseElement.ts
++++ b/src/Document/UseElement.ts
+@@ -44,29 +44,29 @@ export class UseElement extends RenderedElement {
+       if (element.type === 'symbol') {
+         // render me using a temporary svg element in symbol cases (http://www.w3.org/TR/SVG/struct.html#UseElement)
+         tempSvg = new SVGElement(document)
+-        tempSvg.attributes.viewBox = new Property(
++        tempSvg.attributes.set('viewBox', new Property(
+           document,
+           'viewBox',
+           element.getAttribute('viewBox').getString()
+-        )
+-        tempSvg.attributes.preserveAspectRatio = new Property(
++        ))
++        tempSvg.attributes.set('preserveAspectRatio', new Property(
+           document,
+           'preserveAspectRatio',
+           element.getAttribute('preserveAspectRatio').getString()
+-        )
+-        tempSvg.attributes.overflow = new Property(
++        ))
++        tempSvg.attributes.set('overflow', new Property(
+           document,
+           'overflow',
+           element.getAttribute('overflow').getString()
+-        )
++        ))
+         tempSvg.children = element.children
+ 
+         // element is still the parent of the children
+-        element.styles.opacity = new Property(
++        element.styles.set('opacity', new Property(
+           document,
+           'opacity',
+           this.calculateOpacity()
+-        )
++        ))
+       }
+ 
+       if (tempSvg.type === 'svg') {
+@@ -75,19 +75,19 @@ export class UseElement extends RenderedElement {
+ 
+         // if symbol or svg, inherit width/height from me
+         if (widthStyle.hasValue()) {
+-          tempSvg.attributes.width = new Property(
++          tempSvg.attributes.set('width', new Property(
+             document,
+             'width',
+             widthStyle.getString()
+-          )
++          ))
+         }
+ 
+         if (heightStyle.hasValue()) {
+-          tempSvg.attributes.height = new Property(
++          tempSvg.attributes.set('height', new Property(
+             document,
+             'height',
+             heightStyle.getString()
+-          )
++          ))
+         }
+       }
+ 
+diff --git a/src/Property.ts b/src/Property.ts
+index 2915f214..d384403a 100644
+--- a/src/Property.ts
++++ b/src/Property.ts
+@@ -287,7 +287,7 @@ export class Property<T = unknown> {
+     const match = /#([^)'"]+)/.exec(asString)
+     const name = match?.[1] || asString
+ 
+-    return this.document.definitions[name] as T | undefined
++    return this.document.definitions.get(name) as T | undefined
+   }
+ 
+   getFillStyleDefinition(element: Element | PathElement, opacity: Property) {
+diff --git a/src/SVGFontLoader.ts b/src/SVGFontLoader.ts
+index cc698376..ce05f495 100644
+--- a/src/SVGFontLoader.ts
++++ b/src/SVGFontLoader.ts
+@@ -18,7 +18,7 @@ export class SVGFontLoader {
+       Array.from(fonts).forEach((fontNode: HTMLElement) => {
+         const font = document.createElement(fontNode)
+ 
+-        document.definitions[fontFamily] = font
++        document.definitions.set(fontFamily, font)
+       })
+     } catch (err) {
+       console.error(`Error while loading font "${url}":`, err)
+diff --git a/test/__image_snapshots__/browser-24.svg-snap.png b/test/__image_snapshots__/browser-24.svg-snap.png
+index 07234c7d..b580b43d 100644
+Binary files a/test/__image_snapshots__/browser-24.svg-snap.png and b/test/__image_snapshots__/browser-24.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-28.svg-snap.png b/test/__image_snapshots__/browser-28.svg-snap.png
+index 6fda5c98..ea0debb3 100644
+Binary files a/test/__image_snapshots__/browser-28.svg-snap.png and b/test/__image_snapshots__/browser-28.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-31.svg-snap.png b/test/__image_snapshots__/browser-31.svg-snap.png
+index 459215aa..a2f94988 100644
+Binary files a/test/__image_snapshots__/browser-31.svg-snap.png and b/test/__image_snapshots__/browser-31.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-33.svg-snap.png b/test/__image_snapshots__/browser-33.svg-snap.png
+index 86ceaaa6..69cb1279 100644
+Binary files a/test/__image_snapshots__/browser-33.svg-snap.png and b/test/__image_snapshots__/browser-33.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-37.svg-snap.png b/test/__image_snapshots__/browser-37.svg-snap.png
+index f84752af..2fdb0751 100644
+Binary files a/test/__image_snapshots__/browser-37.svg-snap.png and b/test/__image_snapshots__/browser-37.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue106.svg-snap.png b/test/__image_snapshots__/browser-issue106.svg-snap.png
+index f4ded7c5..bbe701b4 100644
+Binary files a/test/__image_snapshots__/browser-issue106.svg-snap.png and b/test/__image_snapshots__/browser-issue106.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue114.svg-snap.png b/test/__image_snapshots__/browser-issue114.svg-snap.png
+index 708604dd..e7651e7f 100644
+Binary files a/test/__image_snapshots__/browser-issue114.svg-snap.png and b/test/__image_snapshots__/browser-issue114.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue116.svg-snap.png b/test/__image_snapshots__/browser-issue116.svg-snap.png
+index 956cb853..3886056d 100644
+Binary files a/test/__image_snapshots__/browser-issue116.svg-snap.png and b/test/__image_snapshots__/browser-issue116.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue1161.svg-snap.png b/test/__image_snapshots__/browser-issue1161.svg-snap.png
+index 2e06b0d4..20a18c2d 100644
+Binary files a/test/__image_snapshots__/browser-issue1161.svg-snap.png and b/test/__image_snapshots__/browser-issue1161.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue128.svg-snap.png b/test/__image_snapshots__/browser-issue128.svg-snap.png
+index d09ee20a..835da81f 100644
+Binary files a/test/__image_snapshots__/browser-issue128.svg-snap.png and b/test/__image_snapshots__/browser-issue128.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue134.svg-snap.png b/test/__image_snapshots__/browser-issue134.svg-snap.png
+index f6a6c04f..ddfe99db 100644
+Binary files a/test/__image_snapshots__/browser-issue134.svg-snap.png and b/test/__image_snapshots__/browser-issue134.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue144.svg-snap.png b/test/__image_snapshots__/browser-issue144.svg-snap.png
+index 24618d57..393a6916 100644
+Binary files a/test/__image_snapshots__/browser-issue144.svg-snap.png and b/test/__image_snapshots__/browser-issue144.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue145.svg-snap.png b/test/__image_snapshots__/browser-issue145.svg-snap.png
+index 0f327c03..0922f7e0 100644
+Binary files a/test/__image_snapshots__/browser-issue145.svg-snap.png and b/test/__image_snapshots__/browser-issue145.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue1548a.svg-snap.png b/test/__image_snapshots__/browser-issue1548a.svg-snap.png
+index 526d6f4c..49f7f0ba 100644
+Binary files a/test/__image_snapshots__/browser-issue1548a.svg-snap.png and b/test/__image_snapshots__/browser-issue1548a.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue1548b.svg-snap.png b/test/__image_snapshots__/browser-issue1548b.svg-snap.png
+index 03378fa6..5cfd5c5b 100644
+Binary files a/test/__image_snapshots__/browser-issue1548b.svg-snap.png and b/test/__image_snapshots__/browser-issue1548b.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue161.svg-snap.png b/test/__image_snapshots__/browser-issue161.svg-snap.png
+index c36154ef..1be9d347 100644
+Binary files a/test/__image_snapshots__/browser-issue161.svg-snap.png and b/test/__image_snapshots__/browser-issue161.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue187.svg-snap.png b/test/__image_snapshots__/browser-issue187.svg-snap.png
+index b45c018a..8cd14a5d 100644
+Binary files a/test/__image_snapshots__/browser-issue187.svg-snap.png and b/test/__image_snapshots__/browser-issue187.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue202.svg-snap.png b/test/__image_snapshots__/browser-issue202.svg-snap.png
+index 964e5d16..99684d5e 100644
+Binary files a/test/__image_snapshots__/browser-issue202.svg-snap.png and b/test/__image_snapshots__/browser-issue202.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue202b.svg-snap.png b/test/__image_snapshots__/browser-issue202b.svg-snap.png
+index e60330ab..f02b9ae3 100644
+Binary files a/test/__image_snapshots__/browser-issue202b.svg-snap.png and b/test/__image_snapshots__/browser-issue202b.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue229.svg-snap.png b/test/__image_snapshots__/browser-issue229.svg-snap.png
+index 053bbeaa..a54637f8 100644
+Binary files a/test/__image_snapshots__/browser-issue229.svg-snap.png and b/test/__image_snapshots__/browser-issue229.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue241.svg-snap.png b/test/__image_snapshots__/browser-issue241.svg-snap.png
+index bb1cee96..a00d91b1 100644
+Binary files a/test/__image_snapshots__/browser-issue241.svg-snap.png and b/test/__image_snapshots__/browser-issue241.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue244.svg-snap.png b/test/__image_snapshots__/browser-issue244.svg-snap.png
+index 18207cbc..5c5dfad4 100644
+Binary files a/test/__image_snapshots__/browser-issue244.svg-snap.png and b/test/__image_snapshots__/browser-issue244.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue255.svg-snap.png b/test/__image_snapshots__/browser-issue255.svg-snap.png
+index a9befdd3..0749c3a1 100644
+Binary files a/test/__image_snapshots__/browser-issue255.svg-snap.png and b/test/__image_snapshots__/browser-issue255.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue268.svg-snap.png b/test/__image_snapshots__/browser-issue268.svg-snap.png
+index 42d9686c..2a9496a4 100644
+Binary files a/test/__image_snapshots__/browser-issue268.svg-snap.png and b/test/__image_snapshots__/browser-issue268.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue30.svg-snap.png b/test/__image_snapshots__/browser-issue30.svg-snap.png
+index e873770c..c8ffb5bc 100644
+Binary files a/test/__image_snapshots__/browser-issue30.svg-snap.png and b/test/__image_snapshots__/browser-issue30.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue32.svg-snap.png b/test/__image_snapshots__/browser-issue32.svg-snap.png
+index ee80d2a1..1d6b31f1 100644
+Binary files a/test/__image_snapshots__/browser-issue32.svg-snap.png and b/test/__image_snapshots__/browser-issue32.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue320.svg-snap.png b/test/__image_snapshots__/browser-issue320.svg-snap.png
+index c8a70c27..49050f21 100644
+Binary files a/test/__image_snapshots__/browser-issue320.svg-snap.png and b/test/__image_snapshots__/browser-issue320.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue362.svg-snap.png b/test/__image_snapshots__/browser-issue362.svg-snap.png
+index 7998da56..02fd2ec6 100644
+Binary files a/test/__image_snapshots__/browser-issue362.svg-snap.png and b/test/__image_snapshots__/browser-issue362.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue38.svg-snap.png b/test/__image_snapshots__/browser-issue38.svg-snap.png
+index 662656bb..63e64d43 100644
+Binary files a/test/__image_snapshots__/browser-issue38.svg-snap.png and b/test/__image_snapshots__/browser-issue38.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue39.svg-snap.png b/test/__image_snapshots__/browser-issue39.svg-snap.png
+index 4f3ac088..c7f308b9 100644
+Binary files a/test/__image_snapshots__/browser-issue39.svg-snap.png and b/test/__image_snapshots__/browser-issue39.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue406.svg-snap.png b/test/__image_snapshots__/browser-issue406.svg-snap.png
+index 3f9415b5..4dea0de4 100644
+Binary files a/test/__image_snapshots__/browser-issue406.svg-snap.png and b/test/__image_snapshots__/browser-issue406.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue41.svg-snap.png b/test/__image_snapshots__/browser-issue41.svg-snap.png
+index a3aa68b1..2d18ea61 100644
+Binary files a/test/__image_snapshots__/browser-issue41.svg-snap.png and b/test/__image_snapshots__/browser-issue41.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue44.svg-snap.png b/test/__image_snapshots__/browser-issue44.svg-snap.png
+index d9f8bfae..3aa744e0 100644
+Binary files a/test/__image_snapshots__/browser-issue44.svg-snap.png and b/test/__image_snapshots__/browser-issue44.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue46.svg-snap.png b/test/__image_snapshots__/browser-issue46.svg-snap.png
+index 1b609ff8..c8c5a202 100644
+Binary files a/test/__image_snapshots__/browser-issue46.svg-snap.png and b/test/__image_snapshots__/browser-issue46.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue564.svg-snap.png b/test/__image_snapshots__/browser-issue564.svg-snap.png
+index c218076f..96860138 100644
+Binary files a/test/__image_snapshots__/browser-issue564.svg-snap.png and b/test/__image_snapshots__/browser-issue564.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue593.svg-snap.png b/test/__image_snapshots__/browser-issue593.svg-snap.png
+index ac986eb3..58d3f571 100644
+Binary files a/test/__image_snapshots__/browser-issue593.svg-snap.png and b/test/__image_snapshots__/browser-issue593.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue620.svg-snap.png b/test/__image_snapshots__/browser-issue620.svg-snap.png
+index 1803cfa8..68642073 100644
+Binary files a/test/__image_snapshots__/browser-issue620.svg-snap.png and b/test/__image_snapshots__/browser-issue620.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue690.svg-snap.png b/test/__image_snapshots__/browser-issue690.svg-snap.png
+index 29124868..5316035f 100644
+Binary files a/test/__image_snapshots__/browser-issue690.svg-snap.png and b/test/__image_snapshots__/browser-issue690.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue717.svg-snap.png b/test/__image_snapshots__/browser-issue717.svg-snap.png
+index dbc0d923..6028667c 100644
+Binary files a/test/__image_snapshots__/browser-issue717.svg-snap.png and b/test/__image_snapshots__/browser-issue717.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue748.svg-snap.png b/test/__image_snapshots__/browser-issue748.svg-snap.png
+index 81c9149f..3548e78a 100644
+Binary files a/test/__image_snapshots__/browser-issue748.svg-snap.png and b/test/__image_snapshots__/browser-issue748.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue782a.svg-snap.png b/test/__image_snapshots__/browser-issue782a.svg-snap.png
+index 162cfd35..296e364c 100644
+Binary files a/test/__image_snapshots__/browser-issue782a.svg-snap.png and b/test/__image_snapshots__/browser-issue782a.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue782b.svg-snap.png b/test/__image_snapshots__/browser-issue782b.svg-snap.png
+index 3862178f..db4438a8 100644
+Binary files a/test/__image_snapshots__/browser-issue782b.svg-snap.png and b/test/__image_snapshots__/browser-issue782b.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue8.svg-snap.png b/test/__image_snapshots__/browser-issue8.svg-snap.png
+index 9635f04d..0378cec7 100644
+Binary files a/test/__image_snapshots__/browser-issue8.svg-snap.png and b/test/__image_snapshots__/browser-issue8.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue816.svg-snap.png b/test/__image_snapshots__/browser-issue816.svg-snap.png
+index 6d16bf77..a7476647 100644
+Binary files a/test/__image_snapshots__/browser-issue816.svg-snap.png and b/test/__image_snapshots__/browser-issue816.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue82.svg-snap.png b/test/__image_snapshots__/browser-issue82.svg-snap.png
+index b4b2b079..ff6ebd07 100644
+Binary files a/test/__image_snapshots__/browser-issue82.svg-snap.png and b/test/__image_snapshots__/browser-issue82.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue869.svg-snap.png b/test/__image_snapshots__/browser-issue869.svg-snap.png
+index 213f08d5..bea83b73 100644
+Binary files a/test/__image_snapshots__/browser-issue869.svg-snap.png and b/test/__image_snapshots__/browser-issue869.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue870.svg-snap.png b/test/__image_snapshots__/browser-issue870.svg-snap.png
+index fbc9a07e..19c349f9 100644
+Binary files a/test/__image_snapshots__/browser-issue870.svg-snap.png and b/test/__image_snapshots__/browser-issue870.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue897b.svg-snap.png b/test/__image_snapshots__/browser-issue897b.svg-snap.png
+index 17145e62..dcd053d8 100644
+Binary files a/test/__image_snapshots__/browser-issue897b.svg-snap.png and b/test/__image_snapshots__/browser-issue897b.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue91.svg-snap.png b/test/__image_snapshots__/browser-issue91.svg-snap.png
+index 87e0d705..919ad7b9 100644
+Binary files a/test/__image_snapshots__/browser-issue91.svg-snap.png and b/test/__image_snapshots__/browser-issue91.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue94.svg-snap.png b/test/__image_snapshots__/browser-issue94.svg-snap.png
+index 71967ac2..151e6c6c 100644
+Binary files a/test/__image_snapshots__/browser-issue94.svg-snap.png and b/test/__image_snapshots__/browser-issue94.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue945.svg-snap.png b/test/__image_snapshots__/browser-issue945.svg-snap.png
+index f9c50bb2..8ae664f8 100644
+Binary files a/test/__image_snapshots__/browser-issue945.svg-snap.png and b/test/__image_snapshots__/browser-issue945.svg-snap.png differ
+diff --git a/test/__image_snapshots__/browser-issue99.svg-snap.png b/test/__image_snapshots__/browser-issue99.svg-snap.png
+index aec0b49d..24d4e51c 100644
+Binary files a/test/__image_snapshots__/browser-issue99.svg-snap.png and b/test/__image_snapshots__/browser-issue99.svg-snap.png differ
+diff --git a/test/__image_snapshots__/node-37.svg-snap.png b/test/__image_snapshots__/node-37.svg-snap.png
+index 5a8db333..45b261c1 100644
+Binary files a/test/__image_snapshots__/node-37.svg-snap.png and b/test/__image_snapshots__/node-37.svg-snap.png differ
+diff --git a/test/__image_snapshots__/node-issue202b.svg-snap.png b/test/__image_snapshots__/node-issue202b.svg-snap.png
+index da2b2aa3..1ef7179e 100644
+Binary files a/test/__image_snapshots__/node-issue202b.svg-snap.png and b/test/__image_snapshots__/node-issue202b.svg-snap.png differ
+diff --git a/test/__image_snapshots__/node-issue229.svg-snap.png b/test/__image_snapshots__/node-issue229.svg-snap.png
+index 6aac9388..523fca3b 100644
+Binary files a/test/__image_snapshots__/node-issue229.svg-snap.png and b/test/__image_snapshots__/node-issue229.svg-snap.png differ
+diff --git a/test/__image_snapshots__/node-issue406.svg-snap.png b/test/__image_snapshots__/node-issue406.svg-snap.png
+index b1b20a5d..bd73debe 100644
+Binary files a/test/__image_snapshots__/node-issue406.svg-snap.png and b/test/__image_snapshots__/node-issue406.svg-snap.png differ
+diff --git a/test/__image_snapshots__/node-issue816.svg-snap.png b/test/__image_snapshots__/node-issue816.svg-snap.png
+index 6b696a3f..604bde63 100644
+Binary files a/test/__image_snapshots__/node-issue816.svg-snap.png and b/test/__image_snapshots__/node-issue816.svg-snap.png differ
+diff --git a/test/__image_snapshots__/node-issue870.svg-snap.png b/test/__image_snapshots__/node-issue870.svg-snap.png
+index d33dd579..0f048cd3 100644
+Binary files a/test/__image_snapshots__/node-issue870.svg-snap.png and b/test/__image_snapshots__/node-issue870.svg-snap.png differ
+diff --git a/test/__image_snapshots__/node-issue94.svg-snap.png b/test/__image_snapshots__/node-issue94.svg-snap.png
+index a5b0f5ac..dbff8d96 100644
+Binary files a/test/__image_snapshots__/node-issue94.svg-snap.png and b/test/__image_snapshots__/node-issue94.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-24.svg-snap.png b/test/__image_snapshots__/offscreen-browser-24.svg-snap.png
+index 07234c7d..b580b43d 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-24.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-24.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-28.svg-snap.png b/test/__image_snapshots__/offscreen-browser-28.svg-snap.png
+index 4d93fc49..9fd25fc8 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-28.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-28.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-31.svg-snap.png b/test/__image_snapshots__/offscreen-browser-31.svg-snap.png
+index 53f18c4c..daa2cf8b 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-31.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-31.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-33.svg-snap.png b/test/__image_snapshots__/offscreen-browser-33.svg-snap.png
+index 86ceaaa6..69cb1279 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-33.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-33.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-37.svg-snap.png b/test/__image_snapshots__/offscreen-browser-37.svg-snap.png
+index ff740204..c6e52afb 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-37.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-37.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue106.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue106.svg-snap.png
+index f4ded7c5..bbe701b4 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue106.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue106.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue114.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue114.svg-snap.png
+index ea4ae222..1ed35238 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue114.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue114.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue116.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue116.svg-snap.png
+index c6397181..e77bd503 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue116.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue116.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue1161.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue1161.svg-snap.png
+index 2168a60a..0dc9e930 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue1161.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue1161.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue128.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue128.svg-snap.png
+index b7591a2c..d6a34125 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue128.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue128.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue134.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue134.svg-snap.png
+index fe78811f..c67f5012 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue134.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue134.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue144.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue144.svg-snap.png
+index 3e035570..97bd3d4b 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue144.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue144.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue145.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue145.svg-snap.png
+index 2d62b3da..4d204895 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue145.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue145.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue1548a.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue1548a.svg-snap.png
+index 4fe0321d..e4b6a865 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue1548a.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue1548a.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue1548b.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue1548b.svg-snap.png
+index 03378fa6..5cfd5c5b 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue1548b.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue1548b.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue161.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue161.svg-snap.png
+index c36154ef..1be9d347 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue161.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue161.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue187.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue187.svg-snap.png
+index b45c018a..8cd14a5d 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue187.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue187.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue202.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue202.svg-snap.png
+index 7ce77179..91cd8c6a 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue202.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue202.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue202b.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue202b.svg-snap.png
+index e60330ab..f02b9ae3 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue202b.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue202b.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue229.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue229.svg-snap.png
+index 053bbeaa..a54637f8 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue229.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue229.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue241.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue241.svg-snap.png
+index 26c6f21a..13c614bd 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue241.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue241.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue244.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue244.svg-snap.png
+index fea42341..2f94d8c8 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue244.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue244.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue255.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue255.svg-snap.png
+index a9befdd3..0749c3a1 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue255.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue255.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue268.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue268.svg-snap.png
+index 03214693..9a1f7816 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue268.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue268.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue30.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue30.svg-snap.png
+index e873770c..c8ffb5bc 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue30.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue30.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue32.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue32.svg-snap.png
+index ee80d2a1..1d6b31f1 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue32.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue32.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue320.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue320.svg-snap.png
+index f341e137..a33cff55 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue320.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue320.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue362.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue362.svg-snap.png
+index 72d406a3..90ae6314 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue362.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue362.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue38.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue38.svg-snap.png
+index 662656bb..63e64d43 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue38.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue38.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue39.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue39.svg-snap.png
+index 6f49fa96..518d5c24 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue39.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue39.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue406.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue406.svg-snap.png
+index 9e334086..1090f068 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue406.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue406.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue41.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue41.svg-snap.png
+index df9afed7..e78b0d4a 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue41.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue41.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue44.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue44.svg-snap.png
+index eacfff93..4cc9bb73 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue44.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue44.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue46.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue46.svg-snap.png
+index 4d709c0b..0e7bd7b3 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue46.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue46.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue564.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue564.svg-snap.png
+index 6c4f0014..f7686363 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue564.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue564.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue593.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue593.svg-snap.png
+index ac986eb3..58d3f571 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue593.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue593.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue620.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue620.svg-snap.png
+index e4a513fb..6861ce7a 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue620.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue620.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue690.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue690.svg-snap.png
+index fe473cfd..d3726085 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue690.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue690.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue717.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue717.svg-snap.png
+index dbc0d923..6028667c 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue717.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue717.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue748.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue748.svg-snap.png
+index 44e6df66..2f5ff951 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue748.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue748.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue782a.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue782a.svg-snap.png
+index 162cfd35..296e364c 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue782a.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue782a.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue782b.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue782b.svg-snap.png
+index 3862178f..db4438a8 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue782b.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue782b.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue8.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue8.svg-snap.png
+index 9635f04d..0378cec7 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue8.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue8.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue816.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue816.svg-snap.png
+index 6646215f..7f78d03c 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue816.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue816.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue82.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue82.svg-snap.png
+index b4b2b079..4bd8d21a 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue82.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue82.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue869.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue869.svg-snap.png
+index 5b50469f..cf691c6a 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue869.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue869.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue870.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue870.svg-snap.png
+index 689bcebe..31961cb1 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue870.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue870.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue897b.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue897b.svg-snap.png
+index 3d4470ce..5f327fb6 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue897b.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue897b.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue91.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue91.svg-snap.png
+index 9c2b095d..b6b89392 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue91.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue91.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue94.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue94.svg-snap.png
+index 71967ac2..151e6c6c 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue94.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue94.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue945.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue945.svg-snap.png
+index f9c50bb2..8ae664f8 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue945.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue945.svg-snap.png differ
+diff --git a/test/__image_snapshots__/offscreen-browser-issue99.svg-snap.png b/test/__image_snapshots__/offscreen-browser-issue99.svg-snap.png
+index aec0b49d..24d4e51c 100644
+Binary files a/test/__image_snapshots__/offscreen-browser-issue99.svg-snap.png and b/test/__image_snapshots__/offscreen-browser-issue99.svg-snap.png differ

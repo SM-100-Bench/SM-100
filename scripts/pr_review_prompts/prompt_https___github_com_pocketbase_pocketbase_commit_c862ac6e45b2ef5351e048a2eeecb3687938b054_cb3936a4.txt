@@ -1,0 +1,707 @@
+Please review the following commit for potential bugs:
+
+```
+diff --git a/core/collection_model.go b/core/collection_model.go
+index 107dc194a..c8551129b 100644
+--- a/core/collection_model.go
++++ b/core/collection_model.go
+@@ -35,10 +35,13 @@ func (app *BaseApp) registerCollectionHooks() {
+ 		Id: systemHookIdCollection,
+ 		Func: func(me *ModelEvent) error {
+ 			if ce, ok := newCollectionEventFromModelEvent(me); ok {
+-				return me.App.OnCollectionValidate().Trigger(ce, func(ce *CollectionEvent) error {
++				err := me.App.OnCollectionValidate().Trigger(ce, func(ce *CollectionEvent) error {
+ 					syncModelEventWithCollectionEvent(me, ce)
++					defer syncCollectionEventWithModelEvent(ce, me)
+ 					return me.Next()
+ 				})
++				syncModelEventWithCollectionEvent(me, ce)
++				return err
+ 			}
+ 
+ 			return me.Next()
+@@ -50,10 +53,13 @@ func (app *BaseApp) registerCollectionHooks() {
+ 		Id: systemHookIdCollection,
+ 		Func: func(me *ModelEvent) error {
+ 			if ce, ok := newCollectionEventFromModelEvent(me); ok {
+-				return me.App.OnCollectionCreate().Trigger(ce, func(ce *CollectionEvent) error {
++				err := me.App.OnCollectionCreate().Trigger(ce, func(ce *CollectionEvent) error {
+ 					syncModelEventWithCollectionEvent(me, ce)
++					defer syncCollectionEventWithModelEvent(ce, me)
+ 					return me.Next()
+ 				})
++				syncModelEventWithCollectionEvent(me, ce)
++				return err
+ 			}
+ 
+ 			return me.Next()
+@@ -65,10 +71,13 @@ func (app *BaseApp) registerCollectionHooks() {
+ 		Id: systemHookIdCollection,
+ 		Func: func(me *ModelEvent) error {
+ 			if ce, ok := newCollectionEventFromModelEvent(me); ok {
+-				return me.App.OnCollectionCreateExecute().Trigger(ce, func(ce *CollectionEvent) error {
++				err := me.App.OnCollectionCreateExecute().Trigger(ce, func(ce *CollectionEvent) error {
+ 					syncModelEventWithCollectionEvent(me, ce)
++					defer syncCollectionEventWithModelEvent(ce, me)
+ 					return me.Next()
+ 				})
++				syncModelEventWithCollectionEvent(me, ce)
++				return err
+ 			}
+ 
+ 			return me.Next()
+@@ -80,10 +89,13 @@ func (app *BaseApp) registerCollectionHooks() {
+ 		Id: systemHookIdCollection,
+ 		Func: func(me *ModelEvent) error {
+ 			if ce, ok := newCollectionEventFromModelEvent(me); ok {
+-				return me.App.OnCollectionAfterCreateSuccess().Trigger(ce, func(ce *CollectionEvent) error {
++				err := me.App.OnCollectionAfterCreateSuccess().Trigger(ce, func(ce *CollectionEvent) error {
+ 					syncModelEventWithCollectionEvent(me, ce)
++					defer syncCollectionEventWithModelEvent(ce, me)
+ 					return me.Next()
+ 				})
++				syncModelEventWithCollectionEvent(me, ce)
++				return err
+ 			}
+ 
+ 			return me.Next()
+@@ -95,10 +107,13 @@ func (app *BaseApp) registerCollectionHooks() {
+ 		Id: systemHookIdCollection,
+ 		Func: func(me *ModelErrorEvent) error {
+ 			if ce, ok := newCollectionErrorEventFromModelErrorEvent(me); ok {
+-				return me.App.OnCollectionAfterCreateError().Trigger(ce, func(ce *CollectionErrorEvent) error {
++				err := me.App.OnCollectionAfterCreateError().Trigger(ce, func(ce *CollectionErrorEvent) error {
+ 					syncModelErrorEventWithCollectionErrorEvent(me, ce)
++					defer syncCollectionErrorEventWithModelErrorEvent(ce, me)
+ 					return me.Next()
+ 				})
++				syncModelErrorEventWithCollectionErrorEvent(me, ce)
++				return err
+ 			}
+ 
+ 			return me.Next()
+@@ -110,10 +125,13 @@ func (app *BaseApp) registerCollectionHooks() {
+ 		Id: systemHookIdCollection,
+ 		Func: func(me *ModelEvent) error {
+ 			if ce, ok := newCollectionEventFromModelEvent(me); ok {
+-				return me.App.OnCollectionUpdate().Trigger(ce, func(ce *CollectionEvent) error {
++				err := me.App.OnCollectionUpdate().Trigger(ce, func(ce *CollectionEvent) error {
+ 					syncModelEventWithCollectionEvent(me, ce)
++					defer syncCollectionEventWithModelEvent(ce, me)
+ 					return me.Next()
+ 				})
++				syncModelEventWithCollectionEvent(me, ce)
++				return err
+ 			}
+ 
+ 			return me.Next()
+@@ -125,10 +143,13 @@ func (app *BaseApp) registerCollectionHooks() {
+ 		Id: systemHookIdCollection,
+ 		Func: func(me *ModelEvent) error {
+ 			if ce, ok := newCollectionEventFromModelEvent(me); ok {
+-				return me.App.OnCollectionUpdateExecute().Trigger(ce, func(ce *CollectionEvent) error {
++				err := me.App.OnCollectionUpdateExecute().Trigger(ce, func(ce *CollectionEvent) error {
+ 					syncModelEventWithCollectionEvent(me, ce)
++					defer syncCollectionEventWithModelEvent(ce, me)
+ 					return me.Next()
+ 				})
++				syncModelEventWithCollectionEvent(me, ce)
++				return err
+ 			}
+ 
+ 			return me.Next()
+@@ -140,10 +161,13 @@ func (app *BaseApp) registerCollectionHooks() {
+ 		Id: systemHookIdCollection,
+ 		Func: func(me *ModelEvent) error {
+ 			if ce, ok := newCollectionEventFromModelEvent(me); ok {
+-				return me.App.OnCollectionAfterUpdateSuccess().Trigger(ce, func(ce *CollectionEvent) error {
++				err := me.App.OnCollectionAfterUpdateSuccess().Trigger(ce, func(ce *CollectionEvent) error {
+ 					syncModelEventWithCollectionEvent(me, ce)
++					defer syncCollectionEventWithModelEvent(ce, me)
+ 					return me.Next()
+ 				})
++				syncModelEventWithCollectionEvent(me, ce)
++				return err
+ 			}
+ 
+ 			return me.Next()
+@@ -155,10 +179,13 @@ func (app *BaseApp) registerCollectionHooks() {
+ 		Id: systemHookIdCollection,
+ 		Func: func(me *ModelErrorEvent) error {
+ 			if ce, ok := newCollectionErrorEventFromModelErrorEvent(me); ok {
+-				return me.App.OnCollectionAfterUpdateError().Trigger(ce, func(ce *CollectionErrorEvent) error {
++				err := me.App.OnCollectionAfterUpdateError().Trigger(ce, func(ce *CollectionErrorEvent) error {
+ 					syncModelErrorEventWithCollectionErrorEvent(me, ce)
++					defer syncCollectionErrorEventWithModelErrorEvent(ce, me)
+ 					return me.Next()
+ 				})
++				syncModelErrorEventWithCollectionErrorEvent(me, ce)
++				return err
+ 			}
+ 
+ 			return me.Next()
+@@ -170,10 +197,13 @@ func (app *BaseApp) registerCollectionHooks() {
+ 		Id: systemHookIdCollection,
+ 		Func: func(me *ModelEvent) error {
+ 			if ce, ok := newCollectionEventFromModelEvent(me); ok {
+-				return me.App.OnCollectionDelete().Trigger(ce, func(ce *CollectionEvent) error {
++				err := me.App.OnCollectionDelete().Trigger(ce, func(ce *CollectionEvent) error {
+ 					syncModelEventWithCollectionEvent(me, ce)
++					defer syncCollectionEventWithModelEvent(ce, me)
+ 					return me.Next()
+ 				})
++				syncModelEventWithCollectionEvent(me, ce)
++				return err
+ 			}
+ 
+ 			return me.Next()
+@@ -185,10 +215,13 @@ func (app *BaseApp) registerCollectionHooks() {
+ 		Id: systemHookIdCollection,
+ 		Func: func(me *ModelEvent) error {
+ 			if ce, ok := newCollectionEventFromModelEvent(me); ok {
+-				return me.App.OnCollectionDeleteExecute().Trigger(ce, func(ce *CollectionEvent) error {
++				err := me.App.OnCollectionDeleteExecute().Trigger(ce, func(ce *CollectionEvent) error {
+ 					syncModelEventWithCollectionEvent(me, ce)
++					defer syncCollectionEventWithModelEvent(ce, me)
+ 					return me.Next()
+ 				})
++				syncModelEventWithCollectionEvent(me, ce)
++				return err
+ 			}
+ 
+ 			return me.Next()
+@@ -200,10 +233,13 @@ func (app *BaseApp) registerCollectionHooks() {
+ 		Id: systemHookIdCollection,
+ 		Func: func(me *ModelEvent) error {
+ 			if ce, ok := newCollectionEventFromModelEvent(me); ok {
+-				return me.App.OnCollectionAfterDeleteSuccess().Trigger(ce, func(ce *CollectionEvent) error {
++				err := me.App.OnCollectionAfterDeleteSuccess().Trigger(ce, func(ce *CollectionEvent) error {
+ 					syncModelEventWithCollectionEvent(me, ce)
++					defer syncCollectionEventWithModelEvent(ce, me)
+ 					return me.Next()
+ 				})
++				syncModelEventWithCollectionEvent(me, ce)
++				return err
+ 			}
+ 
+ 			return me.Next()
+@@ -215,10 +251,13 @@ func (app *BaseApp) registerCollectionHooks() {
+ 		Id: systemHookIdCollection,
+ 		Func: func(me *ModelErrorEvent) error {
+ 			if ce, ok := newCollectionErrorEventFromModelErrorEvent(me); ok {
+-				return me.App.OnCollectionAfterDeleteError().Trigger(ce, func(ce *CollectionErrorEvent) error {
++				err := me.App.OnCollectionAfterDeleteError().Trigger(ce, func(ce *CollectionErrorEvent) error {
+ 					syncModelErrorEventWithCollectionErrorEvent(me, ce)
++					defer syncCollectionErrorEventWithModelErrorEvent(ce, me)
+ 					return me.Next()
+ 				})
++				syncModelErrorEventWithCollectionErrorEvent(me, ce)
++				return err
+ 			}
+ 
+ 			return me.Next()
+diff --git a/core/db_tx_test.go b/core/db_tx_test.go
+index 848a86b35..d83f12686 100644
+--- a/core/db_tx_test.go
++++ b/core/db_tx_test.go
+@@ -168,16 +168,28 @@ func TestTransactionHooksCallsOnSuccess(t *testing.T) {
+ 	})
+ 
+ 	app.OnModelAfterCreateSuccess().BindFunc(func(e *core.ModelEvent) error {
++		if e.App.IsTransactional() {
++			t.Fatal("Expected e.App to be non-transactional")
++		}
++
+ 		afterCreateHookCalls++
+ 		return e.Next()
+ 	})
+ 
+ 	app.OnModelAfterUpdateSuccess().BindFunc(func(e *core.ModelEvent) error {
++		if e.App.IsTransactional() {
++			t.Fatal("Expected e.App to be non-transactional")
++		}
++
+ 		afterUpdateHookCalls++
+ 		return e.Next()
+ 	})
+ 
+ 	app.OnModelAfterDeleteSuccess().BindFunc(func(e *core.ModelEvent) error {
++		if e.App.IsTransactional() {
++			t.Fatal("Expected e.App to be non-transactional")
++		}
++
+ 		afterDeleteHookCalls++
+ 		return e.Next()
+ 	})
+@@ -233,3 +245,169 @@ func TestTransactionHooksCallsOnSuccess(t *testing.T) {
+ 		t.Errorf("Expected afterDeleteHookCalls to be called 1 time, got %d", afterDeleteHookCalls)
+ 	}
+ }
++
++func TestTransactionFromInnerCreateHook(t *testing.T) {
++	t.Parallel()
++
++	app, _ := tests.NewTestApp()
++	defer app.Cleanup()
++
++	app.OnRecordCreateExecute("demo2").BindFunc(func(e *core.RecordEvent) error {
++		originalApp := e.App
++		return e.App.RunInTransaction(func(txApp core.App) error {
++			e.App = txApp
++			defer func() {
++				e.App = originalApp
++			}()
++
++			nextErr := e.Next()
++
++			return nextErr
++		})
++	})
++
++	app.OnRecordAfterCreateSuccess("demo2").BindFunc(func(e *core.RecordEvent) error {
++		if e.App.IsTransactional() {
++			t.Fatal("Expected e.App to be non-transactional")
++		}
++
++		// perform a db query with the app instance to ensure that it is still valid
++		_, err := e.App.FindFirstRecordByFilter("demo2", "1=1")
++		if err != nil {
++			t.Fatalf("Failed to perform a db query after tx success: %v", err)
++		}
++
++		return e.Next()
++	})
++
++	collection, err := app.FindCollectionByNameOrId("demo2")
++	if err != nil {
++		t.Fatal(err)
++	}
++
++	record := core.NewRecord(collection)
++
++	record.Set("title", "test_inner_tx")
++
++	if err = app.Save(record); err != nil {
++		t.Fatalf("Create failed: %v", err)
++	}
++
++	expectedHookCalls := map[string]int{
++		"OnRecordCreateExecute":      1,
++		"OnRecordAfterCreateSuccess": 1,
++	}
++	for k, total := range expectedHookCalls {
++		if found, ok := app.EventCalls[k]; !ok || total != found {
++			t.Fatalf("Expected %q %d calls, got %d", k, total, found)
++		}
++	}
++}
++
++func TestTransactionFromInnerUpdateHook(t *testing.T) {
++	t.Parallel()
++
++	app, _ := tests.NewTestApp()
++	defer app.Cleanup()
++
++	app.OnRecordUpdateExecute("demo2").BindFunc(func(e *core.RecordEvent) error {
++		originalApp := e.App
++		return e.App.RunInTransaction(func(txApp core.App) error {
++			e.App = txApp
++			defer func() {
++				e.App = originalApp
++			}()
++
++			nextErr := e.Next()
++
++			return nextErr
++		})
++	})
++
++	app.OnRecordAfterUpdateSuccess("demo2").BindFunc(func(e *core.RecordEvent) error {
++		if e.App.IsTransactional() {
++			t.Fatal("Expected e.App to be non-transactional")
++		}
++
++		// perform a db query with the app instance to ensure that it is still valid
++		_, err := e.App.FindFirstRecordByFilter("demo2", "1=1")
++		if err != nil {
++			t.Fatalf("Failed to perform a db query after tx success: %v", err)
++		}
++
++		return e.Next()
++	})
++
++	existingModel, err := app.FindFirstRecordByFilter("demo2", "1=1")
++	if err != nil {
++		t.Fatal(err)
++	}
++
++	if err = app.Save(existingModel); err != nil {
++		t.Fatalf("Update failed: %v", err)
++	}
++
++	expectedHookCalls := map[string]int{
++		"OnRecordUpdateExecute":      1,
++		"OnRecordAfterUpdateSuccess": 1,
++	}
++	for k, total := range expectedHookCalls {
++		if found, ok := app.EventCalls[k]; !ok || total != found {
++			t.Fatalf("Expected %q %d calls, got %d", k, total, found)
++		}
++	}
++}
++
++func TestTransactionFromInnerDeleteHook(t *testing.T) {
++	t.Parallel()
++
++	app, _ := tests.NewTestApp()
++	defer app.Cleanup()
++
++	app.OnRecordDeleteExecute("demo2").BindFunc(func(e *core.RecordEvent) error {
++		originalApp := e.App
++		return e.App.RunInTransaction(func(txApp core.App) error {
++			e.App = txApp
++			defer func() {
++				e.App = originalApp
++			}()
++
++			nextErr := e.Next()
++
++			return nextErr
++		})
++	})
++
++	app.OnRecordAfterDeleteSuccess("demo2").BindFunc(func(e *core.RecordEvent) error {
++		if e.App.IsTransactional() {
++			t.Fatal("Expected e.App to be non-transactional")
++		}
++
++		// perform a db query with the app instance to ensure that it is still valid
++		_, err := e.App.FindFirstRecordByFilter("demo2", "1=1")
++		if err != nil {
++			t.Fatalf("Failed to perform a db query after tx success: %v", err)
++		}
++
++		return e.Next()
++	})
++
++	existingModel, err := app.FindFirstRecordByFilter("demo2", "1=1")
++	if err != nil {
++		t.Fatal(err)
++	}
++
++	if err = app.Delete(existingModel); err != nil {
++		t.Fatalf("Delete failed: %v", err)
++	}
++
++	expectedHookCalls := map[string]int{
++		"OnRecordDeleteExecute":      1,
++		"OnRecordAfterDeleteSuccess": 1,
++	}
++	for k, total := range expectedHookCalls {
++		if found, ok := app.EventCalls[k]; !ok || total != found {
++			t.Fatalf("Expected %q %d calls, got %d", k, total, found)
++		}
++	}
++}
+diff --git a/core/events.go b/core/events.go
+index bd90f19aa..e38260318 100644
+--- a/core/events.go
++++ b/core/events.go
+@@ -173,8 +173,8 @@ type ModelEvent struct {
+ }
+ 
+ type ModelErrorEvent struct {
+-	ModelEvent
+ 	Error error
++	ModelEvent
+ }
+ 
+ // -------------------------------------------------------------------
+@@ -196,8 +196,8 @@ type RecordEvent struct {
+ }
+ 
+ type RecordErrorEvent struct {
+-	RecordEvent
+ 	Error error
++	RecordEvent
+ }
+ 
+ func syncModelEventWithRecordEvent(me *ModelEvent, re *RecordEvent) {
+@@ -216,6 +216,12 @@ func syncModelEventWithRecordEvent(me *ModelEvent, re *RecordEvent) {
+ 	// }
+ }
+ 
++func syncRecordEventWithModelEvent(re *RecordEvent, me *ModelEvent) {
++	re.App = me.App
++	re.Context = me.Context
++	re.Type = me.Type
++}
++
+ func newRecordEventFromModelEvent(me *ModelEvent) (*RecordEvent, bool) {
+ 	record, ok := me.Model.(*Record)
+ 	if !ok {
+@@ -253,6 +259,11 @@ func syncModelErrorEventWithRecordErrorEvent(me *ModelErrorEvent, re *RecordErro
+ 	me.Error = re.Error
+ }
+ 
++func syncRecordErrorEventWithModelErrorEvent(re *RecordErrorEvent, me *ModelErrorEvent) {
++	syncRecordEventWithModelEvent(&re.RecordEvent, &me.ModelEvent)
++	me.Error = re.Error
++}
++
+ // -------------------------------------------------------------------
+ // Collection events data
+ // -------------------------------------------------------------------
+@@ -272,8 +283,8 @@ type CollectionEvent struct {
+ }
+ 
+ type CollectionErrorEvent struct {
+-	CollectionEvent
+ 	Error error
++	CollectionEvent
+ }
+ 
+ func syncModelEventWithCollectionEvent(me *ModelEvent, ce *CollectionEvent) {
+@@ -283,6 +294,15 @@ func syncModelEventWithCollectionEvent(me *ModelEvent, ce *CollectionEvent) {
+ 	me.Model = ce.Collection
+ }
+ 
++func syncCollectionEventWithModelEvent(ce *CollectionEvent, me *ModelEvent) {
++	ce.App = me.App
++	ce.Context = me.Context
++	ce.Type = me.Type
++	if c, ok := me.Model.(*Collection); ok {
++		ce.Collection = c
++	}
++}
++
+ func newCollectionEventFromModelEvent(me *ModelEvent) (*CollectionEvent, bool) {
+ 	record, ok := me.Model.(*Collection)
+ 	if !ok {
+@@ -316,6 +336,11 @@ func syncModelErrorEventWithCollectionErrorEvent(me *ModelErrorEvent, ce *Collec
+ 	me.Error = ce.Error
+ }
+ 
++func syncCollectionErrorEventWithModelErrorEvent(ce *CollectionErrorEvent, me *ModelErrorEvent) {
++	syncCollectionEventWithModelEvent(&ce.CollectionEvent, &me.ModelEvent)
++	me.Error = ce.Error
++}
++
+ // -------------------------------------------------------------------
+ // File API events data
+ // -------------------------------------------------------------------
+diff --git a/core/record_model.go b/core/record_model.go
+index 0b38f2dd1..3eb8601ea 100644
+--- a/core/record_model.go
++++ b/core/record_model.go
+@@ -55,10 +55,13 @@ func (app *BaseApp) registerRecordHooks() {
+ 		Id: systemHookIdRecord,
+ 		Func: func(me *ModelEvent) error {
+ 			if re, ok := newRecordEventFromModelEvent(me); ok {
+-				return me.App.OnRecordValidate().Trigger(re, func(re *RecordEvent) error {
++				err := me.App.OnRecordValidate().Trigger(re, func(re *RecordEvent) error {
+ 					syncModelEventWithRecordEvent(me, re)
++					defer syncRecordEventWithModelEvent(re, me)
+ 					return me.Next()
+ 				})
++				syncModelEventWithRecordEvent(me, re)
++				return err
+ 			}
+ 
+ 			return me.Next()
+@@ -70,10 +73,13 @@ func (app *BaseApp) registerRecordHooks() {
+ 		Id: systemHookIdRecord,
+ 		Func: func(me *ModelEvent) error {
+ 			if re, ok := newRecordEventFromModelEvent(me); ok {
+-				return me.App.OnRecordCreate().Trigger(re, func(re *RecordEvent) error {
++				err := me.App.OnRecordCreate().Trigger(re, func(re *RecordEvent) error {
+ 					syncModelEventWithRecordEvent(me, re)
++					defer syncRecordEventWithModelEvent(re, me)
+ 					return me.Next()
+ 				})
++				syncModelEventWithRecordEvent(me, re)
++				return err
+ 			}
+ 
+ 			return me.Next()
+@@ -85,10 +91,13 @@ func (app *BaseApp) registerRecordHooks() {
+ 		Id: systemHookIdRecord,
+ 		Func: func(me *ModelEvent) error {
+ 			if re, ok := newRecordEventFromModelEvent(me); ok {
+-				return me.App.OnRecordCreateExecute().Trigger(re, func(re *RecordEvent) error {
++				err := me.App.OnRecordCreateExecute().Trigger(re, func(re *RecordEvent) error {
+ 					syncModelEventWithRecordEvent(me, re)
++					defer syncRecordEventWithModelEvent(re, me)
+ 					return me.Next()
+ 				})
++				syncModelEventWithRecordEvent(me, re)
++				return err
+ 			}
+ 
+ 			return me.Next()
+@@ -100,10 +109,13 @@ func (app *BaseApp) registerRecordHooks() {
+ 		Id: systemHookIdRecord,
+ 		Func: func(me *ModelEvent) error {
+ 			if re, ok := newRecordEventFromModelEvent(me); ok {
+-				return me.App.OnRecordAfterCreateSuccess().Trigger(re, func(re *RecordEvent) error {
++				err := me.App.OnRecordAfterCreateSuccess().Trigger(re, func(re *RecordEvent) error {
+ 					syncModelEventWithRecordEvent(me, re)
++					defer syncRecordEventWithModelEvent(re, me)
+ 					return me.Next()
+ 				})
++				syncModelEventWithRecordEvent(me, re)
++				return err
+ 			}
+ 
+ 			return me.Next()
+@@ -115,10 +127,13 @@ func (app *BaseApp) registerRecordHooks() {
+ 		Id: systemHookIdRecord,
+ 		Func: func(me *ModelErrorEvent) error {
+ 			if re, ok := newRecordErrorEventFromModelErrorEvent(me); ok {
+-				return me.App.OnRecordAfterCreateError().Trigger(re, func(re *RecordErrorEvent) error {
++				err := me.App.OnRecordAfterCreateError().Trigger(re, func(re *RecordErrorEvent) error {
+ 					syncModelErrorEventWithRecordErrorEvent(me, re)
++					defer syncRecordErrorEventWithModelErrorEvent(re, me)
+ 					return me.Next()
+ 				})
++				syncModelErrorEventWithRecordErrorEvent(me, re)
++				return err
+ 			}
+ 
+ 			return me.Next()
+@@ -130,10 +145,13 @@ func (app *BaseApp) registerRecordHooks() {
+ 		Id: systemHookIdRecord,
+ 		Func: func(me *ModelEvent) error {
+ 			if re, ok := newRecordEventFromModelEvent(me); ok {
+-				return me.App.OnRecordUpdate().Trigger(re, func(re *RecordEvent) error {
++				err := me.App.OnRecordUpdate().Trigger(re, func(re *RecordEvent) error {
+ 					syncModelEventWithRecordEvent(me, re)
++					defer syncRecordEventWithModelEvent(re, me)
+ 					return me.Next()
+ 				})
++				syncModelEventWithRecordEvent(me, re)
++				return err
+ 			}
+ 
+ 			return me.Next()
+@@ -145,10 +163,13 @@ func (app *BaseApp) registerRecordHooks() {
+ 		Id: systemHookIdRecord,
+ 		Func: func(me *ModelEvent) error {
+ 			if re, ok := newRecordEventFromModelEvent(me); ok {
+-				return me.App.OnRecordUpdateExecute().Trigger(re, func(re *RecordEvent) error {
++				err := me.App.OnRecordUpdateExecute().Trigger(re, func(re *RecordEvent) error {
+ 					syncModelEventWithRecordEvent(me, re)
++					defer syncRecordEventWithModelEvent(re, me)
+ 					return me.Next()
+ 				})
++				syncModelEventWithRecordEvent(me, re)
++				return err
+ 			}
+ 
+ 			return me.Next()
+@@ -160,10 +181,13 @@ func (app *BaseApp) registerRecordHooks() {
+ 		Id: systemHookIdRecord,
+ 		Func: func(me *ModelEvent) error {
+ 			if re, ok := newRecordEventFromModelEvent(me); ok {
+-				return me.App.OnRecordAfterUpdateSuccess().Trigger(re, func(re *RecordEvent) error {
++				err := me.App.OnRecordAfterUpdateSuccess().Trigger(re, func(re *RecordEvent) error {
+ 					syncModelEventWithRecordEvent(me, re)
++					defer syncRecordEventWithModelEvent(re, me)
+ 					return me.Next()
+ 				})
++				syncModelEventWithRecordEvent(me, re)
++				return err
+ 			}
+ 
+ 			return me.Next()
+@@ -175,10 +199,13 @@ func (app *BaseApp) registerRecordHooks() {
+ 		Id: systemHookIdRecord,
+ 		Func: func(me *ModelErrorEvent) error {
+ 			if re, ok := newRecordErrorEventFromModelErrorEvent(me); ok {
+-				return me.App.OnRecordAfterUpdateError().Trigger(re, func(re *RecordErrorEvent) error {
++				err := me.App.OnRecordAfterUpdateError().Trigger(re, func(re *RecordErrorEvent) error {
+ 					syncModelErrorEventWithRecordErrorEvent(me, re)
++					defer syncRecordErrorEventWithModelErrorEvent(re, me)
+ 					return me.Next()
+ 				})
++				syncModelErrorEventWithRecordErrorEvent(me, re)
++				return err
+ 			}
+ 
+ 			return me.Next()
+@@ -190,10 +217,13 @@ func (app *BaseApp) registerRecordHooks() {
+ 		Id: systemHookIdRecord,
+ 		Func: func(me *ModelEvent) error {
+ 			if re, ok := newRecordEventFromModelEvent(me); ok {
+-				return me.App.OnRecordDelete().Trigger(re, func(re *RecordEvent) error {
++				err := me.App.OnRecordDelete().Trigger(re, func(re *RecordEvent) error {
+ 					syncModelEventWithRecordEvent(me, re)
++					defer syncRecordEventWithModelEvent(re, me)
+ 					return me.Next()
+ 				})
++				syncModelEventWithRecordEvent(me, re)
++				return err
+ 			}
+ 
+ 			return me.Next()
+@@ -205,10 +235,13 @@ func (app *BaseApp) registerRecordHooks() {
+ 		Id: systemHookIdRecord,
+ 		Func: func(me *ModelEvent) error {
+ 			if re, ok := newRecordEventFromModelEvent(me); ok {
+-				return me.App.OnRecordDeleteExecute().Trigger(re, func(re *RecordEvent) error {
++				err := me.App.OnRecordDeleteExecute().Trigger(re, func(re *RecordEvent) error {
+ 					syncModelEventWithRecordEvent(me, re)
++					defer syncRecordEventWithModelEvent(re, me)
+ 					return me.Next()
+ 				})
++				syncModelEventWithRecordEvent(me, re)
++				return err
+ 			}
+ 
+ 			return me.Next()
+@@ -220,10 +253,13 @@ func (app *BaseApp) registerRecordHooks() {
+ 		Id: systemHookIdRecord,
+ 		Func: func(me *ModelEvent) error {
+ 			if re, ok := newRecordEventFromModelEvent(me); ok {
+-				return me.App.OnRecordAfterDeleteSuccess().Trigger(re, func(re *RecordEvent) error {
++				err := me.App.OnRecordAfterDeleteSuccess().Trigger(re, func(re *RecordEvent) error {
+ 					syncModelEventWithRecordEvent(me, re)
++					defer syncRecordEventWithModelEvent(re, me)
+ 					return me.Next()
+ 				})
++				syncModelEventWithRecordEvent(me, re)
++				return err
+ 			}
+ 
+ 			return me.Next()
+@@ -235,10 +271,13 @@ func (app *BaseApp) registerRecordHooks() {
+ 		Id: systemHookIdRecord,
+ 		Func: func(me *ModelErrorEvent) error {
+ 			if re, ok := newRecordErrorEventFromModelErrorEvent(me); ok {
+-				return me.App.OnRecordAfterDeleteError().Trigger(re, func(re *RecordErrorEvent) error {
++				err := me.App.OnRecordAfterDeleteError().Trigger(re, func(re *RecordErrorEvent) error {
+ 					syncModelErrorEventWithRecordErrorEvent(me, re)
++					defer syncRecordErrorEventWithModelErrorEvent(re, me)
+ 					return me.Next()
+ 				})
++				syncModelErrorEventWithRecordErrorEvent(me, re)
++				return err
+ 			}
+ 
+ 			return me.Next()
+
+```
+
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Report all of your findings in a single JSON object with the following format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

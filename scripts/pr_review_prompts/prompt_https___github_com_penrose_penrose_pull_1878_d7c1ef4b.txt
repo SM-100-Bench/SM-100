@@ -1,0 +1,5053 @@
+Please review the following commit for potential bugs:
+
+```
+diff --git a/docs/assets/output.svg b/docs/assets/output.svg
+index 6efe679080..7bd9d3fa24 100644
+--- a/docs/assets/output.svg
++++ b/docs/assets/output.svg
+@@ -6,31 +6,31 @@
+ >
+   <penrose>
+     <croppedViewBox>
+-      220.60076617046062 23.290205197822388 579.3504589259733 579.3504589259733
++      220.2021834054785 21.723466213547454 579.7888945679806 579.7888945679806
+     </croppedViewBox>
+   </penrose>
+   <circle
+     fill="#9be1b0"
+     fill-opacity="0.5"
+-    cx="510.2759956334472"
+-    cy="312.965434660809"
++    cx="510.09663068946884"
++    cy="311.61791349753776"
+     stroke="none"
+-    r="289.67522946298664"
++    r="289.8944472839903"
+   >
+     <title>`A`.icon</title>
+   </circle>
+   <circle
+     fill="#b1414f"
+     fill-opacity="0.5"
+-    cx="501.72747367146314"
+-    cy="153.89350764057403"
++    cx="502.1487958856517"
++    cy="154.05130978913954"
+     stroke="none"
+-    r="125.20590474429929"
++    r="124.35468124400134"
+   >
+     <title>`C`.icon</title>
+   </circle>
+   <g
+-    transform="rotate(0, 501.72788582108535, 153.89472064422029)translate(489.5678858210853, 142.26272064422028)"
++    transform="rotate(0, 502.1487958856517, 154.05130978913954)translate(489.98879588565165, 142.41930978913953)"
+   >
+     <title>`C`.text</title>
+     <svg
+@@ -63,15 +63,15 @@
+   <circle
+     fill="#65d247"
+     fill-opacity="0.5"
+-    cx="322.99396118509554"
+-    cy="283.6832507500245"
++    cx="323.2466393175676"
++    cy="282.3049625294924"
+     stroke="none"
+-    r="95.02996699989669"
++    r="95.16465456201692"
+   >
+     <title>`B`.icon</title>
+   </circle>
+   <g
+-    transform="rotate(0, 322.9930286897022, 283.6822632971225)translate(310.8490286897022, 272.7542632971225)"
++    transform="rotate(0, 323.2466393175676, 282.3049625294924)translate(311.1026393175676, 271.3769625294924)"
+   >
+     <title>`B`.text</title>
+     <svg
+@@ -104,15 +104,15 @@
+   <circle
+     fill="#66a25d"
+     fill-opacity="0.5"
+-    cx="445.43023271319345"
+-    cy="204.00854009421914"
++    cx="444.23224134281793"
++    cy="204.89971846197724"
+     stroke="none"
+-    r="29.58988359277994"
++    r="29.830018753904447"
+   >
+     <title>`F`.icon</title>
+   </circle>
+   <g
+-    transform="rotate(0, 445.43048047782884, 204.00848788115627)translate(433.44648047782886, 193.12848788115627)"
++    transform="rotate(0, 444.23224134281793, 204.89971846197727)translate(432.24824134281795, 194.01971846197728)"
+   >
+     <title>`F`.text</title>
+     <svg
+@@ -145,15 +145,15 @@
+   <circle
+     fill="#90a61e"
+     fill-opacity="0.5"
+-    cx="266.91438303995557"
+-    cy="297.55949352298353"
++    cx="267.17216482103754"
++    cy="297.94327035223915"
+     stroke="none"
+-    r="29.458271445344895"
++    r="26.720008825253906"
+   >
+     <title>`D`.icon</title>
+   </circle>
+   <g
+-    transform="rotate(0, 266.91381781356665, 297.5592068617133)translate(253.66581781356666, 286.6312068617133)"
++    transform="rotate(0, 267.17216482103754, 297.94327035223915)translate(253.92416482103755, 287.01527035223916)"
+   >
+     <title>`D`.text</title>
+     <svg
+@@ -186,15 +186,15 @@
+   <circle
+     fill="#521a4e"
+     fill-opacity="0.5"
+-    cx="327.7679180654364"
+-    cy="342.1378157281079"
++    cx="327.6516043297507"
++    cy="342.32161013973337"
+     stroke="none"
+-    r="31.38078332231827"
++    r="29.97316108016587"
+   >
+     <title>`E`.icon</title>
+   </circle>
+   <g
+-    transform="rotate(0, 327.76809889079635, 342.1386825075092)translate(315.54409889079636, 331.2586825075092)"
++    transform="rotate(0, 327.6516043297507, 342.32161013973337)translate(315.4276043297507, 331.44161013973337)"
+   >
+     <title>`E`.text</title>
+     <svg
+@@ -225,7 +225,7 @@
+     </svg>
+   </g>
+   <g
+-    transform="rotate(0, 510.2754700849809, 312.96412273896146)translate(498.2754700849809, 301.50812273896145)"
++    transform="rotate(0, 510.09663068946884, 311.61791349753776)translate(498.09663068946884, 300.16191349753774)"
+   >
+     <title>`A`.text</title>
+     <svg
+@@ -258,15 +258,15 @@
+   <circle
+     fill="#7439e5"
+     fill-opacity="0.5"
+-    cx="422.42094824561354"
+-    cy="124.87153920739226"
++    cx="422.4660943051922"
++    cy="125.06530668931754"
+     stroke="none"
+-    r="29.62322726439293"
++    r="30.36143610275003"
+   >
+     <title>`G`.icon</title>
+   </circle>
+   <g
+-    transform="rotate(0, 422.4209404537282, 124.87149506042681)translate(409.84494045372816, 113.2394950604268)"
++    transform="rotate(0, 422.4660943051922, 125.06530668931754)translate(409.8900943051922, 113.43330668931753)"
+   >
+     <title>`G`.text</title>
+     <svg
+diff --git a/packages/core/package.json b/packages/core/package.json
+index fccb5704b4..5acab50355 100644
+--- a/packages/core/package.json
++++ b/packages/core/package.json
+@@ -102,6 +102,7 @@
+     "pandemonium": "^2.0.0",
+     "poly-partition": "^1.0.2",
+     "recursive-diff": "^1.0.8",
++    "rose": "^0.4.5",
+     "seedrandom": "^3.0.5",
+     "true-myth": "^4.1.0"
+   },
+@@ -121,6 +122,7 @@
+     "svgo": "^3.0.2",
+     "tslib": "^2.1.0",
+     "typedoc": "^0.24.7",
+-    "typedoc-plugin-markdown": "^3.11.13"
++    "typedoc-plugin-markdown": "^3.11.13",
++    "vite-plugin-top-level-await": "^1.4.1"
+   }
+ }
+diff --git a/packages/core/src/engine/Autodiff.test.ts b/packages/core/src/engine/Autodiff.test.ts
+index 919529a60b..6ccbb1fad4 100644
+--- a/packages/core/src/engine/Autodiff.test.ts
++++ b/packages/core/src/engine/Autodiff.test.ts
+@@ -1,140 +1,28 @@
+ import _ from "lodash";
+ import seedrandom from "seedrandom";
+ import { describe, expect, test } from "vitest";
+-import { numsOf } from "../lib/Utils.js";
+ import * as ad from "../types/ad.js";
+ import { eqList, randList } from "../utils/Util.js";
+ import {
+   compile,
+   fns,
+-  genCode,
+-  genCodeSync,
++  genGradient,
+   logAD,
+-  makeGraph,
+-  primaryGraph,
+   problem,
+-  secondaryGraph,
+   variable,
+ } from "./Autodiff.js";
+ import {
+   add,
+-  addN,
+   div,
+-  eq,
+   ifCond,
+   lt,
+   max,
+-  min,
+   mul,
+-  neg,
+-  polyRoots,
+   sin,
+-  sqrt,
+   squared,
+   sub,
+ } from "./AutodiffFunctions.js";
+ 
+-describe("makeGraph tests", () => {
+-  test("secondary outputs", () => {
+-    // the values 0 don't matter for this test
+-    const x = variable(0);
+-    const y = variable(0);
+-    const sum = add(x, y);
+-    const product = mul(x, y);
+-    const difference = sub(x, y);
+-
+-    const { graph, gradient, secondary } = secondaryGraph([
+-      sum,
+-      product,
+-      difference,
+-    ]);
+-
+-    expect(gradient.size).toBe(0); // no inputs reachable from primary output
+-    expect(secondary.length).toBe(3);
+-
+-    const nodes: ad.Node[] = secondary.map((id) => graph.node(id));
+-    expect(nodes[0]).toEqual({ tag: "Binary", binop: "+" });
+-    expect(nodes[1]).toEqual({ tag: "Binary", binop: "*" });
+-    expect(nodes[2]).toEqual({ tag: "Binary", binop: "-" });
+-  });
+-
+-  test("no expression swell", () => {
+-    // https://arxiv.org/pdf/1904.02990.pdf Figure 2
+-    const x1 = variable(0); // 0, doesn't matter for this test
+-    const t1 = mul(x1, x1);
+-    const t2 = mul(t1, t1);
+-    const f = mul(t2, t2);
+-
+-    const { graph } = secondaryGraph([f]);
+-
+-    // x1, t1, t2, f, and the constant primary node 1
+-    expect(graph.nodeCount()).toBe(5);
+-  });
+-});
+-
+-describe("genCode tests", () => {
+-  test("zero addends", async () => {
+-    const f = await genCode();
+-    expect(f((x) => x.val)).toEqual({
+-      gradient: new Map(),
+-      primary: 0,
+-      secondary: [],
+-    });
+-  });
+-
+-  test("zero addends sync", () => {
+-    const f = genCodeSync();
+-    expect(f((x) => x.val)).toEqual({
+-      gradient: new Map(),
+-      primary: 0,
+-      secondary: [],
+-    });
+-  });
+-
+-  test("multiple addends", () => {
+-    const x = variable(2);
+-    const g = primaryGraph(x);
+-    const f = genCodeSync(g, g, g);
+-    expect(f((x) => x.val)).toEqual({
+-      gradient: new Map([[x, 3]]),
+-      primary: 6,
+-      secondary: [],
+-    });
+-  });
+-
+-  test("multiple graphs with secondary outputs", () => {
+-    const v1 = [5];
+-    const v2 = [];
+-    v2[1] = 8;
+-    const f = genCodeSync(secondaryGraph(v1), secondaryGraph(v2));
+-    expect(f((x) => x.val).secondary).toEqual([5, 8]);
+-  });
+-
+-  test("secondary outputs must not conflict", () => {
+-    const g1 = secondaryGraph([5]);
+-    const g2 = secondaryGraph([8]);
+-    expect(() => genCodeSync(g1, g2)).toThrow(
+-      "secondary output 0 is present in 2 graphs",
+-    );
+-  });
+-
+-  test("mask", () => {
+-    const primary = variable(13);
+-    const v1 = [5];
+-    const v2 = [];
+-    v2[1] = 8;
+-    const f = genCodeSync(
+-      makeGraph({ primary, secondary: v2 }),
+-      makeGraph({ primary, secondary: v1 }),
+-    );
+-    expect(f((x) => x.val, [true, false])).toEqual({
+-      gradient: new Map([[primary, 1]]),
+-      primary: 13,
+-      secondary: [0, 8],
+-    });
+-  });
+-});
+-
+ describe("problem tests", () => {
+   const f = (x: ad.Num, y: ad.Num) => add(squared(sub(x, y)), squared(x));
+ 
+@@ -200,42 +88,15 @@ export const _gradFiniteDiff = (f: (args: number[]) => number) => {
+ const NUM_SAMPLES = 5; // Number of samples to evaluate gradient tests at
+ 
+ describe("symbolic differentiation tests", () => {
+-  test("grad finite diff", () => {
+-    testGradFiniteDiff();
+-  });
+-  test("graph 0", () => {
+-    testGradSymbolic(0, gradGraph0());
+-  });
+-  test("graph 1", () => {
+-    testGradSymbolic(1, gradGraph1());
+-  });
+-
+-  test("graph 2", () => {
+-    testGradSymbolic(2, gradGraph2());
+-  });
+-
+-  test("graph 3", () => {
+-    testGradSymbolic(3, gradGraph3());
+-  });
+-  test("graph 4", () => {
+-    testGradSymbolic(4, gradGraph4());
+-  });
+-
+-  test("graph 5", () => {
+-    testGradSymbolic(5, gradGraph5());
+-  });
+-
+-  test("graph 6", () => {
+-    testGradSymbolic(6, gradGraph6());
+-  });
+-
+-  test("graph 7", () => {
+-    testGradSymbolic(7, gradGraph7());
+-  });
+-
+-  test("graph 8", () => {
+-    testGradSymbolic(8, gradGraph8());
+-  });
++  test("grad finite diff", () => testGradFiniteDiff());
++  test("graph 0", () => testGradSymbolic(0, gradGraph0()));
++  test("graph 1", () => testGradSymbolic(1, gradGraph1()));
++  test("graph 2", () => testGradSymbolic(2, gradGraph2()));
++  test("graph 3", () => testGradSymbolic(3, gradGraph3()));
++  test("graph 4", () => testGradSymbolic(4, gradGraph4()));
++  test("graph 5", () => testGradSymbolic(5, gradGraph5()));
++  test("graph 6", () => testGradSymbolic(6, gradGraph6()));
++  test("graph 7", () => testGradSymbolic(7, gradGraph7()));
+ });
+ 
+ //#region Functions for testing numeric and symbolic gradients
+@@ -346,41 +207,32 @@ const gradGraph7 = (): GradGraph => {
+   return { inputs: [x0, x1], output: head };
+ };
+ 
+-// Test polyRoots
+-const gradGraph8 = (): GradGraph => {
+-  logAD.info("test polyRoots");
+-
+-  // Build energy/gradient graph
+-  const x0 = variable(0);
+-  const x1 = variable(0);
+-  const x2 = variable(0);
+-  const x3 = variable(0);
+-  const x4 = variable(0);
+-  const roots = polyRoots([x0, x1, x2, x3, x4]);
+-  const head = addN(roots.map((r) => ifCond(eq(r, r), r, 0)));
+-  return { inputs: [x0, x1, x2, x3, x4], output: head };
+-};
+-
+-const makeFunc = (
++const makeFunc = async (
+   g: GradGraph,
+-): ((xs: number[]) => { output: number; gradient: number[] }) => {
+-  const indices = new Map(g.inputs.map((x, i) => [x, i]));
+-  const f = genCodeSync(primaryGraph(g.output));
++): Promise<(xs: number[]) => { output: number; gradient: number[] }> => {
++  const f = await genGradient(g.inputs, [g.output], []);
+   return (xs: number[]) => {
+-    const outputs = f((x) => xs[indices.get(x)!]);
+-    const gradient = xs.map(() => 0);
+-    for (const [v, x] of outputs.gradient) gradient[indices.get(v)!] = x;
+-    return { output: outputs.primary, gradient };
++    const masks = {
++      inputMask: g.inputs.map(() => true),
++      objMask: [true],
++      constrMask: [],
++    };
++    const grad = new Float64Array(g.inputs.length);
++    const { phi } = f(masks, new Float64Array(xs), 0, grad);
++    return { output: phi, gradient: Array.from(grad) };
+   };
+ };
+ 
+ // Compile the gradient and check it against numeric gradients
+ // TODO: Currently the tests will "fail" if the magnitude is greater than `eqList`'s sensitivity. Fix this.
+-const testGradSymbolic = (testNum: number, graph: GradGraph): void => {
++const testGradSymbolic = async (
++  testNum: number,
++  graph: GradGraph,
++): Promise<void> => {
+   const rng = seedrandom(`testGradSymbolic graph ${testNum}`);
+ 
+   // Synthesize energy and gradient code
+-  const f0 = makeFunc(graph);
++  const f0 = await makeFunc(graph);
+ 
+   const f = (xs: number[]) => f0(xs).output;
+   const gradGen = (xs: number[]) => f0(xs).gradient;
+@@ -422,102 +274,3 @@ const gradGraph0 = (): GradGraph => {
+ };
+ 
+ //#endregion
+-
+-describe("polyRoots tests", () => {
+-  test("degree 1", () => {
+-    const x = 42;
+-    const v = variable(x);
+-    const [z] = polyRoots([v]);
+-    const g = primaryGraph(z);
+-    const f = genCodeSync(g);
+-    expect(f((v) => v.val)).toEqual({
+-      gradient: new Map([[v, -1]]),
+-      primary: -x,
+-      secondary: [],
+-    });
+-  });
+-
+-  type F = (v: ad.Num, w: ad.Num) => ad.Num;
+-
+-  // check that `polyRoots` gives the same answer as just doing symbolic
+-  // differentiation on the quadratic formula
+-  const testQuadratic = (f1: F, f2: F) => {
+-    const x1 = Math.PI;
+-    const x2 = Math.E;
+-
+-    const a = 1;
+-    const b = variable(-(x1 + x2));
+-    const c = variable(x1 * x2);
+-
+-    const closedForm = genCodeSync(
+-      primaryGraph(
+-        // c + bx + ax²
+-        div(f1(neg(b), sqrt(sub(squared(b), mul(4, mul(a, c))))), mul(2, a)),
+-      ),
+-    );
+-
+-    const [r1, r2] = polyRoots([c, b]); // c + bx + x²; recall that a = 1
+-    const implicit = genCodeSync(primaryGraph(f2(r1, r2)));
+-
+-    const received = implicit((x) => x.val);
+-    const expected = closedForm((x) => x.val);
+-
+-    expect(received.primary).toBeCloseTo(expected.primary);
+-
+-    const inputs = new Set([b, c]);
+-    expect(new Set(received.gradient.keys())).toEqual(inputs);
+-    expect(new Set(expected.gradient.keys())).toEqual(inputs);
+-    expect(received.gradient.get(b)).toBeCloseTo(expected.gradient.get(b)!);
+-    expect(received.gradient.get(c)).toBeCloseTo(expected.gradient.get(c)!);
+-  };
+-
+-  test("quadratic formula min root", () => {
+-    testQuadratic(sub, min);
+-  });
+-
+-  test("quadratic formula max root", () => {
+-    testQuadratic(add, max);
+-  });
+-
+-  test("cubic with only one real root", () => {
+-    const [c0, c1, c2] = [variable(8), variable(0), variable(0)];
+-    const [r1, r2, r3] = polyRoots([c0, c1, c2]);
+-
+-    // get the first real root we can find
+-    const z = ifCond(eq(r1, r1), r1, ifCond(eq(r2, r2), r2, r3));
+-
+-    const f = genCodeSync(makeGraph({ primary: z, secondary: [r1, r2, r3] }));
+-
+-    const { gradient, primary, secondary } = f((v) => v.val);
+-
+-    expect(secondary.filter(Number.isNaN).length).toBe(2);
+-    const realRoots = secondary.filter((x) => !Number.isNaN(x));
+-    expect(realRoots.length).toBe(1);
+-    const [x] = realRoots;
+-    expect(x).toBeCloseTo(-2);
+-
+-    expect(primary).toBeCloseTo(-2);
+-
+-    expect(new Set(gradient.keys())).toEqual(new Set([c0, c1, c2]));
+-    expect(gradient.get(c0)).toBeCloseTo(-1 / 12);
+-    expect(gradient.get(c1)).toBeCloseTo(1 / 6);
+-    expect(gradient.get(c2)).toBeCloseTo(-1 / 3);
+-  });
+-
+-  test("quintic", () => {
+-    const [c0, c1, c2, c3, c4] = [
+-      variable(-120),
+-      variable(274),
+-      variable(-225),
+-      variable(85),
+-      variable(-15),
+-    ];
+-    const roots = numsOf(polyRoots([c0, c1, c2, c3, c4]));
+-    roots.sort((a, b) => a - b);
+-    expect(roots[0]).toBeCloseTo(1);
+-    expect(roots[1]).toBeCloseTo(2);
+-    expect(roots[2]).toBeCloseTo(3);
+-    expect(roots[3]).toBeCloseTo(4);
+-    expect(roots[4]).toBeCloseTo(5);
+-  });
+-});
+diff --git a/packages/core/src/engine/Autodiff.ts b/packages/core/src/engine/Autodiff.ts
+index 8066275488..3172e81fac 100644
+--- a/packages/core/src/engine/Autodiff.ts
++++ b/packages/core/src/engine/Autodiff.ts
+@@ -1,583 +1,126 @@
+-import { Queue } from "@datastructures-js/queue";
+ import consola from "consola";
+ import _ from "lodash";
+ import { EigenvalueDecomposition, Matrix } from "ml-matrix";
++import * as rose from "rose";
+ import * as ad from "../types/ad.js";
+-import Graph from "../utils/Graph.js";
+-import { unwrap, zip2 } from "../utils/Util.js";
+-import * as wasm from "../utils/Wasm.js";
++import { topsort } from "../utils/Util.js";
+ import {
+   absVal,
+   acos,
+   add,
+-  addN,
+   atan2,
+   cos,
+-  cosh,
+   div,
+-  eq,
+-  exp,
+-  gt,
+-  ifCond,
+-  inverse,
+-  ln,
+-  lt,
+   max,
+   mul,
+   neg,
+-  pow,
+-  sign,
+   sin,
+-  sinh,
+   sqrt,
+   squared,
+   sub,
+ } from "./AutodiffFunctions.js";
++import * as builtins from "./Builtins.js";
+ import { Params, start, stepUntil } from "./Optimizer.js";
+ 
+-// To view logs, use LogLevel.Trace, otherwese LogLevel.Warn
+-// const log = consola.create({ level: LogLevel.Trace }).withScope("Optimizer");
+-export const logAD = (consola as any)
+-  .create({ level: (consola as any).LogLevel.Warn })
+-  .withScope("Optimizer");
+-
+-export const EPS_DENOM = 10e-6; // Avoid divide-by-zero in denominator
+-
+-export const variable = (val: number): ad.Var => ({ tag: "Var", val });
+-
+-// most `ad.Num`s are already `ad.Node`s, but this function returns a new object
+-// with all the children removed
+-const makeNode = (getKey: (x: ad.Var) => number, x: ad.Expr): ad.Node => {
+-  if (typeof x === "number") {
+-    return { tag: "Const", val: x };
+-  }
+-  const { tag } = x;
+-  switch (tag) {
+-    case "Var": {
+-      return { tag, key: getKey(x) };
+-    }
+-    case "Not": {
+-      return { tag };
+-    }
+-    case "Unary": {
+-      const { unop } = x;
+-      return { tag, unop };
+-    }
+-    case "Binary": {
+-      const { binop } = x;
+-      return { tag, binop };
+-    }
+-    case "Comp": {
+-      const { binop } = x;
+-      return { tag, binop };
+-    }
+-    case "Logic": {
+-      const { binop } = x;
+-      return { tag, binop };
+-    }
+-    case "Ternary": {
+-      return { tag };
+-    }
+-    case "Nary": {
+-      const { op } = x;
+-      return { tag, op };
+-    }
+-    case "PolyRoots": {
+-      const { degree } = x;
+-      return { tag, degree };
+-    }
+-    case "Index": {
+-      const { index } = x;
+-      return { tag, index };
+-    }
+-  }
+-};
+-
+-const unarySensitivity = (z: ad.Unary): ad.Num => {
+-  const { unop, param: v } = z;
+-  switch (unop) {
+-    case "neg": {
+-      return -1;
+-    }
+-    case "squared": {
+-      return mul(2, v);
+-    }
+-    case "sqrt": {
+-      // NOTE: Watch out for divide by zero in 1 / [2 sqrt(x)]
+-      return div(1 / 2, max(EPS_DENOM, z));
+-    }
+-    case "inverse": {
+-      return neg(squared(z));
+-    }
+-    case "abs": {
+-      return sign(v);
+-    }
+-    case "acosh": {
+-      return inverse(mul(sqrt(sub(v, 1)), sqrt(add(v, 1))));
+-    }
+-    case "acos": {
+-      return neg(inverse(sqrt(sub(1, squared(v)))));
+-    }
+-    case "asin": {
+-      return inverse(sqrt(sub(1, squared(v))));
+-    }
+-    case "asinh": {
+-      return inverse(sqrt(add(1, squared(v))));
+-    }
+-    case "atan": {
+-      return inverse(add(1, squared(v)));
+-    }
+-    case "atanh": {
+-      return inverse(sub(1, squared(v)));
+-    }
+-    case "cbrt": {
+-      return div(1 / 3, squared(z));
+-    }
+-    case "ceil":
+-    case "floor":
+-    case "round":
+-    case "sign":
+-    case "trunc": {
+-      return 0;
+-    }
+-    case "cos": {
+-      return neg(sin(v));
+-    }
+-    case "cosh": {
+-      return sinh(v);
+-    }
+-    case "exp": {
+-      return z;
+-    }
+-    case "expm1": {
+-      return exp(v);
+-    }
+-    case "log": {
+-      return inverse(v);
+-    }
+-    case "log2": {
+-      return div(Math.LOG2E, v);
+-    }
+-    case "log10": {
+-      return div(Math.LOG10E, v);
+-    }
+-    case "log1p": {
+-      return inverse(add(1, v));
+-    }
+-    case "sin": {
+-      return cos(v);
+-    }
+-    case "sinh": {
+-      return cosh(v);
+-    }
+-    case "tan": {
+-      return squared(inverse(cos(v)));
+-    }
+-    case "tanh": {
+-      return squared(inverse(cosh(v)));
+-    }
+-  }
+-};
+-
+-const binarySensitivities = (z: ad.Binary): { left: ad.Num; right: ad.Num } => {
+-  const { binop, left: v, right: w } = z;
+-  switch (binop) {
+-    case "+": {
+-      return { left: 1, right: 1 };
+-    }
+-    case "*": {
+-      return { left: w, right: v };
+-    }
+-    case "-": {
+-      return { left: 1, right: -1 };
+-    }
+-    case "/": {
+-      return { left: inverse(w), right: neg(div(z, w)) };
+-    }
+-    case "max": {
+-      const cond = gt(v, w);
+-      return { left: ifCond(cond, 1, 0), right: ifCond(cond, 0, 1) };
+-    }
+-    case "min": {
+-      const cond = lt(v, w);
+-      return { left: ifCond(cond, 1, 0), right: ifCond(cond, 0, 1) };
+-    }
+-    case "atan2": {
+-      const y = v;
+-      const x = w;
+-      const denom = add(squared(x), squared(y));
+-      return { left: div(x, denom), right: div(neg(y), denom) };
+-    }
+-    case "pow": {
+-      return { left: mul(pow(v, sub(w, 1)), w), right: mul(z, ln(v)) };
+-    }
+-  }
++type SymbolicParams<T> = {
++  [K in keyof T]: rose.Symbolic<T[K]>;
+ };
+ 
+-interface Child {
+-  child: ad.Expr;
+-  sensitivity: ad.Num[][]; // rows for parent, columns for child
+-}
+-
+-// note that this function constructs the sensitivities even when we don't need
+-// them, such as for nodes in secondary outputs or the gradient
+-const children = (x: ad.Expr): Child[] => {
+-  if (typeof x === "number") {
+-    return [];
+-  }
+-  switch (x.tag) {
+-    case "Var": {
+-      return [];
+-    }
+-    case "Not": {
+-      return [{ child: x.param, sensitivity: [] }];
+-    }
+-    case "Unary": {
+-      return [{ child: x.param, sensitivity: [[unarySensitivity(x)]] }];
+-    }
+-    case "Binary": {
+-      const { left, right } = binarySensitivities(x);
+-      return [
+-        { child: x.left, sensitivity: [[left]] },
+-        { child: x.right, sensitivity: [[right]] },
+-      ];
+-    }
+-    case "Comp":
+-    case "Logic": {
+-      return [
+-        { child: x.left, sensitivity: [] },
+-        { child: x.right, sensitivity: [] },
+-      ];
+-    }
+-    case "Ternary": {
+-      return [
+-        { child: x.cond, sensitivity: [[]] },
+-        { child: x.then, sensitivity: [[ifCond(x.cond, 1, 0)]] },
+-        { child: x.els, sensitivity: [[ifCond(x.cond, 0, 1)]] },
+-      ];
+-    }
+-    case "Nary": {
+-      return x.params.map((child) => {
+-        switch (x.op) {
+-          case "addN": {
+-            return { child, sensitivity: [[1]] };
+-          }
+-          case "maxN": {
+-            return { child, sensitivity: [[ifCond(lt(child, x), 0, 1)]] };
+-          }
+-          case "minN": {
+-            return { child, sensitivity: [[ifCond(gt(child, x), 0, 1)]] };
+-          }
+-        }
+-      });
+-    }
+-    case "PolyRoots": {
+-      // https://www.skewray.com/articles/how-do-the-roots-of-a-polynomial-depend-on-the-coefficients
+-
+-      const n = x.coeffs.length;
+-      const derivCoeffs: ad.Num[] = x.coeffs.map((c, i) => mul(i, c));
+-      derivCoeffs.shift();
+-      // the polynomial is assumed monic, so `x.coeffs` doesn't include the
+-      // coefficient 1 on the highest-degree term
+-      derivCoeffs.push(n);
+-
+-      const sensitivities: ad.Num[][] = x.coeffs.map((_, index) => {
+-        const t: ad.Num = { tag: "Index", index, vec: x }; // a root
+-
+-        let power: ad.Num = 1;
+-        const powers: ad.Num[] = [power];
+-        for (let i = 1; i < n; i++) {
+-          power = mul(power, t);
+-          powers.push(power);
+-        }
+-
+-        const minusDerivative = neg(
+-          addN(zip2(derivCoeffs, powers).map(([c, p]) => mul(c, p))),
+-        );
+-
+-        // if the root is `NaN` then it doesn't contribute to the gradient
+-        const real = eq(t, t);
+-        return powers.map((p) => ifCond(real, div(p, minusDerivative), 0));
+-      });
+-
+-      return x.coeffs.map((child, i) => ({
+-        child,
+-        sensitivity: sensitivities.map((row) => [row[i]]),
+-      }));
+-    }
+-    case "Index": {
+-      // this node doesn't know how many elements are in `vec`, so here we just
+-      // leave everything else undefined, to be treated as zeroes later
+-      const row = [];
+-      row[x.index] = 1;
+-      return [{ child: x.vec, sensitivity: [row] }];
+-    }
+-  }
++type ValueParams<T> = {
++  [K in keyof T]: rose.Value<T[K]>;
+ };
+ 
+-const getInputNodes = (
+-  graph: ad.Graph["graph"],
+-): { id: ad.Id; label: ad.InputNode }[] => {
+-  const inputs = [];
+-  // every input must be a source
+-  for (const id of graph.sources()) {
+-    const label: ad.Node = graph.node(id);
+-    // other non-const sources include n-ary nodes with an empty params array
+-    if (label.tag === "Var") {
+-      inputs.push({ id, label });
+-    }
+-  }
+-  return inputs;
+-};
++export type FromRose<T> = T extends rose.Bools
++  ? ad.Bool
++  : T extends rose.Reals
++  ? ad.Num
++  : T extends rose.Vecs<unknown, infer V>
++  ? FromRose<V>[]
++  : { [K in keyof T]: FromRose<T[K]> };
+ 
+-const getInputKey = (graph: ad.Graph["graph"], id: ad.Id): number => {
+-  const node = graph.node(id);
+-  if (node.tag !== "Var")
+-    throw Error(`expected node ${id} to be input, got ${JSON.stringify(node)}`);
+-  return node.key;
++type RoseArgs<T> = {
++  [K in keyof T]: FromRose<T[K]>;
+ };
+ 
+-/**
+- * Construct an explicit graph from a primary output and array of secondary
+- * outputs. All out-edges relevant to computing the gradient can be considered
+- * totally ordered, first by the node the edge points to (where the nodes are
+- * numbered by doing a breadth-first search from the primary output using the
+- * `children` function) and then by the name of the edge (again according to the
+- * order given by the `children` function). The partial derivatives contributing
+- * to any given gradient node are added up according to that total order.
+- *
+- * If present, the `getKey` function should return a unique index for each
+- * input. If absent, indices will be assigned via breadth-first search order.
+- */
+-export const makeGraph = (
+-  outputs: Omit<ad.Outputs<ad.Num>, "gradient">,
+-  getKey?: (x: ad.Var) => number,
+-): ad.Graph => {
+-  const graph = new Graph<ad.Id, ad.Node, ad.Edge>();
+-  const nodes = new Map<ad.Expr, ad.Id>();
+-
+-  // we use this queue to essentially do a breadth-first search by following
+-  // `ad.Expr` child pointers; it gets reused a few times because we add nodes
+-  // in multiple stages
+-  const queue = new Queue<ad.Expr>();
+-  // at each stage, we need to add the edges after adding all the nodes, because
+-  // when we first look at a node and its in-edges, its children are not
+-  // guaranteed to exist in the graph yet, so we fill this queue during the
+-  // node-adding part and then go through it during the edge-adding part,
+-  // leaving it empty in preparation for the next stage; so the first element of
+-  // every tuple in this queue stores information about the edge and child, the
+-  // second element is the index of the edge with respect to the parent, and the
+-  // third element of the tuple is the parent
+-  const edges = new Queue<[Child, ad.Edge, ad.Expr]>();
+-
+-  // only call setNode in this one place, ensuring that we always use indexToID
+-  const newNode = (node: ad.Node): ad.Id => {
+-    const id = graph.nodeCount();
+-    graph.setNode(id, node);
+-    return id;
+-  };
+-
+-  let numInputs = 0; // only used if `getKey === undefined`
+-
+-  // ensure that x is represented in the graph we're building, and if it wasn't
+-  // already there, enqueue its children and in-edges (so queue and edges,
+-  // respectively, should both be emptied after calling this)
+-  const addNode = (x: ad.Expr): ad.Id => {
+-    let name = nodes.get(x);
+-    if (name === undefined) {
+-      name = newNode(makeNode(getKey ?? (() => numInputs++), x));
+-      nodes.set(x, name);
+-      children(x).forEach((edge, index) => {
+-        edges.enqueue([edge, index, x]);
+-        queue.enqueue(edge.child);
+-      });
+-    }
+-    return name;
+-  };
+-
+-  const addEdge = (
+-    child: ad.Expr,
+-    parent: ad.Expr,
+-    e: ad.Edge,
+-  ): [ad.Id, ad.Id] => {
+-    const i = unwrap(nodes.get(child), () => "missing child");
+-    const j = unwrap(nodes.get(parent), () => "missing parent");
+-    graph.setEdge({ i, j, e });
+-    return [i, j];
+-  };
+-
+-  // add all the nodes subtended by the primary output; we do these first, in a
+-  // separate stage, because these are the only nodes for which we actually need
+-  // to use the sensitivities of their in-edges, and then after we add the
+-  // edges, we need to get a topological sort of just these nodes
+-  const primary = addNode(outputs.primary);
+-  while (!queue.isEmpty()) {
+-    addNode(queue.dequeue());
+-  }
+-
+-  // we need to keep track of these sensitivities so we can add them as nodes
+-  // right after this, but we also need to know which edge each came from for
+-  // when we construct the gradient nodes later; note that this simple string
+-  // concatenation doesn't cause any problems, because no stringified Edge
+-  // contains an underscore, and every Id starts with an underscore, so it's
+-  // essentially just three components separated by underscores
+-  const sensitivities = new Map<`${ad.Edge}_${ad.Id}_${ad.Id}`, ad.Num[][]>();
+-  while (!edges.isEmpty()) {
+-    const [{ child, sensitivity }, index, parent] = edges.dequeue();
+-    const [v, w] = addEdge(child, parent, index);
+-    sensitivities.set(`${index}_${v}_${w}`, sensitivity);
+-  }
+-  // we can use this reverse topological sort later when we construct all the
+-  // gradient nodes, because it ensures that the gradients of a node's parents
+-  // are always available before the node itself; note that we need to compute
+-  // this right now, because we're just about to add the sensitivity nodes to
+-  // the graph, and we don't want to try to compute the gradients of those
+-  // sensitivities
+-  const primaryNodes = [...graph.topsort()].reverse();
+-
+-  for (const matrix of sensitivities.values()) {
+-    // `forEach` ignores holes
+-    matrix.forEach((row) => {
+-      row.forEach(addNode);
++// generate Penrose autodiff nodes representing glue code to create Rose values,
++// e.g. to call a Rose function
++const toRose = <T>(t: T): ((x: FromRose<T>) => ad.Expr) => {
++  if (t === rose.Bool || t === rose.Real) return (x: any) => x;
++  const syms = Object.getOwnPropertySymbols(t);
++  // this "elem" symbol is internal to Rose so we can't just import it; we can
++  // extract it in this manner by finding a symbol with the right `description`,
++  // but that is specifically bypassing encapsulation, and therefore might break
++  // unexpectedly
++  const sym = syms.find((sym) => sym.description === "elem");
++  if (sym === undefined) {
++    const mems = Object.entries(t as any).map(
++      ([k, v]): [string, (x: any) => ad.Expr] => [k, toRose(v)],
++    );
++    return (x: any) => ({
++      tag: "LitRec",
++      mems: Object.fromEntries(mems.map(([k, mem]) => [k, mem(x[k])])),
+     });
++  } else {
++    const elem = toRose((t as any)[sym]);
++    return (x: any) => ({ tag: "LitVec", elems: x.map(elem) });
+   }
+-  while (!queue.isEmpty()) {
+-    addNode(queue.dequeue());
+-  }
+-  while (!edges.isEmpty()) {
+-    const [{ child }, index, parent] = edges.dequeue();
+-    addEdge(child, parent, index);
+-  }
+-
+-  // map from each primary node ID to the IDs of its gradient nodes
+-  const gradNodes = new Map<ad.Id, ad.Id[]>();
+-  for (const id of primaryNodes) {
+-    if (id === primary) {
+-      // use addNode instead of newNode in case there's already a 1 in the graph
+-      gradNodes.set(id, [addNode(1)]);
+-      continue;
+-    }
+-
+-    // our node needs to have some number of gradient nodes, depending on its
+-    // type, so we assemble an array of the addends for each gradient node; we
+-    // don't need to know the length of this array ahead of time, because
+-    // JavaScript allows holes in arrays, so instead of actually looking at the
+-    // node to see what type it is, we just accumulate into whatever slots are
+-    // mentioned by the sensitivities of our out-edges, and let all else be zero
+-    const grad: ad.Id[][] = [];
+-
+-    // control the order in which partial derivatives are added
+-    const edges = [...graph.outEdges(id)].sort((a, b) =>
+-      a.j === b.j ? a.e - b.e : a.j - b.j,
+-    );
+-
+-    // we call graph.setEdge in this loop, so it may seem like it would be
+-    // possible for those edges to get incorrectly included as addends in other
+-    // gradient nodes; however, that is not the case, because none of those
+-    // edges appear in our sensitivities map
+-    for (const { j: w, e } of edges) {
+-      const matrix = sensitivities.get(`${e}_${id}_${w}`);
+-      if (matrix !== undefined) {
+-        // `forEach` ignores holes
+-        matrix.forEach((row, i) => {
+-          row.forEach((x, j) => {
+-            const sensitivityID = unwrap(
+-              nodes.get(x),
+-              () => "missing sensitivity",
+-            );
+-            const parentGradIDs = unwrap(
+-              gradNodes.get(w),
+-              () => `missing parent grad for node ${w}`,
+-            );
+-            if (i in parentGradIDs) {
+-              const parentGradID = parentGradIDs[i];
+-
+-              const addendID = newNode({ tag: "Binary", binop: "*" });
+-              graph.setEdge({ i: sensitivityID, j: addendID, e: 0 });
+-              graph.setEdge({ i: parentGradID, j: addendID, e: 1 });
+-              if (!(j in grad)) {
+-                grad[j] = [];
+-              }
+-              grad[j].push(addendID);
+-            }
+-          });
+-        });
+-      }
+-    }
++};
+ 
+-    gradNodes.set(
+-      id,
+-      // `map` skips holes but also preserves indices
+-      grad.map((addends) => {
+-        if (addends.length === 0) {
+-          // instead of newNode, in case there's already a 0 in the graph
+-          return addNode(0);
+-        } else {
+-          const gradID = newNode({ tag: "Nary", op: "addN" });
+-          addends.forEach((addendID, i) => {
+-            graph.setEdge({ i: addendID, j: gradID, e: i });
+-          });
+-          return gradID;
+-        }
+-      }),
++// generate Rose values from Penrose autodiff nodes that represented glue code,
++// e.g. to call a Rose function
++const fromRose = <T>(t: T): ((x: ad.Expr) => FromRose<T>) => {
++  if (t === rose.Bool || t === rose.Real) return (x: any) => x;
++  const syms = Object.getOwnPropertySymbols(t);
++  // see above comment explaining why this is sus
++  const sym = syms.find((sym) => sym.description === "elem");
++  if (sym === undefined) {
++    const mems = Object.entries(t as any).map(
++      ([k, v]): [string, (x: ad.Expr) => any] => [k, fromRose(v)],
+     );
+-  }
+-
+-  // we get the IDs for the input gradients before adding all the secondary
+-  // nodes, because some of the inputs may only be reachable from the secondary
+-  // outputs instead of the primary output; really, the gradients for all those
+-  // inputs are just zero, so the caller needs to substitute zero whenever the
+-  // gradient is missing a key
+-  const gradient = new Map<ad.Var, ad.Id>();
+-  for (const [x, id] of nodes) {
+-    if (typeof x !== "number" && x.tag === "Var")
+-      gradient.set(
+-        x,
+-        unwrap(gradNodes.get(id), () => `missing gradient for node ${id}`)[0],
++    return (x: any): any =>
++      Object.fromEntries(
++        mems.map(([k, mem]) => [k, mem({ tag: "Member", rec: x, member: k })]),
+       );
++  } else {
++    const n = (t as any)[syms.find((sym) => sym.description === "index")!];
++    const elem = fromRose((t as any)[sym]);
++    return (x: any): any => {
++      const elems = [];
++      for (let i = 0; i < n; i++)
++        elems.push(elem({ tag: "Index", vec: x, index: i }));
++      return elems;
++    };
+   }
+-
+-  // easiest case: final stage, just add all the nodes and edges for the
+-  // secondary outputs
+-  const secondary = outputs.secondary.map(addNode);
+-  while (!queue.isEmpty()) {
+-    addNode(queue.dequeue());
+-  }
+-  while (!edges.isEmpty()) {
+-    const [{ child }, index, parent] = edges.dequeue();
+-    addEdge(child, parent, index);
+-  }
+-
+-  return { graph, nodes, gradient, primary, secondary };
+ };
+ 
+-/**
+- * Construct a graph with a primary output but no secondary outputs.
+- */
+-export const primaryGraph = (
+-  output: ad.Num,
+-  getKey?: (x: ad.Var) => number,
+-): ad.Graph => makeGraph({ primary: output, secondary: [] }, getKey);
++export const fn = <const P extends readonly unknown[], const R>(
++  params: P,
++  ret: R,
++  f: (...args: SymbolicParams<P>) => rose.Value<R>,
++): rose.Fn &
++  ((...args: ValueParams<P>) => rose.Symbolic<R>) & {
++    rose(...args: RoseArgs<P>): FromRose<R>;
++  } => {
++  const g: any = rose.fn(params, ret, f);
++  const paramFns = params.map(toRose);
++  const retFn = fromRose(ret);
++  g.rose = (...args: any): any =>
++    retFn({ tag: "Call", fn: g, args: paramFns.map((h, i) => h(args[i])) });
++  return g;
++};
+ 
+-/**
+- * Construct a graph from an array of only secondary outputs, for which we don't
+- * care about the gradient. The primary output is just the constant 1.
+- */
+-export const secondaryGraph = (
+-  outputs: ad.Num[],
+-  getKey?: (x: ad.Var) => number,
+-): ad.Graph =>
+-  // use 1 because makeGraph always constructs a constant gradient node 1 for
+-  // the primary output, and so if that's already present in the graph then we
+-  // have one fewer node total
+-  makeGraph({ primary: 1, secondary: outputs }, getKey);
++// To view logs, use LogLevel.Trace, otherwese LogLevel.Warn
++// const log = consola.create({ level: LogLevel.Trace }).withScope("Optimizer");
++export const logAD = (consola as any)
++  .create({ level: (consola as any).LogLevel.Warn })
++  .withScope("Optimizer");
+ 
+-// ------------ Meta / debug ops
++export const EPS_DENOM = builtins.epsilon; // Avoid divide-by-zero in denominator
+ 
+-// ----------------- Other ops
++export const variable = (val: number): ad.Var => ({ tag: "Var", val });
+ 
+ /**
+- * Some vector operations that can be used on `ad.Num`.
++ * Some vector operations that can be used on `Num`.
+  */
+ export const ops = {
+   // Note that these ops MUST use the custom var ops for grads
+@@ -1080,969 +623,397 @@ export const fns = {
+   },
+ };
+ 
+-// ----- Codegen
+-
+-// Traverses the computational graph of ops obtained by interpreting the energy function, and generates WebAssembly code corresponding to just the ops
+-
+-const importModule = "";
+-const importMemoryName = "";
+-const exportFunctionName = "";
+-
+-type BuiltinType = "unary" | "binary" | "polyRoots";
+-
+-const builtins = new Map<string, BuiltinType>([
+-  ["inverse", "unary"],
+-
+-  ["acos", "unary"],
+-  ["acosh", "unary"],
+-  ["asin", "unary"],
+-  ["asinh", "unary"],
+-  ["atan", "unary"],
+-  ["atanh", "unary"],
+-  ["cbrt", "unary"],
+-  ["cos", "unary"],
+-  ["cosh", "unary"],
+-  ["exp", "unary"],
+-  ["expm1", "unary"],
+-  ["log", "unary"],
+-  ["log1p", "unary"],
+-  ["log10", "unary"],
+-  ["log2", "unary"],
+-  ["sign", "unary"],
+-  ["sin", "unary"],
+-  ["sinh", "unary"],
+-  ["tan", "unary"],
+-  ["tanh", "unary"],
+-
+-  ["atan2", "binary"],
+-  ["pow", "binary"],
+-
+-  ["polyRoots", "polyRoots"],
+-]);
+-
+-const bytesI32 = Int32Array.BYTES_PER_ELEMENT;
+-const logAlignI32 = Math.log2(bytesI32);
+-
+-const bytesF64 = Float64Array.BYTES_PER_ELEMENT;
+-const logAlignF64 = Math.log2(bytesF64);
+-
+-interface Signature {
+-  param: { [name: string]: number };
+-  result: number[];
+-}
+-
+-const funcTypes = {
+-  unary: { param: { x: wasm.TYPE.f64 }, result: [wasm.TYPE.f64] },
+-  binary: {
+-    param: { x: wasm.TYPE.f64, y: wasm.TYPE.f64 },
+-    result: [wasm.TYPE.f64],
+-  },
+-  polyRoots: {
+-    param: { pointer: wasm.TYPE.i32, size: wasm.TYPE.i32 },
+-    result: [],
+-  },
+-  addend: {
+-    param: {
+-      input: wasm.TYPE.i32,
+-      gradient: wasm.TYPE.i32,
+-      secondary: wasm.TYPE.i32,
+-      stackPointer: wasm.TYPE.i32,
+-    },
+-    result: [wasm.TYPE.f64],
+-  },
+-  sum: {
+-    param: {
+-      input: wasm.TYPE.i32,
+-      mask: wasm.TYPE.i32,
+-      gradient: wasm.TYPE.i32,
+-      secondary: wasm.TYPE.i32,
+-      stackPointer: wasm.TYPE.i32,
+-    },
+-    result: [wasm.TYPE.f64],
+-  },
+-};
+-
+-const getTypeIndex = (kind: string): number =>
+-  Object.keys(funcTypes).indexOf(kind);
+-
+-const getParamIndex = (sig: Signature, name: string): number =>
+-  Object.keys(sig.param).indexOf(name);
+-
+-const builtindex = new Map([...builtins.keys()].map((name, i) => [name, i]));
+-
+-const getBuiltindex = (name: string): number =>
+-  unwrap(builtindex.get(name), () => `unknown builtin: ${name}`);
+-
+-const typeSection = (t: wasm.Target): void => {
+-  t.int(Object.keys(funcTypes).length);
+-
+-  for (const { param, result } of Object.values(funcTypes)) {
+-    t.byte(wasm.TYPE.FUNCTION);
+-    t.int(Object.keys(param).length);
+-    for (const typ of Object.values(param)) t.byte(typ);
+-    t.int(result.length);
+-    for (const typ of result) t.byte(typ);
++/**
++ * Replaces the contents of `v` with the roots of the monic polynomial whose
++ * degree is the length of the vector and whose coefficient with a given degree
++ * is the element of the vector at that index. Any root with a nonzero imaginary
++ * component is replaced with `NaN`.
++ */
++export const polyRootsImpl = (v: Float64Array): void => {
++  const n = v.length;
++  // https://en.wikipedia.org/wiki/Companion_matrix
++  const m = Matrix.zeros(n, n);
++  for (let i = 0; i + 1 < n; i++) {
++    m.set(i + 1, i, 1);
++    m.set(i, n - 1, -v[i]);
+   }
+-};
+-
+-const importSection = (t: wasm.Target): void => {
+-  const numImports = 1 + builtins.size;
+-  t.int(numImports);
+-
+-  const minPages = 1;
+-  t.ascii(importModule);
+-  t.ascii(importMemoryName);
+-  t.byte(wasm.IMPORT.MEMORY);
+-  t.byte(wasm.LIMITS.NO_MAXIMUM);
+-  t.int(minPages);
+-
+-  [...builtins.entries()].forEach(([, kind], i) => {
+-    t.ascii(importModule);
+-    t.ascii(i.toString(36));
+-    t.byte(wasm.IMPORT.FUNCTION);
+-    t.int(getTypeIndex(kind));
+-  });
+-};
+-
+-const functionSection = (t: wasm.Target, numAddends: number): void => {
+-  t.int(numAddends + 1);
+-  for (let i = 0; i < numAddends; i++) t.int(getTypeIndex("addend"));
+-  t.int(getTypeIndex("sum"));
+-};
+-
+-const exportSection = (t: wasm.Target, numAddends: number): void => {
+-  const numExports = 1;
+-  t.int(numExports);
++  m.set(n - 1, n - 1, -v[n - 1]);
+ 
+-  const funcIndex = builtins.size + numAddends;
+-  t.ascii(exportFunctionName);
+-  t.byte(wasm.EXPORT.FUNCTION);
+-  t.int(funcIndex);
++  // the characteristic polynomial of the companion matrix is equal to the
++  // original polynomial, so by finding the eigenvalues of the companion matrix,
++  // we get the roots of its characteristic polynomial and thus of the original
++  // polynomial
++  const r = new EigenvalueDecomposition(m);
++  for (let i = 0; i < n; i++) {
++    // as mentioned in the `polyRoots` docstring in `engine/AutodiffFunctions`,
++    // we discard any non-real root and replace with `NaN`
++    v[i] = r.imaginaryEigenvalues[i] === 0 ? r.realEigenvalues[i] : NaN;
++  }
+ };
+ 
+-const modulePrefix = (gradientFunctionSizes: number[]): wasm.Module => {
+-  const numSections = 5;
+-  const numAddends = gradientFunctionSizes.length - 1;
+-
+-  const typeSectionCount = new wasm.Count();
+-  typeSection(typeSectionCount);
+-  const typeSectionSize = typeSectionCount.size;
+-
+-  const importSectionCount = new wasm.Count();
+-  importSection(importSectionCount);
+-  const importSectionSize = importSectionCount.size;
+-
+-  const functionSectionCount = new wasm.Count();
+-  functionSection(functionSectionCount, numAddends);
+-  const functionSectionSize = functionSectionCount.size;
+-
+-  const exportSectionCount = new wasm.Count();
+-  exportSection(exportSectionCount, numAddends);
+-  const exportSectionSize = exportSectionCount.size;
+-
+-  const codeSectionSize = gradientFunctionSizes
+-    .map((n) => wasm.intSize(n) + n)
+-    .reduce((a, b) => a + b, wasm.intSize(gradientFunctionSizes.length));
+-
+-  const sumSectionSizes =
+-    numSections +
+-    wasm.intSize(typeSectionSize) +
+-    typeSectionSize +
+-    wasm.intSize(importSectionSize) +
+-    importSectionSize +
+-    wasm.intSize(functionSectionSize) +
+-    functionSectionSize +
+-    wasm.intSize(exportSectionSize) +
+-    exportSectionSize +
+-    wasm.intSize(codeSectionSize) +
+-    codeSectionSize;
+-
+-  const mod = new wasm.Module(sumSectionSizes);
+-
+-  mod.byte(wasm.SECTION.TYPE);
+-  mod.int(typeSectionSize);
+-  typeSection(mod);
+-
+-  mod.byte(wasm.SECTION.IMPORT);
+-  mod.int(importSectionSize);
+-  importSection(mod);
+-
+-  mod.byte(wasm.SECTION.FUNCTION);
+-  mod.int(functionSectionSize);
+-  functionSection(mod, numAddends);
+-
+-  mod.byte(wasm.SECTION.EXPORT);
+-  mod.int(exportSectionSize);
+-  exportSection(mod, numAddends);
+-
+-  mod.byte(wasm.SECTION.CODE);
+-  mod.int(codeSectionSize);
+-  mod.int(gradientFunctionSizes.length);
+-
+-  return mod;
++const sum = (n: number, f: (i: number) => rose.Real): rose.Real => {
++  if (n === 0) return 0;
++  let x = f(0);
++  for (let i = 1; i < n; i++) x = rose.add(x, f(i));
++  return x;
+ };
+ 
+-const compileUnary = (
+-  t: wasm.Target,
+-  { unop }: ad.UnaryNode,
+-  param: number,
+-): void => {
+-  switch (unop) {
+-    case "squared": {
+-      t.byte(wasm.OP.local.get);
+-      t.int(param);
+-
+-      t.byte(wasm.OP.local.get);
+-      t.int(param);
+-
+-      t.byte(wasm.OP.f64.mul);
++const penalty = rose.fn([rose.Real], rose.Real, (x) => {
++  const y = builtins.max(x, 0);
++  return rose.mul(y, y);
++});
+ 
++function* predsExpr(x: ad.Expr): Generator<ad.Expr, void, undefined> {
++  if (typeof x === "number") return;
++  switch (x.tag) {
++    case "Var":
++      return;
++    case "Not":
++    case "Unary":
++      yield x.param;
++      return;
++    case "Binary":
++    case "Comp":
++    case "Logic": {
++      yield x.left;
++      yield x.right;
+       return;
+     }
+-    case "round": {
+-      t.byte(wasm.OP.local.get);
+-      t.int(param);
+-
+-      t.byte(wasm.OP.f64.nearest);
+-
++    case "Ternary": {
++      yield x.cond;
++      yield x.then;
++      yield x.els;
++      return;
++    }
++    case "Nary": {
++      yield* x.params;
+       return;
+     }
++    case "LitVec": {
++      yield* x.elems;
++      return;
++    }
++    case "PolyRoots": {
++      yield* x.coeffs;
++      return;
++    }
++    case "LitRec": {
++      yield* Object.values(x.mems);
++      return;
++    }
++    case "Index": {
++      yield x.vec;
++      return;
++    }
++    case "Member": {
++      yield x.rec;
++      return;
++    }
++    case "Call": {
++      yield* x.args;
++      return;
++    }
++  }
++}
++
++// this type is very incomplete but it excludes `undefined` so at least it makes
++// sure we handle all necessary cases in `switch` statements
++type RoseVal =
++  | rose.Bool
++  | rose.Real
++  | rose.Vec<unknown>
++  | RoseVal[]
++  | { [K: string]: RoseVal };
++
++const emitUnary = (
++  get: (x: ad.Expr) => RoseVal,
++  { unop, param }: ad.Unary,
++): rose.Real => {
++  const x = get(param) as rose.Real;
++  switch (unop) {
+     case "neg":
++      return rose.neg(x);
++    case "squared":
++      return rose.mul(x, x);
+     case "sqrt":
++      return builtins.sqrt(x);
++    case "inverse":
++      return rose.div(1, x);
+     case "abs":
+-    case "ceil":
+-    case "floor":
+-    case "trunc": {
+-      t.byte(wasm.OP.local.get);
+-      t.int(param);
+-
+-      t.byte(wasm.OP.f64[unop]);
+-
+-      return;
+-    }
++      return rose.abs(x);
+     case "acosh":
++      return builtins.acosh(x);
+     case "acos":
++      return builtins.acos(x);
+     case "asin":
++      return builtins.asin(x);
+     case "asinh":
++      return builtins.asinh(x);
+     case "atan":
++      return builtins.atan(x);
+     case "atanh":
++      return builtins.atanh(x);
+     case "cbrt":
++      return builtins.cbrt(x);
++    case "ceil":
++      return rose.ceil(x);
+     case "cos":
++      return builtins.cos(x);
+     case "cosh":
++      return builtins.cosh(x);
+     case "exp":
++      return builtins.exp(x);
+     case "expm1":
++      return builtins.expm1(x);
++    case "floor":
++      return rose.ceil(x);
+     case "log":
++      return builtins.log(x);
+     case "log2":
++      return builtins.log2(x);
+     case "log10":
++      return builtins.log10(x);
+     case "log1p":
++      return builtins.log1p(x);
++    case "round":
++      throw Error("rounding not supported");
++    case "sign":
++      return rose.sign(x);
+     case "sin":
++      return builtins.sin(x);
+     case "sinh":
++      return builtins.sinh(x);
+     case "tan":
++      return builtins.tan(x);
+     case "tanh":
+-    case "inverse":
+-    case "sign": {
+-      t.byte(wasm.OP.local.get);
+-      t.int(param);
+-
+-      t.byte(wasm.OP.call);
+-      t.int(getBuiltindex(unop));
+-
+-      return;
+-    }
++      return builtins.tanh(x);
++    case "trunc":
++      return rose.trunc(x);
+   }
+ };
+ 
+-const binaryOps = {
+-  "+": wasm.OP.f64.add,
+-  "-": wasm.OP.f64.sub,
+-  "*": wasm.OP.f64.mul,
+-  "/": wasm.OP.f64.div,
+-  max: wasm.OP.f64.max,
+-  min: wasm.OP.f64.min,
+-
+-  ">": wasm.OP.f64.gt,
+-  "<": wasm.OP.f64.lt,
+-  "===": wasm.OP.f64.eq,
+-  ">=": wasm.OP.f64.ge,
+-  "<=": wasm.OP.f64.le,
+-
+-  "&&": wasm.OP.i32.and,
+-  "||": wasm.OP.i32.or,
+-  "!==": wasm.OP.i32.xor,
+-};
+-
+-const compileBinary = (
+-  t: wasm.Target,
+-  { binop }: ad.BinaryNode | ad.CompNode | ad.LogicNode,
+-  left: number,
+-  right: number,
+-): void => {
++const emitBinary = (
++  get: (x: ad.Expr) => RoseVal,
++  { binop, left, right }: ad.Binary,
++): rose.Real => {
++  const x = get(left) as rose.Real;
++  const y = get(right) as rose.Real;
+   switch (binop) {
+     case "+":
++      return rose.add(x, y);
+     case "*":
++      return rose.mul(x, y);
+     case "-":
++      return rose.sub(x, y);
+     case "/":
++      return rose.div(x, y);
+     case "max":
++      return builtins.max(x, y);
+     case "min":
++      return builtins.min(x, y);
++    case "atan2":
++      return builtins.atan2(x, y);
++    case "pow":
++      return builtins.pow(x, y);
++  }
++};
++
++const emitComp = (
++  get: (x: ad.Expr) => RoseVal,
++  { binop, left, right }: ad.Comp,
++): rose.Bool => {
++  const x = get(left) as rose.Real;
++  const y = get(right) as rose.Real;
++  switch (binop) {
+     case ">":
++      return rose.gt(x, y);
+     case "<":
++      return rose.lt(x, y);
+     case "===":
++      return rose.eq(x, y);
+     case ">=":
++      return rose.geq(x, y);
+     case "<=":
+-    case "&&":
+-    case "||":
+-    case "!==": {
+-      t.byte(wasm.OP.local.get);
+-      t.int(left);
+-
+-      t.byte(wasm.OP.local.get);
+-      t.int(right);
+-
+-      t.byte(binaryOps[binop]);
+-
+-      return;
+-    }
+-    case "atan2":
+-    case "pow": {
+-      t.byte(wasm.OP.local.get);
+-      t.int(left);
+-
+-      t.byte(wasm.OP.local.get);
+-      t.int(right);
+-
+-      t.byte(wasm.OP.call);
+-      t.int(getBuiltindex(binop));
+-
+-      return;
+-    }
++      return rose.leq(x, y);
+   }
+ };
+ 
+-const nullaryVals = {
+-  addN: 0,
+-  maxN: -Infinity,
+-  minN: Infinity,
+-};
+-
+-const naryOps = {
+-  addN: wasm.OP.f64.add,
+-  maxN: wasm.OP.f64.max,
+-  minN: wasm.OP.f64.min,
+-};
+-
+-const compileNary = (
+-  t: wasm.Target,
+-  { op }: ad.NaryNode,
+-  params: number[],
+-): void => {
+-  if (params.length === 0) {
+-    // only spend bytes on an f64 constant when necessary
+-    t.byte(wasm.OP.f64.const);
+-    t.f64(nullaryVals[op]);
+-  } else {
+-    t.byte(wasm.OP.local.get);
+-    t.int(params[0]);
+-
+-    for (const param of params.slice(1)) {
+-      t.byte(wasm.OP.local.get);
+-      t.int(param);
+-
+-      t.byte(naryOps[op]);
+-    }
++const emitLogic = (
++  get: (x: ad.Expr) => RoseVal,
++  { binop, left, right }: ad.Logic,
++): rose.Bool => {
++  const p = get(left) as rose.Bool;
++  const q = get(right) as rose.Bool;
++  switch (binop) {
++    case "&&":
++      return rose.and(p, q);
++    case "||":
++      return rose.or(p, q);
++    case "!==":
++      return rose.xor(p, q);
+   }
+ };
+ 
+-const compileNode = (
+-  t: wasm.Target,
+-  node: Exclude<ad.Node, ad.InputNode>,
+-  preds: number[],
+-): void => {
+-  switch (node.tag) {
+-    case "Const": {
+-      t.byte(wasm.OP.f64.const);
+-      t.f64(node.val);
+-
+-      return;
+-    }
+-    case "Not": {
+-      const [child] = preds;
+-
+-      t.byte(wasm.OP.local.get);
+-      t.int(child);
+-
+-      t.byte(wasm.OP.i32.eqz);
+-
+-      return;
+-    }
+-    case "Unary": {
+-      const [param] = preds;
+-      compileUnary(t, node, param);
+-      return;
+-    }
+-    case "Binary":
+-    case "Comp":
+-    case "Logic": {
+-      const [left, right] = preds;
+-      compileBinary(t, node, left, right);
+-      return;
+-    }
+-    case "Ternary": {
+-      const [cond, then, els] = preds;
+-
+-      t.byte(wasm.OP.local.get);
+-      t.int(then);
+-
+-      t.byte(wasm.OP.local.get);
+-      t.int(els);
+-
+-      t.byte(wasm.OP.local.get);
+-      t.int(cond);
+-
+-      t.byte(wasm.OP.select);
+-
+-      return;
+-    }
+-    case "Nary": {
+-      compileNary(t, node, preds);
+-      return;
++const emitNary = (
++  get: (x: ad.Expr) => RoseVal,
++  { op, params }: ad.Nary,
++): rose.Real => {
++  const xs = params.map((x) => get(x) as rose.Real);
++  if (xs.length === 0) {
++    switch (op) {
++      case "addN":
++        return 0;
++      case "maxN":
++        return -Infinity;
++      case "minN":
++        return Infinity;
+     }
+-    case "PolyRoots": {
+-      preds.forEach((index, i) => {
+-        t.byte(wasm.OP.local.get);
+-        t.int(getParamIndex(funcTypes.addend, "stackPointer"));
+-
+-        t.byte(wasm.OP.local.get);
+-        t.int(index);
+-
+-        t.byte(wasm.OP.f64.store);
+-        t.int(logAlignF64);
+-        t.int(i * bytesF64);
+-      });
+-
+-      t.byte(wasm.OP.local.get);
+-      t.int(getParamIndex(funcTypes.addend, "stackPointer"));
+-
+-      t.byte(wasm.OP.i32.const);
+-      t.int(node.degree);
+-
+-      t.byte(wasm.OP.call);
+-      t.int(getBuiltindex("polyRoots"));
+-
+-      for (let i = 0; i < node.degree; i++) {
+-        t.byte(wasm.OP.local.get);
+-        t.int(getParamIndex(funcTypes.addend, "stackPointer"));
+-
+-        t.byte(wasm.OP.f64.load);
+-        t.int(logAlignF64);
+-        t.int(i * bytesF64);
++  } else {
++    return xs.reduce((a, b) => {
++      switch (op) {
++        case "addN":
++          return rose.add(a, b);
++        case "maxN":
++          return builtins.max(a, b);
++        case "minN":
++          return builtins.min(a, b);
+       }
+-
+-      return;
+-    }
+-    case "Index": {
+-      const [vec] = preds;
+-
+-      t.byte(wasm.OP.local.get);
+-      t.int(vec + node.index);
+-
+-      return;
+-    }
++    });
+   }
+ };
+ 
+-type Typename = "i32" | "f64";
+-
+-const getLayout = (node: ad.Node): { typename: Typename; count: number } => {
+-  switch (node.tag) {
+-    case "Comp":
+-    case "Logic":
+-    case "Not": {
+-      return { typename: "i32", count: 1 };
+-    }
+-    case "Const":
++const emitExpr = (
++  get: (x: ad.Expr) => RoseVal,
++  getVar: (x: ad.Var) => rose.Real,
++  x: ad.Expr,
++): RoseVal => {
++  if (typeof x === "number") return x;
++  switch (x.tag) {
+     case "Var":
++      return getVar(x);
++    case "Not":
++      return rose.not(get(x.param) as rose.Bool);
+     case "Unary":
++      return emitUnary(get, x);
+     case "Binary":
++      return emitBinary(get, x);
++    case "Comp":
++      return emitComp(get, x);
++    case "Logic":
++      return emitLogic(get, x);
+     case "Ternary":
++      return rose.select(
++        get(x.cond) as rose.Bool,
++        rose.Real,
++        get(x.then) as rose.Real,
++        get(x.els) as rose.Real,
++      );
+     case "Nary":
+-    case "Index": {
+-      return { typename: "f64", count: 1 };
+-    }
+-    case "PolyRoots": {
+-      return { typename: "f64", count: node.degree };
+-    }
+-  }
+-};
+-
+-interface Local {
+-  typename: Typename;
+-  index: number;
+-}
+-
+-interface Locals {
+-  counts: { i32: number; f64: number };
+-  indices: Map<ad.Id, Local>;
+-}
+-
+-const numAddendParams = Object.keys(funcTypes.addend.param).length;
+-
+-const getIndex = (locals: Locals, id: ad.Id): number => {
+-  const local = unwrap(
+-    locals.indices.get(id),
+-    () => `missing local for node ${id}`,
+-  );
+-  return (
+-    numAddendParams +
+-    (local.typename === "i32" ? 0 : locals.counts.i32) +
+-    local.index
+-  );
+-};
+-
+-const compileGraph = (
+-  t: wasm.Target,
+-  { graph, nodes, gradient, primary, secondary }: ad.Graph,
+-): void => {
+-  const counts = { i32: 0, f64: 0 };
+-  const indices = new Map<ad.Id, Local>();
+-  for (const id of graph.nodes()) {
+-    const node = graph.node(id);
+-    const { typename, count } = getLayout(node);
+-    indices.set(id, { typename, index: counts[typename] });
+-    counts[typename] += count;
+-  }
+-  const locals = { counts, indices };
+-
+-  const numLocalDecls = Object.keys(counts).length;
+-  t.int(numLocalDecls);
+-
+-  t.int(counts.i32);
+-  t.byte(wasm.TYPE.i32);
+-
+-  t.int(counts.f64);
+-  t.byte(wasm.TYPE.f64);
+-
+-  for (const {
+-    id,
+-    label: { key },
+-  } of getInputNodes(graph)) {
+-    t.byte(wasm.OP.local.get);
+-    t.int(getParamIndex(funcTypes.addend, "input"));
+-
+-    t.byte(wasm.OP.f64.load);
+-    t.int(logAlignF64);
+-    t.int(key * bytesF64);
+-
+-    t.byte(wasm.OP.local.set);
+-    t.int(getIndex(locals, id));
+-  }
+-
+-  for (const id of graph.topsort()) {
+-    const node = graph.node(id);
+-    // we already generated code for the inputs
+-    if (node.tag !== "Var") {
+-      const preds: number[] = [];
+-      for (const { i: v, e } of graph.inEdges(id)) {
+-        preds[e] = getIndex(locals, v);
+-      }
+-
+-      compileNode(t, node, preds);
+-
+-      const index = getIndex(locals, id);
+-      for (let i = getLayout(node).count - 1; i >= 0; i--) {
+-        t.byte(wasm.OP.local.set);
+-        t.int(index + i);
+-      }
+-    }
+-  }
+-
+-  for (const [x, id] of gradient) {
+-    const i = getInputKey(
+-      graph,
+-      unwrap(nodes.get(x), () => "input not found"),
+-    );
+-
+-    t.byte(wasm.OP.local.get);
+-    t.int(getParamIndex(funcTypes.addend, "gradient"));
+-
+-    t.byte(wasm.OP.local.get);
+-    t.int(getParamIndex(funcTypes.addend, "gradient"));
+-
+-    t.byte(wasm.OP.f64.load);
+-    t.int(logAlignF64);
+-    t.int(i * bytesF64);
+-
+-    t.byte(wasm.OP.local.get);
+-    t.int(getIndex(locals, id));
+-
+-    t.byte(wasm.OP.f64.add);
+-
+-    t.byte(wasm.OP.f64.store);
+-    t.int(logAlignF64);
+-    t.int(i * bytesF64);
+-  }
+-
+-  secondary.forEach((id, i) => {
+-    t.byte(wasm.OP.local.get);
+-    t.int(getParamIndex(funcTypes.addend, "secondary"));
+-
+-    t.byte(wasm.OP.local.get);
+-    t.int(getIndex(locals, id));
+-
+-    t.byte(wasm.OP.f64.store);
+-    t.int(logAlignF64);
+-    t.int(i * bytesF64);
+-  });
+-
+-  t.byte(wasm.OP.local.get);
+-  t.int(getIndex(locals, primary));
+-
+-  t.byte(wasm.END);
+-};
+-
+-// assume the gradient and secondary outputs are already initialized to zero
+-// before this code is run
+-const compileSum = (t: wasm.Target, numAddends: number): void => {
+-  const numLocals = 0;
+-  t.int(numLocals);
+-
+-  t.byte(wasm.OP.f64.const);
+-  t.f64(0);
+-
+-  for (let i = 0; i < numAddends; i++) {
+-    t.byte(wasm.OP.local.get);
+-    t.int(getParamIndex(funcTypes.sum, "mask"));
+-
+-    t.byte(wasm.OP.i32.load);
+-    t.int(logAlignI32);
+-    t.int(i * bytesI32);
+-
+-    t.byte(wasm.OP.if);
+-    t.int(getTypeIndex("unary"));
+-
+-    t.byte(wasm.OP.local.get);
+-    t.int(getParamIndex(funcTypes.sum, "input"));
+-
+-    t.byte(wasm.OP.local.get);
+-    t.int(getParamIndex(funcTypes.sum, "gradient"));
+-
+-    t.byte(wasm.OP.local.get);
+-    t.int(getParamIndex(funcTypes.sum, "secondary"));
+-
+-    t.byte(wasm.OP.local.get);
+-    t.int(getParamIndex(funcTypes.sum, "stackPointer"));
+-
+-    t.byte(wasm.OP.call);
+-    t.int(builtins.size + i);
+-
+-    t.byte(wasm.OP.f64.add);
+-
+-    t.byte(wasm.END);
+-  }
+-
+-  t.byte(wasm.END);
+-};
+-
+-const genBytes = (graphs: ad.Graph[]): Uint8Array => {
+-  const secondaryKeys = new Map<number, number>();
+-  for (const { secondary } of graphs) {
+-    // `forEach` ignores holes
+-    secondary.forEach((id, i) => {
+-      secondaryKeys.set(i, (secondaryKeys.get(i) ?? 0) + 1);
+-    });
+-  }
+-  for (const [k, n] of secondaryKeys) {
+-    if (n > 1) throw Error(`secondary output ${k} is present in ${n} graphs`);
+-  }
+-
+-  const sizes = graphs.map((g) => {
+-    const count = new wasm.Count();
+-    compileGraph(count, g);
+-    return count.size;
+-  });
+-  const mainCount = new wasm.Count();
+-  compileSum(mainCount, graphs.length);
+-
+-  const mod = modulePrefix([...sizes, mainCount.size]);
+-  for (const [g, size] of zip2(graphs, sizes)) {
+-    mod.int(size);
+-    compileGraph(mod, g);
+-  }
+-  mod.int(mainCount.size);
+-  compileSum(mod, graphs.length);
+-
+-  if (mod.count.size !== mod.bytes.length)
+-    throw Error(
+-      `allocated ${mod.bytes.length} bytes but used ${mod.count.size}`,
+-    );
+-  return mod.bytes;
+-};
+-
+-interface Metadata {
+-  numInputs: number;
+-  numSecondary: number;
+-
+-  offsetInputs: number;
+-  offsetMask: number;
+-  offsetGradient: number;
+-  offsetSecondary: number;
+-  offsetStack: number;
+-
+-  memory: WebAssembly.Memory;
+-
+-  arrInputs: Float64Array;
+-  arrMask: Int32Array;
+-  arrGrad: Float64Array;
+-  arrSecondary: Float64Array;
+-}
+-
+-const makeMeta = (graphs: ad.Graph[]): Metadata => {
+-  const offsetInputs = 0;
+-  const numInputs = Math.max(
+-    0,
+-    ...graphs.flatMap(({ graph }) =>
+-      getInputNodes(graph).map(({ label: { key } }) => key + 1),
+-    ),
+-  );
+-
+-  const offsetMask = offsetInputs + numInputs * bytesF64;
+-
+-  const offsetGradient = offsetMask + Math.ceil(graphs.length / 2) * bytesF64;
+-
+-  const offsetSecondary = offsetGradient + numInputs * bytesF64;
+-  const numSecondary = Math.max(0, ...graphs.map((g) => g.secondary.length));
+-
+-  const offsetStack = offsetSecondary + numSecondary * bytesF64;
+-
+-  // each WebAssembly memory page is 64 KiB, and we add one more for the stack
+-  const memory = new WebAssembly.Memory({
+-    initial: Math.ceil(offsetStack / (64 * 1024)) + 1,
+-  });
+-  const { buffer } = memory;
+-
+-  return {
+-    numInputs,
+-    numSecondary,
+-
+-    offsetInputs,
+-    offsetMask,
+-    offsetGradient,
+-    offsetSecondary,
+-    offsetStack,
+-
+-    memory,
+-
+-    arrInputs: new Float64Array(buffer, offsetInputs, numInputs),
+-    arrMask: new Int32Array(buffer, offsetMask, graphs.length),
+-    arrGrad: new Float64Array(buffer, offsetGradient, numInputs),
+-    arrSecondary: new Float64Array(buffer, offsetSecondary, numSecondary),
+-  };
+-};
+-
+-/**
+- * Replaces the contents of `v` with the roots of the monic polynomial whose
+- * degree is the length of the vector and whose coefficient with a given degree
+- * is the element of the vector at that index. Any root with a nonzero imaginary
+- * component is replaced with `NaN`.
+- */
+-export const polyRootsImpl = (v: Float64Array): void => {
+-  const n = v.length;
+-  // https://en.wikipedia.org/wiki/Companion_matrix
+-  const m = Matrix.zeros(n, n);
+-  for (let i = 0; i + 1 < n; i++) {
+-    m.set(i + 1, i, 1);
+-    m.set(i, n - 1, -v[i]);
+-  }
+-  m.set(n - 1, n - 1, -v[n - 1]);
+-
+-  // the characteristic polynomial of the companion matrix is equal to the
+-  // original polynomial, so by finding the eigenvalues of the companion matrix,
+-  // we get the roots of its characteristic polynomial and thus of the original
+-  // polynomial
+-  const r = new EigenvalueDecomposition(m);
+-  for (let i = 0; i < n; i++) {
+-    // as mentioned in the `polyRoots` docstring in `engine/AutodiffFunctions`,
+-    // we discard any non-real root and replace with `NaN`
+-    v[i] = r.imaginaryEigenvalues[i] === 0 ? r.realEigenvalues[i] : NaN;
++      return emitNary(get, x);
++    case "LitVec":
++      return x.elems.map((elem) => get(elem));
++    case "PolyRoots":
++      throw Error("polynomial roots not supported");
++    case "LitRec":
++      return Object.fromEntries(
++        Object.entries(x.mems).map(([k, v]) => [k, get(v)]),
++      );
++    case "Index":
++      return (get(x.vec) as RoseVal[])[x.index];
++    case "Member":
++      return (get(x.rec) as Record<string, RoseVal>)[x.member];
++    case "Call":
++      return (x.fn as any)(...x.args.map((arg) => get(arg)));
+   }
+ };
+ 
+-const makeImports = (memory: WebAssembly.Memory): WebAssembly.Imports => ({
+-  [importModule]: {
+-    [importMemoryName]: memory,
+-    ...Object.fromEntries(
+-      [...builtins.keys()].map((name, i) => [
+-        i.toString(36),
+-        {
+-          inverse: (x: number): number => 1 / x,
+-
+-          acos: Math.acos,
+-          acosh: Math.acosh,
+-          asin: Math.asin,
+-          asinh: Math.asinh,
+-          atan: Math.atan,
+-          atanh: Math.atanh,
+-          cbrt: Math.cbrt,
+-          cos: Math.cos,
+-          cosh: Math.cosh,
+-          exp: Math.exp,
+-          expm1: Math.expm1,
+-          log: Math.log,
+-          log1p: Math.log1p,
+-          log10: Math.log10,
+-          log2: Math.log2,
+-          sign: Math.sign,
+-          sin: Math.sin,
+-          sinh: Math.sinh,
+-          tan: Math.tan,
+-          tanh: Math.tanh,
+-
+-          atan2: Math.atan2,
+-          pow: Math.pow,
+-
+-          polyRoots: (p: number, n: number): void => {
+-            polyRootsImpl(new Float64Array(memory.buffer, p, n));
+-          },
+-        }[name],
+-      ]),
+-    ),
+-  },
+-});
+-
+-const getExport = (
+-  meta: Metadata,
+-  instance: WebAssembly.Instance,
+-): (() => number) => {
+-  // we generated a WebAssembly function which exports a function that takes in
+-  // integers representing pointers to the various arrays it deals with
+-  const f = instance.exports[exportFunctionName] as (
+-    input: number,
+-    mask: number,
+-    gradient: number,
+-    secondary: number,
+-    stackPointer: number,
+-  ) => number;
+-  return () =>
+-    f(
+-      meta.offsetInputs,
+-      meta.offsetMask,
+-      meta.offsetGradient,
+-      meta.offsetSecondary,
+-      meta.offsetStack,
+-    );
+-};
+-
+-const makeCompiled = (
+-  graphs: ad.Graph[],
+-  meta: Metadata,
+-  instance: WebAssembly.Instance,
+-): ad.Compiled => {
+-  const indices = new Map<ad.Var, number>();
+-  for (const { graph, nodes } of graphs) {
+-    for (const [x, id] of nodes) {
+-      if (typeof x !== "number" && x.tag === "Var") {
+-        const prev = indices.get(x);
+-        const key = getInputKey(graph, id);
+-        if (prev !== undefined && prev !== key)
+-          throw Error(`input with multiple keys: ${prev} and ${key}`);
+-        indices.set(x, key);
+-      }
+-    }
++const emitGraph = (
++  getVar: (x: ad.Var) => rose.Real,
++  xs: ad.Expr[],
++): Map<ad.Expr, RoseVal> => {
++  const vals = new Map<ad.Expr, RoseVal>();
++  for (const x of xs) {
++    const val = emitExpr((x) => vals.get(x)!, getVar, x);
++    vals.set(x, val);
+   }
+-
+-  const f = getExport(meta, instance);
+-  // we wrap our Wasm function in a JavaScript function which instead thinks in
+-  // terms of arrays, using the `meta` data to translate between the two
+-  return (
+-    inputs: (x: ad.Var) => number,
+-    mask?: boolean[],
+-  ): ad.Outputs<number> => {
+-    for (const [x, i] of indices) meta.arrInputs[i] = inputs(x);
+-    for (let i = 0; i < graphs.length; i++)
+-      meta.arrMask[i] = mask !== undefined && i in mask && !mask[i] ? 0 : 1;
+-    meta.arrGrad.fill(0);
+-    meta.arrSecondary.fill(0);
+-    const primary = f();
+-    const gradient = new Map<ad.Var, number>();
+-    for (const [x, i] of indices) gradient.set(x, meta.arrGrad[i]);
+-    return {
+-      gradient,
+-      primary,
+-      secondary: Array.from(meta.arrSecondary),
+-    };
+-  };
+-};
+-
+-/**
+- * Compile an array of graphs into a function to compute the sum of their
+- * primary outputs. The gradients are also summed. The keys present in the
+- * secondary outputs must be disjoint; they all go into the same array, so the
+- * expected secondary outputs would be ambiguous if keys were shared.
+- * @param graphs an array of graphs to compile
+- * @returns a compiled/instantiated WebAssembly function
+- */
+-export const genCode = async (...graphs: ad.Graph[]): Promise<ad.Compiled> => {
+-  const meta = makeMeta(graphs);
+-  const instance = await WebAssembly.instantiate(
+-    await WebAssembly.compile(genBytes(graphs)),
+-    makeImports(meta.memory),
+-  );
+-  return makeCompiled(graphs, meta, instance);
+-};
+-
+-/**
+- * Synchronous version of `genCode`. Should not be used in the browser because
+- * this will fail if the generated module is larger than 4 kilobytes, but
+- * currently is used in convex partitioning for convenience.
+- */
+-export const genCodeSync = (...graphs: ad.Graph[]): ad.Compiled => {
+-  const meta = makeMeta(graphs);
+-  const instance = new WebAssembly.Instance(
+-    new WebAssembly.Module(genBytes(graphs)),
+-    makeImports(meta.memory),
+-  );
+-  return makeCompiled(graphs, meta, instance);
++  return vals;
+ };
+ 
+-/** Generate an energy function from the current state (using `ad.Num`s only) */
++/** Generate an energy function from the current state (using `Num`s only) */
+ export const genGradient = async (
+   inputs: ad.Var[],
+   objectives: ad.Num[],
+   constraints: ad.Num[],
+ ): Promise<ad.Gradient> => {
+   const n = inputs.length;
++  const o = objectives.length;
++  const c = constraints.length;
+ 
+-  // This changes with the EP round, gets bigger to weight the constraints.
+-  // Therefore it's marked as an input to the generated objective function,
+-  // which can be partially applied with the ep weight. But its initial `val`
+-  // gets compiled away, so we just set it to zero here.
+-  const lambda = variable(0);
+-
+-  const indices = new Map(inputs.map((x, i) => [x, i]));
+-  indices.set(lambda, n);
+-  const getKey = (x: ad.Var): number =>
+-    unwrap(indices.get(x), () => "missing input");
+-
+-  const objs = objectives.map((x, i) => {
+-    const secondary = [];
+-    secondary[i] = x;
+-    return makeGraph({ primary: x, secondary }, getKey);
+-  });
+-  const constrs = constraints.map((x, i) => {
+-    const secondary = [];
+-    secondary[objectives.length + i] = x;
+-    return makeGraph(
+-      { primary: mul(lambda, fns.toPenalty(x)), secondary },
+-      getKey,
+-    );
+-  });
++  const indices = new Map<ad.Var, number>(inputs.map((x, i) => [x, i]));
++
++  const single = (y: ad.Num) =>
++    rose.fn([rose.Vec(n, rose.Real)], rose.Real, (varying) => {
++      const sorted = topsort(predsExpr, [y]);
++      const vals = emitGraph((x) => varying[indices.get(x)!], sorted);
++      return vals.get(y) as rose.Real;
++    });
+ 
+-  const graphs = [...objs, ...constrs];
+-  const meta = makeMeta(graphs);
+-  const instance = await WebAssembly.instantiate(
+-    await WebAssembly.compile(genBytes(graphs)),
+-    makeImports(meta.memory),
++  const objFns = objectives.map(single);
++  const constrFns = constraints.map(single);
++
++  const basic = rose.fn(
++    [rose.Vec(n, rose.Real)],
++    { objectives: rose.Vec(o, rose.Real), constraints: rose.Vec(c, rose.Real) },
++    (varying) => ({
++      objectives: objFns.map((f) => f(varying)),
++      constraints: constrFns.map((f) => f(varying)),
++    }),
++  );
++
++  const full = rose.fn(
++    [
++      rose.Vec(n, rose.Real),
++      rose.Real,
++      rose.Vec(o, rose.Bool),
++      rose.Vec(c, rose.Bool),
++    ],
++    {
++      phi: rose.Real,
++      gradient: rose.Vec(n, rose.Real),
++      objectives: rose.Vec(o, rose.Real),
++      constraints: rose.Vec(c, rose.Real),
++    },
++    (varying, weight, objMask, constrMask) => {
++      const { ret, grad } = rose.vjp(basic)(varying);
++      const { objectives: objs, constraints: constrs } = ret;
++      const Pair = rose.struct({ x: rose.Real, d: rose.Real });
++      const zero = { x: 0, d: 0 };
++      const masked = rose.vec(o, Pair, (i) =>
++        rose.select(objMask[i], Pair, { x: objs[i], d: 1 }, zero),
++      );
++      const penalties = rose.vec(c, Pair, (i) => {
++        const { ret: x, grad } = rose.vjp(penalty)(constrs[i]);
++        return rose.select(constrMask[i], Pair, { x, d: grad(weight) }, zero);
++      });
++      return {
++        phi: rose.add(
++          sum(o, (i) => masked[i].x),
++          rose.mul(
++            weight,
++            sum(c, (i) => penalties[i].x),
++          ),
++        ),
++        gradient: grad({
++          objectives: rose.vec(o, rose.Real, (i) => masked[i].d),
++          constraints: rose.vec(c, rose.Real, (i) => penalties[i].d),
++        }),
++        objectives: objs,
++        constraints: constrs,
++      };
++    },
+   );
+-  const f = getExport(meta, instance);
++
++  const f = await rose.compile(full);
+ 
+   return (
+     { inputMask, objMask, constrMask }: ad.Masks,
+@@ -2054,13 +1025,13 @@ export const genGradient = async (
+       throw Error(
+         `expected ${n} inputs, got input mask with length ${inputMask.length}`,
+       );
+-    if (objMask.length !== objectives.length)
++    if (objMask.length !== o)
+       throw Error(
+-        `expected ${objectives.length} objectives, got objective mask with length ${objMask.length}`,
++        `expected ${o} objectives, got objective mask with length ${objMask.length}`,
+       );
+-    if (constrMask.length !== constraints.length)
++    if (constrMask.length !== c)
+       throw Error(
+-        `expected ${constraints.length} constraints, got constraint mask with length ${constrMask.length}`,
++        `expected ${c} constraints, got constraint mask with length ${constrMask.length}`,
+       );
+     if (inputs.length !== n)
+       throw Error(`expected ${n} inputs, got ${inputs.length}`);
+@@ -2069,23 +1040,13 @@ export const genGradient = async (
+         `expected ${n} inputs, got gradient with length ${grad.length}`,
+       );
+ 
+-    // the computation graph might not use all the inputs, so we truncate the
+-    // inputs we're given, to avoid a `RangeError`
+-    meta.arrInputs.set(inputs.subarray(0, meta.numInputs));
+-    meta.arrInputs[n] = weight;
+-    for (let j = 0; j < objectives.length; j++)
+-      meta.arrMask[j] = objMask[j] ? 1 : 0;
+-    for (let k = 0; k < constraints.length; k++)
+-      meta.arrMask[objectives.length + k] = constrMask[k] ? 1 : 0;
+-    meta.arrGrad.fill(0);
+-    meta.arrSecondary.fill(0);
+-    const phi = f();
+-    for (let i = 0; i < n; i++)
+-      grad[i] = i < meta.numInputs && !inputMask[i] ? 0 : meta.arrGrad[i];
++    const out = f(Array.from(inputs), weight, objMask, constrMask);
++    const { phi, gradient, objectives: objs, constraints: constrs } = out;
++    for (let i = 0; i < n; i++) grad[i] = inputMask[i] ? gradient[i] : 0;
+     return {
+       phi,
+-      objectives: Array.from(meta.arrSecondary.subarray(0, objectives.length)),
+-      constraints: Array.from(meta.arrSecondary.subarray(objectives.length)),
++      objectives: objMask.map((p, i) => (p ? objs[i] : 0)),
++      constraints: constrMask.map((p, i) => (p ? constrs[i] : 0)),
+     };
+   };
+ };
+@@ -2093,36 +1054,42 @@ export const genGradient = async (
+ const isConverged = (params: Params): boolean =>
+   params.optStatus === "EPConverged";
+ 
+-export const problem = async ({
+-  objective,
+-  constraints,
+-}: ad.Description): Promise<ad.Problem> => {
+-  // `vars` keep track of all the inputs across all constraints and objective, and the weight
+-  const vars = new Map<ad.Var, number>();
+-  // add in the weight
+-  const lambda = variable(0);
+-  // make the comp graphs for obj and constrs
+-  const getKey = (x: ad.Var): number => {
+-    if (x === lambda) return 0;
+-    let i = vars.get(x);
+-    if (i === undefined) {
+-      i = vars.size + 1;
+-      vars.set(x, i);
++export const problem = async (desc: ad.Description): Promise<ad.Problem> => {
++  const obj = desc.objective ?? 0;
++  const constrs = desc.constraints ?? [];
++  const m = constrs.length;
++
++  const sorted = topsort(predsExpr, [obj, ...constrs]);
++  const inputs: ad.Var[] = [];
++  const indices = new Map<ad.Var, number>();
++  for (const x of sorted) {
++    if (typeof x !== "number" && x.tag === "Var") {
++      inputs.push(x);
++      indices.set(x, indices.size);
+     }
+-    return i;
+-  };
+-  const obj = primaryGraph(objective ?? 0, getKey);
+-  const constrs = (constraints ?? []).map((x) =>
+-    primaryGraph(mul(lambda, fns.toPenalty(x)), getKey),
++  }
++  const n = inputs.length;
++
++  const basic = rose.fn(
++    [{ inputs: rose.Vec(n, rose.Real), weight: rose.Real }],
++    rose.Real,
++    ({ inputs: varying, weight }) => {
++      const vals = emitGraph((x) => varying[indices.get(x)!], sorted);
++      const pen = sum(m, (i) => penalty(vals.get(constrs[i]) as rose.Real));
++      return rose.add(vals.get(obj) as rose.Real, rose.mul(weight, pen));
++    },
+   );
+-  const graphs = [obj, ...constrs];
+-  const meta = makeMeta(graphs);
+-  const instance = await WebAssembly.instantiate(
+-    await WebAssembly.compile(genBytes(graphs)),
+-    makeImports(meta.memory),
++
++  const full = rose.fn(
++    [rose.Vec(n, rose.Real), rose.Real],
++    { phi: rose.Real, gradient: rose.Vec(n, rose.Real) },
++    (varying, weight) => {
++      const { ret: phi, grad } = rose.vjp(basic)({ inputs: varying, weight });
++      return { phi, gradient: grad(1).inputs };
++    },
+   );
+-  const f = getExport(meta, instance);
+-  const n = vars.size;
++
++  const f = await rose.compile(full);
+ 
+   return {
+     start: (conf) => {
+@@ -2131,14 +1098,16 @@ export const problem = async ({
+       const mask: boolean[] = [];
+       const init: number[] = [];
+       // populate inputs with initial values from `vals`
+-      for (const [x, i] of vars) {
+-        mask[i - 1] = !freeze(x);
+-        init[i - 1] = vals(x); // skip the weight input
+-      }
++      inputs.forEach((x, i) => {
++        mask[i] = !freeze(x);
++        init[i] = vals(x); // skip the weight input
++      });
+       const wrap = (xs: number[], params: Params): ad.Run => {
+         const unfrozen = new Map<ad.Var, number>();
+         // give back the optimized values
+-        for (const [x, i] of vars) if (!freeze(x)) unfrozen.set(x, xs[i - 1]);
++        inputs.forEach((x, i) => {
++          if (!freeze(x)) unfrozen.set(x, xs[i]);
++        });
+         return {
+           converged: isConverged(params),
+           vals: unfrozen,
+@@ -2151,27 +1120,19 @@ export const problem = async ({
+             while (!(stop || isConverged(after))) {
+               after = stepUntil(
+                 (
+-                  inputs: Float64Array /*read-only*/,
++                  v: Float64Array /*read-only*/,
+                   weight: number,
+                   grad: Float64Array /*write-only*/,
+                 ): number => {
+-                  if (inputs.length !== n)
+-                    throw Error(`expected ${n} inputs, got ${inputs.length}`);
++                  if (v.length !== n)
++                    throw Error(`expected ${n} inputs, got ${v.length}`);
+                   if (grad.length !== n)
+                     throw Error(
+                       `expected ${n} inputs, got gradient with length ${grad.length}`,
+                     );
+-                  meta.arrInputs.set(inputs.subarray(0, n), 1);
+-                  // the first input is the weight
+-                  meta.arrInputs[0] = weight;
+-                  // we don't use addend masks, so they are set to 1
+-                  meta.arrMask.fill(1);
+-                  meta.arrGrad.fill(0);
+-                  meta.arrSecondary.fill(0);
+-                  const phi = f();
++                  const { phi, gradient } = f(Array.from(v), weight);
+                   for (let i = 0; i < n; i++)
+-                    grad[i] =
+-                      i < meta.numInputs && !mask[i] ? 0 : meta.arrGrad[i + 1];
++                    grad[i] = mask[i] ? gradient[i] : 0;
+                   return phi;
+                 },
+                 arr,
+@@ -2191,29 +1152,39 @@ export const problem = async ({
+   };
+ };
+ 
+-export const compile = async (
+-  xs: ad.Num[],
+-): Promise<(inputs: (x: ad.Var) => number) => number[]> => {
++const makeFn = (ys: ad.Num[]): { inputs: ad.Var[]; f: rose.Fn } => {
++  const sorted = topsort(predsExpr, ys);
++
++  const inputs: ad.Var[] = [];
+   const indices = new Map<ad.Var, number>();
+-  const graph = secondaryGraph(xs, (x: ad.Var): number => {
+-    let i = indices.get(x);
+-    if (i === undefined) {
+-      i = indices.size;
+-      indices.set(x, i);
++  for (const x of sorted) {
++    if (typeof x !== "number" && x.tag === "Var") {
++      inputs.push(x);
++      indices.set(x, indices.size);
+     }
+-    return i;
++  }
++
++  const m = ys.length;
++  const n = inputs.length;
++  const f = rose.fn([rose.Vec(n, rose.Real)], rose.Vec(m, rose.Real), (v) => {
++    const vals = emitGraph((x) => v[indices.get(x)!], sorted);
++    return ys.map((y) => vals.get(y) as rose.Real);
+   });
+-  const graphs = [graph];
+-  const meta = makeMeta(graphs);
+-  meta.arrMask[0] = 1; // only one graph, always run it
+-  const instance = await WebAssembly.instantiate(
+-    await WebAssembly.compile(genBytes(graphs)),
+-    makeImports(meta.memory),
+-  );
+-  const f = getExport(meta, instance);
+-  return (inputs: (x: ad.Var) => number): number[] => {
+-    for (const [x, i] of indices) meta.arrInputs[i] = inputs(x);
+-    f();
+-    return Array.from(meta.arrSecondary);
+-  };
++  return { inputs, f };
++};
++
++export const interp = (
++  ys: ad.Num[],
++): ((inputs: (x: ad.Var) => number) => number[]) => {
++  const { inputs, f } = makeFn(ys);
++  const g = rose.interp(f as any) as any;
++  return (vals) => g(inputs.map((x) => vals(x)));
++};
++
++export const compile = async (
++  ys: ad.Num[],
++): Promise<(inputs: (x: ad.Var) => number) => number[]> => {
++  const { inputs, f } = makeFn(ys);
++  const g = (await rose.compile(f as any)) as any;
++  return (vals) => g(inputs.map((x) => vals(x)));
+ };
+diff --git a/packages/core/src/engine/AutodiffFunctions.ts b/packages/core/src/engine/AutodiffFunctions.ts
+index e1073c73d4..8735982e8e 100644
+--- a/packages/core/src/engine/AutodiffFunctions.ts
++++ b/packages/core/src/engine/AutodiffFunctions.ts
+@@ -324,10 +324,6 @@ export const ifCond = (cond: ad.Bool, v: ad.Num, w: ad.Num): ad.Num => ({
+  * nonzero imaginary component is replaced with `NaN`.
+  */
+ export const polyRoots = (coeffs: ad.Num[]): ad.Num[] => {
+-  const nexus: ad.PolyRoots = {
+-    tag: "PolyRoots",
+-    degree: coeffs.length,
+-    coeffs,
+-  };
++  const nexus: ad.PolyRoots = { tag: "PolyRoots", coeffs };
+   return coeffs.map((coeff, index) => ({ tag: "Index", index, vec: nexus }));
+ };
+diff --git a/packages/core/src/engine/BBox.test.ts b/packages/core/src/engine/BBox.test.ts
+index 76077bf0ad..72c203cec2 100644
+--- a/packages/core/src/engine/BBox.test.ts
++++ b/packages/core/src/engine/BBox.test.ts
+@@ -153,11 +153,18 @@ describe("bbox", () => {
+       end: vectorV([100, -150]),
+       strokeWidth: floatV(50),
+     });
+-    expectBbox(bboxFromLinelike(shape), {
+-      width: 432.925,
+-      height: 387.629,
+-      center: [-100, 25],
+-    });
++    expectBbox(
++      bboxFromLinelike.rose(
++        shape.start.contents,
++        shape.end.contents,
++        shape.strokeWidth.contents,
++      ),
++      {
++        width: 432.925,
++        height: 387.629,
++        center: [-100, 25],
++      },
++    );
+   });
+ 
+   test("Path (lines)", () => {
+diff --git a/packages/core/src/engine/BBox.ts b/packages/core/src/engine/BBox.ts
+index 85f92983ac..9fab25f917 100644
+--- a/packages/core/src/engine/BBox.ts
++++ b/packages/core/src/engine/BBox.ts
+@@ -1,61 +1,59 @@
+-import { rectPts } from "../lib/Queries.js";
+-import { toPt } from "../lib/Utils.js";
+-import { CircleProps } from "../shapes/Circle.js";
+-import { EllipseProps } from "../shapes/Ellipse.js";
+-import { LineProps } from "../shapes/Line.js";
+-import { PathProps } from "../shapes/Path.js";
+-import { RectangleProps } from "../shapes/Rectangle.js";
+-import * as ad from "../types/ad.js";
+-import { Center, Poly, Rect, Rotate, Scale } from "../types/shapes.js";
+-import { ops } from "./Autodiff.js";
+ import {
+-  absVal,
++  Real,
++  Vec,
+   add,
+   and,
+   div,
+-  eq,
+-  gt,
+-  ifCond,
++  fn,
+   lt,
+-  max,
+-  min,
+   mul,
+   neg,
++  select,
+   sqrt,
+-  squared,
++  struct,
+   sub,
+-} from "./AutodiffFunctions.js";
++} from "rose";
++import * as ad from "../engine/AutodiffFunctions.js";
++import { rectPts } from "../lib/Queries.js";
++import { toPt } from "../lib/Utils.js";
++import { CircleProps } from "../shapes/Circle.js";
++import { EllipseProps } from "../shapes/Ellipse.js";
++import { PathProps } from "../shapes/Path.js";
++import { RectangleProps } from "../shapes/Rectangle.js";
++import { Num, Pt2, isPt2 } from "../types/ad.js";
++import { Center, Poly, Rect, Rotate, Scale } from "../types/shapes.js";
++import { EPS_DENOM, FromRose, fn as adFn, ops } from "./Autodiff.js";
++import { max, min } from "./Builtins.js";
+ 
+-export interface BBox {
+-  width: ad.Num;
+-  height: ad.Num;
+-  center: ad.Pt2;
+-}
++const Vec2 = Vec(2, Real);
++
++export const BBox = struct({ width: Real, height: Real, center: Vec2 });
++export type BBox = FromRose<typeof BBox>;
+ 
+ export interface Corners {
+-  topRight: ad.Pt2;
+-  topLeft: ad.Pt2;
+-  bottomLeft: ad.Pt2;
+-  bottomRight: ad.Pt2;
++  topRight: Pt2;
++  topLeft: Pt2;
++  bottomLeft: Pt2;
++  bottomRight: Pt2;
+ }
+ 
+ export interface Intervals {
+-  xRange: [ad.Num, ad.Num];
+-  yRange: [ad.Num, ad.Num];
++  xRange: [Num, Num];
++  yRange: [Num, Num];
+ }
+ 
+ export interface Edges {
+-  top: [ad.Pt2, ad.Pt2];
+-  bot: [ad.Pt2, ad.Pt2];
+-  left: [ad.Pt2, ad.Pt2];
+-  right: [ad.Pt2, ad.Pt2];
++  top: [Pt2, Pt2];
++  bot: [Pt2, Pt2];
++  left: [Pt2, Pt2];
++  right: [Pt2, Pt2];
+ }
+ 
+ /**
+  * Input: A width, height, and center.
+  * Output: A new BBox.
+  */
+-export const bbox = (width: ad.Num, height: ad.Num, center: ad.Pt2): BBox => {
++export const bbox = (width: Num, height: Num, center: Pt2): BBox => {
+   return {
+     width,
+     height,
+@@ -64,11 +62,11 @@ export const bbox = (width: ad.Num, height: ad.Num, center: ad.Pt2): BBox => {
+ };
+ 
+ export const corners = (b: BBox): Corners => {
+-  const halfWidth = div(b.width, 2);
+-  const halfHeight = div(b.height, 2);
+-  const nhalfWidth = neg(halfWidth);
+-  const nhalfHeight = neg(halfHeight);
+-  const pts = <ad.Pt2[]>[
++  const halfWidth = ad.div(b.width, 2);
++  const halfHeight = ad.div(b.height, 2);
++  const nhalfWidth = ad.neg(halfWidth);
++  const nhalfHeight = ad.neg(halfHeight);
++  const pts = <Pt2[]>[
+     [halfWidth, halfHeight],
+     [nhalfWidth, halfHeight],
+     [nhalfWidth, nhalfHeight],
+@@ -87,11 +85,11 @@ export const corners = (b: BBox): Corners => {
+  * Input: A BBox and an inflation parameter delta.
+  * Output: A BBox inflated on all sides by delta.
+  */
+-export const inflate = (b: BBox, delta: ad.Num): BBox => {
++export const inflate = (b: BBox, delta: Num): BBox => {
+   return bbox(
+-    add(b.width, add(delta, delta)),
+-    add(b.height, add(delta, delta)),
+-    b.center,
++    ad.add(b.width, ad.add(delta, delta)),
++    ad.add(b.height, ad.add(delta, delta)),
++    b.center as Pt2,
+   );
+ };
+ 
+@@ -99,7 +97,7 @@ export const inflate = (b: BBox, delta: ad.Num): BBox => {
+  * Input: A BBox.
+  * Output: The min X of the BBox.
+  */
+-export const minX = (b: BBox): ad.Num => {
++export const minX = (b: BBox): Num => {
+   return corners(b).topLeft[0];
+ };
+ 
+@@ -107,7 +105,7 @@ export const minX = (b: BBox): ad.Num => {
+  * Input: A BBox.
+  * Output: The max X of the BBox.
+  */
+-export const maxX = (b: BBox): ad.Num => {
++export const maxX = (b: BBox): Num => {
+   return corners(b).bottomRight[0];
+ };
+ 
+@@ -115,7 +113,7 @@ export const maxX = (b: BBox): ad.Num => {
+  * Input: A BBox.
+  * Output: The min Y of the BBox.
+  */
+-export const minY = (b: BBox): ad.Num => {
++export const minY = (b: BBox): Num => {
+   return corners(b).bottomRight[1];
+ };
+ 
+@@ -123,7 +121,7 @@ export const minY = (b: BBox): ad.Num => {
+  * Input: A BBox.
+  * Output: The max Y of the BBox.
+  */
+-export const maxY = (b: BBox): ad.Num => {
++export const maxY = (b: BBox): Num => {
+   return corners(b).topLeft[1];
+ };
+ 
+@@ -131,7 +129,7 @@ export const maxY = (b: BBox): ad.Num => {
+  * Input: A BBox.
+  * Output: The X interval of the BBox.
+  */
+-export const xRange = (b: BBox): [ad.Num, ad.Num] => {
++export const xRange = (b: BBox): [Num, Num] => {
+   return [minX(b), maxX(b)];
+ };
+ 
+@@ -139,7 +137,7 @@ export const xRange = (b: BBox): [ad.Num, ad.Num] => {
+  * Input: A BBox.
+  * Output: The Y interval of the BBox.
+  */
+-export const yRange = (b: BBox): [ad.Num, ad.Num] => {
++export const yRange = (b: BBox): [Num, Num] => {
+   return [minY(b), maxY(b)];
+ };
+ 
+@@ -156,33 +154,33 @@ export const edges = (b: BBox): Edges => {
+   };
+ };
+ 
+-export const bboxFromPoints = (points: ad.Pt2[]): BBox => {
+-  const minCorner = points.reduce((corner: ad.Pt2, point: ad.Pt2) => [
+-    min(corner[0], point[0]),
+-    min(corner[1], point[1]),
++export const bboxFromPoints = (points: Pt2[]): BBox => {
++  const minCorner = points.reduce((corner: Pt2, point: Pt2) => [
++    ad.min(corner[0], point[0]),
++    ad.min(corner[1], point[1]),
+   ]);
+-  const maxCorner = points.reduce((corner: ad.Pt2, point: ad.Pt2) => [
+-    max(corner[0], point[0]),
+-    max(corner[1], point[1]),
++  const maxCorner = points.reduce((corner: Pt2, point: Pt2) => [
++    ad.max(corner[0], point[0]),
++    ad.max(corner[1], point[1]),
+   ]);
+-  const w = sub(maxCorner[0], minCorner[0]);
+-  const h = sub(maxCorner[1], minCorner[1]);
++  const w = ad.sub(maxCorner[0], minCorner[0]);
++  const h = ad.sub(maxCorner[1], minCorner[1]);
+   const center = ops.vdiv(ops.vadd(minCorner, maxCorner), 2);
+-  if (!ad.isPt2(center)) {
++  if (!isPt2(center)) {
+     throw new Error("ops.vadd and ops.vdiv did not preserve dimension");
+   }
+   return bbox(w, h, center);
+ };
+ 
+ export const bboxFromRotatedRect = (
+-  center: ad.Pt2,
+-  w: ad.Num,
+-  h: ad.Num,
+-  clockwise: ad.Num,
+-  strokeWidth: ad.Num,
++  center: Pt2,
++  w: Num,
++  h: Num,
++  clockwise: Num,
++  strokeWidth: Num,
+ ): BBox => {
+   return bboxFromPoints(
+-    rectPts(center, add(w, strokeWidth), add(h, strokeWidth), clockwise),
++    rectPts(center, ad.add(w, strokeWidth), ad.add(h, strokeWidth), clockwise),
+   );
+ };
+ 
+@@ -190,15 +188,15 @@ export const bboxFromCircle = ({
+   r,
+   center,
+   strokeWidth,
+-}: CircleProps<ad.Num>): BBox => {
++}: CircleProps<Num>): BBox => {
+   // https://github.com/penrose/penrose/issues/715
+-  if (!ad.isPt2(center.contents)) {
++  if (!isPt2(center.contents)) {
+     throw new Error(
+       `bboxFromCircle expected center to be Pt2, but got length ${center.contents.length}`,
+     );
+   }
+ 
+-  const diameter = add(mul(2, r.contents), strokeWidth.contents);
++  const diameter = ad.add(ad.mul(2, r.contents), strokeWidth.contents);
+   return bbox(diameter, diameter, center.contents);
+ };
+ 
+@@ -207,19 +205,19 @@ export const bboxFromEllipse = ({
+   ry,
+   center,
+   strokeWidth,
+-}: EllipseProps<ad.Num>): BBox => {
++}: EllipseProps<Num>): BBox => {
+   // https://github.com/penrose/penrose/issues/715
+-  if (!ad.isPt2(center.contents)) {
++  if (!isPt2(center.contents)) {
+     throw new Error(
+       `bboxFromEllipse expected center to be Pt2, but got length ${center.contents.length}`,
+     );
+   }
+ 
+-  const dx = mul(2, rx.contents);
+-  const dy = mul(2, ry.contents);
++  const dx = ad.mul(2, rx.contents);
++  const dy = ad.mul(2, ry.contents);
+   return bbox(
+-    add(dx, strokeWidth.contents),
+-    add(dy, strokeWidth.contents),
++    ad.add(dx, strokeWidth.contents),
++    ad.add(dy, strokeWidth.contents),
+     center.contents,
+   );
+ };
+@@ -230,9 +228,9 @@ export const bboxFromRect = ({
+   center,
+   strokeWidth,
+   rotation,
+-}: RectangleProps<ad.Num>): BBox => {
++}: RectangleProps<Num>): BBox => {
+   // https://github.com/penrose/penrose/issues/715
+-  if (!ad.isPt2(center.contents)) {
++  if (!isPt2(center.contents)) {
+     throw new Error(
+       `bboxFromRect expected center to be Pt2, but got length ${center.contents.length}`,
+     );
+@@ -253,9 +251,9 @@ export const bboxFromRectlike = ({
+   width,
+   height,
+   rotation,
+-}: Center<ad.Num> & Rect<ad.Num> & Rotate<ad.Num>): BBox => {
++}: Center<Num> & Rect<Num> & Rotate<Num>): BBox => {
+   // https://github.com/penrose/penrose/issues/715
+-  if (!ad.isPt2(center.contents)) {
++  if (!isPt2(center.contents)) {
+     throw new Error(
+       `bboxFromRectlike expected center to be Pt2, but got length ${center.contents.length}`,
+     );
+@@ -273,11 +271,11 @@ export const bboxFromRectlike = ({
+ export const bboxFromPolygon = ({
+   points,
+   scale,
+-}: Poly<ad.Num> & Scale<ad.Num>): BBox => {
++}: Poly<Num> & Scale<Num>): BBox => {
+   return bboxFromPoints(
+     points.contents.map((point) => {
+       const pt = ops.vmul(scale.contents, point);
+-      if (ad.isPt2(pt)) {
++      if (isPt2(pt)) {
+         return pt;
+       } else {
+         throw new Error(
+@@ -288,44 +286,58 @@ export const bboxFromPolygon = ({
+   );
+ };
+ 
+-export const bboxFromLinelike = ({
+-  start,
+-  end,
+-  strokeWidth,
+-}: LineProps<ad.Num>): BBox => {
+-  // https://github.com/penrose/penrose/issues/715
+-  if (!ad.isPt2(start.contents)) {
+-    throw new Error(
+-      `bboxFromLinelike expected start to be Pt2, but got length ${start.contents.length}`,
+-    );
+-  }
+-  if (!ad.isPt2(end.contents)) {
+-    throw new Error(
+-      `bboxFromLinelike expected end to be Pt2, but got length ${end.contents.length}`,
+-    );
+-  }
++const rot90 = fn([Vec2], Vec2, ([x, y]) => [neg(y), x]);
+ 
+-  const d = ops.vmul(
+-    div(strokeWidth.contents, 2),
+-    ops.rot90(ops.vnormalize(ops.vsub(end.contents, start.contents))),
+-  );
+-  return bboxFromPoints(
+-    [
+-      ops.vadd(start.contents, d),
+-      ops.vsub(start.contents, d),
+-      ops.vadd(end.contents, d),
+-      ops.vsub(end.contents, d),
+-    ].map((point) => {
+-      if (ad.isPt2(point)) {
+-        return point;
+-      } else {
+-        throw new Error("ops did not preserve dimension");
+-      }
+-    }),
+-  );
+-};
++const vadd = fn([Vec2, Vec2], Vec2, ([x1, y1], [x2, y2]) => {
++  return [add(x1, x2), add(y1, y2)];
++});
++
++const vsub = fn([Vec2, Vec2], Vec2, ([x1, y1], [x2, y2]) => {
++  return [sub(x1, x2), sub(y1, y2)];
++});
++
++const vmul = fn([Real, Vec2], Vec2, (c, [x, y]) => [mul(c, x), mul(c, y)]);
++
++const vdiv = fn([Vec2, Real], Vec2, ([x, y], c) => [div(x, c), div(y, c)]);
+ 
+-export const bboxFromPath = ({ d }: PathProps<ad.Num>): BBox => {
++const vnormsq = fn([Vec2], Real, ([x, y]) => add(mul(x, x), mul(y, y)));
++
++const vnorm = fn([Vec2], Real, (v) => sqrt(vnormsq(v)));
++
++const vnormalize = fn([Vec2], Vec2, (v) => vdiv(v, add(vnorm(v), EPS_DENOM)));
++
++const bboxFromFourPoints = fn([Vec(4, Vec2)], BBox, (points) => {
++  let minCorner = [points[0][0], points[0][1]];
++  for (let i = 1; i < 4; i++) {
++    const point = points[i];
++    minCorner = [min(minCorner[0], point[0]), min(minCorner[1], point[1])];
++  }
++  let maxCorner = [points[0][0], points[0][1]];
++  for (let i = 1; i < 4; i++) {
++    const point = points[i];
++    maxCorner = [max(maxCorner[0], point[0]), max(maxCorner[1], point[1])];
++  }
++  const width = sub(maxCorner[0], minCorner[0]);
++  const height = sub(maxCorner[1], minCorner[1]);
++  const center = vdiv(vadd(minCorner, maxCorner), 2);
++  return { width, height, center };
++});
++
++export const bboxFromLinelike = adFn(
++  [Vec2, Vec2, Real],
++  BBox,
++  (start, end, strokeWidth) => {
++    const d = vmul(div(strokeWidth, 2), rot90(vnormalize(vsub(end, start))));
++    return bboxFromFourPoints([
++      vadd(start, d),
++      vsub(start, d),
++      vadd(end, d),
++      vsub(end, d),
++    ]);
++  },
++);
++
++export const bboxFromPath = ({ d }: PathProps<Num>): BBox => {
+   const p = d.contents;
+   if (p.length < 1) {
+     throw new Error("bboxFromPath expected pathData to be nonempty");
+@@ -341,21 +353,21 @@ export const bboxFromPath = ({ d }: PathProps<ad.Num>): BBox => {
+       `bboxFromPath expected first command subpath to be CoordV, but got ${first.tag}`,
+     );
+   }
+-  if (!ad.isPt2(first.contents)) {
++  if (!isPt2(first.contents)) {
+     throw new Error(
+       `bboxFromPath expected cursor to be Pt2, but got length ${first.contents.length}`,
+     );
+   }
+-  let cursor: ad.Pt2 = first.contents;
+-  let control: ad.Pt2 = cursor; // used by T and S
++  let cursor: Pt2 = first.contents;
++  let control: Pt2 = cursor; // used by T and S
+ 
+-  const points: ad.Pt2[] = [];
++  const points: Pt2[] = [];
+   for (const { cmd, contents } of p) {
+     const next = cmd === "Z" ? first : contents[contents.length - 1];
+     if (next.tag !== "CoordV") {
+       throw new Error("bboxFromPath expected next cursor to be CoordV");
+     }
+-    if (!ad.isPt2(next.contents)) {
++    if (!isPt2(next.contents)) {
+       throw new Error("bboxFromPath expected next cursor to be Pt2");
+     }
+     let nextControl = next.contents;
+@@ -366,7 +378,7 @@ export const bboxFromPath = ({ d }: PathProps<ad.Num>): BBox => {
+       points.push(cursor, next.contents);
+     } else if (cmd === "Q") {
+       const cp = contents[0].contents;
+-      if (!ad.isPt2(cp)) {
++      if (!isPt2(cp)) {
+         throw new Error("bboxFromPath expected Q cp to be Pt2");
+       }
+       points.push(cursor, cp, next.contents);
+@@ -374,17 +386,17 @@ export const bboxFromPath = ({ d }: PathProps<ad.Num>): BBox => {
+     } else if (cmd === "C") {
+       const cp1 = contents[0].contents;
+       const cp2 = contents[1].contents;
+-      if (!ad.isPt2(cp1)) {
++      if (!isPt2(cp1)) {
+         throw new Error("bboxFromPath expected C cp1 to be Pt2");
+       }
+-      if (!ad.isPt2(cp2)) {
++      if (!isPt2(cp2)) {
+         throw new Error("bboxFromPath expected C cp2 to be Pt2");
+       }
+       points.push(cursor, cp1, cp2, next.contents);
+       nextControl = cp2;
+     } else if (cmd === "T") {
+       const cp = ops.vadd(cursor, ops.vsub(cursor, control));
+-      if (!ad.isPt2(cp)) {
++      if (!isPt2(cp)) {
+         throw new Error("ops did not preserve dimension");
+       }
+       points.push(cursor, cp, next.contents);
+@@ -392,17 +404,17 @@ export const bboxFromPath = ({ d }: PathProps<ad.Num>): BBox => {
+     } else if (cmd === "S") {
+       const cp1 = ops.vadd(cursor, ops.vsub(cursor, control));
+       const cp2 = contents[0].contents;
+-      if (!ad.isPt2(cp1)) {
++      if (!isPt2(cp1)) {
+         throw new Error("ops did not preserve dimension");
+       }
+-      if (!ad.isPt2(cp2)) {
++      if (!isPt2(cp2)) {
+         throw new Error("bboxFromPath expected S cp2 to be Pt2");
+       }
+       points.push(cursor, cp1, cp2, next.contents);
+       nextControl = cp2;
+     } else if (cmd === "A") {
+       const [rxRaw, ryRaw, rotation, largeArc, sweep] = contents[0].contents;
+-      const phi = neg(rotation); // phi is counterclockwise
++      const phi = ad.neg(rotation); // phi is counterclockwise
+ 
+       // https://www.w3.org/TR/SVG/implnote.html#ArcCorrectionOutOfRangeRadii
+       // note: we assume neither rxRaw nor ryRaw are zero; technically in that
+@@ -410,51 +422,60 @@ export const bboxFromPath = ({ d }: PathProps<ad.Num>): BBox => {
+       // any of these other calculations
+ 
+       // eq. 6.1
+-      const rxPos = absVal(rxRaw);
+-      const ryPos = absVal(ryRaw);
++      const rxPos = ad.absVal(rxRaw);
++      const ryPos = ad.absVal(ryRaw);
+ 
+       // https://www.w3.org/TR/SVG/implnote.html#ArcConversionEndpointToCenter
+       // eq. 5.1
+       const [x1Prime, y1Prime] = ops.vrot(
+         ops.vdiv(ops.vsub(cursor, next.contents), 2),
+-        neg(phi),
++        ad.neg(phi),
+       );
+ 
+       // eq. 6.2
+-      const lambda = add(
+-        squared(div(x1Prime, rxPos)),
+-        squared(div(y1Prime, ryPos)),
++      const lambda = ad.add(
++        ad.squared(ad.div(x1Prime, rxPos)),
++        ad.squared(ad.div(y1Prime, ryPos)),
+       );
+ 
+       // eq. 6.3
+-      const replace = gt(lambda, 1);
+-      const rx = ifCond(replace, mul(sqrt(lambda), rxPos), rxPos);
+-      const ry = ifCond(replace, mul(sqrt(lambda), ryPos), ryPos);
++      const replace = ad.gt(lambda, 1);
++      const rx = ad.ifCond(replace, ad.mul(ad.sqrt(lambda), rxPos), rxPos);
++      const ry = ad.ifCond(replace, ad.mul(ad.sqrt(lambda), ryPos), ryPos);
+ 
+       // eq. 5.2
+       const cPrime = ops.vmul(
+-        mul(
++        ad.mul(
+           // according to the linked doc it seems like this should be the other
+           // way around, but Penrose seems to do it this way instead
+-          ifCond(eq(largeArc, sweep), 1, -1),
+-          sqrt(
++          ad.ifCond(ad.eq(largeArc, sweep), 1, -1),
++          ad.sqrt(
+             // mathematically this radicand can never be negative, but when
+             // Lambda is greater than 1, the radicand becomes very close to 0
+             // and sometimes negative, so we manually clamp it to a very small
+             // positive value in that case
+-            max(
++            ad.max(
+               1e-18,
+-              div(
+-                sub(
+-                  sub(squared(mul(rx, ry)), squared(mul(rx, y1Prime))),
+-                  squared(mul(ry, x1Prime)),
++              ad.div(
++                ad.sub(
++                  ad.sub(
++                    ad.squared(ad.mul(rx, ry)),
++                    ad.squared(ad.mul(rx, y1Prime)),
++                  ),
++                  ad.squared(ad.mul(ry, x1Prime)),
++                ),
++                ad.add(
++                  ad.squared(ad.mul(rx, y1Prime)),
++                  ad.squared(ad.mul(ry, x1Prime)),
+                 ),
+-                add(squared(mul(rx, y1Prime)), squared(mul(ry, x1Prime))),
+               ),
+             ),
+           ),
+         ),
+-        [div(mul(rx, y1Prime), ry), neg(div(mul(ry, x1Prime), rx))],
++        [
++          ad.div(ad.mul(rx, y1Prime), ry),
++          ad.neg(ad.div(ad.mul(ry, x1Prime), rx)),
++        ],
+       );
+ 
+       // eq. 5.3
+@@ -466,8 +487,11 @@ export const bboxFromPath = ({ d }: PathProps<ad.Num>): BBox => {
+       // very crude approach: we know that the ellipse is contained within a
+       // concentric circle whose diameter is the major axis, so just use the
+       // bounding box of that circle
+-      const r = max(rx, ry);
+-      points.push([sub(cx, r), sub(cy, r)], [add(cx, r), add(cy, r)]);
++      const r = ad.max(rx, ry);
++      points.push(
++        [ad.sub(cx, r), ad.sub(cy, r)],
++        [ad.add(cx, r), ad.add(cy, r)],
++      );
+       // ideally we would instead do something more sophisticated, like this:
+       // https://stackoverflow.com/a/65441277
+     } else {
+@@ -482,7 +506,7 @@ export const bboxFromPath = ({ d }: PathProps<ad.Num>): BBox => {
+   return bboxFromPoints(points);
+ };
+ 
+-export const intersectBbox = (bbox1: BBox, bbox2: BBox): BBox => {
++export const intersectBbox = adFn([BBox, BBox], BBox, (bbox1, bbox2) => {
+   const { center: center1, width: w1, height: h1 } = bbox1;
+   const [x1, y1] = center1;
+   const { center: center2, width: w2, height: h2 } = bbox2;
+@@ -498,16 +522,14 @@ export const intersectBbox = (bbox1: BBox, bbox2: BBox): BBox => {
+   const top = min(add(y1, hh1), add(y2, hh2));
+   const bottom = max(sub(y1, hh1), sub(y2, hh2));
+ 
+-  const intersection_x = div(add(left, right), 2);
+-  const intersection_y = div(add(top, bottom), 2);
+-  const intersection_w = sub(right, left);
+-  const intersection_h = sub(top, bottom);
+-
+-  const cond = and(lt(left, right), lt(bottom, top));
+-
+-  return bbox(
+-    ifCond(cond, intersection_w, 0),
+-    ifCond(cond, intersection_h, 0),
+-    [ifCond(cond, intersection_x, 0), ifCond(cond, intersection_y, 0)],
++  return select(
++    and(lt(left, right), lt(bottom, top)),
++    BBox,
++    {
++      width: sub(right, left),
++      height: sub(top, bottom),
++      center: [div(add(left, right), 2), div(add(top, bottom), 2)],
++    },
++    { width: 0, height: 0, center: [0, 0] },
+   );
+-};
++});
+diff --git a/packages/core/src/engine/Builtins.ts b/packages/core/src/engine/Builtins.ts
+new file mode 100644
+index 0000000000..8cc0ada5f2
+--- /dev/null
++++ b/packages/core/src/engine/Builtins.ts
+@@ -0,0 +1,177 @@
++import {
++  Dual,
++  Real,
++  add,
++  div,
++  fn,
++  gt,
++  lt,
++  mul,
++  neg,
++  opaque,
++  sqrt as roseSqrt,
++  select,
++  sub,
++} from "rose";
++
++export const epsilon = 1e-5;
++
++export const max = (x: Real, y: Real) => select(gt(x, y), Real, x, y);
++export const min = (x: Real, y: Real) => select(lt(x, y), Real, x, y);
++
++export const sqrt = fn([Real], Real, (x) => roseSqrt(x));
++sqrt.jvp = fn([Dual], Dual, ({ re: x, du: dx }) => {
++  const y = sqrt(x);
++  // NOTE: Watch out for divide by zero in 1 / [2 sqrt(x)]
++  const dy = mul(dx, div(1 / 2, max(epsilon, y)));
++  return { re: y, du: dy };
++});
++
++export const acos = opaque([Real], Real, Math.acos);
++export const acosh = opaque([Real], Real, Math.acosh);
++export const asin = opaque([Real], Real, Math.asin);
++export const asinh = opaque([Real], Real, Math.asinh);
++export const atan = opaque([Real], Real, Math.atan);
++export const atanh = opaque([Real], Real, Math.atanh);
++export const cbrt = opaque([Real], Real, Math.cbrt);
++export const cos = opaque([Real], Real, Math.cos);
++export const cosh = opaque([Real], Real, Math.cosh);
++export const exp = opaque([Real], Real, Math.exp);
++export const expm1 = opaque([Real], Real, Math.expm1);
++export const log = opaque([Real], Real, Math.log);
++export const log10 = opaque([Real], Real, Math.log10);
++export const log1p = opaque([Real], Real, Math.log1p);
++export const log2 = opaque([Real], Real, Math.log2);
++export const sin = opaque([Real], Real, Math.sin);
++export const sinh = opaque([Real], Real, Math.sinh);
++export const tan = opaque([Real], Real, Math.tan);
++export const tanh = opaque([Real], Real, Math.tanh);
++
++export const atan2 = opaque([Real, Real], Real, Math.atan2);
++export const pow = opaque([Real, Real], Real, Math.pow);
++
++acos.jvp = fn([Dual], Dual, ({ re: x, du: dx }) => {
++  const y = acos(x);
++  const dy = div(dx, neg(sqrt(sub(1, mul(x, x)))));
++  return { re: y, du: dy };
++});
++
++acosh.jvp = fn([Dual], Dual, ({ re: x, du: dx }) => {
++  const y = acosh(x);
++  const dy = div(dx, mul(sqrt(sub(x, 1)), sqrt(add(x, 1))));
++  return { re: y, du: dy };
++});
++
++asin.jvp = fn([Dual, Dual], Dual, ({ re: x, du: dx }) => {
++  const y = asin(x);
++  const dy = div(dx, sqrt(sub(1, mul(x, x))));
++  return { re: y, du: dy };
++});
++
++asinh.jvp = fn([Dual], Dual, ({ re: x, du: dx }) => {
++  const y = asinh(x);
++  const dy = div(dx, sqrt(add(1, mul(x, x))));
++  return { re: y, du: dy };
++});
++
++atan.jvp = fn([Dual], Dual, ({ re: x, du: dx }) => {
++  const y = atan(x);
++  const dy = div(dx, add(1, mul(x, x)));
++  return { re: y, du: dy };
++});
++
++atanh.jvp = fn([Dual], Dual, ({ re: x, du: dx }) => {
++  const y = atanh(x);
++  const dy = div(dx, sub(1, mul(x, x)));
++  return { re: y, du: dy };
++});
++
++cbrt.jvp = fn([Dual], Dual, ({ re: x, du: dx }) => {
++  const y = cbrt(x);
++  const dy = mul(dx, div(1 / 3, mul(y, y)));
++  return { re: y, du: dy };
++});
++
++cos.jvp = fn([Dual], Dual, ({ re: x, du: dx }) => {
++  const y = cos(x);
++  const dy = mul(dx, neg(sin(x)));
++  return { re: y, du: dy };
++});
++
++cosh.jvp = fn([Dual], Dual, ({ re: x, du: dx }) => {
++  const y = cosh(x);
++  const dy = mul(dx, sinh(x));
++  return { re: y, du: dy };
++});
++
++exp.jvp = fn([Dual], Dual, ({ re: x, du: dx }) => {
++  const y = exp(x);
++  const dy = mul(dx, y);
++  return { re: y, du: dy };
++});
++
++expm1.jvp = fn([Dual], Dual, ({ re: x, du: dx }) => {
++  const y = expm1(x);
++  const dy = mul(dx, add(y, 1));
++  return { re: y, du: dy };
++});
++
++log.jvp = fn([Dual], Dual, ({ re: x, du: dx }) => {
++  const y = log(x);
++  const dy = div(dx, x);
++  return { re: y, du: dy };
++});
++
++log10.jvp = fn([Dual], Dual, ({ re: x, du: dx }) => {
++  const y = log10(x);
++  const dy = mul(dx, div(Math.LOG10E, x));
++  return { re: y, du: dy };
++});
++
++log1p.jvp = fn([Dual], Dual, ({ re: x, du: dx }) => {
++  const y = log1p(x);
++  const dy = div(dx, add(1, x));
++  return { re: y, du: dy };
++});
++
++log2.jvp = fn([Dual], Dual, ({ re: x, du: dx }) => {
++  const y = log2(x);
++  const dy = mul(dx, div(Math.LOG2E, x));
++  return { re: y, du: dy };
++});
++
++sin.jvp = fn([Dual], Dual, ({ re: x, du: dx }) => {
++  const y = sin(x);
++  const dy = mul(dx, cos(x));
++  return { re: y, du: dy };
++});
++
++sinh.jvp = fn([Dual], Dual, ({ re: x, du: dx }) => {
++  const y = sinh(x);
++  const dy = mul(dx, cosh(x));
++  return { re: y, du: dy };
++});
++
++tan.jvp = fn([Dual], Dual, ({ re: x, du: dx }) => {
++  const y = tan(x);
++  const dy = mul(dx, add(1, mul(y, y)));
++  return { re: y, du: dy };
++});
++
++tanh.jvp = fn([Dual], Dual, ({ re: x, du: dx }) => {
++  const y = tanh(x);
++  const dy = mul(dx, sub(1, mul(y, y)));
++  return { re: y, du: dy };
++});
++
++atan2.jvp = fn([Dual, Dual], Dual, ({ re: y, du: dy }, { re: x, du: dx }) => {
++  const z = atan2(y, x);
++  const dz = div(sub(mul(dy, x), mul(dx, y)), add(mul(x, x), mul(y, y)));
++  return { re: z, du: dz };
++});
++
++pow.jvp = fn([Dual, Dual], Dual, ({ re: x, du: dx }, { re: y, du: dy }) => {
++  const z = pow(x, y);
++  const dz = mul(add(mul(dx, div(y, x)), mul(dy, log(x))), z);
++  return { re: z, du: dz };
++});
+diff --git a/packages/core/src/engine/EngineUtils.ts b/packages/core/src/engine/EngineUtils.ts
+index 0c97a26006..7575815caf 100644
+--- a/packages/core/src/engine/EngineUtils.ts
++++ b/packages/core/src/engine/EngineUtils.ts
+@@ -57,7 +57,7 @@ import {
+   VectorV,
+ } from "../types/value.js";
+ import { unwrap } from "../utils/Util.js";
+-import { genCode, secondaryGraph } from "./Autodiff.js";
++import { compile } from "./Autodiff.js";
+ 
+ // TODO: Is there a way to write these mapping/conversion functions with less boilerplate?
+ 
+@@ -504,18 +504,14 @@ export const compileCompGraph = async (
+       vars.push(x);
+     }, s);
+   }
+-  const compGraph: ad.Graph = secondaryGraph(vars);
+-  const evalFn = await genCode(compGraph);
++  const m = new Map(vars.map((x, i) => [x, i]));
++  const evalFn = await compile(vars);
+   return (xs: number[]): Shape<number>[] => {
+     const numbers = evalFn(
+       (x) => xs[unwrap(indices.get(x), () => "input not found")],
+-    ).secondary;
+-    const m = new Map(compGraph.secondary.map((id, i) => [id, numbers[i]]));
++    );
+     return shapes.map((s: Shape<ad.Num>) =>
+-      mapShape((x) => {
+-        const id = unwrap(compGraph.nodes.get(x), () => "missing node");
+-        return unwrap(m.get(id), () => `missing output for node ${id}`);
+-      }, s),
++      mapShape((x) => numbers[unwrap(m.get(x), () => "missing output")], s),
+     );
+   };
+ };
+diff --git a/packages/core/src/lib/Constraints.ts b/packages/core/src/lib/Constraints.ts
+index 68b3be9605..2dfcd53828 100644
+--- a/packages/core/src/lib/Constraints.ts
++++ b/packages/core/src/lib/Constraints.ts
+@@ -196,66 +196,28 @@ export const overlapping = (
+ ): MayWarn<ad.Num> => {
+   const t1 = s1.shapeType;
+   const t2 = s2.shapeType;
+-  // for some cases with ellipses, we can't easily compute the distance
+-  if (t1 === "Ellipse" && t2 === "Ellipse")
+-    return noWarn(
+-      overlappingEllipses(
+-        toPt(s1.center.contents),
+-        s1.rx.contents,
+-        s1.ry.contents,
+-        toPt(s2.center.contents),
+-        s2.rx.contents,
+-        s2.ry.contents,
+-        overlap,
+-      ),
+-    );
+-  // Circle x Ellipse
+-  else if (t1 === "Circle" && t2 === "Ellipse")
+-    return noWarn(
+-      overlappingCircleEllipse(
+-        toPt(s1.center.contents),
+-        s1.r.contents,
+-        toPt(s2.center.contents),
+-        s2.rx.contents,
+-        s2.ry.contents,
+-        overlap,
+-      ),
+-    );
+-  else if (t1 === "Ellipse" && t2 === "Circle")
+-    return noWarn(
+-      overlappingCircleEllipse(
+-        toPt(s2.center.contents),
+-        s2.r.contents,
+-        toPt(s1.center.contents),
+-        s1.rx.contents,
+-        s1.ry.contents,
+-        overlap,
+-      ),
+-    );
+-  // for other cases, we know how to compute the distance, so we just use that
+-  else {
+-    const { value: dist, warnings } = shapeDistance(s1, s2);
+ 
+-    // If the computation of shape distance issues bbox approximation warnings, adapt that warning to use `overlapping`
+-    return {
+-      value: add(dist, overlap),
+-      warnings: warnings.map((warning) => {
+-        if (warning.tag === "BBoxApproximationWarning") {
+-          return {
+-            ...warning,
+-            stack: [
+-              ...warning.stack,
+-              {
+-                signature: `overlapping(${t1}, ${t2})`,
+-              },
+-            ],
+-          };
+-        } else {
+-          return warning;
+-        }
+-      }),
+-    };
+-  }
++  const { value: dist, warnings } = shapeDistance(s1, s2);
++
++  // If the computation of shape distance issues bbox approximation warnings, adapt that warning to use `overlapping`
++  return {
++    value: add(dist, overlap),
++    warnings: warnings.map((warning) => {
++      if (warning.tag === "BBoxApproximationWarning") {
++        return {
++          ...warning,
++          stack: [
++            ...warning.stack,
++            {
++              signature: `overlapping(${t1}, ${t2})`,
++            },
++          ],
++        };
++      } else {
++        return warning;
++      }
++    }),
++  };
+ };
+ 
+ export const overlappingEllipses = (
+diff --git a/packages/core/src/lib/Queries.ts b/packages/core/src/lib/Queries.ts
+index da90efcd2e..d4b91c02c2 100644
+--- a/packages/core/src/lib/Queries.ts
++++ b/packages/core/src/lib/Queries.ts
+@@ -81,7 +81,7 @@ export const shapeCenter = (s: Shape<ad.Num>): ad.Pt2 => {
+   } else {
+     // Return center of bounding box
+     const bbox = bboxFromShape(s);
+-    return bbox.center;
++    return bbox.center as ad.Pt2;
+   }
+ };
+ 
+diff --git a/packages/core/src/lib/Utils.ts b/packages/core/src/lib/Utils.ts
+index ce89b9c448..8ae470959b 100644
+--- a/packages/core/src/lib/Utils.ts
++++ b/packages/core/src/lib/Utils.ts
+@@ -1,10 +1,5 @@
+ import _ from "lodash";
+-import {
+-  EPS_DENOM,
+-  genCodeSync,
+-  ops,
+-  secondaryGraph,
+-} from "../engine/Autodiff.js";
++import { EPS_DENOM, interp, ops } from "../engine/Autodiff.js";
+ import {
+   absVal,
+   add,
+@@ -212,13 +207,13 @@ export const closestPt_PtSeg = (
+ };
+ 
+ /**
+- * Get numerical values of nodes in the computation graph. This function calls `secondaryGraph` to construct a partial computation graph and runs `genCode` to generate code to evaluate the values.
++ * Get numerical values of nodes in the computation graph. This function calls
++ * `interp` to construct and evaluate a partial computation graph.
+  *
+  * @param xs nodes in the computation graph
+  * @returns a list of `number`s corresponding to nodes in `xs`
+  */
+-export const numsOf = (xs: ad.Num[]): number[] =>
+-  genCodeSync(secondaryGraph(xs))((x) => x.val).secondary;
++export const numsOf = (xs: ad.Num[]): number[] => interp(xs)((x) => x.val);
+ 
+ export const numOf = (x: ad.Num): number => {
+   return numsOf([x])[0];
+diff --git a/packages/core/src/lib/__tests__/Constraints.test.ts b/packages/core/src/lib/__tests__/Constraints.test.ts
+index 646adbac32..911c9b20e0 100644
+--- a/packages/core/src/lib/__tests__/Constraints.test.ts
++++ b/packages/core/src/lib/__tests__/Constraints.test.ts
+@@ -196,9 +196,6 @@ describe("general constraints", () => {
+     [0, _rectangles[0], _circles[2]],
+     [0, _circles[0], _rectangles[2]],
+     [0, _circles[0], _circles[2]],
+-    [0, _circles[0], _ellipses[2]],
+-    [0, _ellipses[0], _circles[2]],
+-    [0, _ellipses[0], _ellipses[2]],
+     [0, _rectangles[0], _ellipses[2]],
+     [0, _ellipses[0], _rectangles[2]],
+     [0, _lines[2], _lines[3]],
+@@ -211,8 +208,6 @@ describe("general constraints", () => {
+     [0, _rectangles[2], _polygons[2]],
+     [0, _rectangles[0], _polygons[0]],
+     [0, _ellipses[6], _lines[0]],
+-    [0, _ellipses[7], _ellipses[8]],
+-    [0, _ellipses[8], _ellipses[10]],
+     // With padding
+     [150, _rectangles[3], _rectangles[1]],
+     [150, _rectangles[3], _circles[1]],
+@@ -220,9 +215,6 @@ describe("general constraints", () => {
+     [150, _rectangles[3], _ellipses[1]],
+     [150, _ellipses[3], _rectangles[1]],
+     [150, _circles[3], _circles[1]],
+-    [150, _circles[3], _ellipses[1]],
+-    [150, _ellipses[3], _circles[1]],
+-    [150, _ellipses[3], _ellipses[1]],
+     [200, _lines[1], _lines[3]],
+     [100, _polygons[1], _polygons[2]],
+     [150, _polygons[1], _polygons[3]],
+@@ -231,8 +223,6 @@ describe("general constraints", () => {
+     [150, _rectangles[0], _lines[2]],
+     [150, _rectangles[3], _polygons[1]],
+     [150, _rectangles[1], _polygons[2]],
+-    [100, _ellipses[6], _ellipses[7]],
+-    [100, _ellipses[6], _ellipses[8]],
+     [100 * (Math.SQRT2 - 1) + 10, _circles[4], _rectangles[2]],
+     [100 * (Math.SQRT2 - 1) + 10, _ellipses[4], _rectangles[2]],
+   ] as const)(
+@@ -279,9 +269,6 @@ describe("general constraints", () => {
+     [0, _rectangles[2], _ellipses[3]],
+     [0, _ellipses[2], _rectangles[3]],
+     [0, _circles[2], _circles[3]],
+-    [0, _circles[2], _ellipses[3]],
+-    [0, _ellipses[2], _circles[3]],
+-    [0, _ellipses[2], _ellipses[3]],
+     [0, _lines[0], _lines[3]],
+     [0, _lines[1], _lines[2]],
+     [0, _lines[0], _polygons[2]],
+@@ -291,9 +278,6 @@ describe("general constraints", () => {
+     [0, _circles[3], _rectangles[2]],
+     [0, _ellipses[3], _rectangles[2]],
+     [0, _ellipses[7], _lines[2]],
+-    [0, _ellipses[8], _ellipses[9]],
+-    [0, _ellipses[7], _ellipses[10]],
+-    [0, _ellipses[9], _ellipses[10]],
+     // With padding
+     [10, _rectangles[1], _rectangles[3]],
+     [10, _rectangles[1], _circles[3]],
+@@ -302,12 +286,6 @@ describe("general constraints", () => {
+     [10, _ellipses[1], _rectangles[3]],
+     [10, _circles[1], _circles[3]],
+     [110, _circles[2], _circles[3]],
+-    [10, _circles[1], _ellipses[3]],
+-    [110, _circles[2], _ellipses[3]],
+-    [10, _ellipses[1], _circles[3]],
+-    [110, _ellipses[2], _circles[3]],
+-    [10, _ellipses[1], _ellipses[3]],
+-    [110, _ellipses[2], _ellipses[3]],
+     [50, _lines[0], _lines[3]],
+     [50, _lines[1], _lines[2]],
+     [50, _lines[0], _polygons[2]],
+@@ -354,9 +332,6 @@ describe("general constraints", () => {
+     [0, _rectangles[1], _ellipses[2]],
+     [0, _ellipses[1], _rectangles[2]],
+     [0, _circles[1], _circles[2]],
+-    [0, _circles[1], _ellipses[2]],
+-    [0, _ellipses[1], _circles[2]],
+-    [0, _ellipses[1], _ellipses[2]],
+     [0, _lines[0], _lines[1]],
+     [0, _lines[0], _lines[2]],
+     [0, _lines[2], _polygons[2]],
+@@ -369,9 +344,6 @@ describe("general constraints", () => {
+     [100, _rectangles[1], _ellipses[3]],
+     [100, _ellipses[1], _rectangles[3]],
+     [100, _circles[1], _circles[3]],
+-    [100, _circles[1], _ellipses[3]],
+-    [100, _ellipses[1], _circles[3]],
+-    [100, _ellipses[1], _ellipses[3]],
+     [100, _lines[1], _lines[2]],
+     [100 * (Math.SQRT2 - 1), _circles[4], _rectangles[2]],
+   ] as const)(
+@@ -414,9 +386,6 @@ describe("general constraints", () => {
+     [0, _rectangles[0], _ellipses[1]],
+     [0, _ellipses[0], _rectangles[1]],
+     [0, _circles[0], _circles[1]],
+-    [0, _circles[0], _ellipses[1]],
+-    [0, _ellipses[0], _circles[1]],
+-    [0, _ellipses[0], _ellipses[1]],
+     [0, _polygons[0], _polygons[1]],
+     [0, _polygons[0], _lines[1]],
+     [0, _rectangles[0], _polygons[1]],
+@@ -432,9 +401,6 @@ describe("general constraints", () => {
+     [50, _rectangles[0], _ellipses[1]],
+     [50, _ellipses[0], _rectangles[1]],
+     [50, _circles[0], _circles[1]],
+-    [50, _circles[0], _ellipses[1]],
+-    [50, _ellipses[0], _circles[1]],
+-    [50, _ellipses[0], _ellipses[1]],
+     [20, _polygons[0], _polygons[1]],
+     [20, _polygons[0], _lines[1]],
+   ] as const)(
+diff --git a/packages/core/src/lib/__tests__/ImplicitShapes.test.ts b/packages/core/src/lib/__tests__/ImplicitShapes.test.ts
+index e5a317808d..210ad605fb 100644
+--- a/packages/core/src/lib/__tests__/ImplicitShapes.test.ts
++++ b/packages/core/src/lib/__tests__/ImplicitShapes.test.ts
+@@ -1,19 +1,14 @@
+ import { describe, expect, test } from "vitest";
+-import { addN, mul, polyRoots, sub } from "../../engine/AutodiffFunctions.js";
+ import { makeCircle } from "../../shapes/Circle.js";
+ import { makeEllipse } from "../../shapes/Ellipse.js";
+ import { makeCanvas, simpleContext } from "../../shapes/Samplers.js";
+-import * as ad from "../../types/ad.js";
+-import { black, floatV, vectorV, zip2 } from "../../utils/Util.js";
++import { black, floatV, vectorV } from "../../utils/Util.js";
+ import {
+   circleToImplicitEllipse,
+-  ellipsePolynomial,
+   ellipseToImplicit,
+   halfPlaneToImplicit,
+-  implicitEllipseFunc,
+ } from "../ImplicitShapes.js";
+-import { pointCandidatesEllipse } from "../Minkowski.js";
+-import { numOf, numsOf } from "../Utils.js";
++import { numsOf } from "../Utils.js";
+ 
+ describe("toImplicit", () => {
+   test("halfPlaneToImplicit", async () => {
+@@ -152,46 +147,3 @@ describe("toImplicit", () => {
+     expect(y).toEqual(4);
+   });
+ });
+-
+-describe("ellipsePolynomial", () => {
+-  const ellipse1 = { a: 0.5, b: 2, c: 100, x: -11, y: 22 };
+-  const ellipse2 = { a: 4, b: 0.25, c: 200, x: 33, y: -44 };
+-
+-  test("ellipsePolynomial produces points on the constraint manifold", async () => {
+-    const poly = ellipsePolynomial(ellipse1, ellipse2);
+-    const roots = polyRoots(poly);
+-    const lambdas = zip2(roots, numsOf(roots))
+-      .filter(([_, rn]) => !Number.isNaN(rn))
+-      .map(([r, _]) => r);
+-    const points = lambdas.map((lambda: ad.Num) =>
+-      pointCandidatesEllipse(ellipse1, ellipse2, lambda),
+-    );
+-    points.forEach(function ([x, y]) {
+-      const result = sub(
+-        implicitEllipseFunc(ellipse1, x, y),
+-        implicitEllipseFunc(ellipse2, x, y),
+-      );
+-      expect(numOf(result)).toBeCloseTo(0, 4);
+-    });
+-  });
+-
+-  test("roots of ellipsePolynomial", async () => {
+-    const poly = ellipsePolynomial(ellipse1, ellipse2);
+-    const roots = polyRoots(poly);
+-    const lambdas = zip2(roots, numsOf(roots))
+-      .filter(([_, rn]) => !Number.isNaN(rn))
+-      .map(([r, _]) => r);
+-    lambdas.forEach(function (lambda) {
+-      let power: ad.Num = 1;
+-      const powers: ad.Num[] = [power];
+-      for (let i = 1; i <= poly.length; i++) {
+-        power = mul(power, lambda);
+-        powers.push(power);
+-      }
+-      const result = addN(
+-        zip2([...poly, 1], powers).map(([c, p]) => mul(c, p)),
+-      );
+-      expect(numOf(result)).toBeCloseTo(0, 4);
+-    });
+-  });
+-});
+diff --git a/packages/core/src/lib/__tests__/SDF.test.ts b/packages/core/src/lib/__tests__/SDF.test.ts
+index 3172b35bb4..55fe4f52cd 100644
+--- a/packages/core/src/lib/__tests__/SDF.test.ts
++++ b/packages/core/src/lib/__tests__/SDF.test.ts
+@@ -1,6 +1,6 @@
+ import seedrandom from "seedrandom";
+ import { describe, expect, test } from "vitest";
+-import { genCodeSync, primaryGraph, variable } from "../../engine/Autodiff.js";
++import { variable } from "../../engine/Autodiff.js";
+ import { Circle, makeCircle } from "../../shapes/Circle.js";
+ import { Ellipse, makeEllipse } from "../../shapes/Ellipse.js";
+ import { Line, makeLine } from "../../shapes/Line.js";
+@@ -12,7 +12,7 @@ import * as ad from "../../types/ad.js";
+ import { FloatV } from "../../types/value.js";
+ import { black, floatV, ptListV, vectorV } from "../../utils/Util.js";
+ import { compDict, signedDistanceEllipse } from "../Functions.js";
+-import { Rectlike, toPt } from "../Utils.js";
++import { Rectlike, numOf, toPt } from "../Utils.js";
+ 
+ const canvas = makeCanvas(800, 700);
+ 
+@@ -51,24 +51,7 @@ const compareDistance = (
+   expected: number,
+ ) => {
+   const result = getResult(context, shape, p);
+-  const g = primaryGraph(result.contents);
+-  //const g = secondaryGraph([result.contents]);
+-  const f = genCodeSync(g);
+-  /* const [dist] = 
+-  const {
+-    secondary: [dist],
+-    stmts,
+-  } = f([]); // no inputs, so, empty array
+-  const code = stmts.join("\n");
+-  console.log(code); */
+-  const { primary: dist, gradient } = f((x) => x.val);
+-  //TODO: debug gradient for ellipse
+-  // the commented code in the next three lines is useful for debugging
+-  // gradients
+-  //const newfun = (xs: number[]) => f(xs).primary;
+-  //const foo = _gradFiniteDiff(newfun)([p[0].val, p[1].val]);
+-  //console.log("symbolic gradient", gradient, "computed gradient:", foo);
+-  expect(dist).toBeCloseTo(expected);
++  expect(numOf(result.contents)).toBeCloseTo(expected);
+ };
+ 
+ const getResult = (
+diff --git a/packages/core/src/renderer/Renderer.ts b/packages/core/src/renderer/Renderer.ts
+index 1caa77fcf7..29a405f110 100644
+--- a/packages/core/src/renderer/Renderer.ts
++++ b/packages/core/src/renderer/Renderer.ts
+@@ -4,7 +4,7 @@
+  *
+  */
+ 
+-import { genCode, secondaryGraph } from "../engine/Autodiff.js";
++import { compile } from "../engine/Autodiff.js";
+ import { maxN, minN } from "../engine/AutodiffFunctions.js";
+ import { maxX, maxY, minX, minY } from "../engine/BBox.js";
+ import { bboxFromShape } from "../lib/Queries.js";
+@@ -141,9 +141,7 @@ export const toSVG = async (
+   const MaxY = maxN(bboxs.map((bbox) => maxY(bbox)));
+   const viewBoxRanges = [MinX, MinY, MaxX, MaxY];
+ 
+-  const [mx, my, Mx, My] = (await genCode(secondaryGraph(viewBoxRanges)))(
+-    (x) => x.val,
+-  ).secondary;
++  const [mx, my, Mx, My] = (await compile(viewBoxRanges))((x) => x.val);
+ 
+   // toScreen flips the y-axis and therefore the max will become min
+   const [mxt, myt] = toScreen([mx, my], [canvas.width, canvas.height]);
+diff --git a/packages/core/src/shapes/Shapes.ts b/packages/core/src/shapes/Shapes.ts
+index b9895780a3..55912a2f09 100644
+--- a/packages/core/src/shapes/Shapes.ts
++++ b/packages/core/src/shapes/Shapes.ts
+@@ -54,7 +54,11 @@ export const computeShapeBbox = (shape: Shape<ad.Num>): BBox.BBox => {
+     case "Text":
+       return BBox.bboxFromRectlike(shape);
+     case "Line":
+-      return BBox.bboxFromLinelike(shape);
++      return BBox.bboxFromLinelike.rose(
++        shape.start.contents,
++        shape.end.contents,
++        shape.strokeWidth.contents,
++      );
+     case "Path":
+       return BBox.bboxFromPath(shape);
+     case "Polygon":
+@@ -107,7 +111,7 @@ const bboxFromGroup = ({ shapes, clipPath }: GroupProps<ad.Num>): BBox.BBox => {
+ 
+   const bboxClipPath = computeShapeBbox(clipPath.contents.contents);
+ 
+-  return BBox.intersectBbox(bboxAllMembers, bboxClipPath);
++  return BBox.intersectBbox.rose(bboxAllMembers, bboxClipPath);
+ };
+ 
+ export const shapeTypes = [
+diff --git a/packages/core/src/types/ad.ts b/packages/core/src/types/ad.ts
+index 403853c149..9e7b3b6d7b 100644
+--- a/packages/core/src/types/ad.ts
++++ b/packages/core/src/types/ad.ts
+@@ -1,119 +1,25 @@
+-import GenericGraph from "../utils/Graph.js";
+-
+-// The following three regions define the core types for our automatic
+-// differentiation engine.
+-//
+-// - The "implicit" representation is used essentially as a DSL to construct
+-//   computation graphs, via the convenience functions provided in
+-//   engine/AutodiffFunctions. It does not include any information about
+-//   derivatives, because those can can be constructed symbolically from the
+-//   implicit representation. Naïvely serializing the implicit representation
+-//   would produce a tree structure with a lot of redundancy, because some nodes
+-//   that can be reached by following different paths are actually identical.
+-//
+-// - The "explicit" representation is an intermediate structure used to
+-//   represent a computation graph, with derivatives included alongside
+-//   everything else. The number of nodes and edges are unambiguously stored,
+-//   and each node has a unique ID so structural sharing is not represented
+-//   purely by object identity. The main value of this representation is that we
+-//   can call an off-the-shelf topological sort function on it, which is useful
+-//   both while constructing the derivatives within it and also while compiling
+-//   it to the final representation.
+-//
+-// - The "compiled" representation is a WebAssembly module which exports a
+-//   function that computes a function and its gradient.
+-//
+-// We only need to compute the gradient of the energy, but we also need to to
+-// compute other values that may not even be intermediate computations for the
+-// energy. Thus, the explicit representation (but not the implicit
+-// representation) distinguishes the "primary" output (for which the gradient is
+-// computed) from "secondary" outputs (for which no derivatives are computed).
++import * as rose from "rose";
+ 
+ //#region Types for implicit autodiff graph
+ 
+-export type Expr = Bool | Num | Vec;
++export type Common = Index | Member | Call;
+ 
+-export type Bool = Comp | Logic | Not;
++export type Expr = Bool | Num | Vec | Rec;
+ 
+-export type Num = number | Var | Unary | Binary | Ternary | Nary | Index;
++export type Bool = Comp | Logic | Not | Common;
+ 
+-export type Vec = PolyRoots;
++export type Num = number | Var | Unary | Binary | Ternary | Nary | Common;
+ 
+-export interface Var {
+-  tag: "Var";
+-  val: number;
+-}
+-
+-export interface Unary extends UnaryNode {
+-  param: Num;
+-}
+-
+-export interface Binary extends BinaryNode {
+-  left: Num;
+-  right: Num;
+-}
+-
+-export interface Comp extends CompNode {
+-  left: Num;
+-  right: Num;
+-}
+-
+-export interface Logic extends LogicNode {
+-  left: Bool;
+-  right: Bool;
+-}
+-
+-export interface Not extends NotNode {
+-  param: Bool;
+-}
+-
+-export interface Ternary extends TernaryNode {
+-  cond: Bool;
+-  then: Num;
+-  els: Num;
+-}
+-
+-export interface Nary extends NaryNode {
+-  params: Num[];
+-}
+-
+-export interface PolyRoots extends PolyRootsNode {
+-  // coefficients of a monic polynomial with degree `coeffs.length`
+-  coeffs: Num[];
+-}
+-
+-export interface Index extends IndexNode {
+-  vec: Vec;
+-}
++export type Vec = LitVec | PolyRoots | Common;
+ 
+-//#endregion
++export type Rec = LitRec | PolyRoots | Common;
+ 
+-//#region Types for explicit autodiff graph
+-
+-export type Node =
+-  | ConstNode
+-  | InputNode
+-  | UnaryNode
+-  | BinaryNode
+-  | CompNode
+-  | LogicNode
+-  | TernaryNode
+-  | NaryNode
+-  | PolyRootsNode
+-  | IndexNode
+-  | NotNode;
+-
+-export interface ConstNode {
+-  tag: "Const";
+-  val: number;
+-}
+-
+-export interface InputNode {
++export interface Var {
+   tag: "Var";
+-  key: number;
++  val: number;
+ }
+ 
+-export interface UnaryNode {
++export interface Unary {
+   tag: "Unary";
+   unop:
+     | "neg"
+@@ -145,53 +51,80 @@ export interface UnaryNode {
+     | "tan"
+     | "tanh"
+     | "trunc";
++  param: Num;
+ }
+ 
+-export interface BinaryNode {
++export interface Binary {
+   tag: "Binary";
+   binop: "+" | "*" | "-" | "/" | "max" | "min" | "atan2" | "pow";
++  left: Num;
++  right: Num;
+ }
+ 
+-export interface CompNode {
++export interface Comp {
+   tag: "Comp";
+   binop: ">" | "<" | "===" | ">=" | "<=";
++  left: Num;
++  right: Num;
+ }
+ 
+-export interface NotNode {
+-  tag: "Not";
+-}
+-
+-export interface LogicNode {
++export interface Logic {
+   tag: "Logic";
+   binop: "&&" | "||" | "!==";
++  left: Bool;
++  right: Bool;
++}
++
++export interface Not {
++  tag: "Not";
++  param: Bool;
+ }
+ 
+-export interface TernaryNode {
++export interface Ternary {
+   tag: "Ternary";
++  cond: Bool;
++  then: Num;
++  els: Num;
+ }
+ 
+-export interface NaryNode {
++export interface Nary {
+   tag: "Nary";
+   op: "addN" | "maxN" | "minN";
++  params: Num[];
+ }
+ 
+-export interface PolyRootsNode {
++export interface LitVec {
++  tag: "LitVec";
++  elems: Expr[];
++}
++
++export interface PolyRoots {
+   tag: "PolyRoots";
+-  degree: number;
++  // coefficients of a monic polynomial with degree `coeffs.length`
++  coeffs: Expr[];
++}
++
++export interface LitRec {
++  tag: "LitRec";
++  mems: { [K: string]: Expr };
+ }
+ 
+-export interface IndexNode {
++export interface Index {
+   tag: "Index";
++  vec: Vec;
+   index: number;
+ }
+ 
+-export type Edge = number;
+-
+-export type Id = number;
++export interface Member {
++  tag: "Member";
++  rec: Rec;
++  member: string;
++}
+ 
+-export interface Graph extends Outputs<Id> {
+-  graph: GenericGraph<Id, Node, Edge>; // edges point from children to parents
+-  nodes: Map<Expr, Id>;
++export interface Call {
++  tag: "Call";
++  fn: rose.Fn;
++  args: Expr[];
+ }
+ 
+ //#endregion
+diff --git a/packages/core/src/types/functions.ts b/packages/core/src/types/functions.ts
+index 0fd6481817..196008c91f 100644
+--- a/packages/core/src/types/functions.ts
++++ b/packages/core/src/types/functions.ts
+@@ -1,5 +1,5 @@
+ import { Context } from "../shapes/Samplers.js";
+-import * as ad from "../types/ad.js";
++import * as ad from "./ad.js";
+ import { FunctionInternalWarning } from "./errors.js";
+ import { ValueShapeT } from "./types.js";
+ import { Value } from "./value.js";
+diff --git a/packages/core/src/utils/Util.test.ts b/packages/core/src/utils/Util.test.ts
+new file mode 100644
+index 0000000000..59f9584073
+--- /dev/null
++++ b/packages/core/src/utils/Util.test.ts
+@@ -0,0 +1,64 @@
++import { describe, expect, test } from "vitest";
++import { topsort } from "./Util.js";
++
++describe("topsort", () => {
++  test("simple DAG", () => {
++    const sorted = topsort(
++      (x) => {
++        switch (x) {
++          case "A":
++            return [];
++          case "B":
++            return ["A"];
++          case "C":
++            return ["B"];
++        }
++        throw Error();
++      },
++      ["C"],
++    );
++    expect(sorted).toEqual(["A", "B", "C"]);
++  });
++
++  test("complex DAG", () => {
++    const sorted = topsort(
++      (x) => {
++        switch (x) {
++          case "A":
++            return [];
++          case "B":
++            return ["A"];
++          case "C":
++            return ["A"];
++          case "D":
++            return ["E"];
++          case "E":
++            return ["B", "C"];
++        }
++        throw Error();
++      },
++      ["D", "E"],
++    );
++    expect(sorted).toEqual(["A", "C", "B", "E", "D"]);
++  });
++
++  test("disconnected DAG", () => {
++    const sorted = topsort(
++      (x) => {
++        switch (x) {
++          case "A":
++            return [];
++          case "B":
++            return ["A"];
++          case "C":
++            return [];
++          case "D":
++            return ["C"];
++        }
++        throw Error();
++      },
++      ["B", "D"],
++    );
++    expect(sorted).toEqual(["C", "D", "A", "B"]);
++  });
++});
+diff --git a/packages/core/src/utils/Util.ts b/packages/core/src/utils/Util.ts
+index 953afe18f5..e077e713b1 100644
+--- a/packages/core/src/utils/Util.ts
++++ b/packages/core/src/utils/Util.ts
+@@ -147,6 +147,34 @@ export const isKeyOf = <T extends Record<string, unknown>>(
+   obj: T,
+ ): key is keyof T => key in obj;
+ 
++/**
++ * Return a fresh topologically sorted array of nodes reachable from `sinks`.
++ * @param preds returns the predecessors of a node
++ */
++export const topsort = <T>(
++  preds: (x: T) => Iterable<T>,
++  sinks: Iterable<T>,
++): T[] => {
++  const sorted: T[] = [];
++  const marked = new Set<T>();
++  const stack: T[] = [...sinks];
++  const ready: boolean[] = stack.map(() => false);
++  while (stack.length > 0) {
++    const x = stack.pop() as T;
++    if (ready.pop()) sorted.push(x);
++    else if (!marked.has(x)) {
++      marked.add(x);
++      stack.push(x);
++      ready.push(true);
++      for (const y of preds(x)) {
++        stack.push(y);
++        ready.push(false);
++      }
++    }
++  }
++  return sorted;
++};
++
+ //#endregion
+ 
+ //#region random
+diff --git a/packages/core/src/utils/Wasm.test.ts b/packages/core/src/utils/Wasm.test.ts
+deleted file mode 100644
+index 38018f1b45..0000000000
+--- a/packages/core/src/utils/Wasm.test.ts
++++ /dev/null
+@@ -1,103 +0,0 @@
+-import { describe, expect, test } from "vitest";
+-import { int } from "./Wasm.js";
+-
+-describe("LEB128", () => {
+-  const leb128 = (n: number): number[] => {
+-    const bytes: number[] = [];
+-    const byte = (b: number) => {
+-      bytes.push(b);
+-    };
+-    int({ byte }, n);
+-    return bytes;
+-  };
+-
+-  // https://en.wikipedia.org/wiki/LEB128#Encoding_format
+-  test("unsigned example", () => {
+-    expect(leb128(624485)).toEqual([0xe5, 0x8e, 0x26]);
+-  });
+-  test("signed example", () => {
+-    expect(leb128(-123456)).toEqual([0xc0, 0xbb, 0x78]);
+-  });
+-
+-  test("zero", () => {
+-    expect(leb128(0)).toEqual([0x00]);
+-  });
+-
+-  test("least positive", () => {
+-    expect(leb128(1)).toEqual([0x01]);
+-  });
+-  test("most positive 1-byte", () => {
+-    expect(leb128(63)).toEqual([0x3f]);
+-  });
+-  test("least positive 2-byte", () => {
+-    expect(leb128(64)).toEqual([0xc0, 0x00]);
+-  });
+-  test("most positive 2-byte", () => {
+-    expect(leb128(8191)).toEqual([0xff, 0x3f]);
+-  });
+-  test("least positive 3-byte", () => {
+-    expect(leb128(8192)).toEqual([0x80, 0xc0, 0x00]);
+-  });
+-  test("most positive 3-byte", () => {
+-    expect(leb128(1048575)).toEqual([0xff, 0xff, 0x3f]);
+-  });
+-  test("least positive 4-byte", () => {
+-    expect(leb128(1048576)).toEqual([0x80, 0x80, 0xc0, 0x00]);
+-  });
+-  test("most positive 4-byte", () => {
+-    expect(leb128(134217727)).toEqual([0xff, 0xff, 0xff, 0x3f]);
+-  });
+-  test("least positive 5-byte", () => {
+-    expect(leb128(134217728)).toEqual([0x80, 0x80, 0x80, 0xc0, 0x00]);
+-  });
+-  test("most positive", () => {
+-    expect(leb128(2147483647)).toEqual([0xff, 0xff, 0xff, 0xff, 0x07]);
+-  });
+-  test("least positive error", () => {
+-    expect(() => leb128(2147483648)).toThrow(
+-      "cannot represent 2147483648 as a 32-bit signed integer",
+-    );
+-  });
+-
+-  test("least negative", () => {
+-    expect(leb128(-1)).toEqual([0x7f]);
+-  });
+-  test("most negative 1-byte", () => {
+-    expect(leb128(-64)).toEqual([0x40]);
+-  });
+-  test("least negative 2-byte", () => {
+-    expect(leb128(-65)).toEqual([0xbf, 0x7f]);
+-  });
+-  test("most negative 2-byte", () => {
+-    expect(leb128(-8192)).toEqual([0x80, 0x40]);
+-  });
+-  test("least negative 3-byte", () => {
+-    expect(leb128(-8193)).toEqual([0xff, 0xbf, 0x7f]);
+-  });
+-  test("most negative 3-byte", () => {
+-    expect(leb128(-1048576)).toEqual([0x80, 0x80, 0x40]);
+-  });
+-  test("least negative 4-byte", () => {
+-    expect(leb128(-1048577)).toEqual([0xff, 0xff, 0xbf, 0x7f]);
+-  });
+-  test("most negative 4-byte", () => {
+-    expect(leb128(-134217728)).toEqual([0x80, 0x80, 0x80, 0x40]);
+-  });
+-  test("least negative 5-byte", () => {
+-    expect(leb128(-134217729)).toEqual([0xff, 0xff, 0xff, 0xbf, 0x7f]);
+-  });
+-  test("most negative", () => {
+-    expect(leb128(-2147483648)).toEqual([0x80, 0x80, 0x80, 0x80, 0x78]);
+-  });
+-  test("least negative error", () => {
+-    expect(() => leb128(-2147483649)).toThrow(
+-      "cannot represent -2147483649 as a 32-bit signed integer",
+-    );
+-  });
+-
+-  test("non-integer", () => {
+-    expect(() => leb128(Math.PI)).toThrow(
+-      "cannot represent 3.141592653589793 as a 32-bit signed integer",
+-    );
+-  });
+-});
+diff --git a/packages/core/src/utils/Wasm.ts b/packages/core/src/utils/Wasm.ts
+deleted file mode 100644
+index 2f032d9200..0000000000
+--- a/packages/core/src/utils/Wasm.ts
++++ /dev/null
+@@ -1,231 +0,0 @@
+-// https://webassembly.github.io/spec/core/binary/
+-
+-//#region constants for the binary format
+-
+-/** Section ids. */
+-export const SECTION = {
+-  TYPE: 1,
+-  IMPORT: 2,
+-  FUNCTION: 3,
+-  EXPORT: 7,
+-  CODE: 10,
+-};
+-
+-/** `importdesc` leading bytes. */
+-export const IMPORT = { FUNCTION: 0x00, MEMORY: 0x02 };
+-
+-/** `exportdesc` leading bytes. */
+-export const EXPORT = { FUNCTION: 0x00 };
+-
+-/** Type bytes. */
+-export const TYPE = { FUNCTION: 0x60, f64: 0x7c, i32: 0x7f };
+-
+-/** `limits` leading bytes. */
+-export const LIMITS = { NO_MAXIMUM: 0x00 };
+-
+-/** Instruction opcodes. */
+-export const OP = {
+-  if: 0x04,
+-  call: 0x10,
+-  drop: 0x1a,
+-  select: 0x1b,
+-
+-  f64: {
+-    load: 0x2b,
+-    store: 0x39,
+-    const: 0x44,
+-    eq: 0x61,
+-    lt: 0x63,
+-    gt: 0x64,
+-    le: 0x65,
+-    ge: 0x66,
+-    abs: 0x99,
+-    neg: 0x9a,
+-    ceil: 0x9b,
+-    floor: 0x9c,
+-    trunc: 0x9d,
+-    nearest: 0x9e,
+-    sqrt: 0x9f,
+-    add: 0xa0,
+-    sub: 0xa1,
+-    mul: 0xa2,
+-    div: 0xa3,
+-    min: 0xa4,
+-    max: 0xa5,
+-  },
+-  i32: {
+-    load: 0x28,
+-    const: 0x41,
+-    eqz: 0x45,
+-    add: 0x6a,
+-    and: 0x71,
+-    or: 0x72,
+-    xor: 0x73,
+-  },
+-  local: { get: 0x20, set: 0x21 },
+-};
+-
+-/** `end` opcode. */
+-export const END = 0x0b;
+-
+-//#endregion
+-
+-//#region helper types, functions, and classes
+-
+-/**
+- * A mutable object to which individual bytes can be written. Exported only for
+- * testing purposes; prefer `Target`.
+- */
+-export interface Byter {
+-  /**
+-   * Write a single byte.
+-   * @param b the byte
+-   */
+-  byte(b: number): void;
+-}
+-
+-/**
+- * Writes a 32-bit signed integer to a target. Exported only for testing
+- * purposes; prefer `Count`, `intSize`, or `Module` depending on your use case.
+- * @param t target
+- * @param n integer to write
+- */
+-export const int = (t: Byter, n: number): void => {
+-  if (!(Number.isInteger(n) && -0x80000001 < n && n < 0x80000000))
+-    throw new Error(`cannot represent ${n} as a 32-bit signed integer`);
+-  while (n < -0x40 || 0x3f < n) {
+-    t.byte((n & 0x7f) | 0x80);
+-    n >>= 7;
+-  }
+-  t.byte(n & 0x7f);
+-};
+-
+-/**
+- * A mutable object to which bytes, 32-bit signed integers, 64-bit
+- * floating-point numbers, and ASCII strings can be written.
+- */
+-export interface Target extends Byter {
+-  /**
+-   * Write a LEB128-encoded 32-bit signed integer.
+-   * @param n the integer
+-   */
+-  int(n: number): void;
+-  /**
+-   * Write an IEEE 754-2019 little-endian 64-bit floating-point number.
+-   * @param x the number
+-   */
+-  f64(x: number): void;
+-  /**
+-   * Write an ASCII string as a vector of bytes.
+-   * @param s the string
+-   */
+-  ascii(s: string): void;
+-}
+-
+-/**
+- * A `Target` that doesn't actually put bytes anywhere, and instead just counts
+- * how many bytes would be written. Useful for calculating the size of a
+- * `Module` before allocating one big buffer to store its bytes, because
+- * JavaScript typed arrays cannot be resized after construction.
+- */
+-export class Count implements Target {
+-  size = 0;
+-
+-  byte(): void {
+-    this.size++;
+-  }
+-
+-  int(n: number): void {
+-    int(this, n);
+-  }
+-
+-  f64(): void {
+-    this.size += Float64Array.BYTES_PER_ELEMENT;
+-  }
+-
+-  ascii(s: string): void {
+-    this.int(s.length);
+-    this.size += s.length;
+-  }
+-}
+-
+-/**
+- * @param n integer to encode
+- * @returns number of bytes to encode as signed LEB128
+- */
+-export const intSize = (n: number): number => {
+-  const count = new Count();
+-  count.int(n);
+-  return count.size;
+-};
+-
+-const PREAMBLE_SIZE = 8;
+-
+-/**
+- * A `Target` which preallocates a byte buffer of known size (perhaps computed
+- * via `Count`) with the standard 8-byte preamble, and writes data to it,
+- * incrementing an internal byte index as it goes.
+- */
+-export class Module implements Target {
+-  bytes: Uint8Array;
+-  count: Count;
+-  floatIn: Float64Array;
+-  floatOut: Uint8Array;
+-
+-  /**
+-   * Allocates a byte buffer for a Wasm module, automatically adding the
+-   * standard 8 bytes for the preamble.
+-   * @param sumSectionSizes number of bytes in the module, minus 8 for preamble
+-   */
+-  constructor(sumSectionSizes: number) {
+-    this.bytes = new Uint8Array(PREAMBLE_SIZE + sumSectionSizes);
+-    this.count = new Count();
+-
+-    const buf = new ArrayBuffer(Float64Array.BYTES_PER_ELEMENT);
+-    this.floatIn = new Float64Array(buf);
+-    this.floatOut = new Uint8Array(buf);
+-
+-    // magic
+-    this.byte(0x00);
+-    this.byte(0x61);
+-    this.byte(0x73);
+-    this.byte(0x6d);
+-
+-    // version
+-    this.byte(0x01);
+-    this.byte(0x00);
+-    this.byte(0x00);
+-    this.byte(0x00);
+-  }
+-
+-  byte(b: number): void {
+-    this.bytes[this.count.size] = b;
+-    this.count.byte();
+-  }
+-
+-  int(n: number): void {
+-    int(this, n);
+-  }
+-
+-  f64(x: number): void {
+-    // https://stackoverflow.com/a/7870190 this assumes that the underlying
+-    // hardware is little-endian, and will break if that assumption is violated;
+-    // it may be wiser to check the endianness and then flip the order of these
+-    // bytes, but the downside is there isn't an easy way to test that
+-    this.floatIn[0] = x;
+-    this.bytes.set(this.floatOut, this.count.size);
+-    this.count.f64();
+-  }
+-
+-  ascii(s: string): void {
+-    this.int(s.length);
+-    for (let i = 0; i < s.length; i++) {
+-      const c = s.charCodeAt(i);
+-      if (c > 127)
+-        throw Error(`non-ASCII at index ${i} in ${JSON.stringify(s)}`);
+-      this.byte(c);
+-    }
+-  }
+-}
+-
+-//#endregion
+diff --git a/packages/core/vite.config.ts b/packages/core/vite.config.ts
+index f0c0ca76ac..587853ff79 100644
+--- a/packages/core/vite.config.ts
++++ b/packages/core/vite.config.ts
+@@ -1,7 +1,9 @@
+ import path from "path";
+ import { defineConfig } from "vite";
++import topLevelAwait from "vite-plugin-top-level-await";
+ 
+ export default defineConfig({
++  plugins: [topLevelAwait()],
+   build: {
+     outDir: "dist/bundle",
+     lib: {
+diff --git a/packages/examples/setupVitest.js b/packages/examples/setupVitest.js
+new file mode 100644
+index 0000000000..922e5dbe3b
+--- /dev/null
++++ b/packages/examples/setupVitest.js
+@@ -0,0 +1,11 @@
++import * as fs from "fs/promises";
++
++// in order to get SolidJS to actually do stuff rather than compiling away all
++// the interesting optimization code, we set the "browser" condition for our
++// tests; see `vite.config.ts` in this same directory
++
++// however, Rose interprets the "browser" condition to mean "fetch the Wasm
++// directly rather than embedding it as Base64," which Vite build dev mode and
++// build mode are both fine with, but Vitest chokes without this extra config
++
++global.fetch = (url) => fs.readFile(url.href.replace("file://", ""));
+diff --git a/packages/examples/src/graph-domain/textbook/sec2/fig6.trio.json b/packages/examples/src/graph-domain/textbook/sec2/fig6.trio.json
+index 550be141cc..62648e4d08 100644
+--- a/packages/examples/src/graph-domain/textbook/sec2/fig6.trio.json
++++ b/packages/examples/src/graph-domain/textbook/sec2/fig6.trio.json
+@@ -2,5 +2,5 @@
+   "substance": "./fig6.substance",
+   "style": ["../../simple-graph.style"],
+   "domain": "../../simple-graph.domain",
+-  "variation": ""
++  "variation": "FuryAardvark51776"
+ }
+diff --git a/packages/examples/vite.config.ts b/packages/examples/vite.config.ts
+index 52ad85faf5..16ab5976a9 100644
+--- a/packages/examples/vite.config.ts
++++ b/packages/examples/vite.config.ts
+@@ -1,4 +1,7 @@
+ import { defineConfig } from "vite";
+ 
+ // run SolidJS as if in the browser
+-export default defineConfig({ resolve: { conditions: ["browser"] } });
++export default defineConfig({
++  resolve: { conditions: ["browser"] },
++  test: { setupFiles: ["./setupVitest.js"] },
++});
+diff --git a/packages/solids/src/util.ts b/packages/solids/src/util.ts
+index c1f7cc6a27..d2f70d4d2b 100644
+--- a/packages/solids/src/util.ts
++++ b/packages/solids/src/util.ts
+@@ -216,6 +216,10 @@ const boolSignal = (x: Bool): Accessor<boolean> => {
+       const y = boolSignal(param);
+       return boolWith(x, () => !y());
+     }
++    case "Index":
++    case "Member":
++    case "Call":
++      throw Error("unsupported");
+   }
+ };
+ 
+@@ -253,6 +257,9 @@ const numSignal = (x: Num): Accessor<number> => {
+       const v = vecSignal(vec);
+       return numWith(x, () => v()[index]);
+     }
++    case "Member":
++    case "Call":
++      throw Error("unsupported");
+   }
+ };
+ 
+@@ -260,8 +267,8 @@ const vecSignal = (x: Vec): Accessor<number[]> => {
+   if (secret in x) return x[secret] as Accessor<number[]>;
+   switch (x.tag) {
+     case "PolyRoots": {
+-      const ys = x.coeffs.map(numSignal);
+-      const v = new Float64Array(x.degree);
++      const ys = x.coeffs.map((y) => numSignal(y as Num));
++      const v = new Float64Array(x.coeffs.length);
+       return vecWith(x, () => {
+         ys.forEach((y, i) => {
+           v[i] = y();
+@@ -270,6 +277,11 @@ const vecSignal = (x: Vec): Accessor<number[]> => {
+         return Array.from(v);
+       });
+     }
++    case "LitVec":
++    case "Index":
++    case "Member":
++    case "Call":
++      throw Error("unsupported");
+   }
+ };
+ 
+diff --git a/yarn.lock b/yarn.lock
+index d2c4e51fd7..a4172f869f 100644
+--- a/yarn.lock
++++ b/yarn.lock
+@@ -3028,6 +3028,16 @@
+   resolved "https://registry.yarnpkg.com/@remix-run/router/-/router-1.6.1.tgz#3a3a408481a3796f45223a549c2571517bc8af2d"
+   integrity sha512-YUkWj+xs0oOzBe74OgErsuR3wVn+efrFhXBWrit50kOiED+pvQe2r6MWY0iJMQU/mSVKxvNzL4ZaYvjdX+G7ZA==
+ 
++"@rollup/plugin-virtual@^3.0.2":
++  version "3.0.2"
++  resolved "https://registry.yarnpkg.com/@rollup/plugin-virtual/-/plugin-virtual-3.0.2.tgz#17e17eeecb4c9fa1c0a6e72c9e5f66382fddbb82"
++  integrity sha512-10monEYsBp3scM4/ND4LNH5Rxvh3e/cVeL3jWTgZ2SrQ+BmUoQcopVQvnaMcOnykb1VkxUFuDAN+0FnpTFRy2A==
++
++"@rose-lang/wasm@0.4.5":
++  version "0.4.5"
++  resolved "https://registry.yarnpkg.com/@rose-lang/wasm/-/wasm-0.4.5.tgz#a8d4cd7fecce5201163ec0cad10d729601cdfde9"
++  integrity sha512-THwFfPDH3eCWwlsVXW7n9le9JAT8ho13oWcin0pVC1I832VLPqRletNtINQ5Y5q1WgluuMu/J3MenMELgU/sVQ==
++
+ "@spyke/conventional-changelog-preset@^1.0.5":
+   version "1.0.5"
+   resolved "https://registry.yarnpkg.com/@spyke/conventional-changelog-preset/-/conventional-changelog-preset-1.0.5.tgz#5863160c21e249db0f6d69feb7d6d4aa806ecf42"
+@@ -3930,56 +3940,125 @@
+     regenerator-runtime "^0.13.7"
+     resolve-from "^5.0.0"
+ 
++"@swc/core-darwin-arm64@1.3.102":
++  version "1.3.102"
++  resolved "https://registry.yarnpkg.com/@swc/core-darwin-arm64/-/core-darwin-arm64-1.3.102.tgz#2bbd90a8751e6eee981f857ec3f0b6233208da37"
++  integrity sha512-CJDxA5Wd2cUMULj3bjx4GEoiYyyiyL8oIOu4Nhrs9X+tlg8DnkCm4nI57RJGP8Mf6BaXPIJkHX8yjcefK2RlDA==
++
+ "@swc/core-darwin-arm64@1.3.32":
+   version "1.3.32"
+   resolved "https://registry.yarnpkg.com/@swc/core-darwin-arm64/-/core-darwin-arm64-1.3.32.tgz#841b0a244c2c75e67bb9d3cb665b2ede601e4e3a"
+   integrity sha512-o19bhlxuUgjUElm6i+QhXgZ0vD6BebiB/gQpK3en5aAwhOvinwr4sah3GqFXsQzz/prKVDuMkj9SW6F/Ug5hgg==
+ 
++"@swc/core-darwin-x64@1.3.102":
++  version "1.3.102"
++  resolved "https://registry.yarnpkg.com/@swc/core-darwin-x64/-/core-darwin-x64-1.3.102.tgz#df16d51f45771d3c9cca8554b28a3190cdb075cf"
++  integrity sha512-X5akDkHwk6oAer49oER0qZMjNMkLH3IOZaV1m98uXIasAGyjo5WH1MKPeMLY1sY6V6TrufzwiSwD4ds571ytcg==
++
+ "@swc/core-darwin-x64@1.3.32":
+   version "1.3.32"
+   resolved "https://registry.yarnpkg.com/@swc/core-darwin-x64/-/core-darwin-x64-1.3.32.tgz#125247c6a5d7189776a6973b0a539a07576d5585"
+   integrity sha512-hVEGd+v5Afh+YekGADOGKwhuS4/AXk91nLuk7pmhWkk8ceQ1cfmah90kXjIXUlCe2G172MLRfHNWlZxr29E/Og==
+ 
++"@swc/core-linux-arm-gnueabihf@1.3.102":
++  version "1.3.102"
++  resolved "https://registry.yarnpkg.com/@swc/core-linux-arm-gnueabihf/-/core-linux-arm-gnueabihf-1.3.102.tgz#eb71697590c56ea261fa9a4b198c45304c7ece39"
++  integrity sha512-kJH3XtZP9YQdjq/wYVBeFuiVQl4HaC4WwRrIxAHwe2OyvrwUI43dpW3LpxSggBnxXcVCXYWf36sTnv8S75o2Gw==
++
+ "@swc/core-linux-arm-gnueabihf@1.3.32":
+   version "1.3.32"
+   resolved "https://registry.yarnpkg.com/@swc/core-linux-arm-gnueabihf/-/core-linux-arm-gnueabihf-1.3.32.tgz#d8ba8da3707b91e62059e65e375fc6093c4d5f82"
+   integrity sha512-5X01WqI9EbJ69oHAOGlI08YqvEIXMfT/mCJ1UWDQBb21xWRE2W1yFAAeuqOLtiagLrXjPv/UKQ0S2gyWQR5AXQ==
+ 
++"@swc/core-linux-arm64-gnu@1.3.102":
++  version "1.3.102"
++  resolved "https://registry.yarnpkg.com/@swc/core-linux-arm64-gnu/-/core-linux-arm64-gnu-1.3.102.tgz#75d72d5253d56723fa7054e1a8f313bf3d17b1a2"
++  integrity sha512-flQP2WDyCgO24WmKA1wjjTx+xfCmavUete2Kp6yrM+631IHLGnr17eu7rYJ/d4EnDBId/ytMyrnWbTVkaVrpbQ==
++
+ "@swc/core-linux-arm64-gnu@1.3.32":
+   version "1.3.32"
+   resolved "https://registry.yarnpkg.com/@swc/core-linux-arm64-gnu/-/core-linux-arm64-gnu-1.3.32.tgz#15973e533c45e2976e57c590613e3e5dca0e62ad"
+   integrity sha512-PTJ6oPiutkNBg+m22bUUPa4tNuMmsgpSnsnv2wnWVOgK0lhvQT6bAPTUXDq/8peVAgR/SlpP2Ht8TRRqYMRjRQ==
+ 
++"@swc/core-linux-arm64-musl@1.3.102":
++  version "1.3.102"
++  resolved "https://registry.yarnpkg.com/@swc/core-linux-arm64-musl/-/core-linux-arm64-musl-1.3.102.tgz#7db86022fec57c1e06c573d45cef5e911bcc420e"
++  integrity sha512-bQEQSnC44DyoIGLw1+fNXKVGoCHi7eJOHr8BdH0y1ooy9ArskMjwobBFae3GX4T1AfnrTaejyr0FvLYIb0Zkog==
++
+ "@swc/core-linux-arm64-musl@1.3.32":
+   version "1.3.32"
+   resolved "https://registry.yarnpkg.com/@swc/core-linux-arm64-musl/-/core-linux-arm64-musl-1.3.32.tgz#0e20f30885c8588bd13e7e5628ce8bdbe6cb44b6"
+   integrity sha512-lG0VOuYNPWOCJ99Aza69cTljjeft/wuRQeYFF8d+1xCQS/OT7gnbgi7BOz39uSHIPTBqfzdIsuvzdKlp9QydrQ==
+ 
++"@swc/core-linux-x64-gnu@1.3.102":
++  version "1.3.102"
++  resolved "https://registry.yarnpkg.com/@swc/core-linux-x64-gnu/-/core-linux-x64-gnu-1.3.102.tgz#298a25aa854924bedc7e4b69da52da19f84fc7a8"
++  integrity sha512-dFvnhpI478svQSxqISMt00MKTDS0e4YtIr+ioZDG/uJ/q+RpcNy3QI2KMm05Fsc8Y0d4krVtvCKWgfUMsJZXAg==
++
+ "@swc/core-linux-x64-gnu@1.3.32":
+   version "1.3.32"
+   resolved "https://registry.yarnpkg.com/@swc/core-linux-x64-gnu/-/core-linux-x64-gnu-1.3.32.tgz#2ea5e17d13a70e6a13742282cf30e92e4074f4c5"
+   integrity sha512-ecqtSWX4NBrs7Ji2VX3fDWeqUfrbLlYqBuufAziCM27xMxwlAVgmyGQk4FYgoQ3SAUAu3XFH87+3Q7uWm2X7xg==
+ 
++"@swc/core-linux-x64-musl@1.3.102":
++  version "1.3.102"
++  resolved "https://registry.yarnpkg.com/@swc/core-linux-x64-musl/-/core-linux-x64-musl-1.3.102.tgz#1bcd911aaa88b96f3bb665b0fd84ef4d21adf886"
++  integrity sha512-+a0M3CvjeIRNA/jTCzWEDh2V+mhKGvLreHOL7J97oULZy5yg4gf7h8lQX9J8t9QLbf6fsk+0F8bVH1Ie/PbXjA==
++
+ "@swc/core-linux-x64-musl@1.3.32":
+   version "1.3.32"
+   resolved "https://registry.yarnpkg.com/@swc/core-linux-x64-musl/-/core-linux-x64-musl-1.3.32.tgz#d96cde03d54f13f77dd1d6602a049bd2baaef446"
+   integrity sha512-rl3dMcUuENVkpk5NGW/LXovjK0+JFm4GWPjy4NM3Q5cPvhBpGwSeLZlR+zAw9K0fdGoIXiayRTTfENrQwwsH+g==
+ 
++"@swc/core-win32-arm64-msvc@1.3.102":
++  version "1.3.102"
++  resolved "https://registry.yarnpkg.com/@swc/core-win32-arm64-msvc/-/core-win32-arm64-msvc-1.3.102.tgz#59084786364d03fa4a120bdd589a557a00caedeb"
++  integrity sha512-w76JWLjkZNOfkB25nqdWUNCbt0zJ41CnWrJPZ+LxEai3zAnb2YtgB/cCIrwxDebRuMgE9EJXRj7gDDaTEAMOOQ==
++
+ "@swc/core-win32-arm64-msvc@1.3.32":
+   version "1.3.32"
+   resolved "https://registry.yarnpkg.com/@swc/core-win32-arm64-msvc/-/core-win32-arm64-msvc-1.3.32.tgz#3870113492cc3d2679945372f4975ce7f60594cc"
+   integrity sha512-VlybAZp8DcS66CH1LDnfp9zdwbPlnGXREtHDMHaBfK9+80AWVTg+zn0tCYz+HfcrRONqxbudwOUIPj+dwl/8jw==
+ 
++"@swc/core-win32-ia32-msvc@1.3.102":
++  version "1.3.102"
++  resolved "https://registry.yarnpkg.com/@swc/core-win32-ia32-msvc/-/core-win32-ia32-msvc-1.3.102.tgz#27954889d940a63796d58ff7753f5f27ed381a1f"
++  integrity sha512-vlDb09HiGqKwz+2cxDS9T5/461ipUQBplvuhW+cCbzzGuPq8lll2xeyZU0N1E4Sz3MVdSPx1tJREuRvlQjrwNg==
++
+ "@swc/core-win32-ia32-msvc@1.3.32":
+   version "1.3.32"
+   resolved "https://registry.yarnpkg.com/@swc/core-win32-ia32-msvc/-/core-win32-ia32-msvc-1.3.32.tgz#643519663778e64941c8b730197d4ba762dffcb0"
+   integrity sha512-MEUMdpUFIQ+RD+K/iHhHKfu0TFNj9VXwIxT5hmPeqyboKo095CoFEFBJ0sHG04IGlnu8T9i+uE2Pi18qUEbFug==
+ 
++"@swc/core-win32-x64-msvc@1.3.102":
++  version "1.3.102"
++  resolved "https://registry.yarnpkg.com/@swc/core-win32-x64-msvc/-/core-win32-x64-msvc-1.3.102.tgz#477da542e6b01b3eb64476ec9a78f497a9b87807"
++  integrity sha512-E/jfSD7sShllxBwwgDPeXp1UxvIqehj/ShSUqq1pjR/IDRXngcRSXKJK92mJkNFY7suH6BcCWwzrxZgkO7sWmw==
++
+ "@swc/core-win32-x64-msvc@1.3.32":
+   version "1.3.32"
+   resolved "https://registry.yarnpkg.com/@swc/core-win32-x64-msvc/-/core-win32-x64-msvc-1.3.32.tgz#aa9595cb93d9dd5bbc7e5cfdabd8bb086ea6c21d"
+   integrity sha512-DPMoneNFQco7SqmVVOUv1Vn53YmoImEfrAPMY9KrqQzgfzqNTuL2JvfxUqfAxwQ6pEKYAdyKJvZ483rIhgG9XQ==
+ 
++"@swc/core@^1.3.100":
++  version "1.3.102"
++  resolved "https://registry.yarnpkg.com/@swc/core/-/core-1.3.102.tgz#870874bcf1d78cd7bb1bc66b31bf2b1a87c1a667"
++  integrity sha512-OAjNLY/f6QWKSDzaM3bk31A+OYHu6cPa9P/rFIx8X5d24tHXUpRiiq6/PYI6SQRjUPlB72GjsjoEU8F+ALadHg==
++  dependencies:
++    "@swc/counter" "^0.1.1"
++    "@swc/types" "^0.1.5"
++  optionalDependencies:
++    "@swc/core-darwin-arm64" "1.3.102"
++    "@swc/core-darwin-x64" "1.3.102"
++    "@swc/core-linux-arm-gnueabihf" "1.3.102"
++    "@swc/core-linux-arm64-gnu" "1.3.102"
++    "@swc/core-linux-arm64-musl" "1.3.102"
++    "@swc/core-linux-x64-gnu" "1.3.102"
++    "@swc/core-linux-x64-musl" "1.3.102"
++    "@swc/core-win32-arm64-msvc" "1.3.102"
++    "@swc/core-win32-ia32-msvc" "1.3.102"
++    "@swc/core-win32-x64-msvc" "1.3.102"
++
+ "@swc/core@^1.3.22":
+   version "1.3.32"
+   resolved "https://registry.yarnpkg.com/@swc/core/-/core-1.3.32.tgz#ecb3c9d7717e0a15796230def1b17968b18228f1"
+@@ -3996,6 +4075,16 @@
+     "@swc/core-win32-ia32-msvc" "1.3.32"
+     "@swc/core-win32-x64-msvc" "1.3.32"
+ 
++"@swc/counter@^0.1.1":
++  version "0.1.2"
++  resolved "https://registry.yarnpkg.com/@swc/counter/-/counter-0.1.2.tgz#bf06d0770e47c6f1102270b744e17b934586985e"
++  integrity sha512-9F4ys4C74eSTEUNndnER3VJ15oru2NumfQxS8geE+f3eB5xvfxpWyqE5XlVnxb/R14uoXi6SLbBwwiDSkv+XEw==
++
++"@swc/types@^0.1.5":
++  version "0.1.5"
++  resolved "https://registry.yarnpkg.com/@swc/types/-/types-0.1.5.tgz#043b731d4f56a79b4897a3de1af35e75d56bc63a"
++  integrity sha512-myfUej5naTBWnqOCc/MdVOLVjXUXtIA+NpDrDBKJtLLg2shUjBu3cZmB/85RyitKc55+lUUyl7oRfLOvkr2hsw==
++
+ "@tailwindcss/typography@^0.5.4":
+   version "0.5.9"
+   resolved "https://registry.yarnpkg.com/@tailwindcss/typography/-/typography-0.5.9.tgz#027e4b0674929daaf7c921c900beee80dbad93e8"
+@@ -14881,6 +14970,13 @@ rollup@^3.21.0:
+   optionalDependencies:
+     fsevents "~2.3.2"
+ 
++rose@^0.4.5:
++  version "0.4.5"
++  resolved "https://registry.yarnpkg.com/rose/-/rose-0.4.5.tgz#db7ad92949b444e504b089bbc24427bb5abc2317"
++  integrity sha512-Ue7XXGhHSguvFKHvYRu6J702ajciwQal4z0BsaPIuvSAtjWUREGgeh2vfzuVwv683MSMlGPuPmI0xIN43vdn9w==
++  dependencies:
++    "@rose-lang/wasm" "0.4.5"
++
+ rrweb-cssom@^0.6.0:
+   version "0.6.0"
+   resolved "https://registry.yarnpkg.com/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz#ed298055b97cbddcdeb278f904857629dec5e0e1"
+@@ -16970,6 +17066,11 @@ uuid@^9.0.0:
+   resolved "https://registry.yarnpkg.com/uuid/-/uuid-9.0.0.tgz#592f550650024a38ceb0c562f2f6aa435761efb5"
+   integrity sha512-MXcSTerfPa4uqyzStbRoTgt5XIe3x5+42+q1sDuy3R5MDk66URdLMOZe5aPX/SQd+kuYAh0FdP/pO28IkQyTeg==
+ 
++uuid@^9.0.1:
++  version "9.0.1"
++  resolved "https://registry.yarnpkg.com/uuid/-/uuid-9.0.1.tgz#e188d4c8853cc722220392c424cd637f32293f30"
++  integrity sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==
++
+ v8-compile-cache@2.3.0, v8-compile-cache@^2.0.3:
+   version "2.3.0"
+   resolved "https://registry.yarnpkg.com/v8-compile-cache/-/v8-compile-cache-2.3.0.tgz#2de19618c66dc247dcfb6f99338035d8245a2cee"
+@@ -17076,6 +17177,15 @@ vite-plugin-solid@^2:
+     solid-refresh "^0.5.0"
+     vitefu "^0.2.3"
+ 
++vite-plugin-top-level-await@^1.4.1:
++  version "1.4.1"
++  resolved "https://registry.yarnpkg.com/vite-plugin-top-level-await/-/vite-plugin-top-level-await-1.4.1.tgz#607dfe084157550fa33df18062b99ceea774cd9c"
++  integrity sha512-hogbZ6yT7+AqBaV6lK9JRNvJDn4/IJvHLu6ET06arNfo0t2IsyCaon7el9Xa8OumH+ESuq//SDf8xscZFE0rWw==
++  dependencies:
++    "@rollup/plugin-virtual" "^3.0.2"
++    "@swc/core" "^1.3.100"
++    uuid "^9.0.1"
++
+ "vite@^3.0.0 || ^4.0.0", vite@^4, vite@^4.0.4, vite@^4.3.8:
+   version "4.3.9"
+   resolved "https://registry.yarnpkg.com/vite/-/vite-4.3.9.tgz#db896200c0b1aa13b37cdc35c9e99ee2fdd5f96d"
+
+```
+
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Report all of your findings in a single JSON object with the following format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

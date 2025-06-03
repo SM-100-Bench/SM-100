@@ -1,0 +1,14 @@
+{
+  "issues": [
+    {
+      "file": "schedule/__init__.py",
+      "line": 172,
+      "description": "Calling idle_seconds() when no jobs exist will raise a TypeError because self.next_run is None."
+    },
+    {
+      "file": "schedule/__init__.py",
+      "line": 500,
+      "description": "The error message '`latest` is greater than `interval`' is misleading since the check actually triggers when `latest` is less than `interval`."
+    }
+  ]
+}

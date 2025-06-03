@@ -1,0 +1,15 @@
+{
+  "identifier": "langfuse_langfuse-python_1219b7e",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.1141044,
+    "is_error": false,
+    "duration_ms": 10796,
+    "duration_api_ms": 11558,
+    "num_turns": 3,
+    "result": "Based on my review of the git staged changes, I found one potential bug that could cause runtime issues:\n\n```json\n{\n  \"issues\": [\n    {\n      \"file\": \"langfuse/client.py\",\n      \"line\": 375,\n      \"description\": \"Method name mismatch - calls 'get_run' but should call 'get_runs' based on the error message and API pattern\"\n    }\n  ]\n}\n```\n\nThe issue is in the `get_dataset_run` method where it calls `self.client.datasets.get_run()` but based on the error message in the debug log and the API pattern established elsewhere in the codebase, it should likely be calling `get_runs()`. This mismatch could cause `AttributeError` exceptions at runtime if the `get_run` method doesn't exist on the datasets client.",
+    "total_cost": 0.1141044,
+    "session_id": "0b98470f-52af-4d2b-b2be-71bf36fd1955"
+  }
+}

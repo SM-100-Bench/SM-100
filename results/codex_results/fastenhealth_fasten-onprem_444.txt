@@ -1,0 +1,54 @@
+{
+"issues": [
+{
+"file": "frontend/src/app/directives/external-link.directive.ts",
+"line": 41,
+"description": "No check that the element has an href attribute before calling OpenExternalLink. If href is missing, url becomes undefined and OpenExternalLink will attempt to call startsWith on undefined, causing a runtime error."
+},
+{
+"file": "frontend/src/lib/utils/external_link.ts",
+"line": 7,
+"description": "window.open is called without the noopener option. The new page can access window.opener and potentially redirect the original page (reverse tabnabbing)."
+},
+{
+"file": "frontend/src/app/pipes/dataset-latest-entry.pipe.ts",
+"line": 50,
+"description": "roundToDecimalPlaces checks '!value', so numeric zero is treated as missing and the function returns '--' instead of '0'."
+},
+{
+"file": "frontend/src/app/pipes/filter.pipe.ts",
+"line": 27,
+"description": "transform() returns null when items is falsy and when no entries match. Returning null can break ngFor and causes errors; should return an empty array."
+},
+{
+"file": "frontend/src/app/pipes/filter.pipe.ts",
+"line": 29,
+"description": "it[field] may be undefined, so calling toLowerCase() can throw a TypeError if the field doesn't exist or isn't a string."
+},
+{
+"file": "frontend/src/app/pipes/fhir-path.pipe.ts",
+"line": 15,
+"description": "evaluate() is called without error handling. An invalid FHIRPath expression throws and can crash the application."
+},
+{
+"file": "frontend/src/lib/utils/resource_related_display_model.ts",
+"line": 32,
+"description": "Recursive processing of related resources does not track visited nodes. Cyclic relations lead to infinite recursion and a stack overflow."
+},
+{
+"file": "frontend/src/lib/utils/base64.ts",
+"line": 2,
+"description": "btoa and atob only support Latin‑1. Encoding/decoding Unicode strings will throw a DOMException."
+},
+{
+"file": "frontend/src/app/pipes/safe-html.pipe.ts",
+"line": 10,
+"description": "bypassSecurityTrust APIs are used for all values. If untrusted content reaches this pipe, it may introduce XSS."
+},
+{
+"file": "frontend/src/lib/utils/uuid.ts",
+"line": 4,
+"description": "uuidV4 relies on the global 'crypto' object. In environments without crypto.getRandomValues, calling this function throws a ReferenceError."
+}
+]
+}

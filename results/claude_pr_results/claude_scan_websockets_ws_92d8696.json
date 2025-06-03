@@ -1,0 +1,15 @@
+{
+  "identifier": "websockets_ws_92d8696",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.02987045,
+    "is_error": false,
+    "duration_ms": 8549,
+    "duration_api_ms": 10603,
+    "num_turns": 3,
+    "result": "Looking at the staged changes, I can identify several potential bugs:\n\n```json\n{\n  \"issues\": [\n    {\n      \"file\": \"lib/WebSocketServer.js\",\n      \"line\": 156,\n      \"description\": \"Potential null pointer exception - req.headers.upgrade is accessed without checking if it exists first\"\n    },\n    {\n      \"file\": \"lib/WebSocketServer.js\", \n      \"line\": 156,\n      \"description\": \"Logic error - removed check for req.headers.upgrade existence but still calling toLowerCase() on it, which will throw if upgrade header is undefined\"\n    }\n  ]\n}\n```",
+    "total_cost": 0.02987045,
+    "session_id": "af12002b-c306-4c87-9e29-26e5b2852d4b"
+  }
+}

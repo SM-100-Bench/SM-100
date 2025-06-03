@@ -1,0 +1,16 @@
+{
+  "bug_detected": false,
+  "detection_details": [],
+  "raw": {
+    "message": "## WebSocket Server Bug Summary\n\n### Total Bugs Found: 1\n\n### Critical Bug Details\n- **Location**: `lib/WebSocketServer.js`, lines 155-159\n- **Type**: Potential TypeError\n- **Severity**: Medium\n\n#### Bug Description\nThe code attempts to call `toLowerCase()` on `req.headers.upgrade` without first verifying its existence. If a request reaches the `handleUpgrade` method without an 'upgrade' header, this will trigger a TypeError when attempting to access `req.headers.upgrade.toLowerCase()`.\n\n#### Discovery Method\nThe bug was identified through fuzzing, indicating it was found via systematic testing of input variations.\n\n#### Potential Impact\nCould cause application crashes or unexpected behavior when processing WebSocket upgrade requests with incomplete or malformed headers.",
+    "bugs": [
+      {
+        "description": "The current code attempts to call `toLowerCase()` on `req.headers.upgrade` without first checking if it exists. If a request reaches the `handleUpgrade` method without an 'upgrade' header, this will cause a TypeError when trying to access `req.headers.upgrade.toLowerCase()`. \n\nThis is a regression from previous behavior, as shown in the test server implementation which always checks for the existence of the header before accessing it. The Node.js HTTP server does not guarantee that the 'upgrade' header exists when the 'upgrade' event is emitted, so this check is necessary.\n\nThe fix adds back the check for `!req.headers.upgrade` before attempting to access `req.headers.upgrade.toLowerCase()`, preventing a potential null/undefined dereference vulnerability.",
+        "file": "lib/WebSocketServer.js",
+        "start_line": 155,
+        "end_line": 159,
+        "suggested_fix": "    if (\n      req.method !== 'GET' || !req.headers.upgrade || req.headers.upgrade.toLowerCase() !== 'websocket' ||\n      !req.headers['sec-websocket-key'] || version !== 8 && version !== 13 ||\n      !this.shouldHandle(req)\n    ) {"
+      }
+    ]
+  }
+}

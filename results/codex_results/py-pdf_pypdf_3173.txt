@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "pypdf/generic/_base.py",
+"line": 500,
+"description": "FloatObject.hash_bin hashes the bound method as_numeric instead of its numeric value, giving inconsistent results."
+},
+{
+"file": "pypdf/generic/_data_structures.py",
+"line": 1501,
+"description": "read_object seeks backwards with stream.seek(-20, 1) which can raise an OSError when near the start of the file."
+},
+{
+"file": "pypdf/generic/_data_structures.py",
+"line": 1227,
+"description": "ContentStream.replicate has unreachable code after an early return, so attributes are never set."
+}
+]
+}

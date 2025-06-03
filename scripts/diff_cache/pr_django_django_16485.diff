@@ -1,0 +1,26 @@
+diff --git a/django/template/defaultfilters.py b/django/template/defaultfilters.py
+index 23c3a08c6702..78881987fc05 100644
+--- a/django/template/defaultfilters.py
++++ b/django/template/defaultfilters.py
+@@ -168,7 +168,7 @@ def floatformat(text, arg=-1):
+     except (ValueError, OverflowError, InvalidOperation):
+         return input_val
+ 
+-    if not m and p < 0:
++    if not m and p <= 0:
+         return mark_safe(
+             formats.number_format(
+                 "%d" % (int(d)),
+diff --git a/tests/template_tests/filter_tests/test_floatformat.py b/tests/template_tests/filter_tests/test_floatformat.py
+index 361a888ce3de..8f75c2b4ee8d 100644
+--- a/tests/template_tests/filter_tests/test_floatformat.py
++++ b/tests/template_tests/filter_tests/test_floatformat.py
+@@ -111,6 +111,8 @@ def test_zero_values(self):
+         self.assertEqual(
+             floatformat(0.000000000000000000015, 20), "0.00000000000000000002"
+         )
++        self.assertEqual(floatformat("0.00", 0), "0")
++        self.assertEqual(floatformat(Decimal("0.00"), 0), "0")
+ 
+     def test_negative_zero_values(self):
+         tests = [

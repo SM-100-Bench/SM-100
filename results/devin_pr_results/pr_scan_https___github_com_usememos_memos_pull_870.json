@@ -1,0 +1,40 @@
+{
+  "session_id": "devin-ccab205bb4b849f488cf1d4d9f07bcd3",
+  "issues": [
+    {
+      "file": "store/user.go",
+      "line": 52,
+      "description": "Missing parameters in db.Db.Query call - SQL query has placeholders (?, ?, ?) but no values are provided, causing SQL syntax error"
+    },
+    {
+      "file": "store/user.go",
+      "line": 145,
+      "description": "Missing comma in SQL query between 'created_ts' and 'updated_ts' columns, causing syntax error"
+    },
+    {
+      "file": "store/shortcut.go",
+      "line": 73,
+      "description": "Trailing comma in SQL INSERT statement after 'creator_id,' causing syntax error"
+    },
+    {
+      "file": "store/shortcut.go",
+      "line": 205,
+      "description": "Incorrect table name in DELETE query - using 'saved_query' instead of 'shortcut', causing deletion from wrong table"
+    },
+    {
+      "file": "store/shortcut.go",
+      "line": 122,
+      "description": "Missing 'creator_id' field in RETURNING clause but it's used in row.Scan on line 137, causing index out of range error"
+    },
+    {
+      "file": "store/resource.go",
+      "line": 27,
+      "description": "Method name typo: 'FindResouceList' instead of 'FindResourceList', causing method not found error when called from server code"
+    },
+    {
+      "file": "store/memo.go",
+      "line": 85,
+      "description": "Incorrect error handling in createMemo - returns NotFound error when row.Next() is false, which is inappropriate for an INSERT operation"
+    }
+  ]
+}

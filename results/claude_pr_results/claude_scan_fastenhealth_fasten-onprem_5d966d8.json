@@ -1,0 +1,15 @@
+{
+  "identifier": "fastenhealth_fasten-onprem_5d966d8",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.07827885,
+    "is_error": false,
+    "duration_ms": 6772,
+    "duration_api_ms": 10172,
+    "num_turns": 3,
+    "result": "After reviewing the git staged changes, I found one potential issue related to null safety:\n\n```json\n{\n  \"issues\": [\n    {\n      \"file\": \"frontend/src/app/directives/image-fallback.directive.ts\",\n      \"line\": 13,\n      \"description\": \"Potential null reference exception when accessing elementRef.nativeElement.src without null checks\"\n    }\n  ]\n}\n```",
+    "total_cost": 0.07827885,
+    "session_id": "5dfe6a68-652f-4cf1-81d5-cd59333ce24e"
+  }
+}

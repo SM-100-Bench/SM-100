@@ -1,0 +1,1 @@
+{"repo_id": "NaturalNode_natural_bc618534c6c2ce4038262e60314cbe6a3c6f0680", "bugs": [{"description": "Test cases defined with 'it()' but missing assertion/expect statements in io_spec/wordnet_index_spec.js. This creates false positive tests that always pass regardless of code behavior.", "file": "io_spec/wordnet_index_spec.js", "line": 0}], "updated_files": {}}

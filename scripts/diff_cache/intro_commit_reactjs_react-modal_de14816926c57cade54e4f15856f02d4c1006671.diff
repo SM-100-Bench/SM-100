@@ -1,0 +1,96 @@
+diff --git a/README.md b/README.md
+index e3fffcf2..09aa0711 100644
+--- a/README.md
++++ b/README.md
+@@ -73,6 +73,26 @@ This doesn't affect styling as no styles are applied to this element by default.
+ The default styles above are available on `Modal.defaultStyles`. Changes to this
+ object will apply to all instances of the modal.
+ 
++### Appended to custom node
++You can choose an element for the modal to be appended to, rather than using
++body tag. To do this, provide a function to `parentSelector` prop that return
++the element to be used.
++
++```jsx
++
++function getParent() {
++  return document.querySelector('#root');
++}
++
++<Modal
++  ...
++  parentSelector={getParent}
++  ...
++>
++  <p>Modal Content.</p>
++</Modal>
++```
++
+ ### Body class
+ When the modal is opened a `ReactModal__Body--open` class is added to the `body` tag.
+ You can use this to remove scrolling on the the body while the modal is open.
+diff --git a/lib/components/Modal.js b/lib/components/Modal.js
+index 45f7e34d..428b91a1 100644
+--- a/lib/components/Modal.js
++++ b/lib/components/Modal.js
+@@ -10,6 +10,10 @@ var Assign = require('lodash.assign');
+ var SafeHTMLElement = ExecutionEnvironment.canUseDOM ? window.HTMLElement : {};
+ var AppElement = ExecutionEnvironment.canUseDOM ? document.body : {appendChild: function() {}};
+ 
++function getParentElement(parentSelector) {
++  return parentSelector();
++}
++
+ var Modal = React.createClass({
+ 
+   displayName: 'Modal',
+@@ -37,6 +41,7 @@ var Modal = React.createClass({
+     closeTimeoutMS: React.PropTypes.number,
+     ariaHideApp: React.PropTypes.bool,
+     shouldCloseOnOverlayClick: React.PropTypes.bool,
++    parentSelector: React.PropTypes.func,
+     role: React.PropTypes.string,
+     contentLabel: React.PropTypes.string.isRequired
+   },
+@@ -47,18 +52,29 @@ var Modal = React.createClass({
+       portalClassName: 'ReactModalPortal',
+       ariaHideApp: true,
+       closeTimeoutMS: 0,
+-      shouldCloseOnOverlayClick: true
++      shouldCloseOnOverlayClick: true,
++      parentSelector: () => document.body
+     };
+   },
+ 
+   componentDidMount: function() {
+     this.node = document.createElement('div');
+     this.node.className = this.props.portalClassName;
+-    document.body.appendChild(this.node);
++
++    var parent = getParentElement(this.props.parentSelector);
++    parent.appendChild(this.node);
+     this.renderPortal(this.props);
+   },
+ 
+   componentWillReceiveProps: function(newProps) {
++    var currentParent = getParentElement(this.props.parentSelector);
++    var newParent = getParentElement(newProps.parentSelector);
++
++    if(newParent !== currentParent) {
++      currentParent.removeChild(this.node);
++      newParent.appendChild(this.node);
++    }
++
+     this.renderPortal(newProps);
+   },
+ 
+@@ -68,7 +84,8 @@ var Modal = React.createClass({
+     }
+ 
+     ReactDOM.unmountComponentAtNode(this.node);
+-    document.body.removeChild(this.node);
++    var parent = getParentElement(this.props.parentSelector);
++    parent.removeChild(this.node);
+     elementClass(document.body).remove('ReactModal__Body--open');
+   },
+ 

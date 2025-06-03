@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "server/data/file/file.go",
+"line": 77,
+"description": "Created file is never closed after writing, which can leak file descriptors."
+},
+{
+"file": "server/data/stream/stream.go",
+"line": 56,
+"description": "Deletion of map entries occurs without holding the mutex, leading to possible concurrent map access."
+},
+{
+"file": "server/data/stream/stream.go",
+"line": 61,
+"description": "AddFile ignores the error returned by io.Copy and always returns nil."
+}
+]
+}

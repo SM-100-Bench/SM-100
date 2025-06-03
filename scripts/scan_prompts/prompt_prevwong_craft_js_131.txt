@@ -1,0 +1,19 @@
+Please review the code in the prevwong_craft.js_131 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Node Management subsystem (consisting of 'packages/core/src/interfaces/nodes.ts', 'packages/core/src/nodes/Canvas.tsx', 'packages/core/src/nodes/Element.tsx', 'packages/core/src/nodes/NodeContext.tsx', 'packages/core/src/nodes/NodeElement.tsx', 'packages/core/src/nodes/NodeHandlers.ts', 'packages/core/src/nodes/index.ts', 'packages/core/src/nodes/tests/Element.test.tsx', 'packages/core/src/nodes/useInternalNode.ts', 'packages/core/src/utils/createNode.ts', 'packages/core/src/utils/createTestNode.ts', 'packages/core/src/utils/deserializeNode.tsx', 'packages/core/src/utils/mapChildrenToNodes.ts', 'packages/core/src/utils/parseNodeFromJSX.tsx', 'packages/core/src/utils/serializeNode.tsx', 'packages/core/src/utils/updateEventsNode.ts')
+2. Utility Functions subsystem (consisting of 'packages/core/src/utils/createNode.ts', 'packages/core/src/utils/createTestNode.ts', 'packages/core/src/utils/deserializeNode.tsx', 'packages/core/src/utils/fromEntries.ts', 'packages/core/src/utils/getRandomNodeId.ts', 'packages/core/src/utils/mapChildrenToNodes.ts', 'packages/core/src/utils/mergeTrees.tsx', 'packages/core/src/utils/parseNodeFromJSX.tsx', 'packages/core/src/utils/resolveComponent.ts', 'packages/core/src/utils/serializeNode.tsx', 'packages/core/src/utils/testHelpers.ts', 'packages/core/src/utils/tests/createNode.test.tsx', 'packages/core/src/utils/tests/parseNodeFromJSX.test.tsx', 'packages/core/src/utils/updateEventsNode.ts', 'packages/utils/src/Handlers.ts', 'packages/utils/src/History.ts', 'packages/utils/src/RenderIndicator.tsx', 'packages/utils/src/constants.ts', 'packages/utils/src/deprecate.ts', 'packages/utils/src/getDOMInfo.ts', 'packages/utils/src/index.ts', 'packages/utils/src/tests/History.test.ts', 'packages/utils/src/useCollector.tsx', 'packages/utils/src/useEffectOnce.tsx', 'packages/utils/src/useMethods.ts', 'packages/utils/src/utilityTypes.ts', 'packages/utils/src/wrapConnectorHooks.tsx')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

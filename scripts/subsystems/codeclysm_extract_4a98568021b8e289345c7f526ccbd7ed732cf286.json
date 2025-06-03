@@ -1,0 +1,1 @@
+[{"name": "Core Extraction", "files": ["extract.go", "extractor.go"]}, {"name": "Utilities", "files": ["cancelable_reader.go"]}, {"name": "Testing Tools", "files": ["evil_generator/main.go"]}]

@@ -1,0 +1,56 @@
+diff --git a/docs/versionhistory.rst b/docs/versionhistory.rst
+index 4d164a4e5..22bf8efc0 100644
+--- a/docs/versionhistory.rst
++++ b/docs/versionhistory.rst
+@@ -20,6 +20,7 @@ APScheduler, see the :doc:`migration section <migration>`.
+ - Fixed JSON serialization of triggers that had been used at least once
+ - Fixed dialect name checks in the SQLAlchemy job store
+ - Fixed JSON and CBOR serializers unable to serialize enums
++- Fixed infinite loop in CalendarIntervalTrigger with UTC timezone (PR by unights)
+ 
+ **4.0.0a4**
+ 
+diff --git a/src/apscheduler/triggers/calendarinterval.py b/src/apscheduler/triggers/calendarinterval.py
+index ed38eb6da..cec164e72 100644
+--- a/src/apscheduler/triggers/calendarinterval.py
++++ b/src/apscheduler/triggers/calendarinterval.py
+@@ -118,7 +118,7 @@ def next(self) -> datetime | None:
+             next_time = datetime.fromtimestamp(timestamp, self.timezone)
+ 
+             # Check if the time is off due to normalization and a forward DST shift
+-            if next_time.time() != self._time:
++            if next_time.timetz() != self._time:
+                 previous_date = next_time.date()
+             else:
+                 self._last_fire_date = next_date
+diff --git a/tests/conftest.py b/tests/conftest.py
+index 83263c6bf..3acc95f49 100644
+--- a/tests/conftest.py
++++ b/tests/conftest.py
+@@ -29,6 +29,11 @@ def timezone() -> ZoneInfo:
+     return ZoneInfo("Europe/Berlin")
+ 
+ 
++@pytest.fixture(scope="session")
++def utc_timezone() -> ZoneInfo:
++    return ZoneInfo("UTC")
++
++
+ @pytest.fixture(
+     params=[
+         pytest.param(PickleSerializer, id="pickle"),
+diff --git a/tests/triggers/test_calendarinterval.py b/tests/triggers/test_calendarinterval.py
+index bd5a4e7a4..21825f440 100644
+--- a/tests/triggers/test_calendarinterval.py
++++ b/tests/triggers/test_calendarinterval.py
+@@ -100,3 +100,10 @@ def test_repr(timezone, serializer):
+         "time='03:00:08', start_date='2016-03-05', end_date='2020-12-25', "
+         "timezone='Europe/Berlin')"
+     )
++
++
++def test_utc_timezone(utc_timezone):
++    trigger = CalendarIntervalTrigger(
++        days=1, hour=1, start_date=date(2016, 3, 31), timezone=utc_timezone
++    )
++    assert trigger.next() == datetime(2016, 3, 31, 1, tzinfo=utc_timezone)

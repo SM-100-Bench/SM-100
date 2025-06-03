@@ -1,0 +1,15 @@
+{
+  "identifier": "tsenart_vegeta_174d804",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.15361575000000002,
+    "is_error": false,
+    "duration_ms": 54336,
+    "duration_api_ms": 58077,
+    "num_turns": 11,
+    "result": "Based on my analysis of the staged changes, I found several critical bugs:\n\n```json\n{\n  \"issues\": [\n    {\n      \"file\": \"lib/attack.go\",\n      \"line\": 313,\n      \"description\": \"Incorrect usage of net.DNSError constructor - should use &net.DNSError{Err: \\\"no such host\\\", Name: host} not Name: addr\"\n    },\n    {\n      \"file\": \"lib/attack.go\",\n      \"line\": 326,\n      \"description\": \"Logic error in IP family filtering - fallthrough from IPv4 case will incorrectly execute IPv6 case, breaking the intended logic\"\n    },\n    {\n      \"file\": \"lib/attack.go\",\n      \"line\": 351,\n      \"description\": \"Potential goroutine leak - if context is cancelled while waiting for results, the spawned dial goroutines may not be properly cleaned up\"\n    },\n    {\n      \"file\": \"lib/attack.go\",\n      \"line\": 292,\n      \"description\": \"Goroutine leak in DNS refresh routine - accessing a.stopch from DNSCaching function creates a race condition as stopch might not be initialized when DNSCaching is called\"\n    }\n  ]\n}\n```",
+    "total_cost": 0.15361575000000002,
+    "session_id": "35efa7f8-2511-49a0-b997-4af77332ed51"
+  }
+}

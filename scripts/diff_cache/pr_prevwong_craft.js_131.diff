@@ -1,0 +1,14 @@
+diff --git a/packages/core/src/utils/serializeNode.tsx b/packages/core/src/utils/serializeNode.tsx
+index 99fe82489..5ede7f67b 100644
+--- a/packages/core/src/utils/serializeNode.tsx
++++ b/packages/core/src/utils/serializeNode.tsx
+@@ -17,7 +17,8 @@ export const serializeComp = (
+   let { type, isCanvas, props } = data;
+   props = Object.keys(props).reduce((result: Record<string, any>, key) => {
+     const prop = props[key];
+-    if (!prop) {
++
++    if (prop === undefined || prop === null) {
+       return result;
+     }
+ 

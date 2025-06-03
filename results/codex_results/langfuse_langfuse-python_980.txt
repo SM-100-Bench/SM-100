@@ -1,0 +1,24 @@
+{
+"issues": [
+{
+"file": "langfuse/client.py",
+"line": 1214,
+"description": "The debug statement references an undefined variable version, causing a NameError when executed."
+},
+{
+"file": "langfuse/extract_model.py",
+"line": 51,
+"description": "Logic error in AzureOpenAI branch: deployment_name is assigned the value of deployment_version, leaving deployment_version None. The return value is thus <deployment_name>-None."
+},
+{
+"file": "langfuse/serializer.py",
+"line": 136,
+"description": "Error handling uses print(obj.__dict__) which may raise AttributeError if the object lacks a __dict__, potentially masking the original serialization error."
+},
+{
+"file": "langfuse/prompt_cache.py",
+"line": 87,
+"description": "The _processing_keys set is modified by multiple threads without synchronization, leading to race conditions."
+}
+]
+}

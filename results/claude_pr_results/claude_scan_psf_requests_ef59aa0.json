@@ -1,0 +1,15 @@
+{
+  "identifier": "psf_requests_ef59aa0",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.5297803000000001,
+    "is_error": false,
+    "duration_ms": 126966,
+    "duration_api_ms": 129182,
+    "num_turns": 35,
+    "result": "Based on my analysis of the staged changes, I can identify one significant bug:\n\n```json\n{\n  \"issues\": [\n    {\n      \"file\": \"requests/utils.py\",\n      \"line\": 983,\n      \"description\": \"Missing params parameter in urlunparse call - urllib3.parse_url doesn't provide params field but urlunparse expects 6 parameters (scheme, netloc, path, params, query, fragment). Passing empty string for params may break URLs with semicolon-separated parameters.\"\n    }\n  ]\n}\n```",
+    "total_cost": 0.5297803000000001,
+    "session_id": "5bad8753-35d0-42b3-8224-d89e0aa0dbe8"
+  }
+}

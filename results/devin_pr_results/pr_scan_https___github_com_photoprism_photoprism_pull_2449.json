@@ -1,0 +1,35 @@
+{
+  "session_id": "devin-14cb63b80dbe40b39ddae3adf06b7094",
+  "issues": [
+    {
+      "file": "internal/photoprism/convert_avc.go",
+      "line": 121,
+      "description": "Redundant pixel format specification: `-pix_fmt` and `-pixel_format` parameters are both set to 'yuv420p', and there's also a `-vf format=yuv420p` filter. This redundancy could cause conflicts or unexpected behavior."
+    },
+    {
+      "file": "internal/photoprism/convert_avc.go",
+      "line": 124,
+      "description": "The `-preset` value '15' is outside the valid range for h264_nvenc presets (typically 0-7 or named values like 'slow', 'medium', 'fast'). This may cause encoding failures or fallback to software encoding."
+    },
+    {
+      "file": "internal/photoprism/convert_avc.go",
+      "line": 129,
+      "description": "The `-cq` value of '0' sets constant quantization to 0 (lossless), which may result in extremely large files and high CPU/GPU usage."
+    },
+    {
+      "file": "docker-compose.yml",
+      "line": 122,
+      "description": "Some Nvidia device mappings like '/dev/nvidia-modeset' might not exist on all systems, potentially causing container startup failures."
+    },
+    {
+      "file": "internal/photoprism/convert_avc.go",
+      "line": 530,
+      "description": "Error handling in ToAvc() falls back to software encoding if hardware encoding fails, but doesn't provide detailed diagnostics about why hardware encoding failed, making troubleshooting difficult."
+    },
+    {
+      "file": "internal/photoprism/convert_avc.go",
+      "line": 400,
+      "description": "The `-gpu` parameter is set to 'any', which might select an inappropriate GPU in multi-GPU systems, potentially causing performance issues or encoding failures."
+    }
+  ]
+}

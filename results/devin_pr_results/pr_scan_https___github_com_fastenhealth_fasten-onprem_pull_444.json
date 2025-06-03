@@ -1,0 +1,30 @@
+{
+  "session_id": "devin-048585e03f094a50910153007b3b4bb9",
+  "issues": [
+    {
+      "file": "frontend/src/app/directives/image-fallback.directive.spec.ts",
+      "line": 5,
+      "description": "The test instantiates ImageFallbackDirective without providing the required ElementRef parameter, which will cause the test to fail at runtime"
+    },
+    {
+      "file": "frontend/src/app/components/medical-sources-card/medical-sources-card.component.html",
+      "line": 5,
+      "description": "The imageFallback directive is used without providing a fallback image path parameter, relying solely on the default path"
+    },
+    {
+      "file": "frontend/src/app/directives/image-fallback.directive.ts",
+      "line": 13,
+      "description": "The directive doesn't validate the fallback image path, potentially allowing path traversal attacks if user-controlled data is passed as the fallback"
+    },
+    {
+      "file": "frontend/src/app/components/medical-sources-card/medical-sources-card.component.html",
+      "line": 5,
+      "description": "Potential path traversal vulnerability: sourceInfo?.metadata.brand_logo is used directly in the image path without validation or sanitization"
+    },
+    {
+      "file": "frontend/src/app/components/medical-sources-card/medical-sources-card.component.html",
+      "line": 5,
+      "description": "Inconsistent optional chaining: 'sourceInfo?.metadata.brand_logo' uses inconsistent optional chaining compared to other usages like 'sourceInfo?.metadata?.brand_logo'"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "ants.go",
+"line": 501,
+"description": "revertWorker updates lastUsedTime outside the lock, but refresh routines read it under the lock, causing a data race"
+},
+{
+"file": "worker_loop_queue.go",
+"line": 163,
+"description": "reset sets loopQueue.size to 0; after Reboot this value is never restored, leading to panic on subsequent insertions"
+}
+]
+}

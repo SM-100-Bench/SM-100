@@ -1,0 +1,18 @@
+Please review the code in the fastenhealth_fasten-onprem_444 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Frontend Utilities subsystem (consisting of 'frontend/src/app/directives/directives.module.ts', 'frontend/src/app/directives/external-link.directive.spec.ts', 'frontend/src/app/directives/external-link.directive.ts', 'frontend/src/app/directives/image-fallback.directive.spec.ts', 'frontend/src/app/directives/image-fallback.directive.ts', 'frontend/src/app/pipes/dataset-latest-entry.pipe.spec.ts', 'frontend/src/app/pipes/dataset-latest-entry.pipe.ts', 'frontend/src/app/pipes/fasten-display-model.pipe.spec.ts', 'frontend/src/app/pipes/fasten-display-model.pipe.ts', 'frontend/src/app/pipes/fhir-path.pipe.spec.ts', 'frontend/src/app/pipes/fhir-path.pipe.ts', 'frontend/src/app/pipes/filter.pipe.spec.ts', 'frontend/src/app/pipes/filter.pipe.ts', 'frontend/src/app/pipes/human-name.pipe.spec.ts', 'frontend/src/app/pipes/human-name.pipe.ts', 'frontend/src/app/pipes/pipes.module.ts', 'frontend/src/app/pipes/reference-uri.pipe.spec.ts', 'frontend/src/app/pipes/reference-uri.pipe.ts', 'frontend/src/app/pipes/safe-html.pipe.spec.ts', 'frontend/src/app/pipes/safe-html.pipe.ts', 'frontend/src/app/pipes/short-domain.pipe.spec.ts', 'frontend/src/app/pipes/short-domain.pipe.ts', 'frontend/src/lib/utils/base64.ts', 'frontend/src/lib/utils/bundle_references.ts', 'frontend/src/lib/utils/endpoint_absolute_path.spec.ts', 'frontend/src/lib/utils/endpoint_absolute_path.ts', 'frontend/src/lib/utils/external_link.ts', 'frontend/src/lib/utils/resource_related_display_model.ts', 'frontend/src/lib/utils/uuid.ts')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

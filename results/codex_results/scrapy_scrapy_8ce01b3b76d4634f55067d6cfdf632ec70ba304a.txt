@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "scrapy/downloadermiddlewares/decompression.py",
+"line": 31,
+"description": "The middleware assumes tar archives contain at least one member. For empty archives, 'tar_file.members[0]' raises IndexError, causing the middleware to crash."
+},
+{
+"file": "scrapy/downloadermiddlewares/decompression.py",
+"line": 42,
+"description": "The middleware assumes zip archives contain at least one file. When processing an empty archive, 'namelist[0]' raises IndexError and crashes the middleware."
+},
+{
+"file": "scrapy/downloadermiddlewares/stats.py",
+"line": 8,
+"description": "get_header_size calculates header size incorrectly. With zero headers it returns a negative value, leading to invalid downloader statistics."
+}
+]
+}

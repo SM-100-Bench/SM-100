@@ -1,0 +1,45 @@
+{
+  "session_id": "devin-d55fe541ce2e4c898368278cc2d2e22d",
+  "issues": [
+    {
+      "file": "server/data_backend/weedfs/weedfs.go",
+      "line": 125,
+      "description": "Format string error: Missing 's' in format specifier. The line uses '%' instead of '%s' which will cause a runtime error when formatting the error message."
+    },
+    {
+      "file": "server/data_backend/swift/swift.go",
+      "line": 20,
+      "description": "Nil pointer dereference: The global 'log' variable is declared but never initialized, which will cause a panic when log.EWarningf is called in the auth method."
+    },
+    {
+      "file": "server/metadata_backend/file/file.go",
+      "line": 186,
+      "description": "Logic error: RemoveFile method deletes using file.Name instead of file.Id which is inconsistent with how files are stored and could lead to incorrect file removal."
+    },
+    {
+      "file": "server/data_backend/weedfs/weedfs.go",
+      "line": 149,
+      "description": "Error handling issue: The goroutine in AddFile method may not properly propagate errors back to the caller, as the error variable is captured by reference in the goroutine."
+    },
+    {
+      "file": "server/data_backend/weedfs/weedfs.go",
+      "line": 80,
+      "description": "Inconsistent error handling: The defer function only finalizes the context if an error occurs, but doesn't handle the case where an error occurs in the goroutine."
+    },
+    {
+      "file": "server/data_backend/swift/swift.go",
+      "line": 76,
+      "description": "Resource leak: If authentication fails, the error is returned but the connection object might not be properly closed."
+    },
+    {
+      "file": "server/data_backend/swift/swift.go",
+      "line": 107,
+      "description": "Inconsistent error handling: RemoveUpload continues execution after encountering an error when deleting a file, potentially leaving the upload in an inconsistent state."
+    },
+    {
+      "file": "server/common/context.go",
+      "line": 40,
+      "description": "Security vulnerability: The TODO comment for X-FORWARDED-FOR indicates incomplete implementation of IP address handling, which could allow IP spoofing in request logging."
+    }
+  ]
+}

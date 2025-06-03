@@ -1,0 +1,18 @@
+Please review the code in the root-gg_plik_518 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Data Backends subsystem (consisting of 'server/data/data.go', 'server/data/file/file.go', 'server/data/gcs/gcs.go', 'server/data/s3/s3.go', 'server/data/s3/sse.go', 'server/data/stream/stream.go', 'server/data/swift/swift.go', 'server/data/testing/testing.go')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

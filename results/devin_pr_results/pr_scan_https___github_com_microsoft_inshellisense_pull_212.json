@@ -1,0 +1,40 @@
+{
+  "session_id": "devin-61e927bb939b4b5e8aa37dd9ff969aa5",
+  "issues": [
+    {
+      "file": "src/ui/utils.ts",
+      "line": 7,
+      "description": "Typo in import statement: 'wcwdith' instead of 'wcwidth'. This will cause runtime errors when the function tries to use the misspelled module."
+    },
+    {
+      "file": "src/runtime/generator.ts",
+      "line": 30,
+      "description": "The cwd parameter is passed to executeShellCommand without validation that the directory exists or is accessible, which could cause runtime errors if an invalid directory is provided."
+    },
+    {
+      "file": "src/runtime/generator.ts",
+      "line": 55,
+      "description": "Error handling simplifies errors to strings or messages, losing stack trace information which could make debugging more difficult."
+    },
+    {
+      "file": "src/runtime/suggestion.ts",
+      "line": 146,
+      "description": "Modifying the tokens array by pushing partialCmd could have side effects if the array is used elsewhere after this operation."
+    },
+    {
+      "file": "src/runtime/suggestion.ts",
+      "line": 149,
+      "description": "Overriding priority to 60 for all generator suggestions without checking if a priority was already set could lead to unexpected behavior in suggestion ordering."
+    },
+    {
+      "file": "src/ui/suggestionManager.ts",
+      "line": 81,
+      "description": "Padding was removed from suggestionText but the truncation logic in utils.ts still assumes padding, which could cause visual issues with suggestion display."
+    },
+    {
+      "file": "src/tests/ui/autocomplete.test.ts",
+      "line": 172,
+      "description": "A test for command detection with suggestions was skipped that previously ran conditionally for specific shells, reducing test coverage and potentially allowing regressions."
+    }
+  ]
+}

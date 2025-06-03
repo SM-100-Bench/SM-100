@@ -1,0 +1,18 @@
+Please review the code in the instaclustr_cassandra-operator_403 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Operator Core subsystem (consisting of 'cmd/manager/main.go', 'pkg/common/cluster/utils.go', 'pkg/common/nodestate/nodestate.go', 'pkg/common/operations/operations.go', 'pkg/controller/add_cassandrabackup.go', 'pkg/controller/add_cassandradatacenter.go', 'pkg/controller/cassandrabackup/cassandrabackup_controller.go', 'pkg/controller/cassandradatacenter/cassandradatacenter_controller.go', 'pkg/controller/cassandradatacenter/configmap.go', 'pkg/controller/cassandradatacenter/errors.go', 'pkg/controller/cassandradatacenter/finalizers.go', 'pkg/controller/cassandradatacenter/helpers.go', 'pkg/controller/cassandradatacenter/metadata.go', 'pkg/controller/cassandradatacenter/ports.go', 'pkg/controller/cassandradatacenter/services.go', 'pkg/controller/cassandradatacenter/statefulset.go', 'pkg/controller/controller.go', 'version/version.go')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

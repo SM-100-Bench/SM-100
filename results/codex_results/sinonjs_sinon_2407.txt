@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "lib/sinon/proxy-call.js",
+"line": 140,
+"description": "The boundary check in throwArg uses pos > this.args.length. When pos equals the length of the argument list, the check fails and the code throws undefined instead of an informative error."
+},
+{
+"file": "test/issues/issues-test.js",
+"line": 321,
+"description": "Object.defineProperty is invoked with misspelled keys configureable and writeable. These invalid descriptor fields result in a non‑configurable property, causing throwsOnUnconfigurableProperty to always signal an error and skip the test unexpectedly."
+}
+]
+}

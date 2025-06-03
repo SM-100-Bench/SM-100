@@ -1,0 +1,15 @@
+{
+  "identifier": "langflow-ai_langflow_05cd6e4",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.6130786499999998,
+    "is_error": false,
+    "duration_ms": 78475,
+    "duration_api_ms": 101600,
+    "num_turns": 18,
+    "result": "Based on my analysis of the staged changes, I've identified several potential bugs and issues:\n\n```json\n{\n  \"issues\": [\n    {\n      \"file\": \".github/workflows/typescript_test.yml\",\n      \"line\": 69,\n      \"description\": \"Duplicate npm ci command - line 38 already installs dependencies, but line 72 runs npm ci again which is redundant and may cause issues.\"\n    },\n    {\n      \"file\": \".github/workflows/lint.yml\",\n      \"line\": 42,\n      \"description\": \"Conditional cache check 'cache-hit != true' may cause build failures - if cache is not available or corrupted, dependencies won't be installed, leading to runtime errors.\"\n    },\n    {\n      \"file\": \".github/workflows/pre-release-langflow.yml\",\n      \"line\": 52,\n      \"description\": \"Invalid poetry publish command syntax - 'poetry publish main=true' should be 'poetry publish' with --build flag or use 'make publish' instead.\"\n    },\n    {\n      \"file\": \"tests/conftest.py\",\n      \"line\": 55,\n      \"description\": \"Hard assertion on OPENAI_API_KEY environment variable will cause all tests to fail if not set, breaking CI/CD pipeline when API key is not available.\"\n    },\n    {\n      \"file\": \"tests/test_endpoints.py\",\n      \"line\": 4,\n      \"description\": \"Import statement 'from uuid import uuid4' conflicts with previous pattern using 'import uuid' - may cause issues in tests that expect uuid.uuid4() call pattern.\"\n    },\n    {\n      \"file\": \"tests/test_custom_component.py\",\n      \"line\": 307,\n      \"description\": \"Using deprecated 'ast.Num(n=1)' instead of 'ast.Constant(value=1)' - ast.Num is deprecated in Python 3.8+ and removed in 3.12, causing compatibility issues.\"\n    },\n    {\n      \"file\": \"tests/conftest.py\",\n      \"line\": 250,\n      \"description\": \"Method call '.dict()' should be '.model_dump()' for Pydantic v2 compatibility - inconsistent usage may cause AttributeError.\"\n    },\n    {\n      \"file\": \"pyproject.toml\",\n      \"line\": 26,\n      \"description\": \"Potential circular dependency issue - langflow-base is specified as local path dependency which may not resolve correctly during build process.\"\n    },\n    {\n      \"file\": \"src/frontend/tests/end-to-end/chat_io.spec.ts\",\n      \"line\": 10,\n      \"description\": \"Test file contains hardcoded timeout and may be unstable - no proper assertions after click actions, which could lead to flaky tests.\"\n    }\n  ]\n}\n```",
+    "total_cost": 0.6130786499999998,
+    "session_id": "fdbb0cf9-5053-43c7-b921-b142dadfd371"
+  }
+}

@@ -1,0 +1,146 @@
+Please review the following commit for potential bugs:
+
+```
+diff --git a/go.mod b/go.mod
+index 262620525..83b2f1497 100644
+--- a/go.mod
++++ b/go.mod
+@@ -13,6 +13,7 @@ require (
+ 	github.com/olekukonko/tablewriter v0.0.5
+ 	github.com/pkg/errors v0.9.1
+ 	github.com/spf13/afero v1.11.0
++	golang.org/x/mod v0.20.0
+ 	golang.org/x/tools v0.24.0
+ )
+ 
+diff --git a/go.sum b/go.sum
+index d72d42038..9cec38817 100644
+--- a/go.sum
++++ b/go.sum
+@@ -38,16 +38,14 @@ github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO
+ github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
+ github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
+ github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
++golang.org/x/mod v0.20.0 h1:utOm6MM3R3dnawAiJgn0y+xvuYRsm1RKM/4giyfDgV0=
++golang.org/x/mod v0.20.0/go.mod h1:hTbmBsO62+eylJbnUtE2MGJUyE7QWk4xUqPFrRgJ+7c=
+ golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+ golang.org/x/sys v0.6.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+-golang.org/x/sys v0.22.0 h1:RI27ohtqKCnwULzJLqkv897zojh5/DwS/ENaMzUOaWI=
+-golang.org/x/sys v0.22.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
+ golang.org/x/sys v0.23.0 h1:YfKFowiIMvtgl1UERQoTPPToxltDeZfbj4H7dVUCwmM=
+ golang.org/x/sys v0.23.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
+ golang.org/x/text v0.14.0 h1:ScX5w1eTa3QqT8oi6+ziP7dTV1S2+ALU0bI+0zXKWiQ=
+ golang.org/x/text v0.14.0/go.mod h1:18ZOQIKpY8NJVqYksKHtTdi31H5itFRjB5/qKTNYzSU=
+-golang.org/x/tools v0.23.0 h1:SGsXPZ+2l4JsgaCKkx+FQ9YZ5XEtA1GZYuoDjenLjvg=
+-golang.org/x/tools v0.23.0/go.mod h1:pnu6ufv6vQkll6szChhK3C3L/ruaIv5eBeztNG8wtsI=
+ golang.org/x/tools v0.24.0 h1:J1shsA93PJUEVaUSaay7UXAyE8aimq3GW0pjlolpa24=
+ golang.org/x/tools v0.24.0/go.mod h1:YhNqVBIfWHdzvTLs0d8LCuMhkKUgSUKldakyV7W/WDQ=
+ gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
+diff --git a/lint/linter.go b/lint/linter.go
+index 3c97f306f..6dcdb33d2 100644
+--- a/lint/linter.go
++++ b/lint/linter.go
+@@ -3,11 +3,10 @@ package lint
+ import (
+ 	"bufio"
+ 	"bytes"
+-	"encoding/json"
+ 	"fmt"
+ 	"go/token"
+ 	"os"
+-	"os/exec"
++	"path"
+ 	"path/filepath"
+ 	"regexp"
+ 	"strconv"
+@@ -15,6 +14,7 @@ import (
+ 	"sync"
+ 
+ 	goversion "github.com/hashicorp/go-version"
++	"golang.org/x/mod/modfile"
+ )
+ 
+ // ReadFile defines an abstraction for reading files.
+@@ -156,37 +156,42 @@ func (l *Linter) lintPackage(filenames []string, gover *goversion.Version, ruleS
+ }
+ 
+ func detectGoMod(dir string) (rootDir string, ver *goversion.Version, err error) {
+-	// https://github.com/golang/go/issues/44753#issuecomment-790089020
+-	cmd := exec.Command("go", "list", "-m", "-json")
+-	cmd.Dir = dir
++	modFileName, err := retrieveModFile(dir)
++	if err != nil {
++		return "", nil, fmt.Errorf("%q doesn't seem to be part of a Go module", dir)
++	}
+ 
+-	out, err := cmd.Output()
++	mod, err := os.ReadFile(modFileName)
+ 	if err != nil {
+-		return "", nil, fmt.Errorf("command go list: %w", err)
++		return "", nil, fmt.Errorf("failed to read %q, got %v", modFileName, err)
+ 	}
+ 
+-	// NOTE: A package may be part of a go workspace. In this case `go list -m`
+-	// lists all modules in the workspace, so we need to go through them all.
+-	d := json.NewDecoder(bytes.NewBuffer(out))
+-	for d.More() {
+-		var v struct {
+-			GoMod     string `json:"GoMod"`
+-			GoVersion string `json:"GoVersion"`
+-			Dir       string `json:"Dir"`
+-		}
+-		if err = d.Decode(&v); err != nil {
+-			return "", nil, err
+-		}
+-		if v.GoMod == "" {
+-			return "", nil, fmt.Errorf("not part of a module: %q", dir)
++	modAst, err := modfile.ParseLax(modFileName, mod, nil)
++	if err != nil {
++		return "", nil, fmt.Errorf("failed to parse %q, got %v", modFileName, err)
++	}
++
++	ver, err = goversion.NewVersion(modAst.Go.Version)
++	return path.Dir(modFileName), ver, err
++}
++
++func retrieveModFile(dir string) (string, error) {
++	const lookingForFile = "go.mod"
++	for {
++		if dir == "." || dir == "/" {
++			return "", fmt.Errorf("did not found %q file", lookingForFile)
+ 		}
+-		if v.Dir != "" && strings.HasPrefix(dir, v.Dir) {
+-			rootDir = v.Dir
+-			ver, err = goversion.NewVersion(strings.TrimPrefix(v.GoVersion, "go"))
+-			return rootDir, ver, err
++
++		lookingForFilePath := path.Join(dir, lookingForFile)
++		info, err := os.Stat(lookingForFilePath)
++		if err != nil || info.IsDir() {
++			// lets check the parent dir
++			dir = path.Dir(dir)
++			continue
+ 		}
++
++		return lookingForFilePath, nil
+ 	}
+-	return "", nil, fmt.Errorf("not part of a module: %q", dir)
+ }
+ 
+ // isGenerated reports whether the source file is generated code
+
+```
+
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Report all of your findings in a single JSON object with the following format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

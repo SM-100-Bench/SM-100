@@ -1,0 +1,10 @@
+{
+  "session_id": "devin-559f3b647aac4292802d4d4a1b042064",
+  "issues": [
+    {
+      "file": "lib/WebSocketServer.js",
+      "line": 156,
+      "description": "Potential null pointer dereference: The commit removed the check for '!req.headers.upgrade' while still accessing 'req.headers.upgrade.toLowerCase()'. If req.headers.upgrade is undefined or null, this will cause a runtime error."
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "session_id": "devin-582e8de5b28644b8a6a3eb73fb98f879",
+  "issues": [
+    {
+      "file": "meta.go",
+      "line": 147,
+      "description": "The parent() method doesn't check if the Key slice is empty before slicing with k[:len(k)-1], which could cause a panic with index out of range if an empty Key is passed."
+    },
+    {
+      "file": "meta.go",
+      "line": 148,
+      "description": "The last() method doesn't check if the Key slice is empty before accessing k[len(k)-1], which could cause a panic with index out of range if an empty Key is passed."
+    },
+    {
+      "file": "parse.go",
+      "line": 488,
+      "description": "Type assertion hash = h.(map[string]any) is performed without checking if the assertion is valid, which could cause a panic if h is not of the expected type."
+    }
+  ]
+}

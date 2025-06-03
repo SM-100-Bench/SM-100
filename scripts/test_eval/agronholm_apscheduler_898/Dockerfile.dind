@@ -1,0 +1,38 @@
+# Gets 70% through but hangs
+
+FROM docker:dind
+
+RUN apk add --no-cache \
+    python3 \
+    py3-pip \
+    build-base \
+    python3-dev \
+    libffi-dev \
+    gcc \
+    musl-dev \
+    openssl-dev \
+    bash \
+    git
+
+RUN echo -e '#!/bin/bash \n\
+    # Start the Docker daemon\n\
+    dockerd-entrypoint.sh &\n\
+    \n\
+    # Wait for Docker daemon to be ready\n\
+    echo "Waiting for Docker daemon..."\n\
+    until docker info >/dev/null 2>&1; do\n\
+    echo -n "."\n\
+    sleep 1\n\
+    done\n\
+    echo "Docker daemon ready!"\n\
+    \n\
+    # Run the tests\n\
+    exec "$@"\n\
+    ' > /entrypoint.sh && chmod +x /entrypoint.sh
+
+# Set the entrypoint
+ENTRYPOINT ["/entrypoint.sh"]
+
+WORKDIR /repo
+
+CMD ["bash", "-c", "docker compose up -d && docker run -v /repo:/repo --net host --entrypoint /bin/bash python:3.12 -c 'cd /repo && python -m venv /tmp/venv && source /tmp/venv/bin/activate && pip install --upgrade pip && pip install -e .[test] && pytest'"]

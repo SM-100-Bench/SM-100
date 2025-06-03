@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "src/waitress/buffers.py",
+"line": 86,
+"description": "FileBasedBuffer.prune replaces the internal file without closing the previous file descriptor, which can leak file handles."
+},
+{
+"file": "src/waitress/trigger.py",
+"line": 92,
+"description": "pull_trigger calls _physical_pull() unconditionally. If the trigger was closed or its buffer is full, os.write/send can raise OSError or block, potentially crashing or deadlocking worker threads."
+},
+{
+"file": "src/waitress/receiver.py",
+"line": 122,
+"description": "ChunkedReceiver accumulates control lines and trailers without size limits, allowing a client to exhaust memory by sending extremely long chunk headers or trailers."
+}
+]
+}

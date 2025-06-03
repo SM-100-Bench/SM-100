@@ -1,0 +1,33 @@
+diff --git a/sign.js b/sign.js
+index d6f8755..d71189b 100644
+--- a/sign.js
++++ b/sign.js
+@@ -145,7 +145,7 @@ module.exports = function (payload, secretOrPrivateKey, options, callback) {
+   }
+ 
+   if (typeof options.notBefore !== 'undefined') {
+-    payload.nbf = timespan(options.notBefore);
++    payload.nbf = timespan(options.notBefore, timestamp);
+     if (typeof payload.nbf === 'undefined') {
+       return failure(new Error('"notBefore" should be a number of seconds or string representing a timespan eg: "1d", "20h", 60'));
+     }
+diff --git a/test/iat.tests.js b/test/iat.tests.js
+index 72d7a1a..00647f1 100644
+--- a/test/iat.tests.js
++++ b/test/iat.tests.js
+@@ -12,4 +12,13 @@ describe('iat', function () {
+     expect(result.exp).to.be.closeTo(iat + expiresIn, 0.2);
+   });
+ 
+-});
+\ No newline at end of file
++  it('should work with a nbf calculated based on numeric iat', function () {
++    var dateNow = Math.floor(Date.now() / 1000);
++    var iat = dateNow - 30;
++    var notBefore = -50;
++    var token = jwt.sign({foo: 123, iat: iat}, '123', {notBefore: notBefore});
++    var result = jwt.verify(token, '123');
++    expect(result.nbf).to.equal(iat + notBefore);
++  });
++
++});

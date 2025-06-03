@@ -1,0 +1,25 @@
+{
+  "session_id": "devin-7dceb210413a4fd58709fa9179920405",
+  "issues": [
+    {
+      "file": "requests/utils.py",
+      "line": 967,
+      "description": "Change from urlparse to parse_url alters URL parsing behavior for URLs with ports. Example: 'example.com:80' is now parsed correctly but differently, which could break backward compatibility."
+    },
+    {
+      "file": "requests/utils.py",
+      "line": 983,
+      "description": "The new implementation always sets params to empty string ('') in urlunparse, while the old implementation preserved params. This could cause loss of URL parameters in semicolon-delimited paths."
+    },
+    {
+      "file": "requests/utils.py",
+      "line": 1009,
+      "description": "Authentication handling is different between implementations. URLs like 'user:pass@example.com/path' are parsed differently, potentially breaking authentication for certain URL formats."
+    },
+    {
+      "file": "requests/adapters.py",
+      "line": 305,
+      "description": "The prepend_scheme_if_needed function is used for proxy URLs, and the changed behavior could affect proxy connections, especially with non-standard proxy URL formats."
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "session_id": "devin-8e12870c95b64ebf9a5a72b339081deb",
+  "issues": [
+    {
+      "file": "common/persistence/sql/sqlplugin/postgres/plugin.go",
+      "line": 75,
+      "description": "Missing space after 'if' statement which violates code style and could cause readability issues: 'if err != nil{' should be 'if err != nil {'"
+    },
+    {
+      "file": "common/persistence/sql/sqlplugin/postgres/typeconv.go",
+      "line": 26,
+      "description": "Time zone handling issue: localOffset is calculated once at initialization time and never updated, which could cause incorrect time conversions if the system's time zone changes during runtime"
+    },
+    {
+      "file": "common/persistence/sql/sqlplugin/postgres/typeconv.go",
+      "line": 47,
+      "description": "Potential time conversion bug: When converting time to Postgres datetime, the code creates a new time with Unix(0, nano) which may lose timezone information"
+    },
+    {
+      "file": "common/persistence/sql/sqlplugin/postgres/execution.go",
+      "line": 231,
+      "description": "Redundant error check: Returns 'rows, err' after already checking if err != nil, which could lead to returning a nil rows slice with a nil error"
+    },
+    {
+      "file": "common/persistence/sql/sqlplugin/postgres/visibility.go",
+      "line": 169,
+      "description": "Incorrect parameter in SQL query: Using MinStartTime in the query parameter but comparing against MaxStartTime in the WHERE clause, which could lead to incorrect query results"
+    },
+    {
+      "file": "common/persistence/sql/sqlplugin/postgres/queue.go",
+      "line": 33,
+      "description": "Potential SQL query issue: templateGetLastMessageIDQuery may return incorrect results if there are no messages in the queue as it doesn't handle the empty queue case properly"
+    },
+    {
+      "file": "common/persistence/sql/sqlplugin/postgres/task.go",
+      "line": 109,
+      "description": "Redundant error check: Returns 'rows, err' after already checking if err != nil, which could lead to returning a non-nil rows slice with a non-nil error"
+    },
+    {
+      "file": "common/persistence/sql/sqlplugin/postgres/shard.go",
+      "line": 62,
+      "description": "Redundant error check: Returns '&row, err' after already checking if err != nil, which could lead to returning a non-nil row with a non-nil error"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+Please review the code in the mgechev_revive_1101 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Linting subsystem (consisting of 'lint/config.go', 'lint/doc.go', 'lint/failure.go', 'lint/file.go', 'lint/filefilter.go', 'lint/formatter.go', 'lint/linter.go', 'lint/name.go', 'lint/package.go', 'lint/rule.go')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

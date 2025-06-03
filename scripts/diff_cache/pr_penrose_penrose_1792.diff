@@ -1,0 +1,58 @@
+diff --git a/packages/editor/src/components/DiagramPanel.tsx b/packages/editor/src/components/DiagramPanel.tsx
+index 9a2f72086b..868cf039c3 100644
+--- a/packages/editor/src/components/DiagramPanel.tsx
++++ b/packages/editor/src/components/DiagramPanel.tsx
+@@ -66,17 +66,16 @@ export default function DiagramPanel() {
+       try {
+         const info = await optimizer.pollForUpdate();
+         if (info !== null) {
+-          setDiagram({
+-            ...diagram,
+-            error: null,
++          setDiagram((state) => ({
++            ...state,
+             state: info.state,
+-          });
++          }));
+         }
+       } catch (error: any) {
+-        setDiagram({
+-          ...diagram,
++        setDiagram((state) => ({
++          ...state,
+           error,
+-        });
++        }));
+       }
+     }
+   };
+diff --git a/packages/editor/src/state/callbacks.ts b/packages/editor/src/state/callbacks.ts
+index 164cfa1da3..d1294c3024 100644
+--- a/packages/editor/src/state/callbacks.ts
++++ b/packages/editor/src/state/callbacks.ts
+@@ -219,6 +219,8 @@ export const useResampleDiagram = () =>
+         ...state,
+         metadata: { ...state.metadata, variation },
+         state: info.state,
++        // keep compile errors on resample, but clear runtime errors
++        error: state.error?.errorType === "RuntimeError" ? null : state.error,
+       }));
+       // update grid state too
+       set(diagramGridState, ({ gridSize }) => ({
+diff --git a/packages/editor/src/worker/worker.ts b/packages/editor/src/worker/worker.ts
+index 0c9f35c025..d7c11bd2d7 100644
+--- a/packages/editor/src/worker/worker.ts
++++ b/packages/editor/src/worker/worker.ts
+@@ -332,7 +332,11 @@ const optimize = async (state: PenroseState) => {
+       log.info("Optimization failed. Quitting without finishing...");
+       workerState = WorkerState.Compiled;
+       optState = null;
+-      respondError(err);
++      respondError({
++        tag: "OptimizationError",
++        error: err,
++        nextWorkerState: WorkerState.Compiled,
++      });
+       return;
+     }
+   };

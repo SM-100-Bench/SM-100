@@ -1,0 +1,25 @@
+{
+  "session_id": "devin-f1bad2e1e8f947598191cb6d26fc9a57",
+  "issues": [
+    {
+      "file": "pylint/checkers/strings.py",
+      "line": 952,
+      "description": "Potential null pointer dereference: 'inferred' is obtained from utils.safe_infer() which can return None, but then 'inferred.elts' is accessed without checking if 'inferred' is None"
+    },
+    {
+      "file": "pylint/checkers/strings.py",
+      "line": 967,
+      "description": "Potential null pointer dereference: 'keyword' is obtained from utils.safe_infer() which can return None, but then 'keyword.items' is accessed without checking if 'keyword' is None"
+    },
+    {
+      "file": "pylint/checkers/strings.py",
+      "line": 982,
+      "description": "Potential null pointer dereference: 'inferred_right' is obtained from utils.safe_infer() which can return None, but then 'inferred_right.items' and 'inferred_right.elts' are accessed without checking if 'inferred_right' is None"
+    },
+    {
+      "file": "pylint/checkers/strings.py",
+      "line": 960,
+      "description": "Potential error when parsing format string: If node.value is not a valid format string, parse_format_method_string() may raise an exception that is not caught"
+    }
+  ]
+}

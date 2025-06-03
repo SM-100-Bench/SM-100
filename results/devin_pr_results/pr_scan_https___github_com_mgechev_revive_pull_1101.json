@@ -1,0 +1,35 @@
+{
+  "session_id": "devin-34e8a0db86604362857d6efe7fedbed4",
+  "issues": [
+    {
+      "file": "lint/linter.go",
+      "line": 174,
+      "description": "Potential nil pointer dereference: modAst.Go could be nil if the go.mod file doesn't contain a Go version directive, causing a panic when accessing modAst.Go.Version"
+    },
+    {
+      "file": "lint/linter.go",
+      "line": 175,
+      "description": "Path handling inconsistency: Using path.Dir() instead of filepath.Dir() which could cause issues on Windows systems"
+    },
+    {
+      "file": "lint/linter.go",
+      "line": 185,
+      "description": "Path handling inconsistency: Using path.Join() instead of filepath.Join() which could cause issues on Windows systems"
+    },
+    {
+      "file": "lint/linter.go",
+      "line": 189,
+      "description": "Path handling inconsistency: Using path.Dir() instead of filepath.Dir() which could cause issues on Windows systems"
+    },
+    {
+      "file": "lint/linter.go",
+      "line": 182,
+      "description": "Grammatical error in error message: 'did not found' should be 'did not find', indicating possible lack of testing"
+    },
+    {
+      "file": "lint/linter.go",
+      "line": 178,
+      "description": "Potential infinite loop: retrieveModFile function could enter an infinite loop if there are symlinks in the directory structure creating cycles"
+    }
+  ]
+}

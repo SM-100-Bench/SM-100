@@ -1,0 +1,18 @@
+Please review the code in the cri-o_cri-o_8968 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Logging subsystem (consisting of 'internal/linklogs/link_logs.go', 'internal/log/hook.go', 'internal/log/hook_filename.go', 'internal/log/hook_filter.go', 'internal/log/interceptors/interceptors.go', 'internal/log/klog.go', 'internal/log/log.go')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

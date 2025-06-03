@@ -1,0 +1,255 @@
+Please review the following commit for potential bugs:
+
+```
+diff --git a/lollms/functions/calculator.py b/lollms/functions/calculator.py
+new file mode 100644
+index 00000000..ef3728ff
+--- /dev/null
++++ b/lollms/functions/calculator.py
+@@ -0,0 +1,22 @@
++import math
++from functools import partial
++
++def calculate(expression: str) -> float:
++    try:
++        # Add the math module functions to the local namespace
++        allowed_names = {k: v for k, v in math.__dict__.items() if not k.startswith("__")}
++        
++        # Evaluate the expression safely using the allowed names
++        result = eval(expression, {"__builtins__": None}, allowed_names)
++        return result
++    except Exception as e:
++        return str(e)
++    
++
++def calculate_function(processor, client):
++    return {
++        "function_name": "calculate",
++        "function": calculate,
++        "function_description": "Whenever you need to perform mathematic computations, you can call this function with the math expression and you will get the answer.",
++        "function_parameters": [{"name": "expression", "type": "str"}]                
++    }
+\ No newline at end of file
+diff --git a/lollms/functions/take_a_photo.py b/lollms/functions/take_a_photo.py
+index a0379eb0..620f0307 100644
+--- a/lollms/functions/take_a_photo.py
++++ b/lollms/functions/take_a_photo.py
+@@ -72,7 +72,7 @@ def closeEvent(self, event):
+         self.cap.release()
+         event.accept()
+ 
+-def take_photo(processor, client, use_ui=False):
++def take_photo(processor, client, use_ui=False, use_a_single_photo_at_a_time=True):
+     if use_ui:
+         def run_app():
+             app = QtWidgets.QApplication(sys.argv)
+@@ -113,15 +113,17 @@ def run_app():
+     fn = image/f"screen_shot_{index}.png"
+     cv2.imwrite(str(fn), frame)
+     client.discussion.image_files.append(fn)
++    if use_a_single_photo_at_a_time:
++        client.discussion.image_files = [client.discussion.image_files[-1]]
+     processor.full(f'<img src="{discussion_path_to_url(fn_view)}" width="80%"></img>')
+     processor.new_message("")
+     return "Image shot successful"
+ 
+ 
+-def take_a_photo_function(processor, client, use_ui = False):
++def take_a_photo_function(processor, client, use_ui = False, use_a_single_photo_at_a_time=True):
+     return {
+             "function_name": "take_photo",
+-            "function": partial(take_photo, processor=processor, client=client, use_ui = use_ui),
++            "function": partial(take_photo, processor=processor, client=client, use_ui = use_ui, use_a_single_photo_at_a_time = use_a_single_photo_at_a_time),
+             "function_description": "Uses the webcam to take a photo, displays it so that you can take a look.",
+             "function_parameters": []                
+         }
+diff --git a/lollms/functions/take_screen_shot.py b/lollms/functions/take_screen_shot.py
+index 683b4c6e..a5ad71d0 100644
+--- a/lollms/functions/take_screen_shot.py
++++ b/lollms/functions/take_screen_shot.py
+@@ -14,12 +14,13 @@
+ 
+ 
+ class ScreenshotWindow(QtWidgets.QWidget):
+-    def __init__(self, client, screenshot, fn_view, fn):
++    def __init__(self, client, screenshot, fn_view, fn, use_a_single_photo_at_a_time= True):
+         super().__init__()
+         self.client = client
+         self.screenshot = screenshot
+         self.fn_view = fn_view
+         self.fn = fn
++        self.use_a_single_photo_at_a_time = use_a_single_photo_at_a_time
+         
+         self.initUI()
+ 
+@@ -42,10 +43,13 @@ def save_and_close(self):
+         self.screenshot.save(self.fn_view)
+         self.screenshot.save(self.fn)
+         self.client.discussion.image_files.append(self.fn)
++        if self.use_a_single_photo_at_a_time:
++            self.client.discussion.image_files = [self.client.discussion.image_files[-1]]
++
+         self.close()
+ 
+ 
+-def take_screenshot(self, client: Client, use_ui: bool = False):
++def take_screenshot(self, client: Client, use_ui: bool = False, use_a_single_photo_at_a_time= True):
+     screenshot = pyautogui.screenshot()
+     view_image = client.discussion.discussion_folder / "view_images"
+     image = client.discussion.discussion_folder / "images"
+@@ -55,7 +59,7 @@ def take_screenshot(self, client: Client, use_ui: bool = False):
+ 
+     if use_ui:
+         app = QtWidgets.QApplication(sys.argv)
+-        window = ScreenshotWindow(client, screenshot, fn_view, fn)
++        window = ScreenshotWindow(client, screenshot, fn_view, fn, use_a_single_photo_at_a_time)
+         window.show()
+         app.exec_()
+         return f'<img src="{discussion_path_to_url(fn_view)}" width="80%"></img>'
+@@ -63,15 +67,15 @@ def take_screenshot(self, client: Client, use_ui: bool = False):
+         screenshot.save(fn_view)
+         screenshot.save(fn)
+         client.discussion.image_files.append(fn)
++        if use_a_single_photo_at_a_time:
++            client.discussion.image_files = [client.discussion.image_files[-1]]
++
+         return f'<img src="{discussion_path_to_url(fn_view)}" width="80%"></img>'
+ 
+-def take_screenshot_function(client):
++def take_screenshot_function(client, use_ui=True, use_a_single_photo_at_a_time= True):
+     return {
+             "function_name": "take_screenshot",
+-            "function": partial(take_screenshot, client=client),
+-            "function_description": "Takes a screenshot of the current screen. Optionally allows user interface for image cropping and saving.",
+-            "function_parameters": [
+-                {"name": "client", "type": "Client", "description": "The client object managing the discussion and images."},
+-                {"name": "use_ui", "type": "bool", "default": False, "description": "Flag to determine if a user interface should be used for editing the screenshot."}
+-            ]                
++            "function": partial(take_screenshot, client=client, use_ui = use_ui, use_a_single_photo_at_a_time= use_a_single_photo_at_a_time),
++            "function_description": "Takes a screenshot of the current screen.",
++            "function_parameters": []                
+         }
+\ No newline at end of file
+diff --git a/lollms/media.py b/lollms/media.py
+index e97fecad..1bd20d55 100644
+--- a/lollms/media.py
++++ b/lollms/media.py
+@@ -148,7 +148,9 @@ def __init__(
+ 
+         self.snd_input_device = snd_input_device
+         self.snd_output_device = snd_output_device
+-        self.logs_folder = logs_folder
++        self.logs_folder = Path(logs_folder)
++
++        self.logs_folder.mkdir(exist_ok=True, parents=True)
+ 
+         self.frames = []
+         self.silence_counter = 0
+diff --git a/lollms/personality.py b/lollms/personality.py
+index 770c8443..85c6e3cc 100644
+--- a/lollms/personality.py
++++ b/lollms/personality.py
+@@ -3435,12 +3435,14 @@ def extract_function_calls_as_json(self, text: str) -> List[Dict[str, Any]]:
+         return function_calls
+ 
+ 
+-    def interact_with_function_call(self, prompt, function_definitions, prompt_after_execution=True, callback = None):
++    def interact_with_function_call(self, prompt, function_definitions, prompt_after_execution=True, callback = None, hide_function_call=False):
+         if len(self.personality.image_files)>0:
+             out, function_calls = self.generate_with_function_calls_and_images(prompt, self.personality.image_files, function_definitions, callback=callback)
+         else:
+             out, function_calls = self.generate_with_function_calls(prompt, function_definitions, callback=callback)
+         if len(function_calls)>0:
++            if hide_function_call:
++                self.full("") #Hide function call
+             outputs = self.execute_function_calls(function_calls,function_definitions)
+             out += "\n!@>function calls results:\n" + "\n".join([str(o) for o in outputs])
+             if prompt_after_execution:
+diff --git a/lollms/services/open_ai_tts/lollms_openai_tts.py b/lollms/services/open_ai_tts/lollms_openai_tts.py
+index ddaba40b..7c116281 100644
+--- a/lollms/services/open_ai_tts/lollms_openai_tts.py
++++ b/lollms/services/open_ai_tts/lollms_openai_tts.py
+@@ -109,6 +109,7 @@ def play_audio(file_path):
+ 
+     def tts_file(self, text, speaker=None, file_name_or_path:Path|str=None, language="en", use_threading=False):
+         speech_file_path = file_name_or_path
++        text = self.clean_text(text)
+         response = self.client.audio.speech.create(
+         model=self.model,
+         voice=self.voice,
+diff --git a/lollms/services/xtts/lollms_xtts.py b/lollms/services/xtts/lollms_xtts.py
+index 641e693e..5cecfb6a 100644
+--- a/lollms/services/xtts/lollms_xtts.py
++++ b/lollms/services/xtts/lollms_xtts.py
+@@ -260,6 +260,7 @@ def set_speaker_folder(self, speaker_folder):
+             return False
+ 
+     def tts_file(self, text, file_name_or_path, speaker=None, language="en")->str:
++        text = self.clean_text(text)
+         url = f"{self.xtts_base_url}/tts_to_file"
+ 
+         # Define the request body
+@@ -316,14 +317,7 @@ def tts_audio(self, text, speaker, file_name_or_path:Path|str=None, language="en
+             return {"status":False,"error":f"{ex}"}
+ 
+     def xtts_audio(self, text, speaker, file_name_or_path:Path|str=None, language="en", use_threading=True):
+-        # Remove HTML tags
+-        text = re.sub(r'<.*?>', '', text)
+-        # Remove code blocks (assuming they're enclosed in backticks or similar markers)
+-        text = re.sub(r'```.*?```', '', text, flags=re.DOTALL)
+-        text = re.sub(r'`.*?`', '', text)
+-        # Remove any remaining code-like patterns (this can be adjusted as needed)
+-        text = re.sub(r'[\{\}\[\]\(\)<>]', '', text)  
+-        text = text.replace("\\","")      
++        text = self.clean_text(text)
+         def tts2_audio_th(thread_uid=None):
+             url = f"{self.xtts_base_url}/tts_to_audio"
+ 
+diff --git a/lollms/tts.py b/lollms/tts.py
+index 68650a74..ed8dc6fc 100644
+--- a/lollms/tts.py
++++ b/lollms/tts.py
+@@ -10,6 +10,7 @@
+ from lollms.utilities import PackageManager
+ from pathlib import Path
+ from ascii_colors import ASCIIColors
++import re
+ try:
+     if not PackageManager.check_package_installed("sounddevice"):
+         # os.system("sudo apt-get install portaudio19-dev")
+@@ -147,4 +148,16 @@ def get_devices(self):
+         return {
+             "status": True,
+             "device_names": [device['name'] for device in devices if device["max_output_channels"]>0]
+-        }
+\ No newline at end of file
++        }
++    
++    @staticmethod
++    def clean_text(text):
++        # Remove HTML tags
++        text = re.sub(r'<.*?>', '', text)
++        # Remove code blocks (assuming they're enclosed in backticks or similar markers)
++        text = re.sub(r'```.*?```', '', text, flags=re.DOTALL)
++        text = re.sub(r'`.*?`', '', text)
++        # Remove any remaining code-like patterns (this can be adjusted as needed)
++        text = re.sub(r'[\{\}\[\]\(\)<>]', '', text)  
++        text = text.replace("\\","")      
++        return text
+\ No newline at end of file
+
+```
+
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Report all of your findings in a single JSON object with the following format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

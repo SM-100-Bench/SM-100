@@ -1,0 +1,1 @@
+{"repo_id": "instaclustr_cassandra-operator_403", "bugs": [{"description": "Resource name generation may produce invalid Kubernetes names if ClusterName contains invalid characters or results in trailing hyphens after truncation. Requires validation for DNS-1123 compliance.", "file": "pkg/common/cluster/utils.go", "line": 0}], "updated_files": {}}

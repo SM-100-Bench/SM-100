@@ -1,0 +1,75 @@
+{
+  "session_id": "devin-fc729fabdf54497bac9c592711e361b5",
+  "issues": [
+    {
+      "file": "starlette/middleware/wsgi.py",
+      "line": 57,
+      "description": "ThreadPoolExecutor is created but never shut down, potentially causing resource leaks"
+    },
+    {
+      "file": "starlette/middleware/wsgi.py",
+      "line": 22,
+      "description": "wsgi.errors is set to sys.stdout, which could leak sensitive information to logs and is not thread-safe"
+    },
+    {
+      "file": "starlette/middleware/wsgi.py",
+      "line": 79,
+      "description": "Entire request body is read into memory without size limits, potentially leading to memory exhaustion attacks"
+    },
+    {
+      "file": "starlette/middleware/wsgi.py",
+      "line": 73,
+      "description": "send_queue is a shared resource between threads without proper synchronization beyond the event, potentially causing race conditions"
+    },
+    {
+      "file": "starlette/middleware/wsgi.py",
+      "line": 94,
+      "description": "Exception re-raising with traceback may expose sensitive information in error messages"
+    },
+    {
+      "file": "starlette/middleware/wsgi.py",
+      "line": 90,
+      "description": "asyncio.wait_for with None timeout could block indefinitely if the WSGI app hangs"
+    },
+    {
+      "file": "starlette/middleware/wsgi.py",
+      "line": 55,
+      "description": "Type annotation for app parameter is too generic (typing.Callable), should be more specific"
+    },
+    {
+      "file": "starlette/middleware/wsgi.py",
+      "line": 17,
+      "description": "Using decode('ascii') for query_string may cause errors with non-ASCII characters in URLs"
+    },
+    {
+      "file": "starlette/middleware/wsgi.py",
+      "line": 39,
+      "description": "Header name decoding using latin1 might not be fully compliant with WSGI spec and could lead to data corruption"
+    },
+    {
+      "file": "starlette/middleware/wsgi.py",
+      "line": 120,
+      "description": "Response headers are encoded using ASCII only, which will fail for non-ASCII header values"
+    },
+    {
+      "file": "starlette/middleware/wsgi.py",
+      "line": 132,
+      "description": "No handling for empty iterables returned from WSGI applications, which is valid per the WSGI spec"
+    },
+    {
+      "file": "starlette/middleware/wsgi.py",
+      "line": 117,
+      "description": "No error handling for malformed status strings that don't contain a space character, leading to potential IndexError"
+    },
+    {
+      "file": "starlette/middleware/wsgi.py",
+      "line": 118,
+      "description": "No validation of status code, potentially allowing invalid HTTP status codes"
+    },
+    {
+      "file": "starlette/middleware/wsgi.py",
+      "line": 99,
+      "description": "Race condition in send_queue.pop(0) if multiple threads access the queue simultaneously"
+    }
+  ]
+}

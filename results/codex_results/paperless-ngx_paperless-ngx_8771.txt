@@ -1,0 +1,24 @@
+{
+"issues": [
+{
+"file": "src-ui/src/app/components/document-list/document-card-small/document-card-small.component.ts",
+"line": 99,
+"description": "Component creates a recurring interval in ngAfterViewInit without clearing it, leading to a memory leak."
+},
+{
+"file": "src-ui/src/app/components/document-list/document-card-large/document-card-large.component.ts",
+"line": 106,
+"description": "Component uses setInterval in ngAfterViewInit but never clears the interval, causing memory and CPU leaks."
+},
+{
+"file": "src-ui/src/app/services/upload-documents.service.ts",
+"line": 58,
+"description": "Uses Subscription.complete() on the subscription returned from HttpClient, but Subscription has no complete() method; should use unsubscribe()."
+},
+{
+"file": "src-ui/src/app/services/permissions.service.ts",
+"line": 72,
+"description": "currentUserHasObjectPermissions returns undefined for permission actions other than View or Change, which may cause unexpected behavior."
+}
+]
+}

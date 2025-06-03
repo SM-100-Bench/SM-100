@@ -1,0 +1,18 @@
+Please review the code in the zotero_reader_9857a5960d6a6697332c905057434904df54df9d repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. EPUB Reader subsystem (consisting of 'demo/epub/annotations.js', 'demo/epub/index.js', 'demo/epub/state.js', 'src/dom/epub/cfi.ts', 'src/dom/epub/defines.ts', 'src/dom/epub/epub-view.ts', 'src/dom/epub/find.ts', 'src/dom/epub/flow.ts', 'src/dom/epub/lib/page-mapping.ts', 'src/dom/epub/lib/sanitize-and-render.ts', 'src/dom/epub/section-view.ts', 'src/dom/epub/stylesheets/content.css')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

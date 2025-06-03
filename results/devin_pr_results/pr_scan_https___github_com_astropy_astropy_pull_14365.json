@@ -1,0 +1,35 @@
+{
+  "session_id": "devin-db777617d9d145ea8c15be7f7e45333a",
+  "issues": [
+    {
+      "file": "astropy/io/ascii/qdp.py",
+      "line": 133,
+      "description": "In _get_lines_from_file function, the check for file vs string content using '\\n in qdp_file' is unreliable. If a file path contains a newline character, it will be incorrectly treated as content rather than a path, leading to file not found errors."
+    },
+    {
+      "file": "astropy/io/ascii/qdp.py",
+      "line": 423,
+      "description": "In _read_table_qdp function, there's no bounds checking before accessing tables[table_id]. If table_id is out of range (e.g., if the file contains fewer tables than the specified table_id), this will raise an IndexError."
+    },
+    {
+      "file": "astropy/io/ascii/qdp.py",
+      "line": 487,
+      "description": "In _write_table_qdp function, the file is not opened with a context manager (with statement), which could lead to resource leaks if an exception occurs before the file is closed."
+    },
+    {
+      "file": "astropy/io/ascii/qdp.py",
+      "line": 323,
+      "description": "In _get_tables_from_qdp_file function, when parsing data values, there's no error handling for invalid float conversions. If a value is neither 'NO' nor a valid float, it will raise a ValueError."
+    },
+    {
+      "file": "astropy/io/ascii/qdp.py",
+      "line": 27,
+      "description": "The regex pattern _line_type_re is complex and might not handle all valid QDP file formats correctly, potentially leading to parsing errors for valid QDP files."
+    },
+    {
+      "file": "astropy/io/ascii/qdp.py",
+      "line": 244,
+      "description": "In _interpret_err_lines function, the assertion 'assert not np.any([c == \"\" for c in colnames])' could fail if the input data is malformed, but doesn't provide a helpful error message."
+    }
+  ]
+}

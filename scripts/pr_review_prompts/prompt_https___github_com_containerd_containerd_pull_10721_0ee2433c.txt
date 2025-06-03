@@ -1,0 +1,1455 @@
+Please review the following commit for potential bugs:
+
+```
+diff --git a/cmd/ctr/commands/run/run_unix.go b/cmd/ctr/commands/run/run_unix.go
+index 64996b5207bf..29f3c90432f0 100644
+--- a/cmd/ctr/commands/run/run_unix.go
++++ b/cmd/ctr/commands/run/run_unix.go
+@@ -186,8 +186,9 @@ func NewContainer(ctx gocontext.Context, client *containerd.Client, context *cli
+ 				opts = append(opts,
+ 					oci.WithUserNamespace([]specs.LinuxIDMapping{uidMap}, []specs.LinuxIDMapping{gidMap}))
+ 				// use snapshotter opts or the remapped snapshot support to shift the filesystem
+-				// currently the only snapshotter known to support the labels is fuse-overlayfs:
+-				// https://github.com/AkihiroSuda/containerd-fuse-overlayfs
++				// currently the snapshotters known to support the labels are:
++				// fuse-overlayfs - https://github.com/containerd/fuse-overlayfs-snapshotter
++				// overlay - in case of idmapped mount points are supported by host kernel (Linux kernel 5.19)
+ 				if context.Bool("remap-labels") {
+ 					cOpts = append(cOpts, containerd.WithNewSnapshot(id, image,
+ 						containerd.WithRemapperLabels(0, uidMap.HostID, 0, gidMap.HostID, uidMap.Size)))
+diff --git a/integration/client/container_idmapped_linux_test.go b/integration/client/container_idmapped_linux_test.go
+new file mode 100644
+index 000000000000..ff6bdbc84e9e
+--- /dev/null
++++ b/integration/client/container_idmapped_linux_test.go
+@@ -0,0 +1,123 @@
++/*
++   Copyright The containerd Authors.
++
++   Licensed under the Apache License, Version 2.0 (the "License");
++   you may not use this file except in compliance with the License.
++   You may obtain a copy of the License at
++
++       http://www.apache.org/licenses/LICENSE-2.0
++
++   Unless required by applicable law or agreed to in writing, software
++   distributed under the License is distributed on an "AS IS" BASIS,
++   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++   See the License for the specific language governing permissions and
++   limitations under the License.
++*/
++
++package client
++
++import (
++	"os"
++	"strings"
++	"syscall"
++	"testing"
++
++	"github.com/containerd/containerd"
++	"github.com/containerd/containerd/oci"
++	"github.com/containerd/containerd/snapshots/overlay/overlayutils"
++	"github.com/opencontainers/runtime-spec/specs-go"
++)
++
++func TestIDMappedOverlay(t *testing.T) {
++	var (
++		upperPath   string
++		lowerPaths  []string
++		snapshotter = "overlayfs"
++		ctx, cancel = testContext(t)
++		id          = t.Name()
++	)
++	defer cancel()
++
++	if ok, err := overlayutils.SupportsIDMappedMounts(); err != nil || !ok {
++		t.Skip("overlayfs doesn't support idmapped mounts")
++	}
++
++	client, err := newClient(t, address)
++	if err != nil {
++		t.Fatal(err)
++	}
++	defer client.Close()
++
++	image, err := client.Pull(ctx, testMultiLayeredImage, containerd.WithPullUnpack)
++	if err != nil {
++		t.Fatal(err)
++	}
++	t.Logf("image %s pulled!", testMultiLayeredImage)
++
++	hostID := uint32(33)
++	contID := uint32(0)
++	length := uint32(65536)
++
++	uidMap := specs.LinuxIDMapping{
++		ContainerID: contID,
++		HostID:      hostID,
++		Size:        length,
++	}
++	gidMap := specs.LinuxIDMapping{
++		ContainerID: contID,
++		HostID:      hostID,
++		Size:        length,
++	}
++
++	container, err := client.NewContainer(ctx, id,
++		containerd.WithImage(image),
++		containerd.WithImageConfigLabels(image),
++		containerd.WithSnapshotter(snapshotter),
++		containerd.WithNewSnapshot(id, image, containerd.WithRemapperLabels(uidMap.ContainerID, uidMap.HostID, gidMap.ContainerID, gidMap.HostID, length)),
++		containerd.WithNewSpec(oci.WithImageConfig(image),
++			oci.WithUserNamespace([]specs.LinuxIDMapping{uidMap}, []specs.LinuxIDMapping{gidMap}),
++			longCommand))
++	if err != nil {
++		t.Fatal(err)
++	}
++	defer container.Delete(ctx, containerd.WithSnapshotCleanup)
++
++	t.Logf("container %s created!", id)
++	o := client.SnapshotService(snapshotter)
++	mounts, err := o.Mounts(ctx, id)
++	if err != nil {
++		t.Fatal(err)
++	}
++
++	m := mounts[0]
++	if m.Type != "overlay" {
++		t.Fatalf("invalid mount -- %s; expected %s", m.Type, snapshotter)
++	}
++
++	for _, o := range m.Options {
++		if strings.HasPrefix(o, "upperdir=") {
++			upperPath = strings.TrimPrefix(o, "upperdir=")
++		} else if strings.HasPrefix(o, "lowerdir=") {
++			lowerPaths = strings.Split(strings.TrimPrefix(o, "lowerdir="), ",")
++		}
++	}
++
++	t.Log("check lowerdirs")
++	for _, l := range lowerPaths {
++		if _, err := os.Stat(l); err == nil {
++			t.Fatalf("lowerdir=%s should not exist", l)
++		}
++	}
++
++	t.Logf("check stats of uppedir=%s", upperPath)
++	st, err := os.Stat(upperPath)
++	if err != nil {
++		t.Fatalf("failed to stat %s", upperPath)
++	}
++
++	if stat, ok := st.Sys().(*syscall.Stat_t); !ok {
++		t.Fatalf("incompatible types after stat call: *syscall.Stat_t expected")
++	} else if stat.Uid != uidMap.HostID || stat.Gid != gidMap.HostID {
++		t.Fatalf("bad mapping: expected {uid: %d, gid: %d}; real {uid: %d, gid: %d}", uidMap.HostID, gidMap.HostID, int(stat.Uid), int(stat.Gid))
++	}
++}
+diff --git a/mount/mount_idmapped_linux.go b/mount/mount_idmapped_linux.go
+new file mode 100644
+index 000000000000..92208771e1c5
+--- /dev/null
++++ b/mount/mount_idmapped_linux.go
+@@ -0,0 +1,166 @@
++/*
++   Copyright The containerd Authors.
++
++   Licensed under the Apache License, Version 2.0 (the "License");
++   you may not use this file except in compliance with the License.
++   You may obtain a copy of the License at
++
++       http://www.apache.org/licenses/LICENSE-2.0
++
++   Unless required by applicable law or agreed to in writing, software
++   distributed under the License is distributed on an "AS IS" BASIS,
++   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++   See the License for the specific language governing permissions and
++   limitations under the License.
++*/
++
++package mount
++
++import (
++	"fmt"
++	"os"
++	"strconv"
++	"strings"
++	"syscall"
++	"unsafe"
++
++	"golang.org/x/sys/unix"
++
++	"github.com/containerd/containerd/sys"
++	"github.com/sirupsen/logrus"
++)
++
++// TODO: Support multiple mappings in future
++func parseIDMapping(mapping string) ([]syscall.SysProcIDMap, error) {
++	parts := strings.Split(mapping, ":")
++	if len(parts) != 3 {
++		return nil, fmt.Errorf("user namespace mappings require the format `container-id:host-id:size`")
++	}
++	cID, err := strconv.Atoi(parts[0])
++	if err != nil {
++		return nil, fmt.Errorf("invalid container id for user namespace remapping, %w", err)
++	}
++	hID, err := strconv.Atoi(parts[1])
++	if err != nil {
++		return nil, fmt.Errorf("invalid host id for user namespace remapping, %w", err)
++	}
++	size, err := strconv.Atoi(parts[2])
++	if err != nil {
++		return nil, fmt.Errorf("invalid size for user namespace remapping, %w", err)
++	}
++	if cID != 0 || hID < 0 || size < 0 {
++		return nil, fmt.Errorf("invalid mapping %s, all IDs and size must be positive integers (container ID of 0 is only supported)", mapping)
++	}
++	return []syscall.SysProcIDMap{
++		{
++			ContainerID: cID,
++			HostID:      hID,
++			Size:        size,
++		},
++	}, nil
++}
++
++// IDMapMount applies GID/UID shift according to gidmap/uidmap for target path
++func IDMapMount(source, target string, usernsFd int) (err error) {
++	var (
++		attr unix.MountAttr
++	)
++
++	attr.Attr_set = unix.MOUNT_ATTR_IDMAP
++	attr.Attr_clr = 0
++	attr.Propagation = 0
++	attr.Userns_fd = uint64(usernsFd)
++
++	dFd, err := unix.OpenTree(-int(unix.EBADF), source, uint(unix.OPEN_TREE_CLONE|unix.OPEN_TREE_CLOEXEC|unix.AT_EMPTY_PATH))
++	if err != nil {
++		return fmt.Errorf("Unable to open tree for %s: %w", target, err)
++	}
++
++	defer unix.Close(dFd)
++	if err = unix.MountSetattr(dFd, "", unix.AT_EMPTY_PATH, &attr); err != nil {
++		return fmt.Errorf("Unable to shift GID/UID for %s: %w", target, err)
++	}
++
++	if err = unix.MoveMount(dFd, "", -int(unix.EBADF), target, unix.MOVE_MOUNT_F_EMPTY_PATH); err != nil {
++		return fmt.Errorf("Unable to attach mount tree to %s: %w", target, err)
++	}
++	return nil
++}
++
++// GetUsernsFD forks the current process and creates a user namespace using the specified
++// mappings.
++//
++// It returns:
++//  1. The file descriptor of the /proc/[pid]/ns/user of the newly
++//     created mapping.
++//  2. "Clean up" function that should be called once user namespace
++//     file descriptor is no longer needed.
++//  3. Usual error.
++func GetUsernsFD(uidmap, gidmap string) (_ int, _ func(), err error) {
++	var (
++		usernsFile       *os.File
++		pipeMap          [2]int
++		pid              uintptr
++		errno            syscall.Errno
++		uidMaps, gidMaps []syscall.SysProcIDMap
++	)
++
++	if uidMaps, err = parseIDMapping(uidmap); err != nil {
++		return -1, nil, err
++	}
++	if gidMaps, err = parseIDMapping(gidmap); err != nil {
++		return -1, nil, err
++	}
++
++	syscall.ForkLock.Lock()
++	if err = syscall.Pipe2(pipeMap[:], syscall.O_CLOEXEC); err != nil {
++		syscall.ForkLock.Unlock()
++		return -1, nil, err
++	}
++
++	pid, errno = sys.ForkUserns(pipeMap)
++	syscall.ForkLock.Unlock()
++	if errno != 0 {
++		syscall.Close(pipeMap[0])
++		syscall.Close(pipeMap[1])
++		return -1, nil, errno
++	}
++
++	syscall.Close(pipeMap[0])
++
++	writeMappings := func(fname string, idmap []syscall.SysProcIDMap) error {
++		mappings := ""
++		for _, m := range idmap {
++			mappings = fmt.Sprintf("%d %d %d\n", m.ContainerID, m.HostID, m.Size)
++		}
++		return os.WriteFile(fmt.Sprintf("/proc/%d/%s", pid, fname), []byte(mappings), 0600)
++	}
++
++	cleanUpChild := func() {
++		sync := sys.ProcSyncExit
++		if _, _, errno := syscall.Syscall6(syscall.SYS_WRITE, uintptr(pipeMap[1]), uintptr(unsafe.Pointer(&sync)), unsafe.Sizeof(sync), 0, 0, 0); errno != 0 {
++			logrus.WithError(errno).Warnf("failed to sync with child (ProcSyncExit)")
++		}
++		syscall.Close(pipeMap[1])
++
++		if _, err := unix.Wait4(int(pid), nil, 0, nil); err != nil {
++			logrus.WithError(err).Warnf("failed to wait for child process; the SIGHLD might be received by shim reaper")
++		}
++	}
++	defer cleanUpChild()
++
++	if err := writeMappings("uid_map", uidMaps); err != nil {
++		return -1, nil, err
++	}
++	if err := writeMappings("gid_map", gidMaps); err != nil {
++		return -1, nil, err
++	}
++
++	if usernsFile, err = os.Open(fmt.Sprintf("/proc/%d/ns/user", pid)); err != nil {
++		return -1, nil, fmt.Errorf("failed to get user ns file descriptor for - /proc/%d/user/ns: %w", pid, err)
++	}
++
++	return int(usernsFile.Fd()), func() {
++		usernsFile.Close()
++	}, nil
++}
+diff --git a/mount/mount_linux.go b/mount/mount_linux.go
+index 90dd941a9872..837d9b802a77 100644
+--- a/mount/mount_linux.go
++++ b/mount/mount_linux.go
+@@ -21,14 +21,26 @@ import (
+ 	"fmt"
+ 	"os"
+ 	"path"
++	"path/filepath"
+ 	"runtime"
++	"strconv"
+ 	"strings"
+ 	"time"
+ 
++	"github.com/sirupsen/logrus"
++
+ 	exec "golang.org/x/sys/execabs"
+ 	"golang.org/x/sys/unix"
+ )
+ 
++type mountOpt struct {
++	flags   int
++	data    []string
++	losetup bool
++	uidmap  string
++	gidmap  string
++}
++
+ var (
+ 	pagesize              = 4096
+ 	allowedHelperBinaries = []string{"mount.fuse", "mount.fuse3"}
+@@ -38,6 +50,34 @@ func init() {
+ 	pagesize = os.Getpagesize()
+ }
+ 
++// prepareIDMappedOverlay is a helper function to obtain
++// actual "lowerdir=..." mount options. It creates and
++// applies id mapping for each lowerdir.
++//
++// It returns:
++//  1. New options that include new "lowedir=..." mount option.
++//  2. "Clean up" function -- it should be called as a defer one before
++//     checking for error, because if do the second and avoid calling "clean up",
++//     you're going to have "dirty" setup -- there's no guarantee that those
++//     temporary mount points for lowedirs will be cleaned properly.
++//  3. Error -- nil if everything's fine, otherwise an error.
++func prepareIDMappedOverlay(usernsFd int, options []string) ([]string, func(), error) {
++	lowerIdx, lowerDirs := findOverlayLowerdirs(options)
++	if lowerIdx == -1 {
++		return options, nil, fmt.Errorf("failed to parse overlay lowerdir's from given options")
++	}
++
++	tmpLowerdirs, idMapCleanUp, err := doPrepareIDMappedOverlay(lowerDirs, usernsFd)
++	if err != nil {
++		return options, idMapCleanUp, fmt.Errorf("failed to create idmapped mount: %w", err)
++	}
++
++	options = append(options[:lowerIdx], options[lowerIdx+1:]...)
++	options = append(options, fmt.Sprintf("lowerdir=%s", strings.Join(tmpLowerdirs, ":")))
++
++	return options, idMapCleanUp, nil
++}
++
+ // Mount to the provided target path.
+ //
+ // If m.Type starts with "fuse." or "fuse3.", "mount.fuse" or "mount.fuse3"
+@@ -51,45 +91,81 @@ func (m *Mount) mount(target string) (err error) {
+ 		}
+ 	}
+ 	var (
+-		chdir   string
+-		options = m.Options
++		chdir     string
++		recalcOpt bool
++		usernsFd  int
++		options   = m.Options
+ 	)
++	opt := parseMountOptions(options)
++	// The only remapping of both GID and UID is supported
++	if opt.uidmap != "" && opt.gidmap != "" {
++		var (
++			childProcCleanUp func()
++		)
++		if usernsFd, childProcCleanUp, err = GetUsernsFD(opt.uidmap, opt.gidmap); err != nil {
++			return err
++		}
++		defer childProcCleanUp()
++
++		// overlay expects lowerdir's to be remapped instead
++		if m.Type == "overlay" {
++			var (
++				userNsCleanUp func()
++			)
++			options, userNsCleanUp, err = prepareIDMappedOverlay(usernsFd, options)
++			defer userNsCleanUp()
++
++			if err != nil {
++				return fmt.Errorf("failed to prepare idmapped overlay: %w", err)
++			}
++			// To not meet concurrency issues while using the same lowedirs
++			// for different containers, replace them by temporary directories,
++			if optionsSize(options) >= pagesize-512 {
++				recalcOpt = true
++			} else {
++				opt = parseMountOptions(options)
++			}
++		}
++	}
+ 
+ 	// avoid hitting one page limit of mount argument buffer
+ 	//
+ 	// NOTE: 512 is a buffer during pagesize check.
+ 	if m.Type == "overlay" && optionsSize(options) >= pagesize-512 {
+ 		chdir, options = compactLowerdirOption(options)
++		// recalculate opt in case of lowerdirs have been replaced
++		// by idmapped ones OR idmapped mounts' not used/supported.
++		if recalcOpt || (opt.uidmap == "" || opt.gidmap == "") {
++			opt = parseMountOptions(options)
++		}
+ 	}
+ 
+-	flags, data, losetup := parseMountOptions(options)
+-
+ 	// propagation types.
+ 	const ptypes = unix.MS_SHARED | unix.MS_PRIVATE | unix.MS_SLAVE | unix.MS_UNBINDABLE
+ 
+ 	// Ensure propagation type change flags aren't included in other calls.
+-	oflags := flags &^ ptypes
++	oflags := opt.flags &^ ptypes
+ 
+ 	var loopParams LoopParams
+-	if losetup {
++	if opt.losetup {
+ 		loopParams = LoopParams{
+ 			Readonly:  oflags&unix.MS_RDONLY == unix.MS_RDONLY,
+ 			Autoclear: true,
+ 		}
+-		loopParams.Direct, data = hasDirectIO(data)
++		loopParams.Direct, opt.data = hasDirectIO(opt.data)
+ 	}
+ 
+-	dataInStr := strings.Join(data, ",")
++	dataInStr := strings.Join(opt.data, ",")
+ 	if len(dataInStr) > pagesize {
+ 		return errors.New("mount options is too long")
+ 	}
+ 
+-	// In the case of remounting with changed data (data != ""), need to call mount (moby/moby#34077).
+-	if flags&unix.MS_REMOUNT == 0 || dataInStr != "" {
++	// In the case of remounting with changed data (dataInStr != ""), need to call mount (moby/moby#34077).
++	if opt.flags&unix.MS_REMOUNT == 0 || dataInStr != "" {
+ 		// Initial call applying all non-propagation flags for mount
+ 		// or remount with changed data
+ 		source := m.Source
+-		if losetup {
++		if opt.losetup {
+ 			loFile, err := setupLoop(m.Source, loopParams)
+ 			if err != nil {
+ 				return err
+@@ -104,10 +180,10 @@ func (m *Mount) mount(target string) (err error) {
+ 		}
+ 	}
+ 
+-	if flags&ptypes != 0 {
++	if opt.flags&ptypes != 0 {
+ 		// Change the propagation type.
+ 		const pflags = ptypes | unix.MS_REC | unix.MS_SILENT
+-		if err := unix.Mount("", target, "", uintptr(flags&pflags), ""); err != nil {
++		if err := unix.Mount("", target, "", uintptr(opt.flags&pflags), ""); err != nil {
+ 			return err
+ 		}
+ 	}
+@@ -117,9 +193,45 @@ func (m *Mount) mount(target string) (err error) {
+ 		// Remount the bind to apply read only.
+ 		return unix.Mount("", target, "", uintptr(oflags|unix.MS_REMOUNT), "")
+ 	}
++
++	// remap non-overlay mount point
++	if opt.uidmap != "" && opt.gidmap != "" && m.Type != "overlay" {
++		if err := IDMapMount(target, target, usernsFd); err != nil {
++			return err
++		}
++	}
+ 	return nil
+ }
+ 
++func doPrepareIDMappedOverlay(lowerDirs []string, usernsFd int) (tmpLowerDirs []string, _ func(), _ error) {
++	td, err := os.MkdirTemp(tempMountLocation, "ovl-idmapped")
++	if err != nil {
++		return nil, nil, err
++	}
++	cleanUp := func() {
++		for _, lowerDir := range tmpLowerDirs {
++			if err := unix.Unmount(lowerDir, 0); err != nil {
++				logrus.WithError(err).Warnf("failed to unmount temp lowerdir %s", lowerDir)
++			}
++		}
++		if terr := os.RemoveAll(filepath.Clean(filepath.Join(tmpLowerDirs[0], ".."))); terr != nil {
++			logrus.WithError(terr).Warnf("failed to remove temporary overlay lowerdir's")
++		}
++	}
++	for i, lowerDir := range lowerDirs {
++		tmpLowerDir := filepath.Join(td, strconv.Itoa(i))
++		tmpLowerDirs = append(tmpLowerDirs, tmpLowerDir)
++
++		if err = os.MkdirAll(tmpLowerDir, 0700); err != nil {
++			return nil, cleanUp, fmt.Errorf("failed to create temporary dir: %w", err)
++		}
++		if err = IDMapMount(lowerDir, tmpLowerDir, usernsFd); err != nil {
++			return nil, cleanUp, err
++		}
++	}
++	return tmpLowerDirs, cleanUp, nil
++}
++
+ // Unmount the provided mount path with the flags
+ func Unmount(target string, flags int) error {
+ 	if err := unmount(target, flags); err != nil && err != unix.EINVAL {
+@@ -208,14 +320,9 @@ func UnmountAll(mount string, flags int) error {
+ 
+ // parseMountOptions takes fstab style mount options and parses them for
+ // use with a standard mount() syscall
+-func parseMountOptions(options []string) (int, []string, bool) {
+-	var (
+-		flag    int
+-		losetup bool
+-		data    []string
+-	)
++func parseMountOptions(options []string) (opt mountOpt) {
+ 	loopOpt := "loop"
+-	flags := map[string]struct {
++	flagsMap := map[string]struct {
+ 		clear bool
+ 		flag  int
+ 	}{
+@@ -249,19 +356,23 @@ func parseMountOptions(options []string) (int, []string, bool) {
+ 		// If the option does not exist in the flags table or the flag
+ 		// is not supported on the platform,
+ 		// then it is a data value for a specific fs type
+-		if f, exists := flags[o]; exists && f.flag != 0 {
++		if f, exists := flagsMap[o]; exists && f.flag != 0 {
+ 			if f.clear {
+-				flag &^= f.flag
++				opt.flags &^= f.flag
+ 			} else {
+-				flag |= f.flag
++				opt.flags |= f.flag
+ 			}
+ 		} else if o == loopOpt {
+-			losetup = true
++			opt.losetup = true
++		} else if strings.HasPrefix(o, "uidmap=") {
++			opt.uidmap = strings.TrimPrefix(o, "uidmap=")
++		} else if strings.HasPrefix(o, "gidmap=") {
++			opt.gidmap = strings.TrimPrefix(o, "gidmap=")
+ 		} else {
+-			data = append(data, o)
++			opt.data = append(opt.data, o)
+ 		}
+ 	}
+-	return flag, data, losetup
++	return
+ }
+ 
+ func hasDirectIO(opts []string) (bool, []string) {
+diff --git a/snapshots/overlay/overlay.go b/snapshots/overlay/overlay.go
+index e0e7642746ca..e566aa5c6a64 100644
+--- a/snapshots/overlay/overlay.go
++++ b/snapshots/overlay/overlay.go
+@@ -45,6 +45,7 @@ type SnapshotterConfig struct {
+ 	upperdirLabel bool
+ 	ms            MetaStore
+ 	mountOptions  []string
++	remapIds      bool
+ }
+ 
+ // Opt is an option to configure the overlay snapshotter
+@@ -92,12 +93,18 @@ func WithMetaStore(ms MetaStore) Opt {
+ 	}
+ }
+ 
++func WithRemapIds(config *SnapshotterConfig) error {
++	config.remapIds = true
++	return nil
++}
++
+ type snapshotter struct {
+ 	root          string
+ 	ms            MetaStore
+ 	asyncRemove   bool
+ 	upperdirLabel bool
+ 	options       []string
++	remapIds      bool
+ }
+ 
+ // NewSnapshotter returns a Snapshotter which uses overlayfs. The overlayfs
+@@ -153,6 +160,7 @@ func NewSnapshotter(root string, opts ...Opt) (snapshots.Snapshotter, error) {
+ 		asyncRemove:   config.asyncRemove,
+ 		upperdirLabel: config.upperdirLabel,
+ 		options:       config.mountOptions,
++		remapIds:      config.remapIds,
+ 	}, nil
+ }
+ 
+@@ -259,16 +267,22 @@ func (o *snapshotter) View(ctx context.Context, key, parent string, opts ...snap
+ // This can be used to recover mounts after calling View or Prepare.
+ func (o *snapshotter) Mounts(ctx context.Context, key string) (_ []mount.Mount, err error) {
+ 	var s storage.Snapshot
++	var info snapshots.Info
+ 	if err := o.ms.WithTransaction(ctx, false, func(ctx context.Context) error {
+ 		s, err = storage.GetSnapshot(ctx, key)
+ 		if err != nil {
+ 			return fmt.Errorf("failed to get active mount: %w", err)
+ 		}
++
++		_, info, _, err = storage.GetInfo(ctx, key)
++		if err != nil {
++			return fmt.Errorf("failed to get snapshot info: %w", err)
++		}
+ 		return nil
+ 	}); err != nil {
+ 		return nil, err
+ 	}
+-	return o.mounts(s), nil
++	return o.mounts(s, info), nil
+ }
+ 
+ func (o *snapshotter) Commit(ctx context.Context, name, key string, opts ...snapshots.Opt) error {
+@@ -402,10 +416,46 @@ func (o *snapshotter) getCleanupDirectories(ctx context.Context) ([]string, erro
+ 	return cleanup, nil
+ }
+ 
++func validateIDMapping(mapping string) error {
++	var (
++		hostID int
++		ctrID  int
++		length int
++	)
++
++	if _, err := fmt.Sscanf(mapping, "%d:%d:%d", &ctrID, &hostID, &length); err != nil {
++		return err
++	}
++	// Almost impossible, but snapshots.WithLabels doesn't check it
++	if ctrID < 0 || hostID < 0 || length < 0 {
++		return fmt.Errorf("invalid mapping \"%d:%d:%d\"", ctrID, hostID, length)
++	}
++	if ctrID != 0 {
++		return fmt.Errorf("container mapping of 0 is only supported")
++	}
++	return nil
++}
++
++func hostID(mapping string) (int, error) {
++	var (
++		hostID int
++		ctrID  int
++		length int
++	)
++	if err := validateIDMapping(mapping); err != nil {
++		return -1, fmt.Errorf("invalid mapping: %w", err)
++	}
++	if _, err := fmt.Sscanf(mapping, "%d:%d:%d", &ctrID, &hostID, &length); err != nil {
++		return -1, err
++	}
++	return hostID, nil
++}
++
+ func (o *snapshotter) createSnapshot(ctx context.Context, kind snapshots.Kind, key, parent string, opts []snapshots.Opt) (_ []mount.Mount, err error) {
+ 	var (
+ 		s        storage.Snapshot
+ 		td, path string
++		info     snapshots.Info
+ 	)
+ 
+ 	defer func() {
+@@ -436,14 +486,46 @@ func (o *snapshotter) createSnapshot(ctx context.Context, kind snapshots.Kind, k
+ 			return fmt.Errorf("failed to create snapshot: %w", err)
+ 		}
+ 
+-		if len(s.ParentIDs) > 0 {
+-			st, err := os.Stat(o.upperPath(s.ParentIDs[0]))
+-			if err != nil {
+-				return fmt.Errorf("failed to stat parent: %w", err)
++		_, info, _, err = storage.GetInfo(ctx, key)
++		if err != nil {
++			return fmt.Errorf("failed to get snapshot info: %w", err)
++		}
++
++		mappedUID := -1
++		mappedGID := -1
++		// NOTE: if idmapped mounts' supported by hosted kernel there may be
++		// no parents at all, so overlayfs will not work and snapshotter
++		// will use bind mount. To be able to create file objects inside the
++		// rootfs -- just chown this only bound directory according to provided
++		// {uid,gid}map. In case of one/multiple parents -- chown upperdir.
++		if v, ok := info.Labels[snapshots.LabelSnapshotUIDMapping]; ok {
++			if mappedUID, err = hostID(v); err != nil {
++				return fmt.Errorf("failed to parse UID mapping: %w", err)
++			}
++		}
++		if v, ok := info.Labels[snapshots.LabelSnapshotGIDMapping]; ok {
++			if mappedGID, err = hostID(v); err != nil {
++				return fmt.Errorf("failed to parse GID mapping: %w", err)
++			}
++		}
++
++		if mappedUID == -1 || mappedGID == -1 {
++			if len(s.ParentIDs) > 0 {
++				st, err := os.Stat(o.upperPath(s.ParentIDs[0]))
++				if err != nil {
++					return fmt.Errorf("failed to stat parent: %w", err)
++				}
++				stat, ok := st.Sys().(*syscall.Stat_t)
++				if !ok {
++					return fmt.Errorf("incompatible types after stat call: *syscall.Stat_t expected")
++				}
++				mappedUID = int(stat.Uid)
++				mappedGID = int(stat.Gid)
+ 			}
++		}
+ 
+-			stat := st.Sys().(*syscall.Stat_t)
+-			if err := os.Lchown(filepath.Join(td, "fs"), int(stat.Uid), int(stat.Gid)); err != nil {
++		if mappedUID != -1 && mappedGID != -1 {
++			if err := os.Lchown(filepath.Join(td, "fs"), mappedUID, mappedGID); err != nil {
+ 				return fmt.Errorf("failed to chown: %w", err)
+ 			}
+ 		}
+@@ -458,8 +540,7 @@ func (o *snapshotter) createSnapshot(ctx context.Context, kind snapshots.Kind, k
+ 	}); err != nil {
+ 		return nil, err
+ 	}
+-
+-	return o.mounts(s), nil
++	return o.mounts(s, info), nil
+ }
+ 
+ func (o *snapshotter) prepareDirectory(ctx context.Context, snapshotDir string, kind snapshots.Kind) (string, error) {
+@@ -481,7 +562,18 @@ func (o *snapshotter) prepareDirectory(ctx context.Context, snapshotDir string,
+ 	return td, nil
+ }
+ 
+-func (o *snapshotter) mounts(s storage.Snapshot) []mount.Mount {
++func (o *snapshotter) mounts(s storage.Snapshot, info snapshots.Info) []mount.Mount {
++	var options []string
++
++	if o.remapIds {
++		if v, ok := info.Labels[snapshots.LabelSnapshotUIDMapping]; ok {
++			options = append(options, fmt.Sprintf("uidmap=%s", v))
++		}
++		if v, ok := info.Labels[snapshots.LabelSnapshotGIDMapping]; ok {
++			options = append(options, fmt.Sprintf("gidmap=%s", v))
++		}
++	}
++
+ 	if len(s.ParentIDs) == 0 {
+ 		// if we only have one layer/no parents then just return a bind mount as overlay
+ 		// will not work
+@@ -489,20 +581,18 @@ func (o *snapshotter) mounts(s storage.Snapshot) []mount.Mount {
+ 		if s.Kind == snapshots.KindView {
+ 			roFlag = "ro"
+ 		}
+-
+ 		return []mount.Mount{
+ 			{
+ 				Source: o.upperPath(s.ID),
+ 				Type:   "bind",
+-				Options: []string{
++				Options: append(options,
+ 					roFlag,
+ 					"rbind",
+-				},
++				),
+ 			},
+ 		}
+ 	}
+ 
+-	options := o.options
+ 	if s.Kind == snapshots.KindActive {
+ 		options = append(options,
+ 			fmt.Sprintf("workdir=%s", o.workPath(s.ID)),
+@@ -513,10 +603,10 @@ func (o *snapshotter) mounts(s storage.Snapshot) []mount.Mount {
+ 			{
+ 				Source: o.upperPath(s.ParentIDs[0]),
+ 				Type:   "bind",
+-				Options: []string{
++				Options: append(options,
+ 					"ro",
+ 					"rbind",
+-				},
++				),
+ 			},
+ 		}
+ 	}
+@@ -525,8 +615,9 @@ func (o *snapshotter) mounts(s storage.Snapshot) []mount.Mount {
+ 	for i := range s.ParentIDs {
+ 		parentPaths[i] = o.upperPath(s.ParentIDs[i])
+ 	}
+-
+ 	options = append(options, fmt.Sprintf("lowerdir=%s", strings.Join(parentPaths, ":")))
++	options = append(options, o.options...)
++
+ 	return []mount.Mount{
+ 		{
+ 			Type:    "overlay",
+@@ -534,7 +625,6 @@ func (o *snapshotter) mounts(s storage.Snapshot) []mount.Mount {
+ 			Options: options,
+ 		},
+ 	}
+-
+ }
+ 
+ func (o *snapshotter) upperPath(id string) string {
+diff --git a/snapshots/overlay/overlay_test.go b/snapshots/overlay/overlay_test.go
+index d7909c433482..36eeef951a2d 100644
+--- a/snapshots/overlay/overlay_test.go
++++ b/snapshots/overlay/overlay_test.go
+@@ -26,12 +26,14 @@ import (
+ 	"syscall"
+ 	"testing"
+ 
++	"github.com/containerd/containerd"
+ 	"github.com/containerd/containerd/mount"
+ 	"github.com/containerd/containerd/pkg/testutil"
+ 	"github.com/containerd/containerd/snapshots"
+ 	"github.com/containerd/containerd/snapshots/overlay/overlayutils"
+ 	"github.com/containerd/containerd/snapshots/storage"
+ 	"github.com/containerd/containerd/snapshots/testsuite"
++	"github.com/opencontainers/runtime-spec/specs-go"
+ )
+ 
+ func newSnapshotterWithOpts(opts ...Opt) testsuite.SnapshotterFunc {
+@@ -51,12 +53,23 @@ func TestOverlay(t *testing.T) {
+ 		"no opt": nil,
+ 		// default in init()
+ 		"AsynchronousRemove": {AsynchronousRemove},
++		// idmapped mounts enabled
++		"WithRemapIds": {WithRemapIds},
+ 	}
+ 
+ 	for optsName, opts := range optTestCases {
+ 		t.Run(optsName, func(t *testing.T) {
+ 			newSnapshotter := newSnapshotterWithOpts(opts...)
+ 			testsuite.SnapshotterSuite(t, "overlayfs", newSnapshotter)
++			t.Run("TestOverlayRemappedBind", func(t *testing.T) {
++				testOverlayRemappedBind(t, newSnapshotter)
++			})
++			t.Run("TestOverlayRemappedActive", func(t *testing.T) {
++				testOverlayRemappedActive(t, newSnapshotter)
++			})
++			t.Run("TestOverlayRemappedInvalidMappings", func(t *testing.T) {
++				testOverlayRemappedInvalidMapping(t, newSnapshotter)
++			})
+ 			t.Run("TestOverlayMounts", func(t *testing.T) {
+ 				testOverlayMounts(t, newSnapshotter)
+ 			})
+@@ -156,28 +169,28 @@ func testOverlayOverlayMount(t *testing.T, newSnapshotter testsuite.SnapshotterF
+ 		t.Errorf("expected source %q but received %q", "overlay", m.Source)
+ 	}
+ 	var (
+-		bp    = getBasePath(ctx, o, root, "/tmp/layer2")
+-		work  = "workdir=" + filepath.Join(bp, "work")
+-		upper = "upperdir=" + filepath.Join(bp, "fs")
+-		lower = "lowerdir=" + getParents(ctx, o, root, "/tmp/layer2")[0]
++		expected []string
++		bp       = getBasePath(ctx, o, root, "/tmp/layer2")
++		work     = "workdir=" + filepath.Join(bp, "work")
++		upper    = "upperdir=" + filepath.Join(bp, "fs")
++		lower    = "lowerdir=" + getParents(ctx, o, root, "/tmp/layer2")[0]
+ 	)
+ 
+-	expected := []string{
+-		"index=off",
+-	}
+-	if !supportsIndex() {
+-		expected = expected[1:]
++	expected = append(expected, []string{
++		work,
++		upper,
++		lower,
++	}...)
++
++	if supportsIndex() {
++		expected = append(expected, "index=off")
+ 	}
+ 	if userxattr, err := overlayutils.NeedsUserXAttr(root); err != nil {
+ 		t.Fatal(err)
+ 	} else if userxattr {
+ 		expected = append(expected, "userxattr")
+ 	}
+-	expected = append(expected, []string{
+-		work,
+-		upper,
+-		lower,
+-	}...)
++
+ 	for i, v := range expected {
+ 		if m.Options[i] != v {
+ 			t.Errorf("expected %q but received %q", v, m.Options[i])
+@@ -185,6 +198,241 @@ func testOverlayOverlayMount(t *testing.T, newSnapshotter testsuite.SnapshotterF
+ 	}
+ }
+ 
++func testOverlayRemappedBind(t *testing.T, newSnapshotter testsuite.SnapshotterFunc) {
++	var (
++		opts   []snapshots.Opt
++		mounts []mount.Mount
++	)
++
++	ctx := context.TODO()
++	root := t.TempDir()
++	o, _, err := newSnapshotter(ctx, root)
++	if err != nil {
++		t.Fatal(err)
++	}
++
++	if sn, ok := o.(*snapshotter); !ok || !sn.remapIds {
++		t.Skip("overlayfs doesn't support idmapped mounts")
++	}
++
++	hostID := uint32(666)
++	contID := uint32(0)
++	length := uint32(65536)
++
++	uidMap := specs.LinuxIDMapping{
++		ContainerID: contID,
++		HostID:      hostID,
++		Size:        length,
++	}
++	gidMap := specs.LinuxIDMapping{
++		ContainerID: contID,
++		HostID:      hostID,
++		Size:        length,
++	}
++	opts = append(opts, containerd.WithRemapperLabels(
++		uidMap.ContainerID, uidMap.HostID,
++		gidMap.ContainerID, gidMap.HostID,
++		length),
++	)
++
++	key := "/tmp/test"
++	if mounts, err = o.Prepare(ctx, key, "", opts...); err != nil {
++		t.Fatal(err)
++	}
++
++	bp := getBasePath(ctx, o, root, key)
++	expected := []string{
++		fmt.Sprintf("uidmap=%d:%d:%d", uidMap.ContainerID, uidMap.HostID, uidMap.Size),
++		fmt.Sprintf("gidmap=%d:%d:%d", gidMap.ContainerID, gidMap.HostID, gidMap.Size),
++		"rw",
++		"rbind",
++	}
++
++	checkMountOpts := func() {
++		if len(mounts) != 1 {
++			t.Errorf("should only have 1 mount but received %d", len(mounts))
++		}
++
++		if len(mounts[0].Options) != len(expected) {
++			t.Errorf("expected %d options, but received %d", len(expected), len(mounts[0].Options))
++		}
++
++		m := mounts[0]
++		for i, v := range expected {
++			if m.Options[i] != v {
++				t.Errorf("mount option %q is not valid, expected %q", m.Options[i], v)
++			}
++		}
++
++		st, err := os.Stat(filepath.Join(bp, "fs"))
++		if err != nil {
++			t.Errorf("failed to stat %s", filepath.Join(bp, "fs"))
++		}
++
++		if stat, ok := st.Sys().(*syscall.Stat_t); !ok {
++			t.Errorf("incompatible types after stat call: *syscall.Stat_t expected")
++		} else if stat.Uid != uidMap.HostID || stat.Gid != gidMap.HostID {
++			t.Errorf("bad mapping: expected {uid: %d, gid: %d}; real {uid: %d, gid: %d}", uidMap.HostID, gidMap.HostID, int(stat.Uid), int(stat.Gid))
++		}
++	}
++	checkMountOpts()
++
++	expected[2] = "ro"
++	if err = o.Commit(ctx, "base", key, opts...); err != nil {
++		t.Fatal(err)
++	}
++	if mounts, err = o.View(ctx, key, "base", opts...); err != nil {
++		t.Fatal(err)
++	}
++	bp = getBasePath(ctx, o, root, key)
++	checkMountOpts()
++
++	key = "/tmp/test1"
++	if mounts, err = o.Prepare(ctx, key, ""); err != nil {
++		t.Fatal(err)
++	}
++
++	bp = getBasePath(ctx, o, root, key)
++
++	expected = expected[2:]
++	expected[0] = "rw"
++
++	uidMap.HostID = 0
++	gidMap.HostID = 0
++
++	checkMountOpts()
++}
++
++func testOverlayRemappedActive(t *testing.T, newSnapshotter testsuite.SnapshotterFunc) {
++	var (
++		opts   []snapshots.Opt
++		mounts []mount.Mount
++	)
++
++	ctx := context.TODO()
++	root := t.TempDir()
++	o, _, err := newSnapshotter(ctx, root)
++	if err != nil {
++		t.Fatal(err)
++	}
++
++	if sn, ok := o.(*snapshotter); !ok || !sn.remapIds {
++		t.Skip("overlayfs doesn't support idmapped mounts")
++	}
++
++	hostID := uint32(666)
++	contID := uint32(0)
++	length := uint32(65536)
++
++	uidMap := specs.LinuxIDMapping{
++		ContainerID: contID,
++		HostID:      hostID,
++		Size:        length,
++	}
++	gidMap := specs.LinuxIDMapping{
++		ContainerID: contID,
++		HostID:      hostID,
++		Size:        length,
++	}
++	opts = append(opts, containerd.WithRemapperLabels(
++		uidMap.ContainerID, uidMap.HostID,
++		gidMap.ContainerID, gidMap.HostID,
++		length),
++	)
++
++	key := "/tmp/test"
++	if _, err = o.Prepare(ctx, key, "", opts...); err != nil {
++		t.Fatal(err)
++	}
++	if err = o.Commit(ctx, "base", key, opts...); err != nil {
++		t.Fatal(err)
++	}
++	if mounts, err = o.Prepare(ctx, key, "base", opts...); err != nil {
++		t.Fatal(err)
++	}
++
++	if len(mounts) != 1 {
++		t.Errorf("should only have 1 mount but received %d", len(mounts))
++	}
++
++	bp := getBasePath(ctx, o, root, key)
++	expected := []string{
++		fmt.Sprintf("uidmap=%d:%d:%d", uidMap.ContainerID, uidMap.HostID, uidMap.Size),
++		fmt.Sprintf("gidmap=%d:%d:%d", gidMap.ContainerID, gidMap.HostID, gidMap.Size),
++		fmt.Sprintf("workdir=%s", filepath.Join(bp, "work")),
++		fmt.Sprintf("upperdir=%s", filepath.Join(bp, "fs")),
++		fmt.Sprintf("lowerdir=%s", getParents(ctx, o, root, key)[0]),
++	}
++
++	m := mounts[0]
++	for i, v := range expected {
++		if m.Options[i] != v {
++			t.Errorf("mount option %q is invalid, expected %q", m.Options[i], v)
++		}
++	}
++
++	st, err := os.Stat(filepath.Join(bp, "fs"))
++	if err != nil {
++		t.Errorf("failed to stat %s", filepath.Join(bp, "fs"))
++	}
++	if stat, ok := st.Sys().(*syscall.Stat_t); !ok {
++		t.Errorf("incompatible types after stat call: *syscall.Stat_t expected")
++	} else if stat.Uid != uidMap.HostID || stat.Gid != gidMap.HostID {
++		t.Errorf("bad mapping: expected {uid: %d, gid: %d}; received {uid: %d, gid: %d}", uidMap.HostID, gidMap.HostID, int(stat.Uid), int(stat.Gid))
++	}
++}
++
++func testOverlayRemappedInvalidMapping(t *testing.T, newSnapshotter testsuite.SnapshotterFunc) {
++	ctx := context.TODO()
++	root := t.TempDir()
++	o, _, err := newSnapshotter(ctx, root)
++	if err != nil {
++		t.Fatal(err)
++	}
++
++	if sn, ok := o.(*snapshotter); !ok || !sn.remapIds {
++		t.Skip("overlayfs doesn't support idmapped mounts")
++	}
++
++	key := "/tmp/test"
++	for desc, opts := range map[string][]snapshots.Opt{
++		"WithLabels: negative UID mapping must fail": {
++			snapshots.WithLabels(map[string]string{
++				snapshots.LabelSnapshotUIDMapping: "-1:-1:-2",
++				snapshots.LabelSnapshotGIDMapping: "0:0:66666",
++			}),
++		},
++		"WithLabels: negative GID mapping must fail": {
++			snapshots.WithLabels(map[string]string{
++				snapshots.LabelSnapshotUIDMapping: "0:0:66666",
++				snapshots.LabelSnapshotGIDMapping: "-1:-1:-2",
++			}),
++		},
++		"WithLabels: negative GID/UID mappings must fail": {
++			snapshots.WithLabels(map[string]string{
++				snapshots.LabelSnapshotUIDMapping: "-666:-666:-666",
++				snapshots.LabelSnapshotGIDMapping: "-666:-666:-666",
++			}),
++		},
++		"WithRemapperLabels: container ID (GID/UID) other than 0 must fail": {
++			containerd.WithRemapperLabels(666, 666, 666, 666, 666),
++		},
++		"WithRemapperLabels: container ID (UID) other than 0 must fail": {
++			containerd.WithRemapperLabels(666, 0, 0, 0, 65536),
++		},
++		"WithRemapperLabels: container ID (GID) other than 0 must fail": {
++			containerd.WithRemapperLabels(0, 0, 666, 0, 4294967295),
++		},
++	} {
++		t.Log(desc)
++		if _, err = o.Prepare(ctx, key, "", opts...); err == nil {
++			t.Fatalf("snapshots with invalid mappings must fail")
++		}
++		// remove may fail, but it doesn't matter
++		_ = o.Remove(ctx, key)
++	}
++}
++
+ func getBasePath(ctx context.Context, sn snapshots.Snapshotter, root, key string) string {
+ 	o := sn.(*snapshotter)
+ 	ctx, t, err := o.ms.TransactionContext(ctx, false)
+@@ -306,6 +554,7 @@ func testOverlayView(t *testing.T, newSnapshotter testsuite.SnapshotterFunc) {
+ 	if m.Source != expected {
+ 		t.Errorf("expected source %q but received %q", expected, m.Source)
+ 	}
++
+ 	if m.Options[0] != "ro" {
+ 		t.Errorf("expected mount option ro but received %q", m.Options[0])
+ 	}
+@@ -345,18 +594,13 @@ func testOverlayView(t *testing.T, newSnapshotter testsuite.SnapshotterFunc) {
+ 		t.Errorf("expected %d additional mount option but got %d", expectedOptions, len(m.Options))
+ 	}
+ 	lowers := getParents(ctx, o, root, "/tmp/view2")
++
+ 	expected = fmt.Sprintf("lowerdir=%s:%s", lowers[0], lowers[1])
+-	optIdx := 2
+-	if !supportsIndex {
+-		optIdx--
++	if m.Options[0] != expected {
++		t.Errorf("expected option %q but received %q", expected, m.Options[0])
+ 	}
+-	if userxattr {
+-		optIdx++
+-	}
+-	if m.Options[0] != "volatile" {
++
++	if m.Options[1] != "volatile" {
+ 		t.Error("expected option first option to be provided option \"volatile\"")
+ 	}
+-	if m.Options[optIdx] != expected {
+-		t.Errorf("expected option %q but received %q", expected, m.Options[optIdx])
+-	}
+ }
+diff --git a/snapshots/overlay/overlayutils/check.go b/snapshots/overlay/overlayutils/check.go
+index 726c085a9351..75cf2ed8c565 100644
+--- a/snapshots/overlay/overlayutils/check.go
++++ b/snapshots/overlay/overlayutils/check.go
+@@ -24,6 +24,8 @@ import (
+ 	"path/filepath"
+ 	"syscall"
+ 
++	"golang.org/x/sys/unix"
++
+ 	kernel "github.com/containerd/containerd/contrib/seccomp/kernelversion"
+ 	"github.com/containerd/containerd/log"
+ 	"github.com/containerd/containerd/mount"
+@@ -198,3 +200,98 @@ func NeedsUserXAttr(d string) (bool, error) {
+ 	}
+ 	return true, nil
+ }
++
++// SupportsIDMappedMounts tells if this kernel supports idmapped mounts for overlayfs
++// or not.
++//
++// This function returns error whether the kernel supports idmapped mounts
++// for overlayfs or not, i.e. if e.g. -ENOSYS may be returned as well as -EPERM.
++// So, caller should check for (true, err == nil), otherwise treat it as there's
++// no support from the kernel side.
++func SupportsIDMappedMounts() (bool, error) {
++	// Fast path
++	fiveDotNineteen := kernel.KernelVersion{Kernel: 5, Major: 19}
++	if ok, err := kernel.GreaterEqualThan(fiveDotNineteen); err == nil && ok {
++		return true, nil
++	}
++
++	// Do slow path, because idmapped mounts may be backported to older kernels.
++	uidMap := syscall.SysProcIDMap{
++		ContainerID: 0,
++		HostID:      666,
++		Size:        1,
++	}
++	gidMap := syscall.SysProcIDMap{
++		ContainerID: 0,
++		HostID:      666,
++		Size:        1,
++	}
++	td, err := os.MkdirTemp("", "ovl-idmapped-check")
++	if err != nil {
++		return false, fmt.Errorf("failed to create check directory: %w", err)
++	}
++	defer func() {
++		if err := os.RemoveAll(td); err != nil {
++			log.L.WithError(err).Warnf("failed to remove check directory %s", td)
++		}
++	}()
++
++	for _, dir := range []string{"lower", "upper", "work", "merged"} {
++		if err = os.Mkdir(filepath.Join(td, dir), 0755); err != nil {
++			return false, fmt.Errorf("failed to create %s directory: %w", dir, err)
++		}
++	}
++	defer func() {
++		if err = os.RemoveAll(td); err != nil {
++			log.L.WithError(err).Warnf("failed remove overlay check directory %s", td)
++		}
++	}()
++
++	if err = os.Lchown(filepath.Join(td, "upper"), uidMap.HostID, gidMap.HostID); err != nil {
++		return false, fmt.Errorf("failed to chown upper directory %s: %w", filepath.Join(td, "upper"), err)
++	}
++
++	lowerDir := filepath.Join(td, "lower")
++	uidmap := fmt.Sprintf("%d:%d:%d", uidMap.ContainerID, uidMap.HostID, uidMap.Size)
++	gidmap := fmt.Sprintf("%d:%d:%d", gidMap.ContainerID, gidMap.HostID, gidMap.Size)
++
++	usernsFd, childProcCleanUp, err := mount.GetUsernsFD(uidmap, gidmap)
++	if err != nil {
++		return false, err
++	}
++	defer childProcCleanUp()
++
++	if err = mount.IDMapMount(lowerDir, lowerDir, usernsFd); err != nil {
++		return false, fmt.Errorf("failed to remap lowerdir %s: %w", lowerDir, err)
++	}
++	defer func() {
++		if err = unix.Unmount(lowerDir, 0); err != nil {
++			log.L.WithError(err).Warnf("failed to unmount lowerdir %s", lowerDir)
++		}
++	}()
++
++	opts := fmt.Sprintf("index=off,lowerdir=%s,upperdir=%s,workdir=%s", lowerDir, filepath.Join(td, "upper"), filepath.Join(td, "work"))
++	if err = unix.Mount("", filepath.Join(td, "merged"), "overlay", uintptr(unix.MS_RDONLY), opts); err != nil {
++		return false, fmt.Errorf("failed to mount idmapped overlay to %s: %w", filepath.Join(td, "merged"), err)
++	}
++	defer func() {
++		if err = unix.Unmount(filepath.Join(td, "merged"), 0); err != nil {
++			log.L.WithError(err).Warnf("failed to unmount overlay check directory %s", filepath.Join(td, "merged"))
++		}
++	}()
++
++	// NOTE: we can't just return true if mount didn't fail since overlay supports
++	// idmappings for {lower,upper}dir. That means we need to check merged directory
++	// to make sure it completely  supports idmapped mounts.
++	st, err := os.Stat(filepath.Join(td, "merged"))
++	if err != nil {
++		return false, fmt.Errorf("failed to stat %s: %w", filepath.Join(td, "merged"), err)
++	}
++	if stat, ok := st.Sys().(*syscall.Stat_t); !ok {
++		return false, fmt.Errorf("incompatible types after stat call: *syscall.Stat_t expected")
++	} else if int(stat.Uid) != uidMap.HostID || int(stat.Gid) != gidMap.HostID {
++		return false, fmt.Errorf("bad mapping: expected {uid: %d, gid: %d}; real {uid: %d, gid: %d}", uidMap.HostID, gidMap.HostID, int(stat.Uid), int(stat.Gid))
++	}
++
++	return true, nil
++}
+diff --git a/snapshots/overlay/plugin/plugin.go b/snapshots/overlay/plugin/plugin.go
+index 6c6dce75da82..645bc8c95d25 100644
+--- a/snapshots/overlay/plugin/plugin.go
++++ b/snapshots/overlay/plugin/plugin.go
+@@ -24,6 +24,11 @@ import (
+ 	"github.com/containerd/containerd/platforms"
+ 	"github.com/containerd/containerd/plugin"
+ 	"github.com/containerd/containerd/snapshots/overlay"
++	"github.com/containerd/containerd/snapshots/overlay/overlayutils"
++)
++
++const (
++	capaRemapIds = "remap-ids"
+ )
+ 
+ // Config represents configuration for the overlay plugin.
+@@ -66,6 +71,10 @@ func init() {
+ 			if len(config.MountOptions) > 0 {
+ 				oOpts = append(oOpts, overlay.WithMountOptions(config.MountOptions))
+ 			}
++			if ok, err := overlayutils.SupportsIDMappedMounts(); err == nil && ok {
++				oOpts = append(oOpts, overlay.WithRemapIds)
++				ic.Meta.Capabilities = append(ic.Meta.Capabilities, capaRemapIds)
++			}
+ 
+ 			ic.Meta.Exports["root"] = root
+ 			return overlay.NewSnapshotter(root, oOpts...)
+diff --git a/sys/subprocess_unsafe_linux.go b/sys/subprocess_unsafe_linux.go
+new file mode 100644
+index 000000000000..6e40a9c7d7f0
+--- /dev/null
++++ b/sys/subprocess_unsafe_linux.go
+@@ -0,0 +1,30 @@
++/*
++   Copyright The containerd Authors.
++
++   Licensed under the Apache License, Version 2.0 (the "License");
++   you may not use this file except in compliance with the License.
++   You may obtain a copy of the License at
++
++       http://www.apache.org/licenses/LICENSE-2.0
++
++   Unless required by applicable law or agreed to in writing, software
++   distributed under the License is distributed on an "AS IS" BASIS,
++   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++   See the License for the specific language governing permissions and
++   limitations under the License.
++*/
++
++package sys
++
++import (
++	_ "unsafe" // required for go:linkname.
++)
++
++//go:linkname beforeFork syscall.runtime_BeforeFork
++func beforeFork()
++
++//go:linkname afterFork syscall.runtime_AfterFork
++func afterFork()
++
++//go:linkname afterForkInChild syscall.runtime_AfterForkInChild
++func afterForkInChild()
+diff --git a/sys/userns_unsafe_linux.go b/sys/userns_unsafe_linux.go
+new file mode 100644
+index 000000000000..bedf8943cf1f
+--- /dev/null
++++ b/sys/userns_unsafe_linux.go
+@@ -0,0 +1,65 @@
++/*
++   Copyright The containerd Authors.
++
++   Licensed under the Apache License, Version 2.0 (the "License");
++   you may not use this file except in compliance with the License.
++   You may obtain a copy of the License at
++
++       http://www.apache.org/licenses/LICENSE-2.0
++
++   Unless required by applicable law or agreed to in writing, software
++   distributed under the License is distributed on an "AS IS" BASIS,
++   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++   See the License for the specific language governing permissions and
++   limitations under the License.
++*/
++
++package sys
++
++import (
++	"runtime"
++	"syscall"
++	"unsafe"
++)
++
++// ProcSyncType is used for synchronization
++// between parent and child processes.
++type ProcSyncType uint8
++
++const (
++	// ProcSyncExit tells child "it's time to exit".
++	ProcSyncExit ProcSyncType = 0x1
++)
++
++//go:norace
++//go:noinline
++func ForkUserns(pipeMap [2]int) (pid uintptr, errno syscall.Errno) {
++	var sync ProcSyncType
++
++	beforeFork()
++	if runtime.GOARCH == "s390x" {
++		pid, _, errno = syscall.RawSyscall6(uintptr(syscall.SYS_CLONE), 0, syscall.CLONE_NEWUSER|uintptr(syscall.SIGCHLD), 0, 0, 0, 0)
++	} else {
++		pid, _, errno = syscall.RawSyscall6(uintptr(syscall.SYS_CLONE), syscall.CLONE_NEWUSER|uintptr(syscall.SIGCHLD), 0, 0, 0, 0, 0)
++	}
++	if errno != 0 || pid != 0 {
++		afterFork()
++		return pid, errno
++	}
++
++	afterForkInChild()
++	if _, _, errno = syscall.RawSyscall(syscall.SYS_CLOSE, uintptr(pipeMap[1]), 0, 0); errno != 0 {
++		goto err
++	}
++	if _, _, errno = syscall.RawSyscall6(syscall.SYS_PRCTL, syscall.PR_SET_PDEATHSIG, uintptr(syscall.SIGKILL), 0, 0, 0, 0); errno != 0 {
++		goto err
++	}
++	// wait for parent's signal
++	if _, _, errno = syscall.RawSyscall6(syscall.SYS_READ, uintptr(pipeMap[0]), uintptr(unsafe.Pointer(&sync)), unsafe.Sizeof(sync), 0, 0, 0); errno != 0 || sync != ProcSyncExit {
++		goto err
++	}
++
++err:
++	syscall.RawSyscall6(syscall.SYS_EXIT, uintptr(errno), 0, 0, 0, 0, 0)
++	panic("unreachable")
++}
+
+```
+
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Report all of your findings in a single JSON object with the following format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

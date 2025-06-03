@@ -1,0 +1,19 @@
+Please review the code in the usememos_memos_870 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Backend API subsystem (consisting of 'api/api.go', 'api/auth.go', 'api/cache.go', 'api/memo.go', 'api/memo_organizer.go', 'api/memo_resource.go', 'api/resource.go', 'api/shortcut.go', 'api/system.go', 'api/system_setting.go', 'api/tag.go', 'api/user.go', 'api/user_setting.go', 'bin/server/main.go')
+2. Backend Server subsystem (consisting of 'common/error.go', 'common/util.go', 'server/acl.go', 'server/auth.go', 'server/common.go', 'server/dist/index.html', 'server/embed_frontend.go', 'server/http_getter.go', 'server/memo.go', 'server/metric_collector.go', 'server/profile/profile.go', 'server/resource.go', 'server/rss.go', 'server/server.go', 'server/shortcut.go', 'server/system.go', 'server/tag.go', 'server/user.go', 'server/version/version.go')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

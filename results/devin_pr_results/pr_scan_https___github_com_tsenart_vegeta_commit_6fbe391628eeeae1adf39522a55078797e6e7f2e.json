@@ -1,0 +1,40 @@
+{
+  "session_id": "devin-c8348e4e272c48aeac608f4484f010b7",
+  "issues": [
+    {
+      "file": "lib/attack.go",
+      "line": 299,
+      "description": "Race condition: The random number generator (rng) is created without mutex protection but used in a function that will be called concurrently by multiple goroutines"
+    },
+    {
+      "file": "lib/attack.go",
+      "line": 344,
+      "description": "Potential resource leak: Goroutines started for concurrent IP dialing might not be properly cleaned up if the context is canceled before they complete"
+    },
+    {
+      "file": "lib/attack.go",
+      "line": 363,
+      "description": "Error handling issue: When all connection attempts fail, the function returns the last error encountered, which might not be the most relevant error"
+    },
+    {
+      "file": "lib/attack.go",
+      "line": 323,
+      "description": "IP filtering logic issue: The IP filtering logic might incorrectly categorize IPv6 addresses, as it checks if len(ip) == net.IPv6len but doesn't verify it's not an IPv4-mapped IPv6 address"
+    },
+    {
+      "file": "lib/attack.go",
+      "line": 340,
+      "description": "Potential deadlock: If the channel capacity is 0 (no IPs after filtering), the code will still try to read from the channel"
+    },
+    {
+      "file": "lib/attack.go",
+      "line": 284,
+      "description": "Memory leak: The refresh goroutine might continue running if the attack is stopped in a way that doesn't close the stopch channel"
+    },
+    {
+      "file": "lib/attack.go",
+      "line": 406,
+      "description": "Potential issue: a.Stop() is called in the defer function, which might lead to unexpected behavior if multiple attacks are running concurrently"
+    }
+  ]
+}

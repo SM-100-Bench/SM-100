@@ -1,0 +1,50 @@
+{
+  "session_id": "devin-e5e4dac17f2449bb97165c3828400cef",
+  "issues": [
+    {
+      "file": "pkg/ingester/bucket.go",
+      "line": 41,
+      "description": "Potential path handling issue in Iter method where strings.Split and strings.Join could incorrectly handle paths with multiple slashes, potentially causing data access problems"
+    },
+    {
+      "file": "pkg/ingester/ingester_v2.go",
+      "line": 258,
+      "description": "Race condition in getOrCreateTSDB method - double-checked locking pattern is used without proper synchronization, which could lead to database corruption"
+    },
+    {
+      "file": "pkg/ingester/transfer.go",
+      "line": 570,
+      "description": "Error handling issue in transferUser function - errors during file transfers are logged but not properly propagated, which could lead to silent failures and data loss"
+    },
+    {
+      "file": "pkg/querier/block.go",
+      "line": 52,
+      "description": "Resource leak in NewBlockQuerier function - goroutine is started but there's no way to stop it, potentially causing memory leaks when queriers are recreated"
+    },
+    {
+      "file": "pkg/querier/block_store.go",
+      "line": 101,
+      "description": "Race condition in syncUserStores method - stores map is accessed concurrently from multiple goroutines without proper synchronization"
+    },
+    {
+      "file": "pkg/ingester/transfer.go",
+      "line": 511,
+      "description": "Error handling issue in unshippedBlocks function - if shipper.ReadMetaFile fails, the function returns an error but may have already modified the blocks map, leading to inconsistent state"
+    },
+    {
+      "file": "pkg/ingester/transfer.go",
+      "line": 433,
+      "description": "Concurrency issue with sync.Once - it's declared as a package-level variable and shared across all instances, which could lead to unexpected behavior if multiple transfers are attempted"
+    },
+    {
+      "file": "pkg/ingester/transfer.go",
+      "line": 319,
+      "description": "Security vulnerability - files are created with 0777 permissions, which is overly permissive and could lead to unauthorized access"
+    },
+    {
+      "file": "pkg/querier/block.go",
+      "line": 77,
+      "description": "Error handling issue - ignores EOF errors in block sync without verifying if the sync was actually complete, potentially leading to incomplete data"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+Please review the code in the docsifyjs_docsify_1909 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Core Engine subsystem (consisting of 'src/core/Docsify.js', 'src/core/config.js', 'src/core/event/index.js', 'src/core/event/scroll.js', 'src/core/event/sidebar.js', 'src/core/fetch/ajax.js', 'src/core/fetch/index.js', 'src/core/global-api.js', 'src/core/index.js', 'src/core/init/lifecycle.js', 'src/core/render/compiler.js', 'src/core/render/compiler/code.js', 'src/core/render/compiler/headline.js', 'src/core/render/compiler/image.js', 'src/core/render/compiler/link.js', 'src/core/render/compiler/paragraph.js', 'src/core/render/compiler/taskList.js', 'src/core/render/compiler/taskListItem.js', 'src/core/render/embed.js', 'src/core/render/emoji-data.js', 'src/core/render/emojify.js', 'src/core/render/gen-tree.js', 'src/core/render/index.js', 'src/core/render/progressbar.js', 'src/core/render/slugify.js', 'src/core/render/tpl.js', 'src/core/render/utils.js', 'src/core/router/history/abstract.js', 'src/core/router/history/base.js', 'src/core/router/history/hash.js', 'src/core/router/history/html5.js', 'src/core/router/index.js', 'src/core/router/util.js', 'src/core/util/core.js', 'src/core/util/dom.js', 'src/core/util/env.js', 'src/core/util/index.js', 'src/core/util/polyfill/css-vars.js', 'src/core/util/str.js', 'src/core/virtual-routes/exact-match.js', 'src/core/virtual-routes/index.js', 'src/core/virtual-routes/next.js')
+2. Rendering System subsystem (consisting of 'src/core/init/lifecycle.js', 'src/core/render/compiler.js', 'src/core/render/compiler/code.js', 'src/core/render/compiler/headline.js', 'src/core/render/compiler/image.js', 'src/core/render/compiler/link.js', 'src/core/render/compiler/paragraph.js', 'src/core/render/compiler/taskList.js', 'src/core/render/compiler/taskListItem.js', 'src/core/render/embed.js', 'src/core/render/emoji-data.js', 'src/core/render/emojify.js', 'src/core/render/gen-tree.js', 'src/core/render/index.js', 'src/core/render/progressbar.js', 'src/core/render/slugify.js', 'src/core/render/tpl.js', 'src/core/render/utils.js')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

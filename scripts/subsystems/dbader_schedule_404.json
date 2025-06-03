@@ -1,0 +1,1 @@
+[{"name": "Core Library", "files": ["schedule/__init__.py"]}, {"name": "Project Configuration", "files": ["requirements-dev.txt", "setup.py"]}, {"name": "CI/CD", "files": [".github/workflows/ci.yml"]}]

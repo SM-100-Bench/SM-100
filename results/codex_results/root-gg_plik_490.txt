@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "server/cmd/import.go",
+"line": 31,
+"description": "If no metadata export file is provided, the code prints an error but continues executing. Subsequent access to args[0] causes a panic. The command should exit or return when len(args) != 1."
+}
+]
+}

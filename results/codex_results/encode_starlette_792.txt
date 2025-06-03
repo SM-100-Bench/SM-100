@@ -1,0 +1,10 @@
+
+{
+"issues": [
+{
+"file": "starlette/requests.py",
+"line": 226,
+"description": "Calling is_disconnected() removes one message from the receive channel with await self._receive(), then discards it. If body data is still pending, this call will consume and drop that data, leading to incorrect request handling."
+}
+]
+}

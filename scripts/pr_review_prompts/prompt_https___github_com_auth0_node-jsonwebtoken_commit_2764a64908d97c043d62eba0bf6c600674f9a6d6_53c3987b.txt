@@ -1,0 +1,462 @@
+Please review the following commit for potential bugs:
+
+```
+diff --git a/README.md b/README.md
+index 1686a74..55e06ad 100644
+--- a/README.md
++++ b/README.md
+@@ -26,7 +26,7 @@ encoded private key for RSA and ECDSA.
+ 
+ `options`:
+ 
+-* `algorithm` (default: `HS256`)
++* `algorithm` or `alg` (default: `HS256`)
+ * `expiresIn`: expressed in seconds or a string describing a time span [rauchg/ms](https://github.com/rauchg/ms.js). Eg: `60`, `"2 days"`, `"10h"`, `"7d"`
+ * `notBefore`: expressed in seconds or a string describing a time span [rauchg/ms](https://github.com/rauchg/ms.js). Eg: `60`, `"2 days"`, `"10h"`, `"7d"`
+ * `audience`
+@@ -35,16 +35,16 @@ encoded private key for RSA and ECDSA.
+ * `jwtid`
+ * `subject`
+ * `noTimestamp`
+-* `headers`
++* `header`
+ 
+-If `payload` is not a buffer or a string, it will be coerced into a string
+-using `JSON.stringify`.
++If `payload` is not a buffer or a string, it will be coerced into a string using `JSON.stringify`.
+ 
+-If any `expiresIn`, `notBeforeMinutes`, `audience`, `subject`, `issuer` are not provided, there is no default. The jwt generated won't include those properties in the payload.
++There are no default values for `expiresIn`, `notBefore`, `audience`, `subject`, `issuer`. These claims can also be provided in the payload directly with `exp`, `nbf`, `aud` and `sub` respectively, but you can't include in both places.
+ 
+-Additional headers can be provided via the `headers` object.
+ 
+-Generated jwts will include an `iat` claim by default unless `noTimestamp` is specified.
++The header can be customized via the `option.header` object.
++
++Generated JWTs will include an `iat` claim by default unless `noTimestamp` is specified.
+ 
+ Example
+ 
+diff --git a/index.js b/index.js
+index 6e47b8b..40b8c8d 100644
+--- a/index.js
++++ b/index.js
+@@ -1,8 +1,5 @@
+ var jws = require('jws');
+ var ms = require('ms');
+-var timespan = require('./lib/timespan');
+-var xtend = require('xtend');
+-
+ var JWT = module.exports;
+ 
+ var JsonWebTokenError = JWT.JsonWebTokenError = require('./lib/JsonWebTokenError');
+@@ -38,112 +35,7 @@ JWT.decode = function (jwt, options) {
+   return payload;
+ };
+ 
+-var payload_options = [
+-  'expiresIn',
+-  'notBefore',
+-  'expiresInMinutes',
+-  'expiresInSeconds',
+-  'audience',
+-  'issuer',
+-  'subject',
+-  'jwtid'
+-];
+-
+-JWT.sign = function(payload, secretOrPrivateKey, options, callback) {
+-  options = options || {};
+-  var header = {};
+-
+-  if (typeof payload === 'object') {
+-    header.typ = 'JWT';
+-    payload = xtend(payload);
+-  } else {
+-    var invalid_option = payload_options.filter(function (key) {
+-      return typeof options[key] !== 'undefined';
+-    })[0];
+-
+-    if (invalid_option) {
+-      console.warn('invalid "' + invalid_option + '" option for ' + (typeof payload) + ' payload');
+-    }
+-  }
+-
+-  if (typeof payload.exp !== 'undefined' && typeof options.expiresIn !== 'undefined') {
+-    throw new Error('Bad "options.expiresIn" option the payload already has an "exp" property.');
+-  }
+-
+-  header.alg = options.algorithm || 'HS256';
+-
+-  if (options.headers) {
+-    Object.keys(options.headers).forEach(function (k) {
+-      header[k] = options.headers[k];
+-    });
+-  }
+-
+-  var timestamp = Math.floor(Date.now() / 1000);
+-  if (!options.noTimestamp) {
+-    payload.iat = payload.iat || timestamp;
+-  }
+-
+-  if (typeof options.notBefore !== 'undefined') {
+-    payload.nbf = timespan(options.notBefore);
+-    if (typeof payload.nbf === 'undefined') {
+-      throw new Error('"notBefore" should be a number of seconds or string representing a timespan eg: "1d", "20h", 60');
+-    }
+-  }
+-
+-  if (options.expiresInSeconds || options.expiresInMinutes) {
+-    var deprecated_line;
+-    try {
+-      deprecated_line = /.*\((.*)\).*/.exec((new Error()).stack.split('\n')[2])[1];
+-    } catch(err) {
+-      deprecated_line = '';
+-    }
+-
+-    console.warn('jsonwebtoken: expiresInMinutes and expiresInSeconds is deprecated. (' + deprecated_line + ')\n' +
+-                 'Use "expiresIn" expressed in seconds.');
+-
+-    var expiresInSeconds = options.expiresInMinutes ?
+-        options.expiresInMinutes * 60 :
+-        options.expiresInSeconds;
+-
+-    payload.exp = timestamp + expiresInSeconds;
+-  } else if (typeof options.expiresIn !== 'undefined' && typeof payload === 'object') {
+-    payload.exp = timespan(options.expiresIn);
+-    if (typeof payload.exp === 'undefined') {
+-      throw new Error('"expiresIn" should be a number of seconds or string representing a timespan eg: "1d", "20h", 60');
+-    }
+-  }
+-
+-  if (options.audience)
+-    payload.aud = options.audience;
+-
+-  if (options.issuer)
+-    payload.iss = options.issuer;
+-
+-  if (options.subject)
+-    payload.sub = options.subject;
+-
+-  if (options.jwtid)
+-    payload.jti = options.jwtid;
+-
+-  var encoding = 'utf8';
+-  if (options.encoding) {
+-    encoding = options.encoding;
+-  }
+-
+-  if(typeof callback === 'function') {
+-    jws.createSign({
+-      header: header,
+-      privateKey: secretOrPrivateKey,
+-      payload: JSON.stringify(payload)
+-    })
+-    .on('error', callback)
+-    .on('done', function(signature) {
+-      callback(null, signature);
+-    });
+-  } else {
+-    return jws.sign({header: header, payload: payload, secret: secretOrPrivateKey, encoding: encoding});
+-  }
+-};
++JWT.sign = require('./sign');
+ 
+ JWT.verify = function(jwtString, secretOrPublicKey, options, callback) {
+   if ((typeof options === 'function') && !callback) {
+diff --git a/package.json b/package.json
+index 1912062..bb2481f 100644
+--- a/package.json
++++ b/package.json
+@@ -19,6 +19,7 @@
+     "url": "https://github.com/auth0/node-jsonwebtoken/issues"
+   },
+   "dependencies": {
++    "joi": "~8.0.5",
+     "jws": "^3.0.0",
+     "ms": "^0.7.1",
+     "xtend": "^4.0.1"
+diff --git a/sign.js b/sign.js
+new file mode 100644
+index 0000000..67d1d08
+--- /dev/null
++++ b/sign.js
+@@ -0,0 +1,100 @@
++var Joi = require('joi');
++var timespan = require('./lib/timespan');
++var xtend = require('xtend');
++var jws = require('jws');
++
++var sign_options_schema = Joi.object().keys({
++  expiresIn: [Joi.number().integer(), Joi.string()],
++  notBefore: [Joi.number().integer(), Joi.string()],
++  audience:  [Joi.string(), Joi.array()],
++  algorithm: Joi.string().valid('RS256','RS384','RS512','ES256','ES384','ES512','HS256','HS384','HS512','none'),
++  header:    Joi.object(),
++  encoding:  Joi.string(),
++  issuer:    Joi.string(),
++  subject:   Joi.string(),
++  jwtid:     Joi.string(),
++  noTimestamp: Joi.boolean()
++});
++
++var options_to_payload = {
++  'audience': 'aud',
++  'issuer':   'iss',
++  'subject':  'sub',
++  'jwtid':    'jti'
++};
++
++module.exports = function(payload, secretOrPrivateKey, options, callback) {
++  options = options || {};
++
++  var header = xtend({
++    alg: options.algorithm || 'HS256',
++    typ: typeof payload === 'object' ? 'JWT' : undefined
++  }, options.header);
++
++  if (typeof payload === 'undefined') {
++    throw new Error('payload is required');
++  } else if (typeof payload === 'object') {
++    payload = xtend(payload);
++  }
++
++  if (typeof payload.exp !== 'undefined' && typeof options.expiresIn !== 'undefined') {
++    throw new Error('Bad "options.expiresIn" option the payload already has an "exp" property.');
++  }
++
++  if (typeof payload.nbf !== 'undefined' && typeof options.notBefore !== 'undefined') {
++    throw new Error('Bad "options.notBefore" option the payload already has an "nbf" property.');
++  }
++
++  var validation_result = sign_options_schema.validate(options);
++
++  if (validation_result.error) {
++    throw validation_result.error;
++  }
++
++  var timestamp = payload.iat || Math.floor(Date.now() / 1000);
++
++  if (!options.noTimestamp) {
++    payload.iat = timestamp;
++  } else {
++    delete payload.iat;
++  }
++
++  if (typeof options.notBefore !== 'undefined') {
++    payload.nbf = timespan(options.notBefore);
++    if (typeof payload.nbf === 'undefined') {
++      throw new Error('"notBefore" should be a number of seconds or string representing a timespan eg: "1d", "20h", 60');
++    }
++  }
++
++  if (typeof options.expiresIn !== 'undefined' && typeof payload === 'object') {
++    payload.exp = timespan(options.expiresIn);
++    if (typeof payload.exp === 'undefined') {
++      throw new Error('"expiresIn" should be a number of seconds or string representing a timespan eg: "1d", "20h", 60');
++    }
++  }
++
++  Object.keys(options_to_payload).forEach(function (key) {
++    var claim = options_to_payload[key];
++    if (typeof options[key] !== 'undefined' && typeof payload[claim] !== 'undefined') {
++      throw new Error('Bad "options.' + key + '" option. The payload already has an "' + claim + '" property.');
++    }
++    payload[claim] = options[key];
++  });
++
++  var encoding = options.encoding || 'utf8';
++
++  if(typeof callback === 'function') {
++    jws.createSign({
++      header: header,
++      privateKey: secretOrPrivateKey,
++      payload: JSON.stringify(payload),
++      encoding: encoding
++    })
++    .once('error', callback)
++    .once('done', function(signature) {
++      callback(null, signature);
++    });
++  } else {
++    return jws.sign({header: header, payload: payload, secret: secretOrPrivateKey, encoding: encoding});
++  }
++};
+diff --git a/test/async_sign.tests.js b/test/async_sign.tests.js
+index f52a3b9..6006ff6 100644
+--- a/test/async_sign.tests.js
++++ b/test/async_sign.tests.js
+@@ -19,7 +19,8 @@ describe('signing a token asynchronously', function() {
+     });
+ 
+     it('should throw error', function(done) {
+-      jwt.sign({ foo: 'bar' }, secret, { algorithm: 'HS2561' }, function (err) {
++      //this throw an error because the secret is not a cert and RS256 requires a cert.
++      jwt.sign({ foo: 'bar' }, secret, { algorithm: 'RS256' }, function (err) {
+         expect(err).to.be.ok();
+         done();
+       });
+diff --git a/test/expiresInSeconds.tests.js b/test/expiresInSeconds.tests.js
+deleted file mode 100644
+index ba2f95d..0000000
+--- a/test/expiresInSeconds.tests.js
++++ /dev/null
+@@ -1,12 +0,0 @@
+-var jwt = require('../index');
+-var expect = require('chai').expect;
+-
+-describe('noTimestamp', function() {
+-
+-  it('should work with string', function () {
+-    var token = jwt.sign({foo: 123}, '123', { expiresInSeconds: 5 });
+-    var result = jwt.verify(token, '123');
+-    expect(result.exp).to.be.closeTo(Math.floor(Date.now() / 1000) + 5, 0.5);
+-  });
+-
+-});
+\ No newline at end of file
+diff --git a/test/expires_format.tests.js b/test/expires_format.tests.js
+index aaa0e64..42d18a5 100644
+--- a/test/expires_format.tests.js
++++ b/test/expires_format.tests.js
+@@ -33,7 +33,7 @@ describe('expires option', function() {
+   it('should throw if expires is not an string or number', function () {
+     expect(function () {
+       jwt.sign({foo: 123}, '123', { expiresIn: { crazy : 213 } });
+-    }).to.throw(/"expiresIn" should be a number of seconds or string representing a timespan/);
++    }).to.throw(/"expiresIn" must be a number/);
+   });
+ 
+   it('should throw an error if expiresIn and exp are provided', function () {
+@@ -42,4 +42,12 @@ describe('expires option', function() {
+     }).to.throw(/Bad "options.expiresIn" option the payload already has an "exp" property./);
+   });
+ 
++
++  it('should throw on deprecated expiresInSeconds option', function () {
++    expect(function () {
++      jwt.sign({foo: 123}, '123', { expiresInSeconds: 5 });
++    }).to.throw('"expiresInSeconds" is not allowed');
++  });
++
++
+ });
+diff --git a/test/jwt.rs.tests.js b/test/jwt.rs.tests.js
+index 3467f8c..5bd328a 100644
+--- a/test/jwt.rs.tests.js
++++ b/test/jwt.rs.tests.js
+@@ -4,6 +4,7 @@ var path = require('path');
+ 
+ var expect = require('chai').expect;
+ var assert = require('chai').assert;
++var ms = require('ms');
+ 
+ describe('RS256', function() {
+   var pub = fs.readFileSync(path.join(__dirname, 'pub.pem'));
+@@ -52,7 +53,7 @@ describe('RS256', function() {
+   });
+ 
+   describe('when signing a token with expiration', function() {
+-    var token = jwt.sign({ foo: 'bar' }, priv, { algorithm: 'RS256', expiresInMinutes: 10 });
++    var token = jwt.sign({ foo: 'bar' }, priv, { algorithm: 'RS256', expiresIn: '10m' });
+ 
+     it('should be valid expiration', function(done) {
+       jwt.verify(token, pub, function(err, decoded) {
+@@ -64,7 +65,7 @@ describe('RS256', function() {
+ 
+     it('should be invalid', function(done) {
+       // expired token
+-      token = jwt.sign({ foo: 'bar' }, priv, { algorithm: 'RS256', expiresInMinutes: -10 });
++      token = jwt.sign({ foo: 'bar' }, priv, { algorithm: 'RS256', expiresIn: -1 * ms('10m') });
+ 
+       jwt.verify(token, pub, function(err, decoded) {
+         assert.isUndefined(decoded);
+@@ -78,7 +79,7 @@ describe('RS256', function() {
+ 
+     it('should NOT be invalid', function(done) {
+       // expired token
+-      token = jwt.sign({ foo: 'bar' }, priv, { algorithm: 'RS256', expiresInMinutes: -10 });
++      token = jwt.sign({ foo: 'bar' }, priv, { algorithm: 'RS256', expiresIn: -1 * ms('10m') });
+ 
+       jwt.verify(token, pub, { ignoreExpiration: true }, function(err, decoded) {
+         assert.ok(decoded.foo);
+@@ -93,8 +94,6 @@ describe('RS256', function() {
+ 
+     it('should be valid expiration', function(done) {
+       jwt.verify(token, pub, function(err, decoded) {
+-        console.log(token);
+-        console.dir(arguments);
+         assert.isNotNull(decoded);
+         assert.isNull(err);
+         done();
+@@ -131,7 +130,7 @@ describe('RS256', function() {
+ 
+     it('should NOT be invalid', function(done) {
+       // not active token
+-      token = jwt.sign({ foo: 'bar' }, priv, { algorithm: 'RS256', notBeforeMinutes: 10 });
++      token = jwt.sign({ foo: 'bar' }, priv, { algorithm: 'RS256', notBefore: '10m' });
+ 
+       jwt.verify(token, pub, { ignoreNotBefore: true }, function(err, decoded) {
+         assert.ok(decoded.foo);
+diff --git a/test/noTimestamp.tests.js b/test/noTimestamp.tests.js
+index 2a4be46..e08cf3f 100644
+--- a/test/noTimestamp.tests.js
++++ b/test/noTimestamp.tests.js
+@@ -4,9 +4,9 @@ var expect = require('chai').expect;
+ describe('noTimestamp', function() {
+ 
+   it('should work with string', function () {
+-    var token = jwt.sign({foo: 123}, '123', { expiresInMinutes: 5 , noTimestamp: true });
++    var token = jwt.sign({foo: 123}, '123', { expiresIn: '5m' , noTimestamp: true });
+     var result = jwt.verify(token, '123');
+     expect(result.exp).to.be.closeTo(Math.floor(Date.now() / 1000) + (5*60), 0.5);
+   });
+ 
+-});
+\ No newline at end of file
++});
+diff --git a/test/set_headers.tests.js b/test/set_headers.tests.js
+index 953d181..75e8a02 100644
+--- a/test/set_headers.tests.js
++++ b/test/set_headers.tests.js
+@@ -1,18 +1,18 @@
+ var jwt = require('../index');
+ var expect = require('chai').expect;
+ 
+-describe('set headers', function() {
++describe('set header', function() {
+ 
+   it('should add the header', function () {
+-    var token = jwt.sign({foo: 123}, '123', { headers: { foo: 'bar' } });
++    var token = jwt.sign({foo: 123}, '123', { header: { foo: 'bar' } });
+     var decoded = jwt.decode(token, {complete: true});
+     expect(decoded.header.foo).to.equal('bar');
+   });
+ 
+-  it('should allow overriding headers', function () {
+-    var token = jwt.sign({foo: 123}, '123', { headers: { alg: 'HS512' } });
++  it('should allow overriding header', function () {
++    var token = jwt.sign({foo: 123}, '123', { header: { alg: 'HS512' } });
+     var decoded = jwt.decode(token, {complete: true});
+     expect(decoded.header.alg).to.equal('HS512');
+   });
+ 
+-});
+\ No newline at end of file
++});
+
+```
+
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Report all of your findings in a single JSON object with the following format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

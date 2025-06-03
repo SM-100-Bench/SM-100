@@ -1,0 +1,20 @@
+Please review the code in the paulmillr_chokidar_1018 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Core Library subsystem (consisting of 'index.js', 'lib/constants.js', 'lib/fsevents-handler.js', 'lib/nodefs-handler.js')
+2. File System Handlers subsystem (consisting of 'lib/fsevents-handler.js', 'lib/nodefs-handler.js')
+3. Examples and Tests subsystem (consisting of 'example.js', 'test.js', 'types/test.ts')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

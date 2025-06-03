@@ -1,0 +1,112 @@
+{"issues":[
+  {
+    "file": "server/acl.go",
+    "line": 35,
+    "description": "Session retrieval ignores errors: sess, _ := session.Get(...). If the session store returns an error, it will be silently ignored, possibly leading to unexpected behavior."
+  },
+  {
+    "file": "server/acl.go",
+    "line": 56,
+    "description": "Session retrieval for user ID also ignores possible session errors, which may allow unauthorized access if the session is corrupted."
+  },
+  {
+    "file": "server/acl.go",
+    "line": 59,
+    "description": "UserID is retrieved with userID, _ := strconv.Atoi(fmt.Sprintf(\"%v\", userIDValue)), which may silently default to 0 if conversion fails, potentially leading to privilege escalation or incorrect authorization."
+  },
+  {
+    "file": "server/acl.go",
+    "line": 92,
+    "description": "If creatorId query param is provided and is an integer, GET access is allowed without session. This may be abused for information leakage if users can enumerate creatorId values."
+  },
+  {
+    "file": "server/auth.go",
+    "line": 28,
+    "description": "When comparing password hashes, timing attacks may be possible if the response time differs between user-not-found and incorrect password cases."
+  },
+  {
+    "file": "server/auth.go",
+    "line": 64,
+    "description": "On /auth/signup, OpenID is set to a random UUID, but there is no check for uniqueness of the OpenID in the user database. This could theoretically result in a collision."
+  },
+  {
+    "file": "server/auth.go",
+    "line": 89,
+    "description": "The allowSignUp system setting is parsed from JSON but is not type-checked beyond unmarshal; a non-boolean value could cause a panic."
+  },
+  {
+    "file": "server/common.go",
+    "line": 3,
+    "description": "composeResponse returns a struct with 'data' field, but does not prevent unintentional data leakage if sensitive fields are not scrubbed before being passed in."
+  },
+  {
+    "file": "server/http_getter.go",
+    "line": 20,
+    "description": "URL input is only parsed for structural validity, but not sanitized for SSRF (Server-Side Request Forgery) attacks. Malicious URLs (localhost, internal IPs, file://, etc.) may be fetched."
+  },
+  {
+    "file": "server/http_getter.go",
+    "line": 50,
+    "description": "Similar to above, /get/image endpoint may be vulnerable to SSRF or DoS if an attacker supplies a URL to internal resources (localhost, metadata, etc.)."
+  },
+  {
+    "file": "server/resource.go",
+    "line": 19,
+    "description": "maxFileSize is set to 256MB ((32*8)<<20), but the comment says 32MB. This mismatch could lead to resource exhaustion or unexpected uploads."
+  },
+  {
+    "file": "server/resource.go",
+    "line": 33,
+    "description": "No validation or sanitization of uploaded file names. Special or malicious filenames could break UI or backend, or enable path traversal if not handled downstream."
+  },
+  {
+    "file": "server/resource.go",
+    "line": 166,
+    "description": "In /r/:resourceId/:filename route, the file is served to any client with the resourceId and filename, with no authentication or authorization, leaking resources if resource IDs are guessable."
+  },
+  {
+    "file": "server/resource.go",
+    "line": 166,
+    "description": "No content-disposition header is set for downloads, allowing XSS via user-supplied filenames if browsers decide to render the file inline."
+  },
+  {
+    "file": "server/rss.go",
+    "line": 66,
+    "description": "RSS feed endpoint exposes memo content publicly for the given user, which may result in information leakage if permissions are not correctly enforced elsewhere."
+  },
+  {
+    "file": "server/system.go",
+    "line": 38,
+    "description": "Desensitization of user data in /status route is limited (only OpenID and Email are blanked). Other fields may still leak information if not handled elsewhere."
+  },
+  {
+    "file": "server/system.go",
+    "line": 58,
+    "description": "JSON unmarshal of system setting values is not type-checked. If value is not the expected type, type assertions (e.g., value.(bool)) can cause panics."
+  },
+  {
+    "file": "server/tag.go",
+    "line": 38,
+    "description": "In GET /tag, creatorId is set from query param but not validated for existence or ownership, allowing enumeration of tag lists for arbitrary user IDs."
+  },
+  {
+    "file": "server/user.go",
+    "line": 30,
+    "description": "User creation endpoint allows Host user to create members, but does not check for duplicate usernames, emails, or other unique fields (unless handled in Validate or Store layer)."
+  },
+  {
+    "file": "server/user.go",
+    "line": 74,
+    "description": "In GET /user, OpenID is cleared but emails and other sensitive fields may be leaked unless redacted elsewhere."
+  },
+  {
+    "file": "server/user.go",
+    "line": 207,
+    "description": "PATCH /user/:id allows Host or self-update. However, if a user is deleted (archived) and the ID is recycled, it may result in privilege escalation if not properly handled."
+  },
+  {
+    "file": "server/user.go",
+    "line": 246,
+    "description": "DELETE /user/:id allows Host to delete any user. If no checks are applied in the Store or DB for protected users (e.g., Host), privilege escalation or accidental lockout may occur."
+  }
+]}

@@ -1,0 +1,3178 @@
+Please review the following commit for potential bugs:
+
+```
+diff --git a/Makefile b/Makefile
+index f0e9d972..33ed0bea 100644
+--- a/Makefile
++++ b/Makefile
+@@ -14,9 +14,9 @@ build:
+ 	@cd server/public && bower install
+ 	@cd server/public && grunt
+ 	@cd server && go get -v
+-	@sed -i -e "s/##VERSION##/$(RELEASE_VERSION)/g" server/utils/utils.go
++	@sed -i -e "s/##VERSION##/$(RELEASE_VERSION)/g" server/common/config.go
+ 	@cd server && go build -o plikd ./
+-	@git checkout server/utils/utils.go
++	@sed -i -e "s/$(RELEASE_VERSION)/##VERSION##/g" server/common/config.go
+ 
+ clean:
+ 	@rm -rf server/public/bower_components
+diff --git a/client/archive/tar/tar.go b/client/archive/tar/tar.go
+index e48babd3..62b08838 100644
+--- a/client/archive/tar/tar.go
++++ b/client/archive/tar/tar.go
+@@ -4,7 +4,7 @@ import (
+ 	"errors"
+ 	"fmt"
+ 	"github.com/root-gg/plik/client/config"
+-	"github.com/root-gg/plik/server/utils"
++	"github.com/root-gg/utils"
+ 	"io"
+ 	"os"
+ 	"os/exec"
+diff --git a/client/archive/zip/zip.go b/client/archive/zip/zip.go
+index 2142bb5d..a554189a 100644
+--- a/client/archive/zip/zip.go
++++ b/client/archive/zip/zip.go
+@@ -1,13 +1,13 @@
+ package zip
+ 
+ import (
+-	"github.com/root-gg/plik/server/utils"
+ 	"io"
+ 	"os/exec"
+ 	//	"strings"
+ 	"errors"
+ 	"fmt"
+ 	"github.com/root-gg/plik/client/config"
++	"github.com/root-gg/utils"
+ 	"os"
+ 	"path/filepath"
+ 	"strings"
+diff --git a/client/crypto/openssl/openssl.go b/client/crypto/openssl/openssl.go
+index 370fecc3..a146a3b0 100644
+--- a/client/crypto/openssl/openssl.go
++++ b/client/crypto/openssl/openssl.go
+@@ -3,7 +3,8 @@ package openssl
+ import (
+ 	"fmt"
+ 	"github.com/root-gg/plik/client/config"
+-	"github.com/root-gg/plik/server/utils"
++	"github.com/root-gg/plik/server/common"
++	"github.com/root-gg/utils"
+ 	"io"
+ 	"os"
+ 	"os/exec"
+@@ -51,7 +52,7 @@ func (this *OpenSSLBackend) Configure(arguments map[string]interface{}) (err err
+ 			}
+ 		}
+ 	} else {
+-		this.Config.Passphrase = utils.GenerateRandomId(25)
++		this.Config.Passphrase = common.GenerateRandomId(25)
+ 		fmt.Println("Passphrase : " + this.Config.Passphrase)
+ 	}
+ 	if arguments["--secure-options"] != nil && arguments["--secure-options"].(string) != "" {
+diff --git a/client/crypto/pgp/pgp.go b/client/crypto/pgp/pgp.go
+index 0914198d..591e269e 100644
+--- a/client/crypto/pgp/pgp.go
++++ b/client/crypto/pgp/pgp.go
+@@ -1,12 +1,12 @@
+ package pgp
+ 
+ import (
+-	"code.google.com/p/go.crypto/openpgp"
+-	"code.google.com/p/go.crypto/openpgp/armor"
+ 	"errors"
+ 	"fmt"
+ 	"github.com/root-gg/plik/client/config"
+-	"github.com/root-gg/plik/server/utils"
++	"github.com/root-gg/utils"
++	"golang.org/x/crypto/openpgp"
++	"golang.org/x/crypto/openpgp/armor"
+ 	"io"
+ 	"os"
+ 	"strings"
+diff --git a/client/plik.go b/client/plik.go
+index a5efdcda..4ad7a19c 100644
+--- a/client/plik.go
++++ b/client/plik.go
+@@ -40,7 +40,7 @@ import (
+ 	"github.com/root-gg/plik/client/archive"
+ 	"github.com/root-gg/plik/client/config"
+ 	"github.com/root-gg/plik/client/crypto"
+-	"github.com/root-gg/plik/server/utils"
++	"github.com/root-gg/plik/server/common"
+ 	"io"
+ 	"io/ioutil"
+ 	"math/rand"
+@@ -124,7 +124,7 @@ Options:
+ 		baseUrl = arguments["--server"].(string)
+ 	}
+ 
+-	uploadInfo := new(utils.Upload)
++	uploadInfo := new(common.Upload)
+ 
+ 	uploadInfo.OneShot = config.Config.OneShot
+ 	if arguments["--oneshot"].(bool) {
+@@ -357,7 +357,7 @@ Options:
+ 	printf("    %s (%d file(s)) \n\n", bytesToString(totalSize), count)
+ }
+ 
+-func createUpload(uploadParams *utils.Upload) (upload *utils.Upload, err error) {
++func createUpload(uploadParams *common.Upload) (upload *common.Upload, err error) {
+ 	var Url *url.URL
+ 	Url, err = url.Parse(baseUrl + "/upload")
+ 	if err != nil {
+@@ -395,7 +395,7 @@ func createUpload(uploadParams *utils.Upload) (upload *utils.Upload, err error)
+ 	basicAuth = resp.Header.Get("Authorization")
+ 
+ 	// Parse Json
+-	upload = new(utils.Upload)
++	upload = new(common.Upload)
+ 	err = json.Unmarshal(body, upload)
+ 	if err != nil {
+ 		return
+@@ -404,7 +404,7 @@ func createUpload(uploadParams *utils.Upload) (upload *utils.Upload, err error)
+ 	return
+ }
+ 
+-func upload(uploadInfo *utils.Upload, name string, size int64, reader io.Reader) (file *utils.File, err error) {
++func upload(uploadInfo *common.Upload, name string, size int64, reader io.Reader) (file *common.File, err error) {
+ 	pipeReader, pipeWriter := io.Pipe()
+ 	multipartWriter := multipart.NewWriter(pipeWriter)
+ 
+@@ -480,7 +480,7 @@ func upload(uploadInfo *utils.Upload, name string, size int64, reader io.Reader)
+ 	}
+ 
+ 	// Parse Json
+-	file = new(utils.File)
++	file = new(common.File)
+ 	err = json.Unmarshal(responseBody, file)
+ 	if err != nil {
+ 		return
+@@ -490,7 +490,7 @@ func upload(uploadInfo *utils.Upload, name string, size int64, reader io.Reader)
+ 	return
+ }
+ 
+-func getFileCommand(upload *utils.Upload, file *utils.File) (command string) {
++func getFileCommand(upload *common.Upload, file *common.File) (command string) {
+ 
+ 	// Step one - Downloading file
+ 	switch config.Config.DownloadBinary {
+@@ -529,7 +529,7 @@ func printf(format string, args ...interface{}) {
+ 	}
+ }
+ 
+-func printFileInformations(upload *utils.Upload, file *utils.File) {
++func printFileInformations(upload *common.Upload, file *common.File) {
+ 	var line string
+ 	if !config.Config.Quiet {
+ 		line += "    "
+diff --git a/server/utils/config.go b/server/common/config.go
+similarity index 51%
+rename from server/utils/config.go
+rename to server/common/config.go
+index 1c3d0107..09d043b6 100644
+--- a/server/utils/config.go
++++ b/server/common/config.go
+@@ -1,32 +1,14 @@
+-package utils
++package common
+ 
+ import (
+-	"bytes"
+-	"encoding/json"
+ 	"github.com/BurntSushi/toml"
+-	"log"
+-	"reflect"
++	"github.com/root-gg/logger"
+ )
+ 
+-/*
+- * Assign a map[string]interface{} to a struct mapping the map pairs to
+- * the structure members by name using reflexion.
+- */
+-func Assign(config interface{}, values map[string]interface{}) {
+-	s := reflect.ValueOf(config).Elem()
+-	t := reflect.TypeOf(config)
+-	if t.Kind() == reflect.Ptr {
+-		t = t.Elem()
+-	}
+-	for key, val := range values {
+-		if typ, ok := t.FieldByName(key); ok {
+-			s.FieldByName(key).Set(reflect.ValueOf(val).Convert(typ.Type))
+-		}
+-	}
+-}
++var PlikVersion = "##VERSION##"
+ 
+ type Configuration struct {
+-	Debug         bool
++	LogLevel      string
+ 	ListenAddress string
+ 	ListenPort    int
+ 	MaxFileSize   int
+@@ -59,6 +41,7 @@ var Config *Configuration
+ 
+ func NewConfiguration() (this *Configuration) {
+ 	this = new(Configuration)
++	this.LogLevel = "INFO"
+ 	this.ListenAddress = "0.0.0.0"
+ 	this.ListenPort = 8080
+ 	this.UploadIpRestriction = false
+@@ -75,35 +58,8 @@ func NewConfiguration() (this *Configuration) {
+ func LoadConfiguration(file string) {
+ 	Config = NewConfiguration()
+ 	if _, err := toml.DecodeFile(file, Config); err != nil {
+-		log.Println(err)
+-	}
+-	Config.Dump()
+-}
+-
+-/*
+- * Display configuration
+- */
+-func (this *Configuration) Dump() {
+-	Sdump(this)
+-}
+-
+-func Debug(message string) {
+-	if Config.Debug {
+-		log.Println(message)
+-	}
+-}
+-
+-func Dump(data interface{}) {
+-	log.Println(Sdump(data))
+-}
+-
+-func Sdump(data interface{}) string {
+-	buf := new(bytes.Buffer)
+-	if json, err := json.Marshal(data); err != nil {
+-		log.Printf("Unable to dump data %v : %s", data, err)
+-	} else {
+-		buf.Write(json)
+-		buf.WriteString("\n")
++		Log().Warningf("Unable to load config file %s : %s", file, err)
+ 	}
+-	return string(buf.Bytes())
++	Log().SetMinLevelFromString(Config.LogLevel)
++	Log().Dump(logger.DEBUG, Config)
+ }
+diff --git a/server/common/context.go b/server/common/context.go
+new file mode 100644
+index 00000000..0dcfba16
+--- /dev/null
++++ b/server/common/context.go
+@@ -0,0 +1,80 @@
++package common
++
++import (
++	"fmt"
++	"github.com/root-gg/context"
++	"github.com/root-gg/logger"
++	"net/http"
++	"strings"
++)
++
++var rootLogger *logger.Logger = logger.NewLogger()
++var rootContext *PlikContext = newRootContext()
++
++func RootContext() *PlikContext {
++	return rootContext
++}
++
++func Log() *logger.Logger {
++	return rootLogger
++}
++
++type PlikContext struct {
++	*context.Context
++	*logger.Logger
++}
++
++func newRootContext() (ctx *PlikContext) {
++	ctx = new(PlikContext)
++	ctx.Context = context.NewContext("ROOT")
++	ctx.Logger = rootLogger
++	return
++}
++
++func NewPlikContext(name string, req *http.Request) (ctx *PlikContext) {
++	ctx = new(PlikContext)
++	ctx.Context = rootContext.Context.Fork(name).AutoDetach()
++	ctx.Logger = rootContext.Logger.Copy()
++
++	// TODO X-FORWARDED-FOR
++	remoteAddr := strings.Split(req.RemoteAddr, ":")
++	if len(remoteAddr) > 0 {
++		ctx.Set("RemoteIp", remoteAddr[0])
++	}
++
++	ctx.UpdateLoggerPrefix("")
++	return
++}
++
++func (ctx *PlikContext) Fork(name string) (fork *PlikContext) {
++	fork = new(PlikContext)
++	fork.Context = ctx.Context.Fork(name)
++	fork.Logger = ctx.Logger.Copy()
++	return fork
++}
++
++func (ctx *PlikContext) SetUpload(uploadId string) *PlikContext {
++	ctx.Set("UploadId", uploadId)
++	ctx.UpdateLoggerPrefix("")
++	return ctx
++}
++
++func (ctx *PlikContext) SetFile(fileName string) *PlikContext {
++	ctx.Set("FileName", fileName)
++	ctx.UpdateLoggerPrefix("")
++	return ctx
++}
++
++func (ctx *PlikContext) UpdateLoggerPrefix(prefix string) {
++	str := ""
++	if ip, ok := ctx.Get("RemoteIp"); ok {
++		str += fmt.Sprintf("[%s]", ip)
++	}
++	if uploadId, ok := ctx.Get("UploadId"); ok {
++		str += fmt.Sprintf("[%s]", uploadId)
++	}
++	if fileName, ok := ctx.Get("FileName"); ok {
++		str += fmt.Sprintf("[%s]", fileName)
++	}
++	ctx.SetPrefix(str + prefix)
++}
+diff --git a/server/utils/file.go b/server/common/file.go
+similarity index 98%
+rename from server/utils/file.go
+rename to server/common/file.go
+index bfaba40f..5c538a44 100644
+--- a/server/utils/file.go
++++ b/server/common/file.go
+@@ -1,4 +1,4 @@
+-package utils
++package common
+ 
+ type File struct {
+ 	Id             string                 `json:"id" bson:"fileId"`
+@@ -18,6 +18,5 @@ func NewFile() (file *File) {
+ }
+ 
+ func (file *File) Sanitize() {
+-
+ 	file.BackendDetails = nil
+ }
+diff --git a/server/common/result.go b/server/common/result.go
+new file mode 100644
+index 00000000..3f98f130
+--- /dev/null
++++ b/server/common/result.go
+@@ -0,0 +1,32 @@
++package common
++
++import (
++	"fmt"
++	"github.com/root-gg/utils"
++)
++
++type Result struct {
++	Message string      `json:"message"`
++	Value   interface{} `json:"value"`
++}
++
++func NewResult(message string, value interface{}) (r *Result) {
++	r = new(Result)
++	r.Message = message
++	r.Value = value
++	return
++}
++
++func (result *Result) ToJson() []byte {
++	if j, err := utils.ToJson(result); err == nil {
++		return j
++	} else {
++		msg := fmt.Sprintf("Unable to serialize result %s to json : %s", result.Message, err)
++		Log().Warning(msg)
++		return []byte("{message:\"" + msg + "\"}")
++	}
++}
++
++func (result *Result) ToJsonString() string {
++	return string(result.ToJson())
++}
+diff --git a/server/utils/upload.go b/server/common/upload.go
+similarity index 99%
+rename from server/utils/upload.go
+rename to server/common/upload.go
+index eb739563..b2e5fb9a 100644
+--- a/server/utils/upload.go
++++ b/server/common/upload.go
+@@ -1,4 +1,4 @@
+-package utils
++package common
+ 
+ import (
+ 	"math/rand"
+diff --git a/server/utils/yubikey.go b/server/common/yubikey.go
+similarity index 98%
+rename from server/utils/yubikey.go
+rename to server/common/yubikey.go
+index 2d9e6694..55efba8d 100644
+--- a/server/utils/yubikey.go
++++ b/server/common/yubikey.go
+@@ -1,4 +1,4 @@
+-package utils
++package common
+ 
+ import (
+ 	"errors"
+diff --git a/server/data_backend/dataBackend.go b/server/data_backend/dataBackend.go
+index ba4d7120..cc2af230 100644
+--- a/server/data_backend/dataBackend.go
++++ b/server/data_backend/dataBackend.go
+@@ -1,33 +1,40 @@
+ package data_backend
+ 
+ import (
++	"github.com/root-gg/plik/server/common"
+ 	"github.com/root-gg/plik/server/data_backend/file"
+ 	"github.com/root-gg/plik/server/data_backend/swift"
+ 	"github.com/root-gg/plik/server/data_backend/weedfs"
+-	"github.com/root-gg/plik/server/utils"
+ 	"io"
+ )
+ 
+ var dataBackend DataBackend
+ 
+ type DataBackend interface {
+-	GetFile(u *utils.Upload, id string) (rc io.ReadCloser, err error)
+-	AddFile(u *utils.Upload, file *utils.File, fileReader io.Reader) (backendDetails map[string]interface{}, err error)
+-	RemoveFile(u *utils.Upload, id string) (err error)
+-	RemoveUpload(u *utils.Upload) (err error)
++	GetFile(ctx *common.PlikContext, u *common.Upload, id string) (rc io.ReadCloser, err error)
++	AddFile(ctx *common.PlikContext, u *common.Upload, file *common.File, fileReader io.Reader) (backendDetails map[string]interface{}, err error)
++	RemoveFile(ctx *common.PlikContext, u *common.Upload, id string) (err error)
++	RemoveUpload(ctx *common.PlikContext, u *common.Upload) (err error)
+ }
+ 
+ func GetDataBackend() DataBackend {
+ 	if dataBackend == nil {
+-		switch utils.Config.DataBackend {
++		Initialize()
++	}
++	return dataBackend
++}
++
++func Initialize() {
++	if dataBackend == nil {
++		switch common.Config.DataBackend {
+ 		case "file":
+-			dataBackend = file.NewFileBackend(utils.Config.DataBackendConfig)
++			dataBackend = file.NewFileBackend(common.Config.DataBackendConfig)
+ 		case "swift":
+-			dataBackend = swift.NewSwiftBackend(utils.Config.DataBackendConfig)
++			dataBackend = swift.NewSwiftBackend(common.Config.DataBackendConfig)
+ 		case "weedfs":
+-			dataBackend = weedfs.NewWeedFsBackend(utils.Config.DataBackendConfig)
++			dataBackend = weedfs.NewWeedFsBackend(common.Config.DataBackendConfig)
++		default:
++			common.Log().Fatalf("Invalid data backend %s", common.Config.DataBackend)
+ 		}
+ 	}
+-
+-	return dataBackend
+ }
+diff --git a/server/data_backend/file/file.go b/server/data_backend/file/file.go
+index a63fecba..7b478bd6 100644
+--- a/server/data_backend/file/file.go
++++ b/server/data_backend/file/file.go
+@@ -1,9 +1,9 @@
+ package file
+ 
+ import (
+-	"github.com/root-gg/plik/server/utils"
++	"github.com/root-gg/plik/server/common"
++	"github.com/root-gg/utils"
+ 	"io"
+-	"log"
+ 	"os"
+ )
+ 
+@@ -13,7 +13,7 @@ type FileBackendConfig struct {
+ 
+ func NewFileBackendConfig(config map[string]interface{}) (this *FileBackendConfig) {
+ 	this = new(FileBackendConfig)
+-	this.Directory = "files"
++	this.Directory = "files" // Default upload directory is ./files
+ 	utils.Assign(this, config)
+ 	return
+ }
+@@ -28,87 +28,100 @@ func NewFileBackend(config map[string]interface{}) (this *FileBackend) {
+ 	return
+ }
+ 
+-func (this *FileBackend) GetFile(upload *utils.Upload, id string) (io.ReadCloser, error) {
+-	log.Printf(" - [FILE] Try to get file %s on upload %s", id, upload.Id)
++func (this *FileBackend) GetFile(ctx *common.PlikContext, upload *common.Upload, id string) (file io.ReadCloser, err error) {
++	defer ctx.Finalize(err)
+ 
+-	// Get paths
++	// Get file path
+ 	directory := this.getDirectoryFromUploadId(upload.Id)
+ 	fullPath := directory + "/" + id
+ 
+-	// Stat
+-	file, err := os.Open(fullPath)
++	// The file content will be piped directly
++	// to the client response body
++	file, err = os.Open(fullPath)
+ 	if err != nil {
+-		return nil, err
++		err = ctx.EWarningf("Unable to open file %s : %s", fullPath, err)
++		return
+ 	}
+ 
+-	return file, nil
++	return
+ }
+ 
+-func (this *FileBackend) AddFile(upload *utils.Upload, file *utils.File, fileReader io.Reader) (backendDetails map[string]interface{}, err error) {
+-	log.Println(" - [FILE] Begin upload of file on upload %s", upload.Id)
++func (this *FileBackend) AddFile(ctx *common.PlikContext, upload *common.Upload, file *common.File, fileReader io.Reader) (backendDetails map[string]interface{}, err error) {
++	defer ctx.Finalize(err)
+ 
+-	// Get paths
++	// Get file path
+ 	directory := this.getDirectoryFromUploadId(upload.Id)
+ 	fullPath := directory + "/" + file.Id
+ 
+ 	// Create directory
+-	if _, err := os.Stat(directory); err != nil {
+-		if err := os.MkdirAll(directory, 0777); err != nil {
+-			return backendDetails, err
++	_, err = os.Stat(directory)
++	if err != nil {
++		err = os.MkdirAll(directory, 0777)
++		if err != nil {
++			err = ctx.EWarningf("Unable to create upload directory %s : %s", directory, err)
++			return
+ 		}
+-
+-		log.Printf(" - [FILE] Folder %s successfully created", directory)
++		ctx.Infof("Folder %s successfully created", directory)
+ 	}
+ 
+-	// Open
++	// Create file
+ 	out, err := os.Create(fullPath)
+ 	if err != nil {
+-		return backendDetails, err
++		err = ctx.EWarningf("Unable to create file %s : %s", fullPath, err)
++		return
+ 	}
+ 
+-	// Save file
++	// Copy file data from the client request body
++	// to the file system
+ 	_, err = io.Copy(out, fileReader)
+ 	if err != nil {
+-		return backendDetails, err
++		err = ctx.EWarningf("Unable to save file %s : %s", fullPath, err)
++		return
+ 	}
++	ctx.Infof("File %s successfully saved", fullPath)
+ 
+-	log.Printf(" - [FILE] File %s successfully created on disk", fullPath)
+-	return backendDetails, nil
++	return
+ }
+ 
+-func (this *FileBackend) RemoveFile(upload *utils.Upload, id string) error {
++func (this *FileBackend) RemoveFile(ctx *common.PlikContext, upload *common.Upload, id string) (err error) {
++	defer ctx.Finalize(err)
+ 
+-	// Get upload path
++	// Get file path
+ 	fullPath := this.getDirectoryFromUploadId(upload.Id) + "/" + id
+ 
+-	// Remove
+-	err := os.Remove(fullPath)
++	// Remove file
++	err = os.Remove(fullPath)
+ 	if err != nil {
+-		return err
++		err = ctx.EWarningf("Unable to remove %s : %s", fullPath, err)
++		return
+ 	}
++	ctx.Infof("File %s successfully saved", fullPath)
+ 
+-	return nil
++	return
+ }
+ 
+-func (this *FileBackend) RemoveUpload(upload *utils.Upload) error {
++func (this *FileBackend) RemoveUpload(ctx *common.PlikContext, upload *common.Upload) (err error) {
++	defer ctx.Finalize(err)
+ 
+-	// Get upload path
++	// Get upload directory
+ 	fullPath := this.getDirectoryFromUploadId(upload.Id)
+ 
+-	// Remove
+-	err := os.RemoveAll(fullPath)
++	// Remove everything at once
++	err = os.RemoveAll(fullPath)
+ 	if err != nil {
+-		return err
++		err = ctx.EWarningf("Unable to remove %s : %s", fullPath, err)
++		return
+ 	}
+ 
+-	return nil
++	return
+ }
+ 
+ func (this *FileBackend) getDirectoryFromUploadId(uploadId string) string {
++	// To avoid too many files in the same directory
++	// data directory is splitted in two levels the
++	// first level is the 2 first chars from the upload id
++	// it gives 3844 possibilities reaching 65535 files per
++	// directory at ~250.000.000 files uploaded.
+ 
+-	if len(uploadId) > 2 {
+-		return this.Config.Directory + "/" + uploadId[:2] + "/" + uploadId
+-	}
+-
+-	return this.Config.Directory + "/" + uploadId + "/" + uploadId
++	return this.Config.Directory + "/" + uploadId[:2] + "/" + uploadId
+ }
+diff --git a/server/data_backend/swift/swift.go b/server/data_backend/swift/swift.go
+index 03475557..a90a3582 100644
+--- a/server/data_backend/swift/swift.go
++++ b/server/data_backend/swift/swift.go
+@@ -2,9 +2,10 @@ package swift
+ 
+ import (
+ 	"github.com/ncw/swift"
+-	"github.com/root-gg/plik/server/utils"
++	"github.com/root-gg/logger"
++	"github.com/root-gg/plik/server/common"
++	"github.com/root-gg/utils"
+ 	"io"
+-	"log"
+ )
+ 
+ type SwiftBackend struct {
+@@ -16,6 +17,8 @@ type configInfo struct {
+ 	Username, Password, Host, ProjectName, Container string
+ }
+ 
++var log *logger.Logger
++
+ func NewSwiftBackend(config map[string]interface{}) (this *SwiftBackend) {
+ 	this = new(SwiftBackend)
+ 	this.config = new(configInfo)
+@@ -24,7 +27,9 @@ func NewSwiftBackend(config map[string]interface{}) (this *SwiftBackend) {
+ 	return this
+ }
+ 
+-func (this *SwiftBackend) auth() (err error) {
++func (this *SwiftBackend) auth(ctx *common.PlikContext) (err error) {
++	timer := ctx.Time("auth")
++	defer timer.Stop()
+ 
+ 	if this.connection.Authenticated() {
+ 		return
+@@ -40,7 +45,7 @@ func (this *SwiftBackend) auth() (err error) {
+ 	// Authenticate
+ 	err = connection.Authenticate()
+ 	if err != nil {
+-		log.Println(err)
++		err = log.EWarningf("Unable to autenticate : %s", err)
+ 		return err
+ 	}
+ 	this.connection = connection
+@@ -51,76 +56,92 @@ func (this *SwiftBackend) auth() (err error) {
+ 	return
+ }
+ 
+-func (this *SwiftBackend) GetFile(upload *utils.Upload, fileId string) (io.ReadCloser, error) {
+-	err := this.auth()
++func (this *SwiftBackend) GetFile(ctx *common.PlikContext, upload *common.Upload, fileId string) (reader io.ReadCloser, err error) {
++	defer func() {
++		if err != nil {
++			ctx.Finalize(err)
++		}
++	}() // Finalize the context only if error, else let it be finalized by the download goroutine
++
++	err = this.auth(ctx)
+ 	if err != nil {
+-		return nil, err
++		return
+ 	}
+ 
+-	log.Printf(" - [FILE] Try to get file %s on upload %s", fileId, upload.Id)
+-	pipeReader, pipeWriter := io.Pipe()
++	reader, pipeWriter := io.Pipe()
+ 	uuid := this.getFileId(upload, fileId)
+ 	go func() {
+-		_, err := this.connection.ObjectGet(this.config.Container, uuid, pipeWriter, true, nil)
++		defer ctx.Finalize(err)
++		_, err = this.connection.ObjectGet(this.config.Container, uuid, pipeWriter, true, nil)
+ 		defer pipeWriter.Close()
+-
+ 		if err != nil {
++			err = ctx.EWarningf("Unable to get object %s : %s", uuid, err)
+ 			return
+ 		}
+-
+-		log.Printf(" - [DONE]")
+ 	}()
+ 
+-	return pipeReader, nil
++	return
+ }
+ 
+-func (this *SwiftBackend) AddFile(upload *utils.Upload, file *utils.File, fileReader io.Reader) (backendDetails map[string]interface{}, err error) {
+-	err = this.auth()
++func (this *SwiftBackend) AddFile(ctx *common.PlikContext, upload *common.Upload, file *common.File, fileReader io.Reader) (backendDetails map[string]interface{}, err error) {
++	defer ctx.Finalize(err)
++
++	err = this.auth(ctx)
+ 	if err != nil {
+-		return backendDetails, err
++		return
+ 	}
+ 
+ 	uuid := this.getFileId(upload, file.Id)
+-	log.Println(" - [FILE] Begin upload of file on upload %s", uuid)
+ 	object, err := this.connection.ObjectCreate(this.config.Container, uuid, true, "", "", nil)
+ 
+ 	_, err = io.Copy(object, fileReader)
+ 	if err != nil {
+-		return backendDetails, err
++		err = ctx.EWarningf("Unable to save object %s : %s", uuid, err)
++		return
+ 	}
+ 	object.Close()
+-	log.Printf(" - [FILE] File %s successfully created on swift", uuid)
++	ctx.Infof("Object %s successfully saved", uuid)
+ 
+ 	return
+ }
+ 
+-func (this *SwiftBackend) RemoveFile(upload *utils.Upload, fileId string) (err error) {
+-	err = this.auth()
++func (this *SwiftBackend) RemoveFile(ctx *common.PlikContext, upload *common.Upload, fileId string) (err error) {
++	defer ctx.Finalize(err)
++
++	err = this.auth(ctx)
+ 	if err != nil {
+ 		return
+ 	}
+ 
+-	log.Printf(" - [FILE] Try to delete file %s on upload %s", fileId, upload.Id)
+ 	uuid := this.getFileId(upload, fileId)
+ 	err = this.connection.ObjectDelete(this.config.Container, uuid)
++	if err != nil {
++		err = ctx.EWarningf("Unable to remove object %s : %s", uuid, err)
++		return
++	}
++
+ 	return
+ }
+ 
+-func (this *SwiftBackend) RemoveUpload(upload *utils.Upload) (err error) {
+-	err = this.auth()
++func (this *SwiftBackend) RemoveUpload(ctx *common.PlikContext, upload *common.Upload) (err error) {
++	defer ctx.Finalize(err)
++
++	err = this.auth(ctx)
+ 	if err != nil {
+ 		return
+ 	}
+ 
+ 	for fileId, _ := range upload.Files {
+-		log.Printf(" - [FILE] Try to delete file %s on upload %s", fileId, upload.Id)
+ 		uuid := this.getFileId(upload, fileId)
+ 		err = this.connection.ObjectDelete(this.config.Container, uuid)
++		if err != nil {
++			err = ctx.EWarningf("Unable to remove object %s : %s", uuid, err)
++		}
+ 	}
+ 
+ 	return
+ }
+ 
+-func (bf *SwiftBackend) getFileId(upload *utils.Upload, fileId string) string {
++func (bf *SwiftBackend) getFileId(upload *common.Upload, fileId string) string {
+ 	return upload.Id + "." + fileId
+ }
+diff --git a/server/data_backend/weedfs/weedfs.go b/server/data_backend/weedfs/weedfs.go
+index f227e4cc..5633c973 100644
+--- a/server/data_backend/weedfs/weedfs.go
++++ b/server/data_backend/weedfs/weedfs.go
+@@ -2,11 +2,10 @@ package weedfs
+ 
+ import (
+ 	"encoding/json"
+-	"errors"
+-	"github.com/root-gg/plik/server/utils"
++	"github.com/root-gg/plik/server/common"
++	"github.com/root-gg/utils"
+ 	"io"
+ 	"io/ioutil"
+-	"log"
+ 	"math/rand"
+ 	"mime/multipart"
+ 	"net/http"
+@@ -21,11 +20,11 @@ type WeedFsBackendConfig struct {
+ 	ReplicationPattern string
+ }
+ 
+-func NewWeedFsBackendConfig(config map[string]interface{}) (this *WeedFsBackendConfig) {
+-	this = new(WeedFsBackendConfig)
+-	this.MasterUrl = "http://127.0.0.1:9333"
+-	this.ReplicationPattern = "000"
+-	utils.Assign(this, config)
++func NewWeedFsBackendConfig(config map[string]interface{}) (weedFs *WeedFsBackendConfig) {
++	weedFs = new(WeedFsBackendConfig)
++	weedFs.MasterUrl = "http://127.0.0.1:9333"
++	weedFs.ReplicationPattern = "000"
++	utils.Assign(weedFs, config)
+ 	return
+ }
+ 
+@@ -33,210 +32,257 @@ type WeedFsBackend struct {
+ 	Config *WeedFsBackendConfig
+ }
+ 
+-func NewWeedFsBackend(config map[string]interface{}) (this *WeedFsBackend) {
+-	this = new(WeedFsBackend)
+-	this.Config = NewWeedFsBackendConfig(config)
++func NewWeedFsBackend(config map[string]interface{}) (weedFs *WeedFsBackend) {
++	weedFs = new(WeedFsBackend)
++	weedFs.Config = NewWeedFsBackendConfig(config)
+ 	return
+ }
+ 
+-func (this *WeedFsBackend) GetFile(upload *utils.Upload, id string) (io.ReadCloser, error) {
++func (weedFs *WeedFsBackend) GetFile(ctx *common.PlikContext, upload *common.Upload, id string) (reader io.ReadCloser, err error) {
++	defer ctx.Finalize(err)
+ 
+-	// Get file on upload
+ 	file := upload.Files[id]
+ 
+-	// Get weed fs volume and id
+-	if file.BackendDetails["WeedFsVolume"] == nil || file.BackendDetails["WeedFsFileId"] == nil {
+-		return nil, errors.New("Missing WeedFS volume or fileId in file metadatas")
++	// Get WeedFS volume from upload metadata
++	if file.BackendDetails["WeedFsVolume"] == nil {
++		err = ctx.EWarningf("Missing WeedFS volume from backend details")
++		return
+ 	}
+-
+ 	weedFsVolume := file.BackendDetails["WeedFsVolume"].(string)
++
++	// Get WeedFS file id from upload metadata
++	if file.BackendDetails["WeedFsFileId"] == nil {
++		err = ctx.EWarningf("Missing WeedFS file id from backend details")
++		return
++	}
+ 	weedFsFileId := file.BackendDetails["WeedFsFileId"].(string)
+ 
+-	// Get url of volume
+-	volumeUrl, err := this.getVolumeUrl(weedFsVolume)
++	// Get WeedFS volume url
++	volumeUrl, err := weedFs.getVolumeUrl(ctx, weedFsVolume)
+ 	if err != nil {
+-		return nil, err
++		err = ctx.EWarningf("Unable to get WeedFS volume url %s : %s", weedFsVolume)
++		return
+ 	}
+ 
+-	// Get file
++	// Get file from WeedFS volume, the response will be
++	// piped directly to the client response body
+ 	fileCompleteUrl := "http://" + volumeUrl + "/" + weedFsVolume + "," + weedFsFileId
+-	log.Printf(" - [FILE] WeedFS file url : %s", fileCompleteUrl)
++	ctx.Infof("Getting WeedFS file from : %s", fileCompleteUrl)
+ 	resp, err := http.Get(fileCompleteUrl)
+ 	if err != nil {
+-		return nil, err
++		err = ctx.EWarningf("Error while downloading file from WeedFS at %s : %s", fileCompleteUrl, err)
++		return
+ 	}
+ 
+ 	return resp.Body, nil
+ }
+ 
+-func (this *WeedFsBackend) AddFile(upload *utils.Upload, file *utils.File, fileReader io.Reader) (backendDetails map[string]interface{}, err error) {
++func (weedFs *WeedFsBackend) AddFile(ctx *common.PlikContext, upload *common.Upload, file *common.File, fileReader io.Reader) (backendDetails map[string]interface{}, err error) {
++	defer func() {
++		if err != nil {
++			ctx.Finalize(err)
++		}
++	}() // Finalize the context only if error, else let it be finalized by the upload goroutine
+ 
+-	// Init backend details map
+ 	backendDetails = make(map[string]interface{})
+ 
+-	// Make request to master to get an id
+-	assignUrl := this.Config.MasterUrl + "/dir/assign?replication=" + this.Config.ReplicationPattern
++	// Request a volume and a new file id from a WeedFS master
++	assignUrl := weedFs.Config.MasterUrl + "/dir/assign?replication=" + weedFs.Config.ReplicationPattern
++	ctx.Debugf("Getting volume and file id from WeedFS master at %s", assignUrl)
++
+ 	resp, err := client.Post(assignUrl, "", nil)
+ 	if err != nil {
++		err = ctx.EWarningf("Error while getting id from WeedFS master at %s : %s", assignUrl, err)
+ 		return
+ 	}
+-
+-	// Misc
+-	log.Printf(" - [FILE] Calling %s to get upload id", assignUrl)
+ 	defer resp.Body.Close()
+ 
+-	// Get body
++	// Read response body
+ 	bodyStr, err := ioutil.ReadAll(resp.Body)
+ 	if err != nil {
++		err = ctx.EWarningf("Unable to read response body from WeedFS master at %s : %s", assignUrl, err)
+ 		return
+ 	}
+ 
+-	// Decode it
++	// Unserialize response body
+ 	responseMap := make(map[string]interface{})
+ 	err = json.Unmarshal(bodyStr, &responseMap)
+ 	if err != nil {
++		err = ctx.EWarningf("Unable to unserialize json response \"%s\" from WeedFS master at %s : %s", bodyStr, assignUrl, err)
+ 		return
+ 	}
+ 
+-	// Got an id ?
+ 	if responseMap["fid"] != nil && responseMap["fid"].(string) != "" {
+ 		splitVolumeFromId := strings.Split(responseMap["fid"].(string), ",")
+ 		if len(splitVolumeFromId) > 1 {
+ 			backendDetails["WeedFsVolume"] = splitVolumeFromId[0]
+ 			backendDetails["WeedFsFileId"] = splitVolumeFromId[1]
++		} else {
++			err = ctx.EWarningf("Invalid fid from WeedFS master response \"%s\" at %s", bodyStr, assignUrl)
++			return
+ 		}
++	} else {
++		err = ctx.EWarningf("Missing fid from WeedFS master response \"%s\" at %", bodyStr, assignUrl)
++		return
+ 	}
+ 
+-	// Begin upload
++	// Construct upload url
++	if responseMap["publicUrl"] == nil || responseMap["publicUrl"].(string) == "" {
++		err = ctx.EWarningf("Missing publicUrl from WeedFS master response \"%s\" at %s", bodyStr, assignUrl)
++		return
++	}
++	fileUrl := "http://" + responseMap["publicUrl"].(string) + "/" + responseMap["fid"].(string)
++	var Url *url.URL
++	Url, err = url.Parse(fileUrl)
++	if err != nil {
++		err = ctx.EWarningf("Unable to construct WeedFS upload url \"%s\"", fileUrl)
++		return
++	}
++
++	ctx.Infof("Uploading file %s to volume %s to WeedFS at %s", backendDetails["WeedFsFileId"], backendDetails["WeedFsVolume"], fileUrl)
++
++	// Pipe the uploaded file from the client request body
++	// to the WeedFS request body without buffering
+ 	pipeReader, pipeWriter := io.Pipe()
+ 	multipartWriter := multipart.NewWriter(pipeWriter)
+-
+ 	go func() {
++		defer ctx.Finalize(err)
+ 		filePart, err := multipartWriter.CreateFormFile("file", file.Name)
+ 		if err != nil {
++			ctx.Warningf("Unable to create multipart form : %s", err)
+ 			return
+ 		}
+ 
+ 		_, err = io.Copy(filePart, fileReader)
+ 		if err != nil {
++			ctx.Warningf("Unable to copy file to WeedFS request body : %s", err)
+ 			pipeWriter.CloseWithError(err)
+ 			return
+ 		}
+ 
+ 		err = multipartWriter.Close()
++		if err != nil {
++			ctx.Warningf("Unable to close multipartWriter : %s", err)
++		}
+ 		pipeWriter.CloseWithError(err)
+ 	}()
+ 
+-	// Construct Url
+-	var Url *url.URL
+-	Url, err = url.Parse("http://" + responseMap["publicUrl"].(string) + "/" + responseMap["fid"].(string))
+-	if err != nil {
+-		return
+-	}
+-
+-	// Construct request
+-	log.Printf(" - [FILE] Gonna PUT on %s", Url.String())
++	// Upload file to WeedFS volume
+ 	req, err := http.NewRequest("PUT", Url.String(), pipeReader)
+ 	if err != nil {
++		err = ctx.EWarningf("Unable to create PUT request to %s : %s", Url.String(), err)
+ 		return
+ 	}
+-
+-	// Exec
+ 	req.Header.Add("Content-Type", multipartWriter.FormDataContentType())
+ 	resp, err = client.Do(req)
+ 	if err != nil {
++		err = ctx.EWarningf("Unable to upload file to WeedFS at %s : %s", Url.String(), err)
+ 		return
+ 	}
++	defer resp.Body.Close()
+ 
+-	resp.Body.Close()
+-
+-	return backendDetails, nil
++	return
+ }
+ 
+-func (this *WeedFsBackend) RemoveFile(upload *utils.Upload, id string) error {
++func (weedFs *WeedFsBackend) RemoveFile(ctx *common.PlikContext, upload *common.Upload, id string) (err error) {
++	defer ctx.Finalize(err)
+ 
+-	// Get file on upload
++	// Get file metadata
+ 	file := upload.Files[id]
+ 
+-	// Get weed fs volume and id
+-	if file.BackendDetails["WeedFsVolume"] == nil || file.BackendDetails["WeedFsFileId"] == nil {
+-		return errors.New("Missing WeedFS volume or fileId in file metadatas")
++	// Get WeedFS volume and file id from upload metadata
++	if file.BackendDetails["WeedFsVolume"] == nil {
++		err = ctx.EWarningf("Missing WeedFS volume from backend details")
++		return
+ 	}
+-
+ 	weedFsVolume := file.BackendDetails["WeedFsVolume"].(string)
++
++	if file.BackendDetails["WeedFsFileId"] == nil {
++		err = ctx.EWarningf("Missing WeedFS file id from backend details")
++		return
++	}
+ 	weedFsFileId := file.BackendDetails["WeedFsFileId"].(string)
+ 
+-	// Get url of volume
+-	volumeUrl, err := this.getVolumeUrl(weedFsVolume)
++	// Get the WeedFS volume url
++	volumeUrl, err := weedFs.getVolumeUrl(ctx, weedFsVolume)
+ 	if err != nil {
+-		return err
++		return
+ 	}
+ 
+ 	// Construct Url
++	fileUrl := "http://" + volumeUrl + "/" + weedFsVolume + "," + weedFsFileId
+ 	var Url *url.URL
+-	Url, err = url.Parse("http://" + volumeUrl + "/" + weedFsVolume + "," + weedFsFileId)
++	Url, err = url.Parse(fileUrl)
+ 	if err != nil {
+-		return err
++		err = ctx.EWarningf("Unable to construct WeedFS url \"%s\"", fileUrl)
++		return
+ 	}
+ 
+-	// Construct request
+-	log.Printf(" - [FILE] Gonna DELETE on %s", Url.String())
++	ctx.Infof("Removing file %s from WeedFS volume %s at %s", weedFsFileId, weedFsVolume, fileUrl)
++
++	// Remove file from WeedFS volume
+ 	req, err := http.NewRequest("DELETE", Url.String(), nil)
+ 	if err != nil {
+-		return err
++		err = ctx.EWarningf("Unable to create DELETE request to %s : %s", Url.String(), err)
++		return
+ 	}
+-
+-	// Exec
+ 	resp, err := client.Do(req)
+ 	if err != nil {
+-		return err
++		err = ctx.EWarningf("Unable to delete file from WeedFS volume at %s : %s", Url.String(), err)
++		return
+ 	}
+-
+ 	resp.Body.Close()
+ 
+-	return nil
++	return
+ }
+ 
+-func (this *WeedFsBackend) RemoveUpload(upload *utils.Upload) (err error) {
++func (weedFs *WeedFsBackend) RemoveUpload(ctx *common.PlikContext, upload *common.Upload) (err error) {
++	defer ctx.Finalize(err)
+ 
+ 	for fileId, _ := range upload.Files {
+-		err = this.RemoveFile(upload, fileId)
++		err = weedFs.RemoveFile(ctx.Fork("remove file"), upload, fileId)
+ 		if err != nil {
+-			return err
++			return
+ 		}
+ 	}
+ 
+ 	return nil
+ }
+ 
+-func (this *WeedFsBackend) getVolumeUrl(volumeId string) (url string, err error) {
++func (weedFs *WeedFsBackend) getVolumeUrl(ctx *common.PlikContext, volumeId string) (url string, err error) {
++	timer := ctx.Time("get volume url")
++	defer timer.Stop()
+ 
+-	// Get url of volume
+-	log.Printf(" - [FILE] Trying to get WeedFs url for volume id %s", volumeId)
+-	resp, err := client.Post(this.Config.MasterUrl+"/dir/lookup?volumeId="+volumeId, "", nil)
++	// Ask a WeedFS master the volume urls
++	url = weedFs.Config.MasterUrl + "/dir/lookup?volumeId=" + volumeId
++	resp, err := client.Post(url, "", nil)
+ 	if err != nil {
+-		return "", err
++		err = ctx.EWarningf("Unable to get volume %s url from WeedFS master at %s : %s", volumeId, url, err)
++		return
+ 	}
+-
+ 	defer resp.Body.Close()
+ 
+-	// Get body
++	// Read response body
+ 	bodyStr, err := ioutil.ReadAll(resp.Body)
+ 	if err != nil {
+-		return "", err
++		err = ctx.EWarningf("Unable to read response from WeedFS master at %s : %s", volumeId, url, err)
++		return
+ 	}
+ 
+-	// Decode it
++	// Unserialize response body
+ 	responseMap := make(map[string]interface{})
+ 	err = json.Unmarshal(bodyStr, &responseMap)
+ 	if err != nil {
+-		return "", err
++		err = ctx.EWarningf("Unable to unserialize json response \"%s\"from WeedFS master at %s : %s", bodyStr, url, err)
++		return
+ 	}
+ 
+-	// Try to get urls
++	// As volumes can be replicated there may be more than one
++	// available url for a given volume
+ 	urlsFound := make([]string, 0)
+ 	if responseMap["locations"] == nil {
+-		return "", errors.New("Failed to get location of WeedFs volume.")
++		err = ctx.EWarningf("Missing url from WeedFS master response \"%s\" at %s", bodyStr, url)
++		return
+ 	}
+ 	if locationsArray, ok := responseMap["locations"].([]interface{}); ok {
+ 		for _, location := range locationsArray {
+@@ -249,10 +295,12 @@ func (this *WeedFsBackend) getVolumeUrl(volumeId string) (url string, err error)
+ 			}
+ 		}
+ 	}
+-
+ 	if len(urlsFound) == 0 {
+-		err = errors.New("No locations found on WeedFS for volume " + volumeId)
++		err = ctx.EWarningf("No url found for WeedFS volume %s", volumeId)
++		return
+ 	}
+ 
+-	return urlsFound[rand.Intn(len(urlsFound))], nil
++	// Take a random url from the list
++	url = urlsFound[rand.Intn(len(urlsFound))]
++	return
+ }
+diff --git a/server/metadata_backend/file/file.go b/server/metadata_backend/file/file.go
+index f89bb2f9..12a58c77 100644
+--- a/server/metadata_backend/file/file.go
++++ b/server/metadata_backend/file/file.go
+@@ -2,16 +2,15 @@ package file
+ 
+ import (
+ 	"encoding/json"
+-	"github.com/root-gg/plik/server/utils"
++	"github.com/root-gg/plik/server/common"
++	"github.com/root-gg/utils"
+ 	"io/ioutil"
+-	"log"
+ 	"os"
+ 	"os/exec"
+ 	"path/filepath"
+ 	"strconv"
+ 	"strings"
+ 	"sync"
+-	"time"
+ )
+ 
+ type FileMetadataBackendConfig struct {
+@@ -20,6 +19,10 @@ type FileMetadataBackendConfig struct {
+ 
+ func NewFileMetadataBackendConfig(config map[string]interface{}) (this *FileMetadataBackendConfig) {
+ 	this = new(FileMetadataBackendConfig)
++	// Default upload directory is ./files
++	// this is the same as the default file
++	// data backend so by default files and
++	// metadata are colocated
+ 	this.Directory = "files"
+ 	utils.Assign(this, config)
+ 	return
+@@ -34,258 +37,237 @@ var locks map[string]*sync.RWMutex
+ func NewFileMetadataBackend(config map[string]interface{}) (this *FileMetadataBackend) {
+ 	this = new(FileMetadataBackend)
+ 	this.Config = NewFileMetadataBackendConfig(config)
++	locks = make(map[string]*sync.RWMutex)
+ 	return
+ }
+ 
+-func (this *FileMetadataBackend) Create(upload *utils.Upload) (err error) {
++func (this *FileMetadataBackend) Create(ctx *common.PlikContext, upload *common.Upload) (err error) {
++	defer ctx.Finalize(err)
+ 
+-	// Get Splice
+-	splice := upload.Id
+-	if len(upload.Id) > 2 {
+-		splice = upload.Id[:2]
+-	}
+-
+-	directory := this.Config.Directory + "/" + splice + "/" + upload.Id
+-	metadatasFile := directory + "/.config"
++	// Get metadata file path
++	directory := this.Config.Directory + "/" + upload.Id[:2] + "/" + upload.Id
++	metadataFile := directory + "/.config"
+ 
+-	// Get json
++	// Serialize metadata to json
+ 	b, err := json.MarshalIndent(upload, "", "    ")
+ 	if err != nil {
+-		return err
++		err = ctx.EWarningf("Unable to serialize metadata to json : %s", err)
++		return
+ 	}
+ 
+-	// Create upload dir if not exists
+-	if _, err := os.Stat(directory); err != nil {
+-		if err := os.MkdirAll(directory, 0777); err != nil {
+-			return err
++	// Create upload directory if needed
++	if _, err = os.Stat(directory); err != nil {
++		if err = os.MkdirAll(directory, 0777); err != nil {
++			err = ctx.EWarningf("Unable to create upload directory %s : %s", directory, err)
++			return
+ 		}
+-
+-		log.Printf(" - [META] Folder %s successfully created", directory)
++		ctx.Infof("Upload directory %s successfully created", directory)
+ 	}
+ 
+-	// Open metadatas files
+-	f, err := os.OpenFile(metadatasFile, os.O_RDWR|os.O_CREATE, os.FileMode(0666))
++	// Create metadata file
++	f, err := os.OpenFile(metadataFile, os.O_RDWR|os.O_CREATE, os.FileMode(0666))
+ 	if err != nil {
+-		log.Printf(" - [META] Failed to open metadatas : %s", err)
+-		return err
++		err = ctx.EWarningf("Unable to create metadata file %s : %s", metadataFile, err)
++		return
+ 	}
++	defer f.Close()
+ 
+ 	// Print content
+ 	_, err = f.Write(b)
+ 	if err != nil {
+-		log.Printf(" - [META] Failed to write metadatas : %s", err)
+-		return err
++		err = ctx.EWarningf("Unable to write metadata file %s : %s", metadataFile, err)
++		return
+ 	}
+ 
+ 	// Sync on disk
+ 	err = f.Sync()
+ 	if err != nil {
+-		log.Printf(" - [META] Failed to sync metadatas : %s", err)
+-		return err
++		err = ctx.EWarningf("Unable to sync metadata file %s : %s", metadataFile, err)
++		return
+ 	}
+ 
+-	log.Printf(" - [META] Metadatas file %s for upload %s successfully writed on disk", metadatasFile, upload.Id)
+-	return nil
++	ctx.Infof("Metadata file successfully saved %s", metadataFile)
++	return
+ }
+ 
+-func (this *FileMetadataBackend) Get(id string) (upload *utils.Upload, err error) {
++func (this *FileMetadataBackend) Get(ctx *common.PlikContext, id string) (upload *common.Upload, err error) {
++	defer ctx.Finalize(err)
+ 
+-	// Get Splice
+-	splice := id
+-	if len(id) > 2 {
+-		splice = id[:2]
+-	}
+-	metadatasFile := this.Config.Directory + "/" + splice + "/" + id + "/.config"
++	// Get metadata file path
++	metadataFile := this.Config.Directory + "/" + id[:2] + "/" + id + "/.config"
+ 
+-	// Open & Read metadatas
+-	by := make([]byte, 0)
+-	by, err = ioutil.ReadFile(metadatasFile)
++	// Open and read metadata
++	buffer := make([]byte, 0)
++	buffer, err = ioutil.ReadFile(metadataFile)
+ 	if err != nil {
+-		return nil, err
++		err = ctx.EWarningf("Unable read metadata file %s : %s", metadataFile, err)
++		return
+ 	}
+ 
+-	// Unmarshal
+-	upload = new(utils.Upload)
+-	if err := json.Unmarshal(by, upload); err != nil {
+-		return nil, err
++	// Unserialize metadata from json
++	upload = new(common.Upload)
++	if err = json.Unmarshal(buffer, upload); err != nil {
++		err = ctx.EWarningf("Unable to unserialize metadata from json \"%s\" : %s", string(buffer), err)
++		return
+ 	}
+ 
+-	return upload, nil
++	return
+ }
+ 
+-func (this *FileMetadataBackend) AddOrUpdateFile(upload *utils.Upload, file *utils.File) (err error) {
++func (this *FileMetadataBackend) AddOrUpdateFile(ctx *common.PlikContext, upload *common.Upload, file *common.File) (err error) {
++	defer ctx.Finalize(err)
+ 
+-	// Lock
++	// avoid race condition
+ 	Lock(upload.Id)
+ 	defer Unlock(upload.Id)
+ 
+-	// Reload
+-	upload, err = this.Get(upload.Id)
++	// The first thing to do is to reload the file from disk
++	upload, err = this.Get(ctx.Fork("reload metadata"), upload.Id)
+ 
+-	// Add file to metadata
++	// Add file metadata to upload metadata
+ 	upload.Files[file.Id] = file
+ 
+-	// Get json
++	// Serialize metadata to json
+ 	b, err := json.MarshalIndent(upload, "", "    ")
+ 	if err != nil {
+-		return err
++		err = ctx.EWarningf("Unable to serialize metadata to json : %s", err)
++		return
+ 	}
+ 
+-	// Get splice
+-	splice := upload.Id
+-	if len(upload.Id) > 2 {
+-		splice = upload.Id[:2]
+-	}
++	// Get metadata file path
++	directory := this.Config.Directory + "/" + upload.Id[:2] + "/" + upload.Id
++	metadataFile := directory + "/.config"
+ 
+-	// Create directory if not exist
+-	directory := this.Config.Directory + "/" + splice + "/" + upload.Id
+-	metadatas := directory + "/.config"
+-
+-	if _, err := os.Stat(directory); err != nil {
+-		if err := os.MkdirAll(directory, 0777); err != nil {
+-			return err
++	// Create directory if needed
++	if _, err = os.Stat(directory); err != nil {
++		if err = os.MkdirAll(directory, 0777); err != nil {
++			err = ctx.EWarningf("Unable to create upload directory %s : %s", directory, err)
++			return
+ 		}
+-
+-		log.Printf(" - [META] Folder %s successfully created", directory)
++		ctx.Infof("Upload directory %s successfully created", directory)
+ 	}
+ 
+-	// Truncate
+-	err = os.Truncate(metadatas, 0)
++	// Override metadata file
++	f, err := os.OpenFile(metadataFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, os.FileMode(0666))
+ 	if err != nil {
+-		log.Printf(" - [META] Failed to truncate metadatas : %s", err)
+-		return err
+-	}
+-
+-	// Open metadatas files
+-	f, err := os.OpenFile(metadatas, os.O_RDWR|os.O_CREATE, os.FileMode(0666))
+-	if err != nil {
+-		log.Printf(" - [META] Failed to open metadatas : %s", err)
+-		return err
++		err = ctx.EWarningf("Unable to create metadata file %s : %s", metadataFile, err)
++		return
+ 	}
+ 
+ 	// Print content
+ 	_, err = f.Write(b)
+ 	if err != nil {
+-		log.Printf(" - [META] Failed to write metadatas : %s", err)
+-		return err
++		err = ctx.EWarningf("Unable to write metadata file %s : %s", metadataFile, err)
++		return
+ 	}
+ 
+ 	// Sync on disk
+ 	err = f.Sync()
+ 	if err != nil {
+-		log.Printf(" - [META] Failed to sync metadatas : %s", err)
+-		return err
++		err = ctx.EWarningf("Unable to sync metadata file %s : %s", metadataFile, err)
++		return
+ 	}
+ 
+-	log.Printf(" - [META] Metadatas file %s for upload %s successfully writed on disk", metadatas, upload.Id)
+-
+-	return nil
++	ctx.Infof("Metadata file successfully updated %s", metadataFile)
++	return
+ }
+ 
+-func (this *FileMetadataBackend) RemoveFile(upload *utils.Upload, file *utils.File) (err error) {
++func (this *FileMetadataBackend) RemoveFile(ctx *common.PlikContext, upload *common.Upload, file *common.File) (err error) {
++	defer ctx.Finalize(err)
+ 
+-	// Lock
++	// avoid race condition
+ 	Lock(upload.Id)
+ 	defer Unlock(upload.Id)
+ 
+-	// Reload
+-	upload, err = this.Get(upload.Id)
++	// The first thing to do is to reload the file from disk
++	upload, err = this.Get(ctx.Fork("reload metadata"), upload.Id)
+ 
+-	// Remove file frome metadata
++	// Remove file metadata from upload metadata
+ 	delete(upload.Files, file.Name)
+ 
+-	// Get json
++	// Serialize metadata to json
+ 	b, err := json.MarshalIndent(upload, "", "    ")
+ 	if err != nil {
+-		return err
+-	}
+-
+-	// Get splice
+-	splice := upload.Id
+-	if len(upload.Id) > 2 {
+-		splice = upload.Id[:2]
++		err = ctx.EWarningf("Unable to serialize metadata to json : %s", err)
++		return
+ 	}
+ 
+-	// Truncate first
+-	directory := this.Config.Directory + "/" + splice + "/" + upload.Id
+-	metadatas := directory + "/.config"
+-
+-	// Truncate
+-	err = os.Truncate(metadatas, 0)
+-	if err != nil {
+-		log.Printf(" - [META] Failed to truncate metadatas : %s", err)
+-		return err
+-	}
++	// Get metadata file path
++	directory := this.Config.Directory + "/" + upload.Id[:2] + "/" + upload.Id
++	metadataFile := directory + "/.config"
+ 
+-	// Open metadatas files
+-	f, err := os.OpenFile(metadatas, os.O_RDWR, os.FileMode(0666))
++	// Override metadata file
++	f, err := os.OpenFile(metadataFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, os.FileMode(0666))
+ 	if err != nil {
+-		log.Printf(" - [META] Failed to open metadatas : %s", err)
+-		return err
++		err = ctx.EWarningf("Unable to create metadata file %s : %s", metadataFile, err)
++		return
+ 	}
+ 
+ 	// Print content
+ 	_, err = f.Write(b)
+ 	if err != nil {
+-		log.Printf(" - [META] Failed to write metadatas : %s", err)
+-		return err
++		err = ctx.EWarningf("Unable to write metadata file %s : %s", metadataFile, err)
++		return
+ 	}
+ 
+ 	// Sync on disk
+ 	err = f.Sync()
+ 	if err != nil {
+-		log.Printf(" - [META] Failed to sync metadatas : %s", err)
+-		return err
++		err = ctx.EWarningf("Unable to sync metadata file %s : %s", metadataFile, err)
++		return
+ 	}
+ 
++	ctx.Infof("Metadata file successfully updated %s", metadataFile)
+ 	return nil
+ }
+ 
+-func (this *FileMetadataBackend) Remove(upload *utils.Upload) (err error) {
+-
+-	// Splice
+-	splice := upload.Id
+-	if len(upload.Id) > 2 {
+-		splice = upload.Id[:2]
+-	}
++func (this *FileMetadataBackend) Remove(ctx *common.PlikContext, upload *common.Upload) (err error) {
+ 
+-	directory := this.Config.Directory + "/" + splice + "/" + upload.Id
+-	fullPath := directory + "/.config"
++	// Get metadata file path
++	directory := this.Config.Directory + "/" + upload.Id[:2] + "/" + upload.Id
++	metadataFile := directory + "/.config"
+ 
+-	// Remove
+-	err = os.Remove(fullPath)
++	// Remove all metadata at once
++	err = os.Remove(metadataFile)
+ 	if err != nil {
+-		return err
++		err = ctx.EWarningf("Unable to remove upload directory %s : %s", metadataFile, err)
++		return
+ 	}
+ 
+-	return nil
++	return
+ }
+ 
+-func (this *FileMetadataBackend) GetUploadsToRemove() (ids []string, err error) {
++func (this *FileMetadataBackend) GetUploadsToRemove(ctx *common.PlikContext) (ids []string, err error) {
++	defer ctx.Finalize(err)
+ 
+-	if utils.Config.MaxTtl > 0 {
++	// Look for uploads older than MaxTTL to schedule them for removal ( defaults to 30 days )
++	// This is suboptimal as some of them might have an inferior TTL but it's
++	// a lot cheaper than opening and deserializing each metadata file.
++	if common.Config.MaxTtl > 0 {
+ 		ids = make([]string, 0)
+ 
+ 		// Let's call our friend find
+ 		args := make([]string, 0)
+ 		args = append(args, this.Config.Directory)
+-		args = append(args, "-mindepth", "2")
+-		args = append(args, "-maxdepth", "2")
++		args = append(args, "-mindepth", "2") // Remember that the upload directory
++		args = append(args, "-maxdepth", "2") // structure is splitted in two
+ 		args = append(args, "-type", "d")
+-		args = append(args, "-cmin", "+"+strconv.Itoa(utils.Config.MaxTtl))
++		args = append(args, "-cmin", "+"+strconv.Itoa(common.Config.MaxTtl))
++		ctx.Debugf("Executing command : %s", strings.Join(args, " "))
+ 
+-		// Exec
++		// Exec find command
+ 		cmd := exec.Command("find", args...)
+-		o, err := cmd.Output()
++		var o []byte
++		o, err = cmd.Output()
+ 		if err != nil {
+-			return ids, err
++			err = ctx.EWarningf("Unable to get find output : %s", err)
++			return
+ 		}
+ 
+-		// Split
+ 		pathsToRemove := strings.Split(string(o), "\n")
+-
+ 		for _, pathToRemove := range pathsToRemove {
+ 			if pathToRemove != "" {
++				// Extract upload id from path
+ 				uploadId := filepath.Base(pathToRemove)
+ 				ids = append(ids, uploadId)
+ 			}
+@@ -295,26 +277,20 @@ func (this *FileMetadataBackend) GetUploadsToRemove() (ids []string, err error)
+ 	return ids, nil
+ }
+ 
+-//
+-//// Lock for file this (to avoid problems on concurrent access)
+-//
+-
++// /!\ There is a race condition to avoid /!\
++// If a client add/remove many files of the same upload
++// in parallel the associated metadata file
++// might be read by many goroutine at the same time,
++// then every of them will override the file with
++// their own possibly incomplete/invalid version.
+ func Lock(uploadId string) {
+-	if locks == nil {
+-		locks = make(map[string]*sync.RWMutex)
+-	}
+ 	if locks[uploadId] == nil {
+ 		locks[uploadId] = new(sync.RWMutex)
+-
+-		go func() {
+-			time.Sleep(time.Hour)
+-			delete(locks, uploadId)
+-		}()
+ 	}
+-
+ 	locks[uploadId].Lock()
+ }
+ 
+ func Unlock(uploadId string) {
+ 	locks[uploadId].Unlock()
++	delete(locks, uploadId)
+ }
+diff --git a/server/metadata_backend/metadataBackend.go b/server/metadata_backend/metadataBackend.go
+index 9badd1bb..8d18c9ad 100644
+--- a/server/metadata_backend/metadataBackend.go
++++ b/server/metadata_backend/metadataBackend.go
+@@ -1,31 +1,38 @@
+ package metadata_backend
+ 
+ import (
++	"github.com/root-gg/plik/server/common"
+ 	"github.com/root-gg/plik/server/metadata_backend/file"
+ 	"github.com/root-gg/plik/server/metadata_backend/mongo"
+-	"github.com/root-gg/plik/server/utils"
+ )
+ 
+ var metadataBackend MetadataBackend
+ 
+ type MetadataBackend interface {
+-	Create(u *utils.Upload) (err error)
+-	Get(id string) (u *utils.Upload, err error)
+-	AddOrUpdateFile(u *utils.Upload, file *utils.File) (err error)
+-	RemoveFile(u *utils.Upload, file *utils.File) (err error)
+-	Remove(u *utils.Upload) (err error)
+-	GetUploadsToRemove() (ids []string, err error)
++	Create(ctx *common.PlikContext, u *common.Upload) (err error)
++	Get(ctx *common.PlikContext, id string) (u *common.Upload, err error)
++	AddOrUpdateFile(ctx *common.PlikContext, u *common.Upload, file *common.File) (err error)
++	RemoveFile(ctx *common.PlikContext, u *common.Upload, file *common.File) (err error)
++	Remove(ctx *common.PlikContext, u *common.Upload) (err error)
++	GetUploadsToRemove(ctx *common.PlikContext) (ids []string, err error)
+ }
+ 
+-func GetMetadataBackend() MetadataBackend {
++func GetMetaDataBackend() MetadataBackend {
+ 	if metadataBackend == nil {
+-		switch utils.Config.MetadataBackend {
++		Initialize()
++	}
++	return metadataBackend
++}
++
++func Initialize() {
++	if metadataBackend == nil {
++		switch common.Config.MetadataBackend {
+ 		case "file":
+-			metadataBackend = file.NewFileMetadataBackend(utils.Config.MetadataBackendConfig)
++			metadataBackend = file.NewFileMetadataBackend(common.Config.MetadataBackendConfig)
+ 		case "mongo":
+-			metadataBackend = mongo.NewMongoMetadataBackend(utils.Config.MetadataBackendConfig)
++			metadataBackend = mongo.NewMongoMetadataBackend(common.Config.MetadataBackendConfig)
++		default:
++			common.Log().Fatalf("Invalid metadata backend %s", common.Config.DataBackend)
+ 		}
+ 	}
+-
+-	return metadataBackend
+ }
+diff --git a/server/metadata_backend/mongo/mongo.go b/server/metadata_backend/mongo/mongo.go
+index 17717d57..4be5f7d9 100644
+--- a/server/metadata_backend/mongo/mongo.go
++++ b/server/metadata_backend/mongo/mongo.go
+@@ -2,10 +2,10 @@ package mongo
+ 
+ import (
+ 	"crypto/tls"
+-	"github.com/root-gg/plik/server/utils"
++	"github.com/root-gg/plik/server/common"
++	"github.com/root-gg/utils"
+ 	mgo "gopkg.in/mgo.v2"
+ 	"gopkg.in/mgo.v2/bson"
+-	"log"
+ 	"net"
+ 	"strconv"
+ 	"time"
+@@ -43,7 +43,7 @@ func NewMongoMetadataBackend(config map[string]interface{}) (this *MongoMetadata
+ 	this = new(MongoMetadataBackend)
+ 	this.config = NewMongoMetadataBackendConfig(config)
+ 
+-	var err error
++	// Open connection
+ 	dialInfo := &mgo.DialInfo{}
+ 	dialInfo.Addrs = []string{this.config.Url}
+ 	dialInfo.Database = this.config.Database
+@@ -56,70 +56,97 @@ func NewMongoMetadataBackend(config map[string]interface{}) (this *MongoMetadata
+ 			return tls.Dial("tcp", addr.String(), &tls.Config{InsecureSkipVerify: true})
+ 		}
+ 	}
++	var err error
+ 	this.session, err = mgo.DialWithInfo(dialInfo)
+ 	if err != nil {
+-		log.Fatalf(err.Error())
++		common.Log().Fatalf("Unable to contact mongodb at %s : %s", this.config.Url, err.Error())
+ 	}
++
++	// Ensure everything is persisted and replicated
+ 	this.session.SetMode(mgo.Strong, false)
+ 	this.session.SetSafe(&mgo.Safe{})
+ 	return
+ }
+ 
+-func (this *MongoMetadataBackend) Create(upload *utils.Upload) (err error) {
++func (this *MongoMetadataBackend) Create(ctx *common.PlikContext, upload *common.Upload) (err error) {
++	defer ctx.Finalize(err)
+ 	session := this.session.Copy()
+ 	defer session.Close()
+ 	collection := session.DB(this.config.Database).C(this.config.Collection)
+-	collection.Insert(&upload)
+-	return nil
++	err = collection.Insert(&upload)
++	if err != nil {
++		err = ctx.EWarningf("Unable to append metadata to mongodb : %s", err)
++	}
++	return
+ }
+ 
+-func (this *MongoMetadataBackend) Get(id string) (u *utils.Upload, err error) {
++func (this *MongoMetadataBackend) Get(ctx *common.PlikContext, id string) (u *common.Upload, err error) {
++	defer ctx.Finalize(err)
+ 	session := this.session.Copy()
+ 	defer session.Close()
+ 	collection := session.DB(this.config.Database).C(this.config.Collection)
+-	u = &utils.Upload{}
++	u = &common.Upload{}
+ 	err = collection.Find(bson.M{"id": id}).One(u)
++	if err != nil {
++		err = ctx.EWarningf("Unable to get metadata from mongodb : %s", err)
++	}
+ 	return
+ }
+ 
+-func (this *MongoMetadataBackend) AddOrUpdateFile(upload *utils.Upload, file *utils.File) (err error) {
++func (this *MongoMetadataBackend) AddOrUpdateFile(ctx *common.PlikContext, upload *common.Upload, file *common.File) (err error) {
++	defer ctx.Finalize(err)
+ 	session := this.session.Copy()
+ 	defer session.Close()
+ 	collection := session.DB(this.config.Database).C(this.config.Collection)
+-	return collection.Update(bson.M{"id": upload.Id}, bson.M{"$set": bson.M{"files." + file.Id: file}})
++	err = collection.Update(bson.M{"id": upload.Id}, bson.M{"$set": bson.M{"files." + file.Id: file}})
++	if err != nil {
++		err = ctx.EWarningf("Unable to get metadata from mongodb : %s", err)
++	}
++	return
+ }
+ 
+-func (this *MongoMetadataBackend) RemoveFile(upload *utils.Upload, file *utils.File) (err error) {
++func (this *MongoMetadataBackend) RemoveFile(ctx *common.PlikContext, upload *common.Upload, file *common.File) (err error) {
++	defer ctx.Finalize(err)
+ 	session := this.session.Copy()
+ 	defer session.Close()
+ 	collection := session.DB(this.config.Database).C(this.config.Collection)
+-	return collection.Update(bson.M{"id": upload.Id}, bson.M{"$unset": bson.M{"files." + file.Name: ""}})
++	err = collection.Update(bson.M{"id": upload.Id}, bson.M{"$unset": bson.M{"files." + file.Name: ""}})
++	if err != nil {
++		err = ctx.EWarningf("Unable to get remove file from mongodb : %s", err)
++	}
++	return
+ }
+ 
+-func (this *MongoMetadataBackend) Remove(upload *utils.Upload) (err error) {
++func (this *MongoMetadataBackend) Remove(ctx *common.PlikContext, upload *common.Upload) (err error) {
++	defer ctx.Finalize(err)
+ 	session := this.session.Copy()
+ 	defer session.Close()
+ 	collection := session.DB(this.config.Database).C(this.config.Collection)
+-	return collection.Remove(bson.M{"id": upload.Id})
++	err = collection.Remove(bson.M{"id": upload.Id})
++	if err != nil {
++		err = ctx.EWarningf("Unable to get remove file from mongodb : %s", err)
++	}
++	return
+ }
+ 
+-func (this *MongoMetadataBackend) GetUploadsToRemove() (ids []string, err error) {
++func (this *MongoMetadataBackend) GetUploadsToRemove(ctx *common.PlikContext) (ids []string, err error) {
++	defer ctx.Finalize(err)
+ 	session := this.session.Copy()
+ 	defer session.Close()
+ 	collection := session.DB(this.config.Database).C(this.config.Collection)
+ 
+-	// Make request
++	// Look for uploads older than MaxTTL to schedule them for removal
+ 	ids = make([]string, 0)
+-	uploads := make([]*utils.Upload, 0)
++	uploads := make([]*common.Upload, 0)
+ 	b := bson.M{"$where": strconv.Itoa(int(time.Now().Unix())) + " > this.uploadDate+this.ttl"}
+ 
+-	// Exec it
+ 	err = collection.Find(b).All(&uploads)
+ 	if err != nil {
++		err = ctx.EWarningf("Unable to get uploads to remove : %s", err)
+ 		return
+ 	}
+ 
+-	// Append all uploads to the toRemove list
++	// Append all ids to the toRemove list
+ 	for _, upload := range uploads {
+ 		ids = append(ids, upload.Id)
+ 	}
+diff --git a/server/plik.go b/server/plik.go
+index ce2157db..184a99fc 100644
+--- a/server/plik.go
++++ b/server/plik.go
+@@ -34,13 +34,14 @@ import (
+ 	"flag"
+ 	"fmt"
+ 	"github.com/gorilla/mux"
++	"github.com/root-gg/logger"
++	"github.com/root-gg/plik/server/common"
+ 	"github.com/root-gg/plik/server/data_backend"
+ 	"github.com/root-gg/plik/server/metadata_backend"
+ 	"github.com/root-gg/plik/server/shorten_backend"
+-	"github.com/root-gg/plik/server/utils"
++	"github.com/root-gg/utils"
+ 	"io"
+ 	"io/ioutil"
+-	"log"
+ 	"math/rand"
+ 	"net/http"
+ 	"net/url"
+@@ -52,27 +53,31 @@ import (
+ 	"time"
+ )
+ 
++var log *logger.Logger
++
+ func main() {
+-	// Misc
+ 	rand.Seed(time.Now().UTC().UnixNano())
+ 	runtime.GOMAXPROCS(runtime.NumCPU())
+ 
+-	// Read args
++	log = common.Log()
++
+ 	var configFile = flag.String("config", "plikd.cfg", "Configuration file (default: plikd.cfg")
+ 	var version = flag.Bool("version", false, "Show version of plikd")
+ 	flag.Parse()
+-
+-	// Show version if asked
+ 	if *version {
+-		fmt.Printf("Plikd v%s\n", utils.PlikVersion)
++		fmt.Printf("Plikd v%s\n", common.PlikVersion)
+ 		os.Exit(0)
+ 	}
+ 
+-	// Load configuration
+-	log.Printf("Starting plikd server v" + utils.PlikVersion)
+-	utils.LoadConfiguration(*configFile)
++	log.Infof("Starting plikd server v" + common.PlikVersion)
++	common.LoadConfiguration(*configFile)
+ 
+-	// Here are all the plikd REST api calls
++	// Initialize all backends
++	metadata_backend.Initialize()
++	data_backend.Initialize()
++	shorten_backend.Initialize()
++
++	// HTTP Api routes configuration
+ 	r := mux.NewRouter()
+ 	r.HandleFunc("/upload", createUploadHandler).Methods("POST")
+ 	r.HandleFunc("/upload/{uploadid}", getUploadHandler).Methods("GET")
+@@ -85,40 +90,32 @@ func main() {
+ 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./public/")))
+ 	http.Handle("/", r)
+ 
+-	// Remove expired uploads routine
+-	//  -> Will remove periodicaly expired uploads
+ 	go UploadsCleaningRoutine()
+ 
+-	// Http router spawning
++	// Start HTTP server
+ 	go func() {
+-
+ 		var err error
+-
+-		if utils.Config.SslCert != "" && utils.Config.SslKey != "" {
+-			address := utils.Config.ListenAddress + ":" + strconv.Itoa(utils.Config.ListenPort)
++		if common.Config.SslCert != "" && common.Config.SslKey != "" {
++			address := common.Config.ListenAddress + ":" + strconv.Itoa(common.Config.ListenPort)
+ 			tlsConfig := &tls.Config{MinVersion: tls.VersionTLS10}
+ 			server := &http.Server{Addr: address, Handler: r, TLSConfig: tlsConfig}
+-			err = server.ListenAndServeTLS(utils.Config.SslCert, utils.Config.SslKey)
+-
++			err = server.ListenAndServeTLS(common.Config.SslCert, common.Config.SslKey)
+ 		} else {
+-			err = http.ListenAndServe(utils.Config.ListenAddress+":"+strconv.Itoa(utils.Config.ListenPort), nil)
+-
++			err = http.ListenAndServe(common.Config.ListenAddress+":"+strconv.Itoa(common.Config.ListenPort), nil)
+ 		}
+ 
+ 		if err != nil {
+-			log.Fatalln(err)
++			log.Fatalf("Unable to start HTTP server : %s", err)
+ 		}
+ 	}()
+ 
+ 	// Handle signals
+ 	c := make(chan os.Signal, 1)
+ 	signal.Notify(c, os.Interrupt, os.Kill)
+-
+-	// Block until a signal is received.
+ 	for {
+ 		select {
+ 		case s := <-c:
+-			fmt.Println("Got signal:", s)
++			log.Infof("Got signal : %s", s)
+ 			os.Exit(0)
+ 		}
+ 	}
+@@ -129,195 +126,211 @@ func main() {
+  */
+ 
+ func createUploadHandler(resp http.ResponseWriter, req *http.Request) {
+-	log.Println("New upload")
+-	upload := utils.NewUpload()
+-	upload.RemoteIp = req.RemoteAddr
++	var err error
++	ctx := common.NewPlikContext("create upload handler", req)
++	defer ctx.Finalize(err)
++
++	upload := common.NewUpload()
++	ctx.SetUpload(upload.Id)
+ 
+-	// Read body request
++	// Read request body
++	// TODO Limit body size
+ 	defer req.Body.Close()
+ 	body, err := ioutil.ReadAll(req.Body)
+ 	if err != nil {
+-		log.Printf("Unable to read request body : %s", err)
+-		http.Error(resp, utils.NewResult("Unable to read request body", nil).ToJsonString(), 500)
++		ctx.Warningf("Unable to read request body : %s", err)
++		http.Error(resp, common.NewResult("Unable to read request body", nil).ToJsonString(), 500)
+ 		return
+ 	}
+ 
+-	// Deserialize body into newly created upload object
++	// Deserialize json body
+ 	if len(body) > 0 {
+-		// Parse Json
+ 		err = json.Unmarshal(body, upload)
+ 		if err != nil {
+-			log.Printf("Unable to deserialize request body : %s", err)
+-			http.Error(resp, utils.NewResult("Unable to deserialize json request body", nil).ToJsonString(), 500)
++			ctx.Warningf("Unable to deserialize request body : %s", err)
++			http.Error(resp, common.NewResult("Unable to deserialize json request body", nil).ToJsonString(), 500)
+ 			return
+ 		}
+ 	}
+ 
+-	// After deserialization, we can init upload
+-	// This will set upload id, upload token, ...
++	// Set upload id, creation date, upload token, ...
+ 	upload.Create()
++	ctx.SetUpload(upload.Id)
++	upload.RemoteIp = req.RemoteAddr
+ 
+-	// Handle TTL
+-	// 0 	-> No ttl specified : we set default value from configuration
+-	// -1	-> User wants no expiration : checking with configuration if that's ok
+-	// >0	-> User wants specific ttl  : checking with configuration if that's ok
+-
++	// TTL = Time in second before the upload expiration
++	// 0 	-> No ttl specified : default value from configuration
++	// -1	-> No expiration : checking with configuration if that's ok
+ 	switch upload.Ttl {
+ 	case 0:
+-		upload.Ttl = utils.Config.DefaultTtl
++		upload.Ttl = common.Config.DefaultTtl
+ 	case -1:
+-		if utils.Config.MaxTtl != 0 {
+-			http.Error(resp, utils.NewResult(fmt.Sprintf("Cannot set infinite ttl (maximum allowed is : %d)", utils.Config.MaxTtl), nil).ToJsonString(), 500)
++		if common.Config.MaxTtl != 0 {
++			ctx.Warningf("Cannot set infinite ttl (maximum allowed is : %d)", common.Config.MaxTtl)
++			http.Error(resp, common.NewResult(fmt.Sprintf("Cannot set infinite ttl (maximum allowed is : %d)", common.Config.MaxTtl), nil).ToJsonString(), 500)
+ 			return
+ 		}
+ 	default:
+ 		if upload.Ttl < 0 {
+-			http.Error(resp, utils.NewResult(fmt.Sprintf("Invalid value for ttl : %d", upload.Ttl), nil).ToJsonString(), 500)
++			ctx.Warningf("Invalid value for ttl : %d", upload.Ttl)
++			http.Error(resp, common.NewResult(fmt.Sprintf("Invalid value for ttl : %d", upload.Ttl), nil).ToJsonString(), 500)
+ 			return
+ 		}
+-		if utils.Config.MaxTtl != 0 && upload.Ttl > utils.Config.MaxTtl {
+-			http.Error(resp, utils.NewResult(fmt.Sprintf("Cannot set ttl to %d (maximum allowed is : %d)", upload.Ttl, utils.Config.MaxTtl), nil).ToJsonString(), 500)
++		if common.Config.MaxTtl != 0 && upload.Ttl > common.Config.MaxTtl {
++			ctx.Warningf("Cannot set ttl to %d (maximum allowed is : %d)", upload.Ttl, common.Config.MaxTtl)
++			http.Error(resp, common.NewResult(fmt.Sprintf("Cannot set ttl to %d (maximum allowed is : %d)", upload.Ttl, common.Config.MaxTtl), nil).ToJsonString(), 500)
+ 			return
+ 		}
+ 	}
+ 
+-	// If user want a password, we set this setting in upload informations
+-	// Default login is "plik"
+-	// We add Authorization header to the response for convenience
+-
++	// Protect upload with HTTP basic auth
++	// Add Authorization header to the response for convenience
++	// So clients can just copy this header into the next request
+ 	if upload.Password != "" {
+ 		upload.ProtectedByPassword = true
+ 		if upload.Login == "" {
+ 			upload.Login = "plik"
+ 		}
++
++		// The Authorization header will contain the base64 version of "login:password"
++		// Save only the md5sum of this string to authenticate further requests
+ 		b64str := base64.StdEncoding.EncodeToString([]byte(upload.Login + ":" + upload.Password))
+ 		upload.Password, err = utils.Md5sum(b64str)
+ 		if err != nil {
+-			log.Printf("Unable to generate password hash : %s", err)
+-			http.Error(resp, utils.NewResult("Unable to generate password hash", nil).ToJsonString(), 500)
++			ctx.Warningf("Unable to generate password hash : %s", err)
++			http.Error(resp, common.NewResult("Unable to generate password hash", nil).ToJsonString(), 500)
+ 			return
+ 		}
+ 		resp.Header().Add("Authorization", "Basic "+b64str)
+ 	}
+ 
+-	// Handle Yubikiey
+-	// If user specified a yubikey token :
+-	// 	-> We check the token validity in api.yubico.com
+-	// 	-> If the token is ok, we store the yubikey id in upload (12 first characters in token)
+-
++	// Check the token validity with api.yubico.com
++	// Only the Yubikey id part of the token is stored
++	// The yubikey id is the 12 first characters of the token
++	// The 32 lasts characters are the actual OTP
+ 	if upload.Yubikey != "" {
+ 		upload.ProtectedByYubikey = true
+-		ok, err := utils.YubikeyCheckToken(upload.Yubikey)
++		ok, err := common.YubikeyCheckToken(upload.Yubikey)
+ 		if err != nil {
+-			log.Printf("Unable to validate yubikey token : %s", err)
+-			http.Error(resp, utils.NewResult("Unable to validate yubikey token", nil).ToJsonString(), 500)
++			ctx.Warningf("Unable to validate yubikey token : %s", err)
++			http.Error(resp, common.NewResult("Unable to validate yubikey token", nil).ToJsonString(), 500)
+ 			return
+ 		}
+ 
+ 		if !ok {
+-			log.Printf("Invalid yubikey token")
+-			http.Error(resp, utils.NewResult("Invalid yubikey token", nil).ToJsonString(), 500)
++			ctx.Warningf("Invalid yubikey token")
++			http.Error(resp, common.NewResult("Invalid yubikey token", nil).ToJsonString(), 500)
+ 			return
+ 		}
+ 
+ 		upload.Yubikey = upload.Yubikey[:12]
+ 	}
+ 
+-	// We create a short url for upload with the backend specified in configuration.
+-	//	  -> We use Referer to get the fqdn of incoming request.
+-	//	  -> The Shorten() method will return the short link
+-	//	  -> We store it in upload informations
+-
+-	shortenBackend := shorten_backend.GetShortenBackend()
+-	if shortenBackend != nil {
++	// A short url is created for each upload if a shorten backend is specified in the configuration.
++	// Referer header is used to get the url of incoming request, clients have to set it in order
++	// to get this feature working
++	if shorten_backend.GetShortenBackend() != nil {
+ 		if req.Header.Get("Referer") != "" {
+ 			u, err := url.Parse(req.Header.Get("Referer"))
+ 			if err != nil {
+-				log.Printf("Unable to parse referer url : %s", err)
++				ctx.Warningf("Unable to parse referer url : %s", err)
+ 			}
+ 			longUrl := u.Scheme + "://" + u.Host + "#/?id=" + upload.Id
+-			shortUrl, err := shortenBackend.Shorten(longUrl)
++			shortUrl, err := shorten_backend.GetShortenBackend().Shorten(ctx.Fork("shorten url"), longUrl)
+ 			if err == nil {
+ 				upload.ShortUrl = shortUrl
+ 			} else {
+-				log.Println(fmt.Printf("Unable to shorten url %s : %s", longUrl, err))
++				ctx.Warningf("Unable to shorten url %s : %s", longUrl, err)
+ 			}
+ 		}
+ 	}
+ 
+-	// We must now save the upload informations in the metadata backend
+-	err = metadata_backend.GetMetadataBackend().Create(upload)
++	// Save the metadata
++	err = metadata_backend.GetMetaDataBackend().Create(ctx.Fork("create metadata"), upload)
+ 	if err != nil {
+-		log.Printf("Create new upload error : %s", err)
+-		http.Error(resp, utils.NewResult("Invalid yubikey token", nil).ToJsonString(), 500)
++		ctx.Warningf("Create new upload error : %s", err)
++		http.Error(resp, common.NewResult("Invalid yubikey token", nil).ToJsonString(), 500)
+ 		return
+ 	}
+ 
+-	// Before sending back upload informations to client, we remove
+-	// some sensible informations (ip, data backend details, ...)
++	// Remove all private informations (ip, data backend details, ...) before
++	// sending metadata back to the client
+ 	upload.Sanitize()
+ 
+-	// We can print upload to client using json library.
++	// Print upload metadata in the json response.
+ 	var json []byte
+-	if json, err = utils.ToJson(upload); err == nil {
+-		resp.Write(json)
+-	} else {
+-		http.Error(resp, utils.NewResult("Unable to serialize response body", nil).ToJsonString(), 500)
++	if json, err = utils.ToJson(upload); err != nil {
++		ctx.Warningf("Unable to serialize response body : %s", err)
++		http.Error(resp, common.NewResult("Unable to serialize response body", nil).ToJsonString(), 500)
+ 	}
++
++	resp.Write(json)
+ }
+ 
+ func getUploadHandler(resp http.ResponseWriter, req *http.Request) {
++	var err error
++	ctx := common.NewPlikContext("get upload handler", req)
++	defer ctx.Finalize(err)
+ 
+-	// Get the upload id in url from mux router
++	// Get the upload id and file id from the url params
+ 	vars := mux.Vars(req)
+ 	uploadId := vars["uploadid"]
++	ctx.SetUpload(uploadId)
+ 
+-	// Get the upload informations from the metadata backend
+-	upload, err := metadata_backend.GetMetadataBackend().Get(uploadId)
++	// Retrieve upload metadata
++	upload, err := metadata_backend.GetMetaDataBackend().Get(ctx.Fork("get metadata"), uploadId)
+ 	if err != nil {
+-		log.Printf("Upload %s not found : %s", uploadId, err)
+-		http.Error(resp, utils.NewResult(fmt.Sprintf("Upload %s not found", uploadId), nil).ToJsonString(), 404)
++		ctx.Warningf("Upload %s not found : %s", uploadId, err)
++		http.Error(resp, common.NewResult(fmt.Sprintf("Upload %s not found", uploadId), nil).ToJsonString(), 404)
+ 		return
+ 	}
+ 
+ 	// Handle basic auth if upload is password protected
+ 	err = httpBasicAuth(req, resp, upload)
+ 	if err != nil {
+-		log.Printf("Unauthorized %s : %s", upload.Id, err)
++		ctx.Warningf("Unauthorized %s : %s", upload.Id, err)
+ 		return
+ 	}
+ 
+-	// Do not show some sensible informations to client
++	// Remove all private informations (ip, data backend details, ...) before
++	// sending metadata back to the client
+ 	upload.Sanitize()
+ 
+-	// Show upload using json
++	// Print upload metadata in the json response.
+ 	var json []byte
+-	if json, err = utils.ToJson(upload); err == nil {
+-		resp.Write(json)
+-	} else {
+-		http.Error(resp, utils.NewResult("Unable to serialize response body", nil).ToJsonString(), 500)
++	if json, err = utils.ToJson(upload); err != nil {
++		ctx.Warningf("Unable to serialize response body : %s", err)
++		http.Error(resp, common.NewResult("Unable to serialize response body", nil).ToJsonString(), 500)
+ 	}
++	resp.Write(json)
+ }
+ 
+ func getFileHandler(resp http.ResponseWriter, req *http.Request) {
++	var err error
++	ctx := common.NewPlikContext("get file handler", req)
++	defer ctx.Finalize(err)
+ 
+-	// Get the upload id and file id in the url from mux variables
+-	// If we don't have both, request is aborting now
++	// Get the upload id and file id from the url params
+ 	vars := mux.Vars(req)
+ 	uploadId := vars["uploadid"]
+ 	fileId := vars["fileid"]
+ 	fileName := vars["filename"]
+-
+-	if uploadId == "" || fileId == "" {
+-		http.Redirect(resp, req, "/", 301)
+-		redirect(req, resp, errors.New("Missing upload or file id"), 404)
++	if uploadId == "" {
++		ctx.Warning("Missing upload id")
++		redirect(req, resp, errors.New("Missing upload id"), 404)
++		return
++	}
++	if fileId == "" {
++		ctx.Warning("Missing file id")
++		redirect(req, resp, errors.New("Missing file id"), 404)
+ 		return
+ 	}
++	ctx.SetUpload(uploadId)
+ 
+ 	// Get the upload informations from the metadata backend
+-	upload, err := metadata_backend.GetMetadataBackend().Get(uploadId)
++	upload, err := metadata_backend.GetMetaDataBackend().Get(ctx.Fork("get metadata"), uploadId)
+ 	if err != nil {
+-		log.Printf("Upload %s not found : %s", uploadId, err)
++		ctx.Warningf("Upload %s not found : %s", uploadId, err)
+ 		redirect(req, resp, errors.New(fmt.Sprintf("Upload %s not found", uploadId)), 404)
+ 		return
+ 	}
+@@ -325,45 +338,47 @@ func getFileHandler(resp http.ResponseWriter, req *http.Request) {
+ 	// Handle basic auth if upload is password protected
+ 	err = httpBasicAuth(req, resp, upload)
+ 	if err != nil {
+-		log.Printf("Unauthorized %s : %s", upload.Id, err)
++		ctx.Warningf("Unauthorized : %s", err)
++		redirect(req, resp, errors.New(fmt.Sprintf("Unauthorized", uploadId)), 401)
+ 		return
+ 	}
+ 
+ 	// Test if upload is not expired
+ 	if upload.Ttl != 0 {
+ 		if time.Now().Unix() > (upload.Creation + int64(upload.Ttl)) {
+-			log.Printf("Upload %s is expired", uploadId)
+-			redirect(req, resp, errors.New(fmt.Sprintf("Upload %s is expired", upload.Id)), 404)
++			ctx.Warningf("Upload is expired since %s", time.Since(time.Unix(upload.Creation, int64(0)).Add(time.Duration(upload.Ttl)*time.Second)).String())
++			redirect(req, resp, errors.New(fmt.Sprintf("Upload %s is expired", upload.Id)), 403)
+ 			return
+ 		}
+ 	}
+ 
+ 	// Retrieve file using data backend
+ 	if _, ok := upload.Files[fileId]; !ok {
+-		log.Printf("File %s not found in upload %s", fileId, upload.Id)
++		ctx.Warningf("File %s not found", fileId)
+ 		redirect(req, resp, errors.New(fmt.Sprintf("File %s not found", fileId)), 404)
+ 		return
+ 	}
+ 
+ 	file := upload.Files[fileId]
++	ctx.SetFile(file.Name)
+ 
+ 	// Compare url filename with upload filename
+ 	if file.Name != fileName {
+-		log.Printf("File %s not found in upload %s", fileName, upload.Id)
++		ctx.Warningf("Invalid filename %s mismatch %s", fileName, file.Name)
+ 		redirect(req, resp, errors.New(fmt.Sprintf("File %s not found", fileName)), 404)
+ 		return
+ 	}
+ 
+-	// If upload has OneShot option, testing if file has not been already downloaded once
++	// If upload has OneShot option, test if file has not been already downloaded once
+ 	if upload.OneShot && file.Status == "downloaded" {
+-		log.Printf("File %s has already been downloaded in upload %s", file.Name, upload.Id)
++		ctx.Warningf("File %s has already been downloaded in upload %s", file.Name, upload.Id)
+ 		redirect(req, resp, errors.New(fmt.Sprintf("File %s has already been downloaded", file.Name)), 401)
+ 		return
+ 	}
+ 
+ 	// If the file is marked as deleted by a previous call, we abort request
+ 	if upload.Removable && file.Status == "removed" {
+-		log.Printf("File %s has been removed", file.Name)
++		ctx.Warningf("File %s has been removed", file.Name)
+ 		redirect(req, resp, errors.New(fmt.Sprintf("File %s has been removed", file.Name)), 404)
+ 		return
+ 	}
+@@ -372,31 +387,30 @@ func getFileHandler(resp http.ResponseWriter, req *http.Request) {
+ 	// If upload is yubikey protected, user must send an OTP when he wants to get a file.
+ 	if upload.Yubikey != "" {
+ 		token := vars["yubikey"]
+-
+ 		if token == "" {
+-			log.Println("Missing yubikey token")
++			ctx.Warningf("Missing yubikey token")
+ 			redirect(req, resp, errors.New("Invalid yubikey token"), 401)
+ 			return
+ 		}
+ 		if len(token) != 44 {
+-			log.Printf("Invalid yubikey token : %s", token)
++			ctx.Warningf("Invalid yubikey token : %s", token)
+ 			redirect(req, resp, errors.New("Invalid yubikey token"), 401)
+ 			return
+ 		}
+ 		if token[:12] != upload.Yubikey {
+-			log.Printf("Invalid yubikey device : %s", token)
++			ctx.Warningf("Invalid yubikey device : %s", token)
+ 			redirect(req, resp, errors.New("Invalid yubikey token"), 401)
+ 			return
+ 		}
+ 
+-		isValid, err := utils.YubikeyCheckToken(token)
++		isValid, err := common.YubikeyCheckToken(token)
+ 		if err != nil {
+-			log.Printf("Failed to validate yubikey token : %s", err)
++			ctx.Warningf("Failed to validate yubikey token : %s", err)
+ 			redirect(req, resp, errors.New("Invalid yubikey token"), 401)
+ 			return
+ 		}
+ 		if !isValid {
+-			log.Println("Invalid yubikey token : %s", token)
++			ctx.Warningf("Invalid yubikey token : %s", token)
+ 			redirect(req, resp, errors.New("Invalid yubikey token"), 401)
+ 			return
+ 		}
+@@ -406,10 +420,9 @@ func getFileHandler(resp http.ResponseWriter, req *http.Request) {
+ 	resp.Header().Set("Content-Type", file.Type)
+ 	resp.Header().Set("Content-Length", strconv.Itoa(int(file.CurrentSize)))
+ 
+-	// If we have a dl variable in GET params
+-	// -> We set attachement param in Content-Disposition header
+-	// -> The navigator should download file instead of showing it in the view
+-
++	// If "dl" GET params is set
++	// -> Set Content-Disposition header
++	// -> The client should download file instead of displaying it
+ 	dl := req.URL.Query().Get("dl")
+ 	if dl != "" {
+ 		resp.Header().Set("Content-Disposition", "attachement; filename="+file.Name)
+@@ -419,90 +432,85 @@ func getFileHandler(resp http.ResponseWriter, req *http.Request) {
+ 
+ 	// HEAD Request => Do not print file, user just wants http headers
+ 	// GET  Request => Print file content
+-
+ 	if req.Method == "GET" {
+-
+ 		// Get file in data backend
+-		fileReader, err := data_backend.GetDataBackend().GetFile(upload, file.Id)
++		fileReader, err := data_backend.GetDataBackend().GetFile(ctx.Fork("get file"), upload, file.Id)
+ 		if err != nil {
+-			log.Printf("Failed to get file %s in upload %s : %s", file.Name, upload.Id, err)
++			ctx.Warningf("Failed to get file %s in upload %s : %s", file.Name, upload.Id, err)
+ 			redirect(req, resp, errors.New(fmt.Sprintf("Failed to read file %s", file.Name)), 404)
+ 			return
+ 		}
+ 		defer fileReader.Close()
+ 
+-		// Copy content to response
+-		resultChan := make(chan error)
+-		go func() {
+-			_, err = io.Copy(resp, fileReader)
++		// Update metadata if oneShot option is set
++		if upload.OneShot {
++			file.Status = "downloaded"
++			err = metadata_backend.GetMetaDataBackend().AddOrUpdateFile(ctx.Fork("update metadata"), upload, file)
+ 			if err != nil {
+-				log.Printf("Error while copying file to response : %s", err)
++				ctx.Warningf("Error while deleting file %s from upload %s metadata : %s", file.Name, upload.Id, err)
+ 			}
+-			resultChan <- err
+-		}()
++		}
+ 
+-		// Remove if oneShot
++		// File is piped directly to http response body without buffering
++		_, err = io.Copy(resp, fileReader)
++		if err != nil {
++			ctx.Warningf("Error while copying file to response : %s", err)
++		}
++
++		// Remove file from data backend if oneShot option is set
+ 		if upload.OneShot {
+-			file.Status = "downloaded"
+-			err = metadata_backend.GetMetadataBackend().AddOrUpdateFile(upload, file)
++			err = data_backend.GetDataBackend().RemoveFile(ctx.Fork("remove file"), upload, file.Id)
+ 			if err != nil {
+-				log.Printf("Error while deleting file %s from upload %s metadata : %s", file.Name, upload.Id, err)
+-			}
+-			// Remove file from data backend
+-			if err := data_backend.GetDataBackend().RemoveFile(upload, file.Id); err != nil {
+-				log.Printf("Error while deleting file %s from upload %s : %s", file.Name, upload.Id, err)
++				ctx.Warningf("Error while deleting file %s from upload %s : %s", file.Name, upload.Id, err)
+ 				return
+ 			}
+ 		}
+-
+-		// Waiting for the write of the file
+-		// to be finished before ending handler
+-		<-resultChan
+ 	}
+ }
+ 
+ func addFileHandler(resp http.ResponseWriter, req *http.Request) {
++	var err error
++	ctx := common.NewPlikContext("add file handler", req)
++	defer ctx.Finalize(err)
+ 
+-	// Get the upload id in the url from mux variables
++	// Get the upload id from the url params
+ 	vars := mux.Vars(req)
+ 	uploadId := vars["uploadid"]
++	ctx.SetUpload(uploadId)
+ 
+-	// Get Upload
+-	upload, err := metadata_backend.GetMetadataBackend().Get(uploadId)
++	// Get upload metadata
++	upload, err := metadata_backend.GetMetaDataBackend().Get(ctx.Fork("get metadata"), uploadId)
+ 	if err != nil {
+-		log.Printf("Upload not %s found : %s", uploadId, err)
+-		http.Error(resp, utils.NewResult(fmt.Sprintf("Upload %s not found", uploadId), nil).ToJsonString(), 404)
++		ctx.Warningf("Upload metadata not found")
++		http.Error(resp, common.NewResult(fmt.Sprintf("Upload %s not found", uploadId), nil).ToJsonString(), 404)
+ 		return
+ 	}
+-	log.Printf(" - [META] Got metadatas from upload %s on backend %s", uploadId, utils.Config.MetadataBackend)
+ 
+ 	// Handle basic auth if upload is password protected
+ 	err = httpBasicAuth(req, resp, upload)
+ 	if err != nil {
+-		log.Printf("Unauthorized %s : %s", upload.Id, err)
++		ctx.Warningf("Unauthorized : %s", err)
+ 		return
+ 	}
+ 
+-	// Check if user has specify the upload token in http header
+-	// Test if it's the right one from upload infos
++	// Check upload token
+ 	if req.Header.Get("X-UploadToken") != upload.UploadToken {
+-		http.Error(resp, utils.NewResult("Invalid upload token in X-UploadToken header", nil).ToJsonString(), 404)
++		ctx.Warningf("Invalid upload token %s", req.Header.Get("X-UploadToken"))
++		http.Error(resp, common.NewResult("Invalid upload token in X-UploadToken header", nil).ToJsonString(), 404)
+ 		return
+ 	}
+ 
+ 	// Get file handle from multipart request
+ 	var file io.Reader
+ 	var fileName string = ""
+-
+ 	multiPartReader, err := req.MultipartReader()
+ 	if err != nil {
+-		log.Printf("Failed to get file in multipart request : %s", err)
+-		http.Error(resp, utils.NewResult(fmt.Sprintf("Failed to get file in multipart request"), nil).ToJsonString(), 500)
++		ctx.Warningf("Failed to get file from multipart request : %s", err)
++		http.Error(resp, common.NewResult(fmt.Sprintf("Failed to get file from multipart request"), nil).ToJsonString(), 500)
+ 		return
+ 	}
+ 
+-	// Read multipart until find the "file" part, which contain uploaded data
+-	// -> We have also the filename !
++	// Read multipart body until the "file" part
+ 	for {
+ 		part, err_part := multiPartReader.NextPart()
+ 		if err_part == io.EOF {
+@@ -510,70 +518,74 @@ func addFileHandler(resp http.ResponseWriter, req *http.Request) {
+ 		}
+ 
+ 		if part.FormName() == "file" {
+-			log.Printf(" - [MAIN] Got filehandle for file %s on upload %s", part.FileName(), uploadId)
+ 			file = part
+ 			fileName = part.FileName()
+ 			break
+ 		}
+ 	}
++	if file == nil {
++		ctx.Warning("Missing file from multipart request")
++		http.Error(resp, common.NewResult("Missing file from multipart request", nil).ToJsonString(), 400)
++	}
++	if fileName == "" {
++		ctx.Warning("Missing file name from multipart request")
++		http.Error(resp, common.NewResult("Missing file name from multipart request", nil).ToJsonString(), 400)
++	}
+ 
+ 	// Create a new file object
+-	newFile := utils.NewFile()
++	newFile := common.NewFile()
+ 	newFile.Name = fileName
+ 	newFile.Type = "application/octet-stream"
++	ctx.SetFile(fileName)
+ 
+-	// Here, we create a pipe
+-	// It will allow us to send file data throught it, and be able to :
+-	//    -> Compute md5 of file
+-	//    -> Determine size of file
+-	//    -> Determine content type of file (by reading 512 first bytes)
+-
+-	checkLenghtReader, checkLenghtWriter := io.Pipe()
++	// Pipe file data from the request body to a preprocessing goroutine
++	//  - Guess content type
++	//  - Compute md5sum
++	//  - Limit upload size
++	preprocessReader, preprocessWriter := io.Pipe()
+ 	md5Hash := md5.New()
+ 	totalBytes := 0
+-
+ 	go func() {
+ 		for {
+ 			buf := make([]byte, 1024)
+ 			bytesRead, err := file.Read(buf)
+-
+ 			if err != nil {
+-				checkLenghtWriter.Close()
++				ctx.Warningf("Unable to read data from request body : %s", err)
++				preprocessWriter.Close()
+ 				return
+ 			}
+ 
+-			// If first loop detect content type
++			// Detect the content-type using the 512 first bytes
+ 			if totalBytes == 0 {
+ 				newFile.Type = http.DetectContentType(buf)
+-				log.Printf(" - [MAIN] Got Content-Type : %s", newFile.Type)
++				ctx.Infof("Got Content-Type : %s", newFile.Type)
+ 			}
+ 
+ 			// Increment size
+ 			totalBytes += bytesRead
+ 
+-			// Md5 stuff
++			// Compute md5sum
+ 			md5Hash.Write(buf[:bytesRead])
+ 
+-			// Check max size with config
+-			if totalBytes > utils.Config.MaxFileSize {
+-				maxSizeReachedError := errors.New(fmt.Sprintf("File too big (limit is set to %d bytes)", utils.Config.MaxFileSize))
+-				checkLenghtWriter.CloseWithError(maxSizeReachedError)
++			// Check upload max size limit
++			if totalBytes > common.Config.MaxFileSize {
++				err = ctx.EWarningf("File too big (limit is set to %d bytes)", common.Config.MaxFileSize)
++				preprocessWriter.CloseWithError(err)
+ 				return
+ 			}
+ 
+-			// Writing buf to writer
+-			checkLenghtWriter.Write(buf[:bytesRead])
++			// Pass file data to data backend
++			preprocessWriter.Write(buf[:bytesRead])
+ 		}
+ 	}()
+ 
+ 	// Save file in the data backend
+-	backendDetails, err := data_backend.GetDataBackend().AddFile(upload, newFile, checkLenghtReader)
++	backendDetails, err := data_backend.GetDataBackend().AddFile(ctx.Fork("save file"), upload, newFile, preprocessReader)
+ 	if err != nil {
+-		log.Printf("Error saving file %s in upload %s : %s", newFile.Name, upload.Id, err)
+-		http.Error(resp, utils.NewResult(fmt.Sprintf("Error saving file %s in upload %s : %s", newFile.Name, upload.Id, err), nil).ToJsonString(), 500)
++		ctx.Warningf("Unable to save file : %s", err)
++		http.Error(resp, common.NewResult(fmt.Sprintf("Error saving file %s in upload %s : %s", newFile.Name, upload.Id, err), nil).ToJsonString(), 500)
+ 		return
+ 	}
+-	log.Printf(" - [MAIN] File saved to data backend %s", utils.Config.DataBackend)
+ 
+ 	// Fill-in file informations
+ 	newFile.CurrentSize = int64(totalBytes)
+@@ -582,103 +594,110 @@ func addFileHandler(resp http.ResponseWriter, req *http.Request) {
+ 	newFile.UploadDate = time.Now().Unix()
+ 	newFile.BackendDetails = backendDetails
+ 
+-	// Save file to metadata backend
++	// Update upload metadata
+ 	upload.Files[newFile.Id] = newFile
+-	err = metadata_backend.GetMetadataBackend().AddOrUpdateFile(upload, newFile)
++	err = metadata_backend.GetMetaDataBackend().AddOrUpdateFile(ctx.Fork("update metadata"), upload, newFile)
+ 	if err != nil {
+-		log.Printf("Error adding file %s to upload %s metadata : %s", newFile.Name, upload.Id, err)
+-		http.Error(resp, utils.NewResult(fmt.Sprintf("Error adding file %s to upload %s metadata", newFile.Name, upload.Id, err), nil).ToJsonString(), 500)
++		ctx.Warningf("Unable to update metadata : %s", err)
++		http.Error(resp, common.NewResult(fmt.Sprintf("Error adding file %s to upload %s metadata", newFile.Name, upload.Id, err), nil).ToJsonString(), 500)
+ 		return
+ 	}
+-	log.Printf(" - [MAIN] File saved to metadata backend %s", utils.Config.MetadataBackend)
+ 
+-	// Remove private data
++	// Remove all private informations (ip, data backend details, ...) before
++	// sending metadata back to the client
+ 	newFile.Sanitize()
+ 
+-	// Write response to client
++	// Print file metadata in the json response.
+ 	var json []byte
+ 	if json, err = utils.ToJson(newFile); err == nil {
+ 		resp.Write(json)
+ 	} else {
+-		http.Error(resp, utils.NewResult("Unable to serialize response body", nil).ToJsonString(), 500)
++		http.Error(resp, common.NewResult("Unable to serialize response body", nil).ToJsonString(), 500)
+ 	}
+ }
+ 
+ func removeFileHandler(resp http.ResponseWriter, req *http.Request) {
++	var err error
++	ctx := common.NewPlikContext("remove file handler", req)
++	defer ctx.Finalize(err)
+ 
+-	// Get the upload id and file id in the url from mux variables
+-	// If we don't have both, request is aborting now
+-	log.Println("Remove file")
++	// Get the upload id and file id from the url params
+ 	vars := mux.Vars(req)
+ 	uploadId := vars["uploadid"]
+ 	fileId := vars["fileid"]
+-
+-	// Retrieve Upload
+-	upload, err := metadata_backend.GetMetadataBackend().Get(uploadId)
+-	if err != nil {
+-		log.Printf("Upload not %s found : %s", uploadId, err)
+-		http.Error(resp, utils.NewResult(fmt.Sprintf("Upload not %s found", uploadId), nil).ToJsonString(), 404)
++	if uploadId == "" {
++		ctx.Warning("Missing upload id")
++		redirect(req, resp, errors.New("Missing upload id"), 404)
++		return
++	}
++	if fileId == "" {
++		ctx.Warning("Missing file id")
++		redirect(req, resp, errors.New("Missing file id"), 404)
+ 		return
+ 	}
++	ctx.SetUpload(uploadId)
+ 
+-	// Check if upload is removable
+-	if !upload.Removable {
+-		log.Printf("Can't remove files on upload %s", uploadId)
+-		http.Error(resp, utils.NewResult("You can't remove files on this upload", nil).ToJsonString(), 401)
++	// Retrieve Upload
++	upload, err := metadata_backend.GetMetaDataBackend().Get(ctx.Fork("get metadata"), uploadId)
++	if err != nil {
++		ctx.Warning("Upload not found")
++		http.Error(resp, common.NewResult(fmt.Sprintf("Upload not %s found", uploadId), nil).ToJsonString(), 404)
+ 		return
+ 	}
+ 
+ 	// Handle basic auth if upload is password protected
+ 	err = httpBasicAuth(req, resp, upload)
+ 	if err != nil {
+-		log.Printf("Unauthorized %s : %s", upload.Id, err)
++		ctx.Warningf("Unauthorized : %s", err)
++		redirect(req, resp, errors.New(fmt.Sprintf("Unauthorized", uploadId)), 401)
+ 		return
+ 	}
+ 
+ 	// Retrieve file informations in upload
+ 	file, ok := upload.Files[fileId]
+ 	if !ok {
+-		log.Printf("File %s not found in upload %s", fileId, upload.Id)
+-		http.Error(resp, utils.NewResult(fmt.Sprintf("File %s not found in upload %s", fileId, upload.Id), nil).ToJsonString(), 404)
++		ctx.Warningf("File not found")
++		http.Error(resp, common.NewResult(fmt.Sprintf("File %s not found in upload %s", fileId, upload.Id), nil).ToJsonString(), 404)
+ 		return
+ 	}
+ 
+ 	// Set status to removed, and save metadatas
+ 	file.Status = "removed"
+-	if err := metadata_backend.GetMetadataBackend().AddOrUpdateFile(upload, file); err != nil {
+-		log.Printf("Error while updating file %s metadata in upload %s : %s", file.Name, upload.Id, err)
+-		http.Error(resp, utils.NewResult(fmt.Sprintf("Error while updating file %s metadata in upload %s", file.Name, upload.Id), nil).ToJsonString(), 500)
++	if err := metadata_backend.GetMetaDataBackend().AddOrUpdateFile(ctx.Fork("update metadata"), upload, file); err != nil {
++		ctx.Warningf("Error while updating file metadata : %s", err)
++		http.Error(resp, common.NewResult(fmt.Sprintf("Error while updating file %s metadata in upload %s", file.Name, upload.Id), nil).ToJsonString(), 500)
+ 		return
+ 	}
+ 
+ 	// Remove file from data backend
+-	if err := data_backend.GetDataBackend().RemoveFile(upload, file.Id); err != nil {
+-		log.Printf("Error while deleting file %s in upload %s : %s", file.Name, err)
+-		http.Error(resp, utils.NewResult(fmt.Sprintf("Error while deleting file %s in upload %s", file.Name, upload.Id), nil).ToJsonString(), 500)
++	if err := data_backend.GetDataBackend().RemoveFile(ctx.Fork("remove file"), upload, file.Id); err != nil {
++		ctx.Warningf("Error while deleting file : %s", err)
++		http.Error(resp, common.NewResult(fmt.Sprintf("Error while deleting file %s in upload %s", file.Name, upload.Id), nil).ToJsonString(), 500)
+ 		return
+ 	}
+ 
+-	// TODO Remove upload if there is no more files availables
++	// TODO Remove upload if there is no more files available
++
++	// Print upload metadata in the json response.
+ 	var json []byte
+-	if json, err = utils.ToJson(upload); err == nil {
+-		resp.Write(json)
+-	} else {
+-		http.Error(resp, utils.NewResult("Unable to serialize response body", nil).ToJsonString(), 500)
++	if json, err = utils.ToJson(upload); err != nil {
++		ctx.Warningf("Unable to serialize response body : %s", err)
++		http.Error(resp, common.NewResult("Unable to serialize response body", nil).ToJsonString(), 500)
+ 	}
++	resp.Write(json)
+ }
+ 
+ //
+ //// Misc functions
+ //
+-
+-/*
+-	Function that handle basic authentification
+-*/
+-func httpBasicAuth(req *http.Request, resp http.ResponseWriter, upload *utils.Upload) (err error) {
++func httpBasicAuth(req *http.Request, resp http.ResponseWriter, upload *common.Upload) (err error) {
+ 	if upload.ProtectedByPassword {
+ 		if req.Header.Get("Authorization") == "" {
+ 			err = errors.New("Missing Authorization header")
+ 		} else {
++			// Basic auth Authorization header must be set to
++			// "Basic base64("login:password")". Only the md5sum
++			// of the base64 string is saved in the upload metadata
+ 			auth := strings.Split(req.Header.Get("Authorization"), " ")
+ 			if len(auth) != 2 {
+ 				err = errors.New(fmt.Sprintf("Inavlid Authorization header %s", req.Header.Get("Authorization")))
+@@ -696,6 +715,8 @@ func httpBasicAuth(req *http.Request, resp http.ResponseWriter, upload *utils.Up
+ 			}
+ 		}
+ 		if err != nil {
++			// WWW-Authenticate header tells the client to retry the request
++			// with valid http basic credentials set in the Authorization headers.
+ 			resp.Header().Set("WWW-Authenticate", "Basic realm=\"plik\"")
+ 			http.Error(resp, "Please provide valid credentials to download this file", 401)
+ 		}
+@@ -703,13 +724,12 @@ func httpBasicAuth(req *http.Request, resp http.ResponseWriter, upload *utils.Up
+ 	return
+ }
+ 
+-/*
+-	No redirection if user agent is a CLI tool
+-*/
+-
+ var userAgents []string = []string{"wget", "curl", "python-urllib", "libwwww-perl", "php", "pycurl"}
+ 
+ func redirect(req *http.Request, resp http.ResponseWriter, err error, status int) {
++	// The web client uses http redirect to get errors
++	// from http redirect and display a nice HTML error message
++	// But cli clients needs a clean string response
+ 	userAgent := strings.ToLower(req.UserAgent())
+ 	for _, ua := range userAgents {
+ 		if strings.HasPrefix(userAgent, ua) {
+@@ -721,56 +741,54 @@ func redirect(req *http.Request, resp http.ResponseWriter, err error, status int
+ 	return
+ }
+ 
+-/*
+-	Cleaning subroutine :
+-		-> Ask metadata backend a list of expired upload
+-		-> For each upload :
+-			- Remove each Files
+-			- Remove upload from metadatas
+-		-> Sleep random amout of time
+-*/
+-
++// Periodicaly remove expired uploads
+ func UploadsCleaningRoutine() {
++	ctx := common.RootContext().Fork("clean expired uploads")
++
+ 	for {
+ 
+ 		// Sleep between 2 hours and 3 hours
+ 		// This is a dirty trick to avoid frontends doing this at the same time
+-		// We are currently searching for a better way, maybe a centralized lock.
+-
+ 		randSleep := rand.Intn(3600) + 7200
+-		log.Printf("[CLEAN] Will clean old uploads in %d seconds.", randSleep)
++		log.Infof("Will clean old uploads in %d seconds.", randSleep)
+ 		time.Sleep(time.Duration(randSleep) * time.Second)
+ 
+-		// Get uploads that needs remove
+-		log.Printf("[CLEAN] Purging old uploads...")
++		// Get uploads that needs to be removed
++		log.Infof("Cleaning expired uploads...")
+ 
+-		uploadsId, err := metadata_backend.GetMetadataBackend().GetUploadsToRemove()
++		uploadsId, err := metadata_backend.GetMetaDataBackend().GetUploadsToRemove(ctx)
+ 		if err != nil {
+-			log.Printf("Failed to get uploads to remove : %s")
++			log.Warningf("Failed to get expired uploads : %s")
+ 		} else {
+ 
+ 			// Remove them
+ 			for _, uploadId := range uploadsId {
+-
+-				log.Printf(" - Removing upload %s...", uploadId)
+-
+-				// Get metadatas
+-				upload, err := metadata_backend.GetMetadataBackend().Get(uploadId)
++				ctx.SetUpload(uploadId)
++				log.Infof("Removing expired upload %s", uploadId)
++				// Get upload metadata
++				childCtx := ctx.Fork("get metadata")
++				childCtx.AutoDetach()
++				upload, err := metadata_backend.GetMetaDataBackend().Get(childCtx, uploadId)
+ 				if err != nil {
+-					log.Printf(" -> Failed to get infos for upload: %s", err)
++					log.Warningf("Unable to get infos for upload: %s", err)
+ 					continue
+ 				}
+ 
+ 				// Remove from data backend
+-				err = data_backend.GetDataBackend().RemoveUpload(upload)
++				childCtx = ctx.Fork("remove upload data")
++				childCtx.AutoDetach()
++				err = data_backend.GetDataBackend().RemoveUpload(childCtx, upload)
+ 				if err != nil {
+-					log.Printf(" -> Failed to remove upload : %s", err)
++					log.Warningf("Unable to remove upload data : %s", err)
++					continue
+ 				}
+ 
+ 				// Remove from metadata backend
+-				err = metadata_backend.GetMetadataBackend().Remove(upload)
++				childCtx = ctx.Fork("remove upload metadata")
++				childCtx.AutoDetach()
++				err = metadata_backend.GetMetaDataBackend().Remove(childCtx, upload)
+ 				if err != nil {
+-					log.Printf(" -> Failed to remove upload : %s", err)
++					log.Warningf("Unable to remove upload metadata : %s", err)
+ 				}
+ 			}
+ 		}
+diff --git a/server/plikd.cfg b/server/plikd.cfg
+index 7a90da6f..75c1f8f0 100644
+--- a/server/plikd.cfg
++++ b/server/plikd.cfg
+@@ -7,6 +7,7 @@
+ # Global params
+ #
+ 
++LogLevel            = "DEBUG"
+ ListenPort          = 8080
+ ListenAddress       = "0.0.0.0"
+ MaxFileSize         = 1073741824    # 1GB
+diff --git a/server/shorten_backend/isgd/isgd.go b/server/shorten_backend/isgd/isgd.go
+index bc2eb4e3..07984985 100644
+--- a/server/shorten_backend/isgd/isgd.go
++++ b/server/shorten_backend/isgd/isgd.go
+@@ -5,8 +5,8 @@ package isgd
+ //
+ 
+ import (
++	"github.com/root-gg/plik/server/common"
+ 	"io/ioutil"
+-	"log"
+ 	"net/http"
+ 	"net/url"
+ 	"strings"
+@@ -27,26 +27,30 @@ func NewIsGdShortenBackend(_ map[string]interface{}) *ShortenBackendIsGd {
+ 	return isgd
+ }
+ 
+-func (sb *ShortenBackendIsGd) Shorten(longUrl string) (string, error) {
++func (sb *ShortenBackendIsGd) Shorten(ctx *common.PlikContext, longUrl string) (shortUrl string, err error) {
++	defer ctx.Finalize(err)
+ 
++	// Request short url
+ 	resp, err := client.Get(sb.Url + "&url=" + url.QueryEscape(longUrl))
+ 	if err != nil {
+-		return "", err
++		err = ctx.EWarningf("Unable to request short url from is.gd : %s", err)
++		return
+ 	}
+-
+ 	defer resp.Body.Close()
+ 
+-	// Get body
+-	bodyStr, err := ioutil.ReadAll(resp.Body)
++	// Read response body
++	respBody, err := ioutil.ReadAll(resp.Body)
+ 	if err != nil {
+-		return "", err
++		err = ctx.EWarningf("Unable to read response from is.gd : %s", err)
++		return
+ 	}
+ 
+ 	// Got url ? :)
+-	if strings.HasPrefix(string(bodyStr), "http") {
+-		log.Printf(" - [SHORT] Shortlink successfully created : %s", string(bodyStr))
+-		return string(bodyStr), nil
++	if !strings.HasPrefix(string(respBody), "http") {
++		err = ctx.EWarningf("Invalid response from is.gd")
++		return
+ 	}
+ 
+-	return longUrl, nil
++	ctx.Infof("Shortlink successfully created : %s", string(respBody))
++	return string(respBody), nil
+ }
+diff --git a/server/shorten_backend/ovhto/ovhto.go b/server/shorten_backend/ovhto/ovhto.go
+index bd33cb7d..1b1086ac 100644
+--- a/server/shorten_backend/ovhto/ovhto.go
++++ b/server/shorten_backend/ovhto/ovhto.go
+@@ -6,9 +6,9 @@ package ovhto
+ 
+ import (
+ 	"encoding/json"
+-	"github.com/root-gg/plik/server/utils"
++	"github.com/root-gg/plik/server/common"
++	"github.com/root-gg/utils"
+ 	"io/ioutil"
+-	"log"
+ 	"net/http"
+ 	"strings"
+ 	"time"
+@@ -28,33 +28,39 @@ func NewOvhToShortenBackend(config map[string]interface{}) *ShortenBackendOvhTo
+ 	return ovhtobackend
+ }
+ 
+-func (sb *ShortenBackendOvhTo) Shorten(longUrl string) (string, error) {
++func (sb *ShortenBackendOvhTo) Shorten(ctx *common.PlikContext, longUrl string) (shortUrl string, err error) {
++	defer ctx.Finalize(err)
++
++	// Request short url
+ 	b := strings.NewReader(`{"longURL":"` + longUrl + `"}`)
+ 	resp, err := client.Post(sb.Url, "application/json", b)
+ 	if err != nil {
+-		return "", err
++		err = ctx.EWarningf("Unable to request short url from ovh.to : %s", err)
++		return
+ 	}
+-
+ 	defer resp.Body.Close()
+ 
+-	// Get body
++	// Read response body
+ 	bodyStr, err := ioutil.ReadAll(resp.Body)
+ 	if err != nil {
+-		return "", err
++		err = ctx.EWarningf("Unable to read response from ovh.to : %s", err)
++		return
+ 	}
+ 
+-	// Decode it
++	// Deserialize json response
+ 	responseMap := make(map[string]string)
+ 	err = json.Unmarshal(bodyStr, &responseMap)
+ 	if err != nil {
+-		return "", err
++		err = ctx.EWarningf("Unable to deserialize json response \"%s\" from ovh.to : %s", bodyStr, err)
++		return
+ 	}
+ 
+ 	// Got url ? :)
+-	if responseMap["shortURL"] != "" {
+-		log.Printf(" - [SHORT] Shortlink successfully created : %s", responseMap["shortURL"])
+-		return responseMap["shortURL"], nil
++	if responseMap["shortURL"] == "" {
++		err = ctx.EWarningf("Invalid response from ovh.to")
++		return
+ 	}
+ 
+-	return longUrl, nil
++	ctx.Infof("Shortlink successfully created : %s", responseMap["shortURL"])
++	return responseMap["shortURL"], nil
+ }
+diff --git a/server/shorten_backend/shortenBackend.go b/server/shorten_backend/shortenBackend.go
+index dcf53971..2a3a74ae 100644
+--- a/server/shorten_backend/shortenBackend.go
++++ b/server/shorten_backend/shortenBackend.go
+@@ -1,30 +1,38 @@
+ package shorten_backend
+ 
+ import (
++	"github.com/root-gg/plik/server/common"
+ 	"github.com/root-gg/plik/server/shorten_backend/isgd"
+ 	"github.com/root-gg/plik/server/shorten_backend/ovhto"
+ 	"github.com/root-gg/plik/server/shorten_backend/w000t"
+-	"github.com/root-gg/plik/server/utils"
+ )
+ 
+-var shortenBackend Shorten
++var shortenBackend ShortenBackend
+ 
+-type Shorten interface {
+-	Shorten(longUrl string) (string, error)
++type ShortenBackend interface {
++	Shorten(ctx *common.PlikContext, longUrl string) (string, error)
+ }
+ 
+-func GetShortenBackend() Shorten {
++func GetShortenBackend() ShortenBackend {
+ 	if shortenBackend == nil {
+-		switch utils.Config.ShortenBackend {
+-		case "ovh.to":
+-			shortenBackend = ovhto.NewOvhToShortenBackend(utils.Config.ShortenBackendConfig)
+-
+-		case "w000t.me":
+-			shortenBackend = w000t.NewW000tMeShortenBackend(utils.Config.ShortenBackendConfig)
++		Initialize()
++	}
++	return shortenBackend
++}
+ 
+-		case "is.gd":
+-			shortenBackend = isgd.NewIsGdShortenBackend(utils.Config.ShortenBackendConfig)
++func Initialize() {
++	if common.Config.ShortenBackend != "" {
++		if shortenBackend == nil {
++			switch common.Config.ShortenBackend {
++			case "ovh.to":
++				shortenBackend = ovhto.NewOvhToShortenBackend(common.Config.ShortenBackendConfig)
++			case "w000t.me":
++				shortenBackend = w000t.NewW000tMeShortenBackend(common.Config.ShortenBackendConfig)
++			case "is.gd":
++				shortenBackend = isgd.NewIsGdShortenBackend(common.Config.ShortenBackendConfig)
++			default:
++				common.Log().Fatalf("Invalid shorten backend %s", common.Config.DataBackend)
++			}
+ 		}
+ 	}
+-	return shortenBackend
+ }
+diff --git a/server/shorten_backend/w000t/w000t.go b/server/shorten_backend/w000t/w000t.go
+index 73d13e91..3b40b268 100644
+--- a/server/shorten_backend/w000t/w000t.go
++++ b/server/shorten_backend/w000t/w000t.go
+@@ -5,9 +5,9 @@ package w000t
+ //
+ 
+ import (
+-	"github.com/root-gg/plik/server/utils"
++	"github.com/root-gg/plik/server/common"
++	"github.com/root-gg/utils"
+ 	"io/ioutil"
+-	"log"
+ 	"net/http"
+ 	"strings"
+ 	"time"
+@@ -29,27 +29,32 @@ func NewW000tMeShortenBackend(config map[string]interface{}) *ShortenBackendW000
+ 	return w000t
+ }
+ 
+-func (sb *ShortenBackendW000t) Shorten(longUrl string) (string, error) {
++func (sb *ShortenBackendW000t) Shorten(ctx *common.PlikContext, longUrl string) (shortUrl string, err error) {
++	defer ctx.Finalize(err)
++
++	// Request short url
+ 	str := `{"w000t":{"long_url":"` + longUrl + `", "status":"hidden"}, "token":"` + sb.Token + `" }`
+ 	b := strings.NewReader(str)
+ 	resp, err := client.Post(sb.Url, "application/json", b)
+ 	if err != nil {
+-		return "", err
++		err = ctx.EWarningf("Unable to request short url from w000t.me : %s", err)
++		return
+ 	}
+-
+ 	defer resp.Body.Close()
+ 
+-	// Get body
+-	bodyStr, err := ioutil.ReadAll(resp.Body)
++	// Read response body
++	respBody, err := ioutil.ReadAll(resp.Body)
+ 	if err != nil {
+-		return "", err
++		err = ctx.EWarningf("Unable to read response from w000t.me : %s", err)
++		return
+ 	}
+ 
+ 	// Got url ? :)
+-	if strings.HasPrefix(string(bodyStr), "http") {
+-		log.Printf(" - [SHORT] Shortlink successfully created : %s", string(bodyStr))
+-		return string(bodyStr), nil
++	if !strings.HasPrefix(string(respBody), "http") {
++		err = ctx.EWarningf("Invalid response from w000t.me")
++		return
+ 	}
+ 
+-	return longUrl, nil
++	ctx.Infof("Shortlink successfully created : %s", string(respBody))
++	return string(respBody), nil
+ }
+diff --git a/server/utils/result.go b/server/utils/result.go
+deleted file mode 100644
+index cd47cd6d..00000000
+--- a/server/utils/result.go
++++ /dev/null
+@@ -1,51 +0,0 @@
+-package utils
+-
+-import (
+-	"encoding/json"
+-	"fmt"
+-	"log"
+-)
+-
+-type Result struct {
+-	Message string      `json:"message"`
+-	Value   interface{} `json:"value"`
+-}
+-
+-func NewResult(message string, value interface{}) (r *Result) {
+-	r = new(Result)
+-	r.Message = message
+-	r.Value = value
+-	return
+-}
+-
+-func ToJson(data interface{}) ([]byte, error) {
+-	return json.Marshal(data)
+-}
+-
+-func ToJsonString(data interface{}) (string, error) {
+-	json, err := ToJson(data)
+-	return string(json), err
+-}
+-
+-func (result *Result) ToJson() []byte {
+-	if j, err := ToJson(result); err == nil {
+-		return j
+-	} else {
+-		msg := fmt.Sprintf("Unable to serialize result %s to json : %s", result.Message, err)
+-		log.Println(msg)
+-		return []byte("{message:\"" + msg + "\"}")
+-	}
+-}
+-
+-func (result *Result) ToJsonString() string {
+-	return string(result.ToJson())
+-}
+-
+-//
+-//func (result *Result) WriteToResponse(w http.ResponseWriter) {
+-//	if j, err := result.toJson(); err == nil {
+-//		w.Write(byte(j))
+-//	} else {
+-//		log.Println("Unable to serialize result %s to json : %s ", result.Message, err)
+-//	}
+-//}
+diff --git a/server/utils/utils.go b/server/utils/utils.go
+deleted file mode 100644
+index e1cfb576..00000000
+--- a/server/utils/utils.go
++++ /dev/null
+@@ -1,21 +0,0 @@
+-package utils
+-
+-import (
+-	"crypto/md5"
+-	"fmt"
+-	"io"
+-)
+-
+-var(
+-	PlikVersion = "##VERSION##"
+-)
+-
+-func Md5sum(str string) (md5sum string, err error) {
+-	h := md5.New()
+-	_, err = io.WriteString(h, str)
+-	if err != nil {
+-		return
+-	}
+-	md5sum = fmt.Sprintf("%x", h.Sum(nil))
+-	return
+-}
+
+```
+
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Report all of your findings in a single JSON object with the following format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

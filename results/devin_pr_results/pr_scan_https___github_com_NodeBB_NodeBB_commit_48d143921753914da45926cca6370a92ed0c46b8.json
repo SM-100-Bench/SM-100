@@ -1,0 +1,30 @@
+{
+  "session_id": "devin-d93313821550486798b8fdc8da303c18",
+  "issues": [
+    {
+      "file": "src/socket.io/index.js",
+      "line": 26,
+      "description": "Transport order changed from ['polling', 'websocket'] to ['websocket', 'polling'] which may cause connection failures for clients that don't support websockets, as the system will now try websocket first instead of falling back to it"
+    },
+    {
+      "file": "src/socket.io/index.js",
+      "line": 79,
+      "description": "The 'status' field was removed from the event:connect payload object, which could break client code that depends on this field"
+    },
+    {
+      "file": "src/socket.io/index.js",
+      "line": 158,
+      "description": "The requireModules function is called before io is initialized, but the Namespaces populated by this function might be needed by code that runs immediately after io initialization"
+    },
+    {
+      "file": "src/socket.io/index.js",
+      "line": 30,
+      "description": "Asynchronous module loading in requireModules() could lead to race conditions where socket events are received before all modules are loaded"
+    },
+    {
+      "file": "src/socket.io/index.js",
+      "line": 128,
+      "description": "Using payload.name in error message but the variable is actually called eventName, resulting in undefined being logged"
+    }
+  ]
+}

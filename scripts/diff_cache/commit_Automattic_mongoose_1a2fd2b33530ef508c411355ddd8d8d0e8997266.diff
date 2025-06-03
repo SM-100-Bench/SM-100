@@ -1,0 +1,83 @@
+diff --git a/lib/cursor/queryCursor.js b/lib/cursor/queryCursor.js
+index 895919a739d..7c2ac4f1d27 100644
+--- a/lib/cursor/queryCursor.js
++++ b/lib/cursor/queryCursor.js
+@@ -238,6 +238,27 @@ QueryCursor.prototype.close = async function close() {
+   }
+ };
+ 
++/**
++ * Marks this cursor as destroyed. Will stop streaming and subsequent calls to
++ * `next()` will error.
++ *
++ * @return {this}
++ * @api private
++ * @method _destroy
++ */
++
++QueryCursor.prototype._destroy = function _destroy(_err, callback) {
++  this.cursor.close()
++    .then(() => {
++      this._closed = false;
++      callback();
++    })
++    .catch(error => {
++      callback(error);
++    });
++  return this;
++};
++
+ /**
+  * Rewind this cursor to its uninitialized state. Any options that are present on the cursor will
+  * remain in effect. Iterating this cursor will cause new queries to be sent to the server, even
+diff --git a/test/query.cursor.test.js b/test/query.cursor.test.js
+index d80264c5f2d..11056621a8f 100644
+--- a/test/query.cursor.test.js
++++ b/test/query.cursor.test.js
+@@ -4,6 +4,7 @@
+ 
+ 'use strict';
+ 
++const { once } = require('events');
+ const start = require('./common');
+ 
+ const assert = require('assert');
+@@ -920,6 +921,21 @@ describe('QueryCursor', function() {
+     assert.ok(cursor.cursor);
+     assert.equal(driverCursor, cursor.cursor);
+   });
++
++  it('handles destroy() (gh-14966)', async function() {
++    db.deleteModel(/Test/);
++    const TestModel = db.model('Test', mongoose.Schema({ name: String }));
++
++    const stream = await TestModel.find().cursor();
++    await once(stream, 'cursor');
++    assert.ok(!stream.cursor.closed);
++
++    stream.destroy();
++
++    await once(stream.cursor, 'close');
++    assert.ok(stream.destroyed);
++    assert.ok(stream.cursor.closed);
++  });
+ });
+ 
+ async function delay(ms) {
+diff --git a/types/cursor.d.ts b/types/cursor.d.ts
+index 6554dc99f34..268bb8f6783 100644
+--- a/types/cursor.d.ts
++++ b/types/cursor.d.ts
+@@ -26,6 +26,12 @@ declare module 'mongoose' {
+      */
+     close(): Promise<void>;
+ 
++    /**
++     * Destroy this cursor, closing the underlying cursor. Will stop streaming
++     * and subsequent calls to `next()` will error.
++     */
++    destroy(): this;
++
+     /**
+      * Rewind this cursor to its uninitialized state. Any options that are present on the cursor will
+      * remain in effect. Iterating this cursor will cause new queries to be sent to the server, even

@@ -1,0 +1,15 @@
+{
+  "identifier": "codeclysm_extract_472639d",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.1068741,
+    "is_error": false,
+    "duration_ms": 10658,
+    "duration_api_ms": 15682,
+    "num_turns": 4,
+    "result": "Now let me examine the specific code issues. I can see several potential bugs in the staged changes:\n\n```json\n{\n  \"issues\": [\n    {\n      \"file\": \"extractor.go\",\n      \"line\": 39,\n      \"description\": \"Error is not returned from errors.Annotatef() - missing return statement\"\n    },\n    {\n      \"file\": \"extractor.go\", \n      \"line\": 66,\n      \"description\": \"Calling old Tar() function instead of e.Tar() - breaks encapsulation and bypasses FS interface\"\n    },\n    {\n      \"file\": \"extractor_test.go\",\n      \"line\": 86,\n      \"description\": \"MockDisk.Symlink() parameter order is incorrect - should be (newname, oldname) not (oldname, newname)\"\n    }\n  ]\n}\n```",
+    "total_cost": 0.1068741,
+    "session_id": "36f9314d-76a4-474c-b0bb-c3348bd02a88"
+  }
+}

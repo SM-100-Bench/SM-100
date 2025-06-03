@@ -1,0 +1,65 @@
+diff --git a/src/controllers/accounts.js b/src/controllers/accounts.js
+index 7a253a4a..f84b4f3d 100644
+--- a/src/controllers/accounts.js
++++ b/src/controllers/accounts.js
+@@ -464,52 +464,57 @@ accountsController.uploadImage = function (req, res) {
+ 
+   const object = {}
+   let error
+ 
+   busboy.on('field', function (fieldname, val) {
+     if (fieldname === '_id') object._id = val
+     if (fieldname === 'username') object.username = val
+   })
+ 
+   busboy.on('file', function (name, file, info) {
+     const filename = info.filename
+     const mimetype = info.mimeType
+     const ext = path.extname(filename)
+     if (mimetype.indexOf('image/') === -1 || ext === '.svg') {
+       error = {
+         status: 400,
+         message: 'Invalid File Type'
+       }
+ 
+       return file.resume()
+     }
+ 
+     const savePath = path.join(__dirname, '../../public/uploads/users')
+     if (!fs.existsSync(savePath)) fs.mkdirSync(savePath)
+ 
+-    object.filePath = path.join(savePath, 'aProfile_' + object.username + path.extname(filename))
+-    object.filename = 'aProfile_' + object.username + path.extname(filename)
++    const sanitizedUsername = path
++      .basename(object.username || '')
++      .replace(/[\\/]/g, '')
++      .replace(/[^a-zA-Z0-9-_]/g, '_')
++
++    object.filePath = path.join(savePath, 'aProfile_' + sanitizedUsername + path.extname(filename))
++    object.filename = 'aProfile_' + sanitizedUsername + path.extname(filename)
+     object.mimetype = mimetype
+ 
+     file.on('limit', function () {
+       error = {
+         status: 400,
+         message: 'File too large'
+       }
+ 
+       // Delete the temp file
+       // if (fs.existsSync(object.filePath)) fs.unlinkSync(object.filePath);
+ 
+       return file.resume()
+     })
+ 
+     file.pipe(fs.createWriteStream(object.filePath))
+   })
+ 
+   busboy.once('finish', function () {
+     if (error) {
+       winston.warn(error)
+       return res.status(error.status).send(error.message)
+     }
+ 
+     if (
+       _.isUndefined(object._id) ||
+

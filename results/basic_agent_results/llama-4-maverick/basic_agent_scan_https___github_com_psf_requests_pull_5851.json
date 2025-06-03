@@ -1,0 +1,1 @@
+{"repo_id": "psf_requests_5851", "bugs": [{"description": "The `get_full_url` method in `MockRequest` class does not validate the `Host` header value, potentially leading to security issues such as cache poisoning or cookie injection attacks.", "file": "requests/cookies.py", "line": 57}], "updated_files": {}}

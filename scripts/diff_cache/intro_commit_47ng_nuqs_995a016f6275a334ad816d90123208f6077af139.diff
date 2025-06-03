@@ -1,0 +1,319 @@
+diff --git a/README.md b/README.md
+index 301578ac7..3c8acf7b4 100644
+--- a/README.md
++++ b/README.md
+@@ -614,7 +614,7 @@ export function Server() {
+ 
+ // client.tsx
+ // prettier-ignore
+-'use client'
++;'use client'
+ 
+ import { useQueryStates } from 'nuqs'
+ import { coordinatesParsers } from './searchParams'
+@@ -625,6 +625,65 @@ export function Client() {
+ }
+ ```
+ 
++## Serializer helper
++
++To populate `<Link>` components with state values, you can use the `createSerializer`
++helper.
++
++Pass it an object describing your search params, and it will give you a function
++to call with values, that generates a query string serialized as the hooks would do.
++
++Example:
++
++```ts
++import {
++  createSerializer,
++  parseAsInteger,
++  parseAsIsoDateTime,
++  parseAsString,
++  parseAsStringLiteral
++} from 'nuqs/parsers'
++
++const searchParams = {
++  search: parseAsString,
++  limit: parseAsInteger,
++  from: parseAsIsoDateTime,
++  to: parseAsIsoDateTime,
++  sortBy: parseAsStringLiteral(['asc', 'desc'] as const)
++}
++
++// Create a serializer function by passing the description of the search params to accept
++const serialize = createSerializer(searchParams)
++
++// Then later, pass it some values (a subset) and render them to a query string
++serialize({
++  search: 'foo bar',
++  limit: 10,
++  from: new Date('2024-01-01'),
++  // here, we omit `to`, which won't be added
++  sortBy: null // null values are also not rendered
++})
++// ?search=foo+bar&limit=10&from=2024-01-01T00:00:00.000Z
++```
++
++### Base parameter
++
++The returned `serialize` function can take a base parameter over which to
++append/amend the search params:
++
++```ts
++serialize('/path?baz=qux', { foo: 'bar' }) // /path?baz=qux&foo=bar
++
++const search = new URLSearchParams('?baz=qux')
++serialize(search, { foo: 'bar' }) // ?baz=qux&foo=bar
++
++const url = new URL('https://example.com/path?baz=qux')
++serialize(url, { foo: 'bar' }) // https://example.com/path?baz=qux&foo=bar
++
++// Passing null removes existing values
++serialize('?remove=me', { foo: 'bar', remove: null }) // ?foo=bar
++```
++
+ ## Testing
+ 
+ Currently, the best way to test the behaviour of your components using
+diff --git a/packages/docs/content/docs/index.mdx b/packages/docs/content/docs/index.mdx
+index 5ec35e484..703c33ca2 100644
+--- a/packages/docs/content/docs/index.mdx
++++ b/packages/docs/content/docs/index.mdx
+@@ -622,6 +622,65 @@ export function Client() {
+ }
+ ```
+ 
++## Serializer helper
++
++To populate `<Link>` components with state values, you can use the `createSerializer`
++helper.
++
++Pass it an object describing your search params, and it will give you a function
++to call with values, that generates a query string serialized as the hooks would do.
++
++Example:
++
++```ts
++import {
++  createSerializer,
++  parseAsInteger,
++  parseAsIsoDateTime,
++  parseAsString,
++  parseAsStringLiteral
++} from 'nuqs/parsers'
++
++const searchParams = {
++  search: parseAsString,
++  limit: parseAsInteger,
++  from: parseAsIsoDateTime,
++  to: parseAsIsoDateTime,
++  sortBy: parseAsStringLiteral(['asc', 'desc'] as const)
++}
++
++// Create a serializer function by passing the description of the search params to accept
++const serialize = createSerializer(searchParams)
++
++// Then later, pass it some values (a subset) and render them to a query string
++serialize({
++  search: 'foo bar',
++  limit: 10,
++  from: new Date('2024-01-01'),
++  // here, we omit `to`, which won't be added
++  sortBy: null // null values are also not rendered
++})
++// ?search=foo+bar&limit=10&from=2024-01-01T00:00:00.000Z
++```
++
++### Base parameter
++
++The returned `serialize` function can take a base parameter over which to
++append/amend the search params:
++
++```ts
++serialize('/path?baz=qux', { foo: 'bar' }) // /path?baz=qux&foo=bar
++
++const search = new URLSearchParams('?baz=qux')
++serialize(search, { foo: 'bar' }) // ?baz=qux&foo=bar
++
++const url = new URL('https://example.com/path?baz=qux')
++serialize(url, { foo: 'bar' }) // https://example.com/path?baz=qux&foo=bar
++
++// Passing null removes existing values
++serialize('?remove=me', { foo: 'bar', remove: null }) // ?foo=bar
++```
++
+ ## Testing
+ 
+ Currently, the best way to test the behaviour of your components using
+diff --git a/packages/docs/src/app/(pages)/_landing/features.tsx b/packages/docs/src/app/(pages)/_landing/features.tsx
+index 6961651a2..729e587c4 100644
+--- a/packages/docs/src/app/(pages)/_landing/features.tsx
++++ b/packages/docs/src/app/(pages)/_landing/features.tsx
+@@ -101,7 +101,7 @@ export function FeaturesSection(props: React.ComponentProps<'section'>) {
+       <Feature
+         icon={<Feather size={32} />}
+         title="Tiny"
+-        description="Only 3.5kb gzipped."
++        description="Only 3.9kb gzipped."
+       />
+       <Feature
+         icon={<TestTube2 size={32} />}
+diff --git a/packages/nuqs/src/index.parsers.ts b/packages/nuqs/src/index.parsers.ts
+index f15bddcb5..02c1927e5 100644
+--- a/packages/nuqs/src/index.parsers.ts
++++ b/packages/nuqs/src/index.parsers.ts
+@@ -1,2 +1,3 @@
+ export * from './cache'
+ export * from './parsers'
++export { createSerializer } from './serializer'
+diff --git a/packages/nuqs/src/index.ts b/packages/nuqs/src/index.ts
+index 01b1e0e89..1ee6ee933 100644
+--- a/packages/nuqs/src/index.ts
++++ b/packages/nuqs/src/index.ts
+@@ -3,6 +3,7 @@
+ export type { HistoryOptions, Options } from './defs'
+ export * from './deprecated'
+ export * from './parsers'
++export { createSerializer } from './serializer'
+ export { subscribeToQueryUpdates } from './sync'
+ export type { QueryUpdateNotificationArgs, QueryUpdateSource } from './sync'
+ export * from './useQueryState'
+diff --git a/packages/nuqs/src/serializer.test.ts b/packages/nuqs/src/serializer.test.ts
+new file mode 100644
+index 000000000..f90ad52e5
+--- /dev/null
++++ b/packages/nuqs/src/serializer.test.ts
+@@ -0,0 +1,65 @@
++import { describe, expect, test } from 'vitest'
++import { parseAsBoolean, parseAsInteger, parseAsString } from './parsers'
++import { createSerializer } from './serializer'
++
++const parsers = {
++  str: parseAsString,
++  int: parseAsInteger,
++  bool: parseAsBoolean
++}
++
++describe('serializer', () => {
++  test('empty', () => {
++    const serialize = createSerializer(parsers)
++    const result = serialize({})
++    expect(result).toBe('')
++  })
++  test('one item', () => {
++    const serialize = createSerializer(parsers)
++    const result = serialize({ str: 'foo' })
++    expect(result).toBe('?str=foo')
++  })
++  test('several items', () => {
++    const serialize = createSerializer(parsers)
++    const result = serialize({ str: 'foo', int: 1, bool: true })
++    expect(result).toBe('?str=foo&int=1&bool=true')
++  })
++  test("null items don't show up", () => {
++    const serialize = createSerializer(parsers)
++    const result = serialize({ str: null })
++    expect(result).toBe('')
++  })
++  test('with string base', () => {
++    const serialize = createSerializer(parsers)
++    const result = serialize('/foo', { str: 'foo' })
++    expect(result).toBe('/foo?str=foo')
++  })
++  test('with string base with search params', () => {
++    const serialize = createSerializer(parsers)
++    const result = serialize('/foo?bar=egg', { str: 'foo' })
++    expect(result).toBe('/foo?bar=egg&str=foo')
++  })
++  test('with URLSearchParams base', () => {
++    const serialize = createSerializer(parsers)
++    const search = new URLSearchParams('?bar=egg')
++    const result = serialize(search, { str: 'foo' })
++    expect(result).toBe('?bar=egg&str=foo')
++  })
++  test('with URL base', () => {
++    const serialize = createSerializer(parsers)
++    const url = new URL('https://example.com/path')
++    const result = serialize(url, { str: 'foo' })
++    expect(result).toBe('https://example.com/path?str=foo')
++  })
++  test('with URL base and search params', () => {
++    const serialize = createSerializer(parsers)
++    const url = new URL('https://example.com/path?bar=egg')
++    const result = serialize(url, { str: 'foo' })
++    expect(result).toBe('https://example.com/path?bar=egg&str=foo')
++  })
++  test('null deletes from base', () => {
++    const serialize = createSerializer(parsers)
++    const result = serialize('?str=bar&int=-1', { str: 'foo', int: null })
++    expect(result).toBe('?str=foo')
++  })
++})
+diff --git a/packages/nuqs/src/serializer.ts b/packages/nuqs/src/serializer.ts
+new file mode 100644
+index 000000000..d7db4aa4d
+--- /dev/null
++++ b/packages/nuqs/src/serializer.ts
+@@ -0,0 +1,60 @@
++import type { ParserBuilder } from './parsers'
++import { renderQueryString } from './url-encoding'
++
++type ExtractParserType<Parser> = Parser extends ParserBuilder<any>
++  ? ReturnType<Parser['parseServerSide']>
++  : never
++
++type Base = string | URLSearchParams | URL
++type Values<Parsers extends Record<string, ParserBuilder<any>>> = Partial<{
++  [K in keyof Parsers]?: ExtractParserType<Parsers[K]>
++}>
++
++export function createSerializer<
++  Parsers extends Record<string, ParserBuilder<any>>
++>(parsers: Parsers) {
++  function serialize(values: Values<Parsers>): string
++  function serialize(base: Base, values: Values<Parsers>): string
++  function serialize(
++    baseOrValues: Base | Values<Parsers>,
++    values?: Values<Parsers>
++  ) {
++    const [base, search] = isBase(baseOrValues)
++      ? splitBase(baseOrValues)
++      : ['', new URLSearchParams()]
++    const vals = isBase(baseOrValues) ? values! : baseOrValues
++    for (const key in parsers) {
++      const parser = parsers[key]
++      const value = vals[key]
++      if (!parser || value === undefined) {
++        continue
++      }
++      if (value === null) {
++        search.delete(key)
++      } else {
++        search.set(key, parser.serialize(value))
++      }
++    }
++    return base + renderQueryString(search)
++  }
++  return serialize
++}
++
++function isBase(base: any): base is Base {
++  return (
++    typeof base === 'string' ||
++    base instanceof URLSearchParams ||
++    base instanceof URL
++  )
++}
++
++function splitBase(base: Base) {
++  if (typeof base === 'string') {
++    const [path = '', search] = base.split('?')
++    return [path, new URLSearchParams(search)] as const
++  } else if (base instanceof URLSearchParams) {
++    return ['', base] as const
++  } else {
++    return [base.origin + base.pathname, base.searchParams] as const
++  }
++}

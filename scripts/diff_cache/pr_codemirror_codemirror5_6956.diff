@@ -1,0 +1,24 @@
+diff --git a/addon/tern/tern.js b/addon/tern/tern.js
+index b2509e0d65..8a4d67db09 100644
+--- a/addon/tern/tern.js
++++ b/addon/tern/tern.js
+@@ -589,10 +589,16 @@
+   }
+ 
+   function dialog(cm, text, f) {
+-    if (cm.openDialog)
+-      cm.openDialog(text + ": <input type=text>", f);
+-    else
++    if (cm.openDialog) {
++      var fragment = document.createDocumentFragment();
++      fragment.appendChild(document.createTextNode(text + ": "));
++      var input = document.createElement("input");
++      input.type = "text";
++      fragment.appendChild(input);
++      cm.openDialog(fragment, f);
++    } else {
+       f(prompt(text, ""));
++    }
+   }
+ 
+   // Tooltips

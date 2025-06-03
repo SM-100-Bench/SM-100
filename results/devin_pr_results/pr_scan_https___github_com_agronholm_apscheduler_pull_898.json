@@ -1,0 +1,55 @@
+{
+  "session_id": "devin-9fd6ed5cdfc3419391514c755e6c1a17",
+  "issues": [
+    {
+      "file": "apscheduler/triggers/cron/__init__.py",
+      "line": 117,
+      "description": "Debug print statement left in production code: print('incrementing', field.name)"
+    },
+    {
+      "file": "apscheduler/triggers/cron/__init__.py",
+      "line": 158,
+      "description": "Debug print statement left in production code: print(f'{field.name}: current value = {curr_value}, next_value = {next_value}')"
+    },
+    {
+      "file": "apscheduler/triggers/cron/__init__.py",
+      "line": 133,
+      "description": "Commented out code suggests incomplete refactoring: # return datetime_normalize(dateval + difference), fieldnum"
+    },
+    {
+      "file": "apscheduler/validators.py",
+      "line": 81,
+      "description": "Type signature change: removed support for float timestamps in as_aware_datetime function, which could break existing code that passes timestamps as floats"
+    },
+    {
+      "file": "apscheduler/triggers/calendarinterval.py",
+      "line": 50,
+      "description": "DST handling logic completely rewritten, potentially missing edge cases that were handled in the original pytz implementation"
+    },
+    {
+      "file": "apscheduler/triggers/cron/__init__.py",
+      "line": 71,
+      "description": "Changed default timezone parameter from None to 'local', which could alter behavior for existing code"
+    },
+    {
+      "file": "apscheduler/triggers/date.py",
+      "line": 12,
+      "description": "Changed default timezone parameter from None to 'local', potentially altering behavior for existing code"
+    },
+    {
+      "file": "apscheduler/triggers/interval.py",
+      "line": 33,
+      "description": "Changed default timezone parameter from None to 'local', potentially altering behavior for existing code"
+    },
+    {
+      "file": "apscheduler/validators.py",
+      "line": 93,
+      "description": "Timezone conversion logic changed significantly, potentially causing different behavior during DST transitions compared to pytz implementation"
+    },
+    {
+      "file": "apscheduler/marshalling.py",
+      "line": 136,
+      "description": "New marshalling/unmarshalling of timezones could affect compatibility with previously serialized data"
+    }
+  ]
+}

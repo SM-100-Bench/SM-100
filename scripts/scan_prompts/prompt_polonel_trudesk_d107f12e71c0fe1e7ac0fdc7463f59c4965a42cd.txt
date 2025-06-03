@@ -1,0 +1,19 @@
+Please review the code in the polonel_trudesk_d107f12e71c0fe1e7ac0fdc7463f59c4965a42cd repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Core Server subsystem (consisting of 'app.js', 'runner.js', 'src/controllers/accounts.js', 'src/controllers/api.js', 'src/controllers/api/apiUtils.js', 'src/controllers/api/v1/common.js', 'src/controllers/api/v1/elasticsearch.js', 'src/controllers/api/v1/groups.js', 'src/controllers/api/v1/messages.js', 'src/controllers/api/v1/notices.js', 'src/controllers/api/v1/plugins.js', 'src/controllers/api/v1/reports.js', 'src/controllers/api/v1/roles.js', 'src/controllers/api/v1/routes.js', 'src/controllers/api/v1/settings.js', 'src/controllers/api/v1/tags.js', 'src/controllers/api/v1/tickets.js', 'src/controllers/api/v1/users.js', 'src/controllers/api/v2/accounts.js', 'src/controllers/api/v2/common.js', 'src/controllers/api/v2/departments.js', 'src/controllers/api/v2/elasticsearch.js', 'src/controllers/api/v2/groups.js', 'src/controllers/api/v2/mailer.js', 'src/controllers/api/v2/messages.js', 'src/controllers/api/v2/notices.js', 'src/controllers/api/v2/reports.js', 'src/controllers/api/v2/roles.js', 'src/controllers/api/v2/routes.js', 'src/controllers/api/v2/settings.js', 'src/controllers/api/v2/tags.js', 'src/controllers/api/v2/teams.js', 'src/controllers/api/v2/tickets.js', 'src/controllers/api/v2/types.js', 'src/controllers/backuprestore.js', 'src/controllers/debug.js', 'src/controllers/departments.js', 'src/controllers/editor.js', 'src/controllers/groups.js', 'src/controllers/index.js', 'src/controllers/install.js', 'src/controllers/main.js', 'src/controllers/messages.js', 'src/controllers/notices.js', 'src/controllers/plugins.js', 'src/controllers/reports.js', 'src/controllers/servers.js', 'src/controllers/settings.js', 'src/controllers/teams.js', 'src/controllers/tickets.js', 'src/database/index.js', 'src/emitter/events.js', 'src/emitter/events/event_ticket_created.js', 'src/emitter/index.js', 'src/middleware/index.js', 'src/middleware/middleware.js', 'src/routes/index.js', 'src/socketserver.js', 'src/webserver.js')
+2. API subsystem (consisting of 'src/client/api/index.js', 'src/controllers/api.js', 'src/controllers/api/apiUtils.js', 'src/controllers/api/v1/common.js', 'src/controllers/api/v1/elasticsearch.js', 'src/controllers/api/v1/groups.js', 'src/controllers/api/v1/messages.js', 'src/controllers/api/v1/notices.js', 'src/controllers/api/v1/plugins.js', 'src/controllers/api/v1/reports.js', 'src/controllers/api/v1/roles.js', 'src/controllers/api/v1/routes.js', 'src/controllers/api/v1/settings.js', 'src/controllers/api/v1/tags.js', 'src/controllers/api/v1/tickets.js', 'src/controllers/api/v1/users.js', 'src/controllers/api/v2/accounts.js', 'src/controllers/api/v2/common.js', 'src/controllers/api/v2/departments.js', 'src/controllers/api/v2/elasticsearch.js', 'src/controllers/api/v2/groups.js', 'src/controllers/api/v2/mailer.js', 'src/controllers/api/v2/messages.js', 'src/controllers/api/v2/notices.js', 'src/controllers/api/v2/reports.js', 'src/controllers/api/v2/roles.js', 'src/controllers/api/v2/routes.js', 'src/controllers/api/v2/settings.js', 'src/controllers/api/v2/tags.js', 'src/controllers/api/v2/teams.js', 'src/controllers/api/v2/tickets.js', 'src/controllers/api/v2/types.js')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

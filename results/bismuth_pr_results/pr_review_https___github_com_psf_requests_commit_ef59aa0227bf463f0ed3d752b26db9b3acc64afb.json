@@ -1,0 +1,23 @@
+{
+  "bug_detected": false,
+  "detection_details": [],
+  "raw": {
+    "message": "## Bug Summary\n\n**Total Bugs Found:** 2 (related to the same issue)\n\n### Critical Bug Details\n\nThe bugs are located in the `prepend_scheme_if_needed` function in `requests/utils.py` and involve incorrect handling of URL parameters during URL reconstruction. \n\n#### Key Issues:\n- Incorrectly setting the `params` component to an empty string (`''`) when using `urlunparse`\n- Potential loss of URL parameters in certain edge cases\n- Mismatch between `parse_url` return tuple (7 components) and `urlunparse` expected tuple (6 components)\n\n### Recommended Fix\n- Pass `None` for the `params` component in `urlunparse`\n- Preserve original URL parameters\n- Maintain backwards compatibility with existing parsing logic\n\nThe suggested fix ensures that URL parameters are not inadvertently stripped during URL scheme prepending or reconstruction.",
+    "bugs": [
+      {
+        "description": "The `prepend_scheme_if_needed` function is setting the `params` parameter to an empty string (`''`) in the `urlunparse` call, which could potentially cause URL parameters to be lost. \n\nThe `urlunparse` function expects a 6-tuple with components: (scheme, netloc, path, params, query, fragment). When using `parse_url` from urllib3, the function returns a 7-tuple with components: (scheme, auth, host, port, path, query, fragment), but doesn't include a params component.\n\nThe correct approach is to pass `None` for the params component in `urlunparse`, which preserves the original behavior of not modifying any parameters that might be present in the URL. Using an empty string could potentially strip parameters from the URL in certain edge cases.",
+        "file": "requests/utils.py",
+        "start_line": 961,
+        "end_line": 983,
+        "suggested_fix": "def prepend_scheme_if_needed(url, new_scheme):\n    \"\"\"Given a URL that may or may not have a scheme, prepend the given scheme.\n    Does not replace a present scheme with the one provided as an argument.\n\n    :rtype: str\n    \"\"\"\n    parsed = parse_url(url)\n    scheme, auth, host, port, path, query, fragment = parsed\n\n    # A defect in urlparse determines that there isn't a netloc present in some\n    # urls. We previously assumed parsing was overly cautious, and swapped the\n    # netloc and path. Due to a lack of tests on the original defect, this is\n    # maintained with parse_url for backwards compatibility.\n    netloc = parsed.netloc\n    if not netloc:\n        netloc, path = path, netloc\n\n    if scheme is None:\n        scheme = new_scheme\n    if path is None:\n        path = ''\n\n    return urlunparse((scheme, netloc, path, None, query, fragment))"
+      },
+      {
+        "description": "In the `prepend_scheme_if_needed` function, the `params` parameter in the `urlunparse` call is set to an empty string (`''`). This could potentially cause URL parameters to be lost.\n\nThe `urlunparse` function expects a 6-tuple with components: (scheme, netloc, path, params, query, fragment). When using `parse_url` from urllib3, the function returns a 7-tuple with components: (scheme, auth, host, port, path, query, fragment), but doesn't include a params component.\n\nThe correct approach is to pass `None` for the params component in `urlunparse`, which preserves the original behavior of not modifying any parameters that might be present in the URL. Using an empty string could potentially strip parameters from the URL in certain edge cases.",
+        "file": "requests/utils.py",
+        "start_line": 983,
+        "end_line": 983,
+        "suggested_fix": "    return urlunparse((scheme, netloc, path, None, query, fragment))"
+      }
+    ]
+  }
+}

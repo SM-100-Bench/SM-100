@@ -1,0 +1,24 @@
+{
+"issues": [
+{
+"file": "src/dom/epub/lib/sanitize-and-render.ts",
+"line": 11,
+"description": "HTML inserted into the DOM isn’t sanitized for <script> tags or event-handler attributes. This allows scripts embedded in EPUB content to execute when rendered, creating an XSS risk."
+},
+{
+"file": "src/dom/epub/lib/sanitize-and-render.ts",
+"line": 136,
+"description": "addByURL fetches external CSS directly from URLs provided by the EPUB. Malicious EPUB files could trigger arbitrary network requests."
+},
+{
+"file": "src/dom/epub/lib/page-mapping.ts",
+"line": 88,
+"description": "remainingBeforeBreak isn’t updated after the while loop, so character counts accumulate incorrectly when splitting across nodes, causing wrong page mappings."
+},
+{
+"file": "src/dom/epub/flow.ts",
+"line": 84,
+"description": "IntersectionObserver instance is created but never stored or disconnected. When flow mode changes, old observers keep references to the destroyed object, leading to memory leaks."
+}
+]
+}

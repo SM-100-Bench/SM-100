@@ -1,0 +1,23 @@
+{
+  "bug_detected": false,
+  "detection_details": [],
+  "raw": {
+    "message": "# Bug Summary for localstack/services/s3/v3/provider.py\n\n## Total Bugs Found: 2\n\n### Critical Bugs:\n- **HeadObject Checksum Handling**: In the HeadObject handler, there is an undefined variable `checksum` being referenced when attempting to set the checksum value in the response. This would cause an error when a client requests a HeadObject operation with ChecksumMode=ENABLED on an object with a checksum algorithm.\n\n### Bug Details:\n1. The code attempts to use a non-existent `checksum` variable when setting the response checksum.\n2. The correct variable to use is `s3_object.checksum_value`.\n3. The bug is inconsistent with other parts of the code (like GetObject handler) which correctly use `s3_object.checksum_value`.\n\n### Potential Impact:\n- Breaks HeadObject functionality for objects with checksums\n- Prevents proper checksum reporting in S3 object metadata\n- Would cause runtime errors when specific S3 operations are performed",
+    "bugs": [
+      {
+        "description": "There's a bug in the HeadObject handler where it references a variable 'checksum' that doesn't exist. In line 744, the code attempts to use a variable named 'checksum' when setting the checksum value in the response, but this variable is not defined anywhere in the function. \n\nThe correct value to use is `s3_object.checksum_value`, which is the checksum value stored in the S3Object. This is consistent with how the same functionality is implemented in the GetObject handler at line 654, which correctly uses `s3_object.checksum_value`.\n\nThis bug would cause an error when a client requests a HeadObject operation with ChecksumMode=ENABLED on an object that has a checksum algorithm defined.",
+        "file": "localstack/services/s3/v3/provider.py",
+        "start_line": 743,
+        "end_line": 745,
+        "suggested_fix": "        if checksum_algorithm := s3_object.checksum_algorithm:\n            if (request.get(\"ChecksumMode\") or \"\").upper() == \"ENABLED\":\n                response[f\"Checksum{checksum_algorithm.upper()}\"] = s3_object.checksum_value"
+      },
+      {
+        "description": "There is a bug in the HeadObject handler where it references a variable 'checksum' that doesn't exist. In the line `response[f\"Checksum{checksum_algorithm.upper()}\"] = checksum  # noqa`, it's using a variable 'checksum' that isn't defined anywhere in the function.\n\nThe correct variable to use is `s3_object.checksum_value`, which contains the checksum value for the object. This is consistent with how it's handled in other parts of the code, such as in the GetObject handler at line 654 where it correctly uses `s3_object.checksum_value`.",
+        "file": "localstack/services/s3/v3/provider.py",
+        "start_line": 744,
+        "end_line": 745,
+        "suggested_fix": "            if (request.get(\"ChecksumMode\") or \"\").upper() == \"ENABLED\":\n                response[f\"Checksum{checksum_algorithm.upper()}\"] = s3_object.checksum_value  # noqa"
+      }
+    ]
+  }
+}

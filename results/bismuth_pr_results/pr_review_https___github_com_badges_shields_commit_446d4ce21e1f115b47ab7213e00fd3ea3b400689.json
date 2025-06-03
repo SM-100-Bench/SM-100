@@ -1,0 +1,30 @@
+{
+  "bug_detected": false,
+  "detection_details": [],
+  "raw": {
+    "message": "## Bug Summary\n\n**Total Bugs Found:** 3\n\n### Bug Details\n\n1. **Cache Key Construction Bug** (lib/request-handler.js, line 100)\n   - Critical severity\n   - Causes incorrect cache key generation\n   - Leads to cache collisions across different routes\n   - Would result in serving incorrect badge data from cache\n\n2. **Duplicate Parameter in Global Query Params** (lib/request-handler.js, lines 41-44)\n   - Low severity\n   - Unnecessary duplicate 'link' parameter in Set\n   - Does not cause functional issues\n   - Potential code maintenance confusion\n\n3. **Ansible Integration State Check Bug** (server.js, line 5474)\n   - Medium severity\n   - Incorrect variable reference in state checking\n   - Would cause incorrect badge rendering for null state responses\n   - Similar to a previously fixed Dockbit integration bug",
+    "bugs": [
+      {
+        "description": "There is a bug in the cache key construction in request-handler.js. The line is using the string literal 'match[0]' instead of accessing the actual value from the match array. This means all cache keys will start with the literal string \"match[0]\" rather than the actual matched route, causing cache collisions across different routes. This would lead to incorrect badge data being served from cache for different endpoints.",
+        "file": "lib/request-handler.js",
+        "start_line": 100,
+        "end_line": 100,
+        "suggested_fix": "const cacheIndex = `${match[0]}?${stringified}`;"
+      },
+      {
+        "description": "There is a duplicate 'link' parameter in the globalQueryParams Set. This duplicate entry doesn't cause functional issues since Sets only store unique values, but it's unnecessary and could cause confusion during code maintenance. The duplicate entry should be removed to keep the code clean and prevent potential confusion.",
+        "file": "lib/request-handler.js",
+        "start_line": 41,
+        "end_line": 44,
+        "suggested_fix": "  'link',\n  'logo',\n  'logoWidth',"
+      },
+      {
+        "description": "There's a bug in the Ansible integration where it's checking `data.state === null` but should be checking `json.state === null`. This is similar to the bug fixed in the Dockbit integration. The variable `json` contains the parsed response data, but the code incorrectly references it as `data` which is a different variable (the query parameters). This would cause incorrect badge rendering when the API returns a null state.",
+        "file": "server.js",
+        "start_line": 5474,
+        "end_line": 5474,
+        "suggested_fix": "    if (res && (res.statusCode === 404 || json.state === null)) {"
+      }
+    ]
+  }
+}

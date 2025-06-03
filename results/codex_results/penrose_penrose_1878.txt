@@ -1,0 +1,39 @@
+{
+"issues": [
+{
+"file": "packages/core/src/utils/InteractionUtils.ts",
+"line": 49,
+"description": "The check if (!elem === undefined) in valueIsVectorNumeric is always false, so undefined elements aren’t detected and the function may return true for invalid data"
+},
+{
+"file": "packages/core/src/utils/InteractionUtils.ts",
+"line": 225,
+"description": "valueIsNumeric checks !!val.contents, which is false for numeric value 0, incorrectly rejecting zero as valid input"
+},
+{
+"file": "packages/core/src/utils/Heap.ts",
+"line": 216,
+"description": "insert pushes a new node without recording it in node_to_index, so later priority adjustments cannot locate the node correctly"
+},
+{
+"file": "packages/core/src/utils/Heap.ts",
+"line": 230,
+"description": "extractRoot replaces the root element without updating node_to_index, leaving stale indices for moved nodes"
+},
+{
+"file": "packages/core/src/utils/Heap.ts",
+"line": 247,
+"description": "increase_priority checks if (index) so it fails when the node is at index 0; it should test for index !== undefined"
+},
+{
+"file": "packages/core/src/utils/Heap.ts",
+"line": 367,
+"description": "clear removes nodes but does not clear node_to_index, leaving stale references and potential memory leaks"
+},
+{
+"file": "packages/core/src/renderer/Image.ts",
+"line": 20,
+"description": "Untrusted SVG content is injected into innerHTML without sanitization, allowing cross‑site scripting if pathResolver returns malicious data"
+}
+]
+}

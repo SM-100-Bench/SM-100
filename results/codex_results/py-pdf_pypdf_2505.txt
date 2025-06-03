@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "pypdf/_writer.py",
+"line": 526,
+"description": "Misplaced parentheses in conditional. As written, if width is None or height is None and ... executes when width is None regardless of page count, causing possible IndexError when self.pages[index] is accessed."
+},
+{
+"file": "pypdf/_writer.py",
+"line": 2062,
+"description": "When rect is a string, it is converted with NumberObject(rect). This fails for strings like '[0 0 1 1]' and should construct a RectangleObject instead."
+}
+]
+}

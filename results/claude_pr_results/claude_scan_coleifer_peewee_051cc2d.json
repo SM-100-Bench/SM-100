@@ -1,0 +1,15 @@
+{
+  "identifier": "coleifer_peewee_051cc2d",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.04971635,
+    "is_error": false,
+    "duration_ms": 7048,
+    "duration_api_ms": 9294,
+    "num_turns": 3,
+    "result": "```json\n{\n  \"issues\": [\n    {\n      \"file\": \"tests/schema.py\",\n      \"line\": 804,\n      \"description\": \"len() function call on model class instead of query - should be TMNamedConstraints.select().count() or similar\"\n    }\n  ]\n}\n```",
+    "total_cost": 0.04971635,
+    "session_id": "b81f7032-26bb-433b-b597-e63c74f1b930"
+  }
+}

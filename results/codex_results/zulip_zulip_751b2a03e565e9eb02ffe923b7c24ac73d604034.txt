@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "zerver/lib/unminify.py",
+"line": 22,
+"description": "Path traversal is prevented only with an assert, which is ignored when Python is run with optimizations (-O). This could allow directory traversal if asserts are disabled."
+}
+]
+}

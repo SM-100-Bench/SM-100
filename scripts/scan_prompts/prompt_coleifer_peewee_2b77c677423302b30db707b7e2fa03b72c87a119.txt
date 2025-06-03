@@ -1,0 +1,19 @@
+Please review the code in the coleifer_peewee_2b77c677423302b30db707b7e2fa03b72c87a119 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Core ORM subsystem (consisting of 'peewee.py', 'pwiz.py')
+2. Test Suite subsystem (consisting of 'runtests.py', 'tests/__init__.py', 'tests/__main__.py', 'tests/apsw_ext.py', 'tests/base.py', 'tests/base_models.py', 'tests/cockroachdb.py', 'tests/cysqlite.py', 'tests/dataset.py', 'tests/db_url.py', 'tests/expressions.py', 'tests/extra_fields.py', 'tests/fields.py', 'tests/hybrid.py', 'tests/keys.py', 'tests/kv.py', 'tests/libs/__init__.py', 'tests/libs/mock.py', 'tests/manytomany.py', 'tests/migrations.py', 'tests/model_save.py', 'tests/model_sql.py', 'tests/models.py', 'tests/mysql_ext.py', 'tests/pool.py', 'tests/postgres.py', 'tests/postgres_helpers.py', 'tests/psycopg3_ext.py', 'tests/pwiz_integration.py', 'tests/queries.py', 'tests/reflection.py', 'tests/regressions.py', 'tests/results.py', 'tests/returning.py', 'tests/schema.py', 'tests/shortcuts.py', 'tests/signals.py', 'tests/sql.py', 'tests/sqlcipher_ext.py', 'tests/sqlite.py', 'tests/sqlite_changelog.py', 'tests/sqlite_helpers.py', 'tests/sqlite_udf.py', 'tests/sqliteq.py', 'tests/transactions.py')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

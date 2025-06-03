@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "cmd/containerd-shim-runc-v2/process/exec.go",
+"line": 233,
+"description": "Incorrect format specifier in error construction. Uses \"%wd\" which will produce a malformed error message instead of wrapping the error."
+},
+{
+"file": "cmd/containerd-shim-runc-v2/runc/platform.go",
+"line": 116,
+"description": "Potential file descriptor leak. Pipes created for the logging binary (outR, serrR and r) are only closed on error; on success these descriptors remain open in the parent process."
+}
+]
+}

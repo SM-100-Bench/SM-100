@@ -1,0 +1,18 @@
+Please review the code in the penrose_penrose_1792 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Editor Interface subsystem (consisting of 'packages/editor/CHANGELOG.md', 'packages/editor/README.md', 'packages/editor/index.html', 'packages/editor/package.json', 'packages/editor/src/App.tsx', 'packages/editor/src/components/BlueButton.tsx', 'packages/editor/src/components/DiagramOptions.tsx', 'packages/editor/src/components/DiagramPanel.tsx', 'packages/editor/src/components/DropdownButton.tsx', 'packages/editor/src/components/ExamplesBrowser.tsx', 'packages/editor/src/components/ExportButton.tsx', 'packages/editor/src/components/FileButton.tsx', 'packages/editor/src/components/GridPanel.tsx', 'packages/editor/src/components/LayoutTimelineSlider.tsx', 'packages/editor/src/components/Opt.tsx', 'packages/editor/src/components/ProgramEditor.tsx', 'packages/editor/src/components/RogerPanel.tsx', 'packages/editor/src/components/SavedBrowser.tsx', 'packages/editor/src/components/SegmentedSlider.tsx', 'packages/editor/src/components/Settings.tsx', 'packages/editor/src/components/StateInspector.tsx', 'packages/editor/src/components/SvgUploader.tsx', 'packages/editor/src/components/TopBar.tsx', 'packages/editor/src/index.css', 'packages/editor/src/index.d.ts', 'packages/editor/src/main.tsx', 'packages/editor/src/state/atoms.ts', 'packages/editor/src/state/callbacks.ts', 'packages/editor/src/state/variation.ts', 'packages/editor/src/utils/downloadUtils.ts', 'packages/editor/src/utils/renderUtils.ts', 'packages/editor/src/vite-env.d.ts', 'packages/editor/src/worker/OptimizerWorker.test.ts', 'packages/editor/src/worker/OptimizerWorker.ts', 'packages/editor/src/worker/common.ts', 'packages/editor/src/worker/errors.ts', 'packages/editor/src/worker/worker.ts', 'packages/editor/tsconfig.json', 'packages/editor/tsconfig.node.json', 'packages/editor/vite.config.ts')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

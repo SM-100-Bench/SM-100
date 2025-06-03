@@ -1,0 +1,50 @@
+{
+  "session_id": "devin-040f86e925e64d0aa946d78ea5e6f637",
+  "issues": [
+    {
+      "file": "src/jinja2/bccache.py",
+      "line": 236,
+      "description": "Changed string formatting from 'pattern % bucket.key' to 'pattern % (bucket.key,)' which adds a tuple wrapper. This could cause issues if the pattern string expects a different type or if bucket.key is already a tuple."
+    },
+    {
+      "file": "src/jinja2/runtime.py",
+      "line": 797,
+      "description": "LoggingUndefined class changes from explicitly calling base class methods to using super(). This could cause issues if the inheritance chain is complex or if the base class implementation changes."
+    },
+    {
+      "file": "src/jinja2/sandbox.py",
+      "line": 137,
+      "description": "Docstring code block syntax changed from '::' to '.. code-block: python' which has a typo (should be '.. code-block:: python'). This could break documentation generation."
+    },
+    {
+      "file": "src/jinja2/lexer.py",
+      "line": 485,
+      "description": "Significant regex pattern construction changes using f-strings that could affect pattern matching behavior, especially in the root_parts_re variable."
+    },
+    {
+      "file": "src/jinja2/ext.py",
+      "line": 202,
+      "description": "Ternary operator logic changed from 'n == 1 and s or p' to 's if n == 1 else p'. While functionally equivalent in most cases, the old style can behave differently when 's' evaluates to False."
+    },
+    {
+      "file": "src/jinja2/environment.py",
+      "line": 100,
+      "description": "Changed fail_for_missing_callable function to modify error message format, which could affect error handling and debugging."
+    },
+    {
+      "file": "src/jinja2/filters.py",
+      "line": 539,
+      "description": "Changed conditional expressions in do_filesizeformat function from 'binary and X or Y' to 'X if binary else Y', which could behave differently if X evaluates to a falsy value."
+    },
+    {
+      "file": "src/jinja2/utils.py",
+      "line": 188,
+      "description": "Refactored trim_url function from a lambda to a regular function with different logic structure, which could affect URL truncation behavior."
+    },
+    {
+      "file": "src/jinja2/runtime.py",
+      "line": 866,
+      "description": "DebugUndefined.__str__ method completely rewritten with different logic flow, which could change how undefined values are displayed in debug mode."
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+diff --git a/src/dom/epub/flow.ts b/src/dom/epub/flow.ts
+index c6b4b52a..422b46e9 100644
+--- a/src/dom/epub/flow.ts
++++ b/src/dom/epub/flow.ts
+@@ -201,13 +201,20 @@ export class ScrolledFlow extends AbstractFlow {
+ 
+ 	constructor(options: Options) {
+ 		super(options);
++
+ 		this._iframe.classList.add('flow-mode-scrolled');
+ 		this._iframeDocument.body.classList.add('flow-mode-scrolled');
++
+ 		for (let view of this._view.views) {
+ 			view.mount();
+ 		}
+ 	}
+ 
++	destroy(): void {
++		this._iframe.classList.remove('flow-mode-scrolled');
++		this._iframeDocument.body.classList.remove('flow-mode-scrolled');
++	}
++
+ 	scrollIntoView(target: Range | HTMLElement, options?: CustomScrollIntoViewOptions): void {
+ 		let rect = target.getBoundingClientRect();
+ 
+@@ -337,11 +344,6 @@ export class ScrolledFlow extends AbstractFlow {
+ 	setSpreadMode() {
+ 		// No-op
+ 	}
+-
+-	destroy(): void {
+-		this._iframe.classList.remove('flow-mode-scrolled');
+-		this._iframeDocument.body.classList.remove('flow-mode-scrolled');
+-	}
+ }
+ 
+ export class PaginatedFlow extends AbstractFlow {
+@@ -356,6 +358,7 @@ export class PaginatedFlow extends AbstractFlow {
+ 	constructor(options: Options) {
+ 		super(options);
+ 		this._sectionsContainer = this._iframeDocument.body.querySelector(':scope > .sections')! as HTMLElement;
++
+ 		this._iframeDocument.addEventListener('keydown', this._handleKeyDown, { capture: true });
+ 		this._iframeDocument.body.addEventListener('touchstart', this._handleTouchStart);
+ 		this._iframeDocument.body.addEventListener('touchmove', this._handleTouchMove);
+@@ -365,6 +368,16 @@ export class PaginatedFlow extends AbstractFlow {
+ 		this._iframeDocument.body.classList.add('flow-mode-paginated');
+ 	}
+ 
++	destroy(): void {
++		this._iframeDocument.removeEventListener('keydown', this._handleKeyDown, { capture: true });
++		this._iframeDocument.body.removeEventListener('touchstart', this._handleTouchStart);
++		this._iframeDocument.body.removeEventListener('touchmove', this._handleTouchMove);
++		this._iframeDocument.body.removeEventListener('touchend', this._handleTouchEnd);
++		this._iframeDocument.removeEventListener('wheel', this._handleWheel);
++		this._iframe.classList.remove('flow-mode-paginated');
++		this._iframeDocument.body.classList.remove('flow-mode-paginated');
++	}
++
+ 	get currentSectionIndex(): number {
+ 		return this._currentSectionIndex;
+ 	}
+@@ -650,13 +663,4 @@ export class PaginatedFlow extends AbstractFlow {
+ 		this._sectionsContainer.classList.toggle('spread-mode-none', spreadMode === SpreadMode.None);
+ 		this._sectionsContainer.classList.toggle('spread-mode-odd', spreadMode === SpreadMode.Odd);
+ 	}
+-
+-	destroy(): void {
+-		this._iframeDocument.body.removeEventListener('touchstart', this._handleTouchStart);
+-		this._iframeDocument.body.removeEventListener('touchmove', this._handleTouchMove);
+-		this._iframeDocument.body.removeEventListener('touchend', this._handleTouchEnd);
+-		this._iframeDocument.removeEventListener('wheel', this._handleWheel);
+-		this._iframe.classList.remove('flow-mode-paginated');
+-		this._iframeDocument.body.classList.remove('flow-mode-paginated');
+-	}
+ }

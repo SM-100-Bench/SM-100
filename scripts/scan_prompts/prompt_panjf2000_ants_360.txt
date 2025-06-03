@@ -1,0 +1,18 @@
+Please review the code in the panjf2000_ants_360 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Worker Implementation subsystem (consisting of 'worker.go', 'worker_func.go', 'worker_func_generic.go', 'worker_loop_queue.go', 'worker_queue.go', 'worker_stack.go')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "lib/uws.ts",
+"line": 13,
+"description": "patchAdapter mutates the Adapter prototype globally and restoreAdapter reverts the change when any Server instance calls close(). If multiple servers using the uWebSockets.js adapter run concurrently, closing one server reverts the adapter for all instances, potentially breaking other servers."
+},
+{
+"file": "test/uws.ts",
+"line": 61,
+"description": "Tests call us_listen_socket_close separately after io.close(), indicating that Server.close() does not close the uWebSockets.js listening socket. This can leave the port bound, causing resource leaks or conflicts."
+}
+]
+}

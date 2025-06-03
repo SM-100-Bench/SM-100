@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "sphinx/util/build_phase.py",
+"line": 16,
+"description": "BuildPhase enum assigns the same value 3 to CONSISTENCY_CHECK and RESOLVING, causing them to be indistinguishable."
+},
+{
+"file": "sphinx/util/osutil.py",
+"line": 241,
+"description": "FileAvoidWrite.exit() returns True, which suppresses exceptions raised within its context."
+}
+]
+}

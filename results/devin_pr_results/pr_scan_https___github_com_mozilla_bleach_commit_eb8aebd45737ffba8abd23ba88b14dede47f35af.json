@@ -1,0 +1,25 @@
+{
+  "session_id": "devin-ee2cfd2617a347459883521d19b644f8",
+  "issues": [
+    {
+      "file": "bleach/sanitizer.py",
+      "line": 556,
+      "description": "Security vulnerability fix: The commit adds entity conversion to URL sanitization to prevent bypass attacks. Before this fix, attackers could use HTML character entities (like &#x09;) to bypass protocol filtering, allowing XSS attacks through malicious JavaScript URLs."
+    },
+    {
+      "file": "bleach/sanitizer.py",
+      "line": 101,
+      "description": "Potential error handling issue: The convert_entity function doesn't handle unknown entity names, which could lead to KeyError exceptions if an entity name not in the ENTITIES dictionary is passed."
+    },
+    {
+      "file": "bleach/sanitizer.py",
+      "line": 98,
+      "description": "Potential integer conversion vulnerability: The function doesn't validate the range of numeric character references, potentially allowing invalid Unicode code points that could cause issues in downstream processing."
+    },
+    {
+      "file": "bleach/sanitizer.py",
+      "line": 125,
+      "description": "Logic error in convert_entities function: The condition 'if part' should be 'if remainder' since it's checking the remainder variable, not part."
+    }
+  ]
+}

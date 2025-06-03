@@ -1,0 +1,77 @@
+diff --git a/generators/python.js b/generators/python.js
+index 46c075e03..e167a2088 100644
+--- a/generators/python.js
++++ b/generators/python.js
+@@ -22,7 +22,12 @@ var toPython = function(curlCommand) {
+ 
+     var dataString;
+     if (request.data) {
+-        dataString = 'data = \'' + request.data + '\'\n';
++        if (request.data.startsWith('@')) {
++            var filePath = request.data.slice(1);
++            dataString = 'data = open(\'' + filePath + '\')';
++        } else {
++            dataString = 'data = \'' + request.data + '\'\n';
++        }
+     }
+     var requestLine = 'requests.' + request.method + '(\'' + request.url + '\'';
+     if (request.headers) {
+diff --git a/package.json b/package.json
+index 3c24cece7..43ff2a22e 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "curlconverter",
+-  "version": "0.0.23",
++  "version": "0.0.24",
+   "description": "convert curl syntax to native python and javascript http code",
+   "homepage": "https://github.com/NickCarneiro/curlconverter",
+   "author": {
+diff --git a/test/curl17.txt b/test/curl17.txt
+new file mode 100644
+index 000000000..e0a989c78
+--- /dev/null
++++ b/test/curl17.txt
+@@ -0,0 +1 @@
++curl -i -X PUT --data "@new_file" http://awesomeurl.com/upload
+\ No newline at end of file
+diff --git a/test/python_output9.py b/test/python_output9.py
+new file mode 100644
+index 000000000..360b6c5c9
+--- /dev/null
++++ b/test/python_output9.py
+@@ -0,0 +1,2 @@
++data = open('new_file')
++requests.put('http://awesomeurl.com/upload', data=data)
+\ No newline at end of file
+diff --git a/test/test.js b/test/test.js
+index 29d21d704..795f28d09 100644
+--- a/test/test.js
++++ b/test/test.js
+@@ -238,3 +238,11 @@ test('multiline http post with data - parser', function (t) {
+     t.deepEquals(parsedCommand, goodParserOutput);
+     t.end();
+ });
++
++test('http put with file - python', function (t) {
++    var curlHttpGetCommand = fs.readFileSync(__dirname + '/curl17.txt', 'utf-8');
++    var pythonCode = curlconverter.toPython(curlHttpGetCommand);
++    var goodPythonCode = fs.readFileSync(__dirname + '/python_output9.py', 'utf-8');
++    t.equal(pythonCode, goodPythonCode);
++    t.end();
++});
+\ No newline at end of file
+diff --git a/util.js b/util.js
+index 72f9f4b9c..fda25a0c1 100644
+--- a/util.js
++++ b/util.js
+@@ -63,6 +63,8 @@ var parseCurlCommand = function(curlCommand) {
+     var method;
+     if (parsedArguments.X === 'POST') {
+         method = 'post';
++    } else if (parsedArguments.X === 'PUT') {
++        method = 'put';
+     } else if (parsedArguments.d || parsedArguments.data || parsedArguments['data-binary']) {
+         method = 'post';
+     } else {

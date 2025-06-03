@@ -1,0 +1,166 @@
+diff --git a/pypdf/generic/_image_inline.py b/pypdf/generic/_image_inline.py
+index 4acaa71c2..7d6a23d86 100644
+--- a/pypdf/generic/_image_inline.py
++++ b/pypdf/generic/_image_inline.py
+@@ -27,9 +27,11 @@
+ 
+ import logging
+ from io import BytesIO
++from typing import IO
+ 
+ from .._utils import (
+     WHITESPACES,
++    WHITESPACES_AS_BYTES,
+     StreamType,
+     read_non_whitespace,
+ )
+@@ -227,10 +229,64 @@ def extract_inline_default(stream: StreamType) -> bytes:
+             }:  # for Q or EMC
+                 stream.seek(saved_pos, 0)
+                 continue
+-            # Data contains [\s]EI[\s](Q|EMC): 4 chars are sufficients
++            if is_followed_by_binary_data(stream):
++                # Inline image contains `EI ` sequence usually marking the end of it, but
++                # is followed by binary data which does not make sense for the actual end.
++                stream.seek(saved_pos, 0)
++                continue
++            # Data contains [\s]EI[\s](Q|EMC): 4 chars are sufficient
+             # remove E(I) wrongly inserted earlier
+             stream.seek(saved_pos - 1, 0)
+             stream_out.truncate(sav_pos_ei)
+             break
+ 
+     return stream_out.getvalue()
++
++
++def is_followed_by_binary_data(stream: IO[bytes], length: int = 10) -> bool:
++    """
++    Check if the next bytes of the stream look like binary image data or regular page content.
++
++    This is just some heuristics due to the PDF specification being too imprecise about
++    inline images containing the `EI` marker which would end an image. Starting with PDF 2.0,
++    we finally get a mandatory length field, but with (proper) PDF 2.0 support being very limited
++    everywhere, we should not expect to be able to remove such hacks in the near future - especially
++    considering legacy documents as well.
++
++    The actual implementation draws some inspiration from
++    https://github.com/itext/itext-java/blob/9.1.0/kernel/src/main/java/com/itextpdf/kernel/pdf/canvas/parser/util/InlineImageParsingUtils.java
++    """
++    position = stream.tell()
++    data = stream.read(length)
++    stream.seek(position)
++    if not data:
++        return False
++    operator_start = None
++    operator_end = None
++
++    for index, byte in enumerate(data):
++        if byte < 32 and byte not in WHITESPACES_AS_BYTES:
++            # This covers all characters not being displayable directly, although omitting whitespace
++            # to allow for operator detection.
++            return True
++        is_whitespace = byte in WHITESPACES_AS_BYTES
++        if operator_start is None and not is_whitespace:
++            # Interpret all other non-whitespace characters as the start of an operation.
++            operator_start = index
++        if operator_start is not None and is_whitespace:
++            # A whitespace stops an operation.
++            # Assume that having an inline image with tons of whitespace is rather unlikely.
++            operator_end = index
++            break
++
++    if operator_start is None:
++        # Inline images should not have tons of whitespaces, which would lead to no operator start.
++        return False
++    if operator_end is None:
++        # We probably are inside an operation.
++        operator_end = length
++    if operator_end - operator_start > 3:  # noqa: SIM103
++        # Usually, the operators inside a content stream should not have more than three characters,
++        # especially after an inline image.
++        return True
++    return False
+diff --git a/tests/generic/test_image_inline.py b/tests/generic/test_image_inline.py
+new file mode 100644
+index 000000000..b90fc01da
+--- /dev/null
++++ b/tests/generic/test_image_inline.py
+@@ -0,0 +1,50 @@
++"""Test the pypdf.generic._image_inline module."""
++from io import BytesIO
++
++from pypdf.generic._image_inline import is_followed_by_binary_data
++
++
++def test_is_followed_by_binary_data():
++    # Empty/too short stream.
++    stream = BytesIO()
++    assert not is_followed_by_binary_data(stream)
++
++    stream = BytesIO(b" q\n")
++    assert not is_followed_by_binary_data(stream)
++
++    # byte < 32 and no whitespace.
++    stream = BytesIO(b"\x00\x11\x13\x37")
++    assert is_followed_by_binary_data(stream)
++    assert stream.read(1) == b"\x00"
++    assert is_followed_by_binary_data(stream)
++    assert stream.read(1) == b"\x11"
++    assert is_followed_by_binary_data(stream)
++    assert stream.read() == b"\x13\x37"
++
++    # byte < 32, but whitespace.
++    stream = BytesIO(b" q\n")
++    assert not is_followed_by_binary_data(stream)
++
++    # Whitespace only.
++    stream = BytesIO(b" \n\n\n  \n")
++    assert not is_followed_by_binary_data(stream)
++
++    # No `operator_end`.
++    stream = BytesIO(b"\n\n\n\n\n\n\n\nBT\n")
++    assert not is_followed_by_binary_data(stream)
++
++    # Operator length is <= 3.
++    stream = BytesIO(b"\n\n\n\n\n\n\nBT\n")
++    assert not is_followed_by_binary_data(stream)
++
++    # Operator length is > 3.
++    stream = BytesIO(b"\n\n\n\n\nTEST\n")
++    assert is_followed_by_binary_data(stream)
++
++    # Just characters.
++    stream = BytesIO(b" ABCDEF")
++    assert is_followed_by_binary_data(stream)
++
++    # No `operator_start`.
++    stream = BytesIO(b"ABCDEFG")
++    assert is_followed_by_binary_data(stream)
+diff --git a/tests/test_images.py b/tests/test_images.py
+index cc2e75a04..69f58d217 100644
+--- a/tests/test_images.py
++++ b/tests/test_images.py
+@@ -510,3 +510,23 @@ def test_contentstream__read_inline_image__fallback_is_successful():
+             b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x02\x00\x00\x00\x01\x08\x02\x00\x00\x00{@\xe8\xdd\x00\x00\x00\x0f"
+             b"IDATx\x9cc\xe8\xee\xee\xfe\xf7\xef\x1f\x00\x0e \x04\x9cpr_\x96\x00\x00\x00\x00IEND\xaeB`\x82"
+         )
++
++
++@pytest.mark.enable_socket
++def test_inline_image_containing_ei_in_body():
++    """Tests for #3107"""
++    expected = """\nID ><8d>£^H<8e><8b>¢AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA¡^BêMEI E^N^^<8a>^AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
++AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA^D
++<8b>²: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA5>^D
++é^EAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD<98>AAAAAA<8d><82>
++AAAAAAAA^B
++EI\nQ\n""".encode("latin1")  # noqa: E501
++    url = "https://github.com/user-attachments/files/18943249/testing.pdf"
++    name = "issue3107.pdf"
++    reader = PdfReader(BytesIO(get_data_from_url(url, name=name)))
++    writer = PdfWriter(clone_from=reader)
++    for page in writer.pages:
++        page.transfer_rotation_to_content()
++    output = BytesIO()
++    writer.write(output)
++    assert expected in output.getvalue()

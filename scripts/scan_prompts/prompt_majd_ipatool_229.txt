@@ -1,0 +1,18 @@
+Please review the code in the majd_ipatool_229 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. CLI Framework subsystem (consisting of 'cmd/auth.go', 'cmd/common.go', 'cmd/constants.go', 'cmd/download.go', 'cmd/output_format.go', 'cmd/purchase.go', 'cmd/root.go', 'cmd/search.go', 'main.go')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

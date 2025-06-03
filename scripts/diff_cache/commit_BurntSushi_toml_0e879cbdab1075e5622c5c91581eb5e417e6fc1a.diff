@@ -1,0 +1,30 @@
+diff --git a/parse.go b/parse.go
+index 40094a26..11ac3108 100644
+--- a/parse.go
++++ b/parse.go
+@@ -485,7 +485,10 @@ func (p *parser) valueInlineTable(it item, parentIsArray bool) (any, tomlType) {
+ 				h = make(map[string]any)
+ 				hash[c] = h
+ 			}
+-			hash = h.(map[string]any)
++			hash, ok = h.(map[string]any)
++			if !ok {
++				p.panicf("%q is not a table", p.context)
++			}
+ 		}
+ 		hash[p.currentKey] = val
+ 
+diff --git a/toml_test.go b/toml_test.go
+index 761d1b31..7e0cff2e 100644
+--- a/toml_test.go
++++ b/toml_test.go
+@@ -313,9 +313,6 @@ func runTomlTest(t *testing.T, includeNext bool, wantFail ...string) {
+ 			Parser:   parser{},
+ 			RunTests: runTests,
+ 			SkipTests: []string{
+-				// TODO: https://github.com/BurntSushi/toml/issues/403
+-				"invalid/inline-table/overwrite-10",
+-
+ 				// These tests are fine, just doesn't deal well with empty output.
+ 				"valid/comment/noeol",
+ 				"valid/comment/nonascii",

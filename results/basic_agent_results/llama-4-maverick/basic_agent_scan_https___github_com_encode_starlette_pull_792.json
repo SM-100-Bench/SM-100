@@ -1,0 +1,1 @@
+{"repo_id": "encode_starlette_792", "bugs": [{"description": "The 'json' method in the Request class does not handle potential JSON decoding errors.", "file": "starlette/requests.py", "line": 199}], "updated_files": {}}

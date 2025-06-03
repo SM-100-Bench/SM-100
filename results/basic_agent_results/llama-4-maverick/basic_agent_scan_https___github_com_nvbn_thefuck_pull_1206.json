@@ -1,0 +1,1 @@
+{"repo_id": "nvbn_thefuck_1206", "bugs": [{"description": "The regular expression used in get_new_command may not be robust enough to handle all possible output formats.", "file": "thefuck/rules/pip_unknown_command.py", "line": 15}], "updated_files": {}}

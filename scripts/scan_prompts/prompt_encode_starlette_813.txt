@@ -1,0 +1,18 @@
+Please review the code in the encode_starlette_813 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Middleware subsystem (consisting of 'starlette/middleware/__init__.py', 'starlette/middleware/authentication.py', 'starlette/middleware/base.py', 'starlette/middleware/cors.py', 'starlette/middleware/errors.py', 'starlette/middleware/gzip.py', 'starlette/middleware/httpsredirect.py', 'starlette/middleware/sessions.py', 'starlette/middleware/trustedhost.py', 'starlette/middleware/wsgi.py')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

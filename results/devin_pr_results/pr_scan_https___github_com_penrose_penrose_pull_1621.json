@@ -1,0 +1,40 @@
+{
+  "session_id": "devin-2699b143a60f4d6eb128174904009db8",
+  "issues": [
+    {
+      "file": "packages/core/src/compiler/Substance.ts",
+      "line": 456,
+      "description": "The closeEqual function uses a fixed epsilon value (0.00001) for floating-point comparisons, which may lead to incorrect results for very large or very small numbers due to floating-point precision issues"
+    },
+    {
+      "file": "packages/core/src/compiler/Substance.ts",
+      "line": 468,
+      "description": "The evalNum function checks for NaN values but doesn't handle Infinity values, which could lead to unexpected behavior in arithmetic operations"
+    },
+    {
+      "file": "packages/core/src/compiler/Substance.ts",
+      "line": 525,
+      "description": "In substISetVarNumber, the check !isNaN(Number(v)) will convert any string to a number, potentially causing unexpected behavior if a variable name happens to be convertible to a number"
+    },
+    {
+      "file": "packages/core/src/compiler/Substance.ts",
+      "line": 419,
+      "description": "Typo in comment 'short-cirsuiting' instead of 'short-circuiting' indicates potential lack of code review and may hint at other overlooked issues"
+    },
+    {
+      "file": "packages/core/src/compiler/Substance.ts",
+      "line": 1337,
+      "description": "In the safeChain call within checkFunc, it accesses func.args[0] without first checking if func.args is non-empty, potentially causing an undefined access if args is empty"
+    },
+    {
+      "file": "packages/core/src/compiler/Substance.ts",
+      "line": 507,
+      "description": "Division by zero check in evalNumHelper only handles the case where the right operand is exactly zero, but doesn't account for values very close to zero that could cause numerical instability"
+    },
+    {
+      "file": "packages/core/src/compiler/Substance.ts",
+      "line": 504,
+      "description": "The power operation (^) doesn't check for negative bases with fractional exponents, which produces NaN values that are caught later but could be prevented with a more specific error message"
+    }
+  ]
+}

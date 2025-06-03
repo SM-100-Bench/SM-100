@@ -1,0 +1,40 @@
+{
+  "session_id": "devin-7e6d35b637d24b199c3a0987bdcb961d",
+  "issues": [
+    {
+      "file": "pkg/appstore/appstore_replicate_sinf.go",
+      "line": 62,
+      "description": "Debug print statement left in production code: fmt.Println(manifest != nil)"
+    },
+    {
+      "file": "pkg/appstore/appstore_replicate_sinf.go",
+      "line": 80,
+      "description": "Incorrect error message: says 'failed to remove original file' but it's actually for a rename operation"
+    },
+    {
+      "file": "pkg/appstore/appstore_replicate_sinf.go",
+      "line": 125,
+      "description": "Potential null pointer dereference: directly accessing sinfs[0].Data without checking if sinfs is empty"
+    },
+    {
+      "file": "pkg/appstore/appstore_replicate_sinf.go",
+      "line": 73,
+      "description": "Resource leak potential: if an error occurs after creating the temporary file but before completing the operation, the temporary file might not be properly cleaned up"
+    },
+    {
+      "file": "pkg/util/must.go",
+      "line": 6,
+      "description": "Panic risk: The Must utility will panic if an error occurs, which could lead to application crashes if used incorrectly in production code"
+    },
+    {
+      "file": "pkg/util/zip.go",
+      "line": 12,
+      "description": "Error message inconsistency: Changed from using a constant to a hardcoded string"
+    },
+    {
+      "file": "pkg/appstore/error.go",
+      "line": 3,
+      "description": "Error handling regression: The entire errors.go file with specific error constants was removed and replaced with a generic Error type, potentially leading to less specific error handling"
+    }
+  ]
+}

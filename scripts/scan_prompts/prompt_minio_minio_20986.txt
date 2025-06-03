@@ -1,0 +1,18 @@
+Please review the code in the minio_minio_20986 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Extensions subsystem (consisting of 'cmd/ftp-server-driver.go', 'cmd/ftp-server.go', 'cmd/s3-zip-handlers.go', 'cmd/sftp-server-driver.go', 'cmd/sftp-server.go', 'cmd/veeam-sos-api.go')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+"issues": [
+{
+"file": "lollms/paths.py",
+"line": 31,
+"description": "Syntax error in with statement (with(open(... instead of with open(...) will raise a SyntaxError when executed."
+},
+{
+"file": "lollms/app.py",
+"line": 319,
+"description": "Accesses undefined attribute self.lollms.config; should likely be self.config, causing AttributeError during RAG database load."
+},
+{
+"file": "lollms/config.py",
+"line": 550,
+"description": "Uses eval on configuration values when type is dict, enabling arbitrary code execution if config files are malicious."
+},
+{
+"file": "lollms/personality.py",
+"line": 524,
+"description": "Evaluates model output using eval to parse rankings, which is unsafe and can execute arbitrary code."
+},
+{
+"file": "lollms/personality.py",
+"line": 3576,
+"description": "Executes dynamically generated code from the model with exec, allowing arbitrary code execution."
+},
+{
+"file": "lollms/types.py",
+"line": 85,
+"description": "Enum members SUMMARY_MODE_SEQUENCIAL and SUMMARY_MODE_HIERARCHICAL are both assigned value 0; second value should probably be unique."
+},
+{
+"file": "lollms/functions/knowledge/build_knowledge_db.py",
+"line": 133,
+"description": "Writes to output_folder/db_name without validating or sanitizing the file path, which could overwrite arbitrary files."
+},
+{
+"file": "lollms/security.py",
+"line": 73,
+"description": "Imports defusedxml.ElementTree twice under the same alias ET, overwriting the previous import."
+},
+{
+"file": "lollms/utilities.py",
+"line": 401,
+"description": "Runs shell command with subprocess.run(..., shell=True) using unsanitized cmd, allowing command injection if input is attacker-controlled."
+}
+]
+}

@@ -1,0 +1,29 @@
+{
+"issues": [
+{
+"file": "thefuck/rules/cd_correction.py",
+"line": 14,
+"description": "Function _get_sub_dirs() directly calls os.listdir() without error handling. If the directory is not accessible (e.g., due to permissions), os.listdir() will raise an exception and crash the rule."
+},
+{
+"file": "thefuck/rules/adb_unknown_command.py",
+"line": 48,
+"description": "get_new_command() only returns a command inside the for-loop. When the user runs 'adb' without additional arguments, the function returns None, which later leads to an invalid corrected command."
+},
+{
+"file": "thefuck/rules/brew_cask_dependency.py",
+"line": 21,
+"description": "_get_script_for_brew_cask() assumes there is at least one 'brew cask install' line. If none are found, accessing cask_install_lines[0] will raise an IndexError."
+},
+{
+"file": "thefuck/rules/go_unknown_command.py",
+"line": 16,
+"description": "Caching is assigned to 'get_docker_commands' instead of replacing 'get_golang_commands'. As a result, get_golang_commands() is never cached, leading to repeated subprocess calls."
+},
+{
+"file": "thefuck/rules/pacman_invalid_option.py",
+"line": 20,
+"description": "enabled_by_default is set to the tuple returned by archlinux_env(), not to the boolean value. This may enable the rule even when pacman is unavailable."
+}
+]
+}

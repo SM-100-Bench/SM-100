@@ -1,0 +1,18 @@
+Please review the code in the grafana_mimir_7965 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Query Frontend subsystem (consisting of 'pkg/frontend/config.go', 'pkg/frontend/downstream_roundtripper.go', 'pkg/frontend/querymiddleware/astmapper/astmapper.go', 'pkg/frontend/querymiddleware/astmapper/embedded.go', 'pkg/frontend/querymiddleware/astmapper/instant_splitting.go', 'pkg/frontend/querymiddleware/astmapper/instant_splitting_stats.go', 'pkg/frontend/querymiddleware/astmapper/parallel.go', 'pkg/frontend/querymiddleware/astmapper/sharding.go', 'pkg/frontend/querymiddleware/astmapper/stats.go', 'pkg/frontend/querymiddleware/astmapper/subtree_folder.go', 'pkg/frontend/querymiddleware/blocker.go', 'pkg/frontend/querymiddleware/cardinality.go', 'pkg/frontend/querymiddleware/cardinality_query_cache.go', 'pkg/frontend/querymiddleware/codec.go', 'pkg/frontend/querymiddleware/codec_json.go', 'pkg/frontend/querymiddleware/codec_protobuf.go', 'pkg/frontend/querymiddleware/errors.go', 'pkg/frontend/querymiddleware/generic_query_cache.go', 'pkg/frontend/querymiddleware/instrumentation.go', 'pkg/frontend/querymiddleware/labels_query_cache.go', 'pkg/frontend/querymiddleware/limits.go', 'pkg/frontend/querymiddleware/model.pb.go', 'pkg/frontend/querymiddleware/model_extra.go', 'pkg/frontend/querymiddleware/querysharding.go', 'pkg/frontend/querymiddleware/results_cache.go', 'pkg/frontend/querymiddleware/retry.go', 'pkg/frontend/querymiddleware/roundtrip.go', 'pkg/frontend/querymiddleware/running.go', 'pkg/frontend/querymiddleware/shard_active_series.go', 'pkg/frontend/querymiddleware/shard_active_series_response_decoder.go', 'pkg/frontend/querymiddleware/sharded_queryable.go', 'pkg/frontend/querymiddleware/split_and_cache.go', 'pkg/frontend/querymiddleware/split_by_instant_interval.go', 'pkg/frontend/querymiddleware/stats.go', 'pkg/frontend/querymiddleware/step_align.go', 'pkg/frontend/transport/handler.go', 'pkg/frontend/transport/roundtripper.go', 'pkg/frontend/v1/frontend.go', 'pkg/frontend/v1/frontendv1pb/frontend.pb.go', 'pkg/frontend/v2/frontend.go', 'pkg/frontend/v2/frontend_scheduler_adapter.go', 'pkg/frontend/v2/frontend_scheduler_worker.go', 'pkg/frontend/v2/frontendv2pb/frontend.pb.go')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

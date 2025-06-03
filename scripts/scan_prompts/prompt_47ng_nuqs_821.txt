@@ -1,0 +1,19 @@
+Please review the code in the 47ng_nuqs_821 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Core Library subsystem (consisting of 'packages/nuqs/adapters/custom.d.ts', 'packages/nuqs/adapters/next.d.ts', 'packages/nuqs/adapters/next/app.d.ts', 'packages/nuqs/adapters/next/pages.d.ts', 'packages/nuqs/adapters/react-router.d.ts', 'packages/nuqs/adapters/react-router/v6.d.ts', 'packages/nuqs/adapters/react-router/v7.d.ts', 'packages/nuqs/adapters/react.d.ts', 'packages/nuqs/adapters/remix.d.ts', 'packages/nuqs/adapters/testing.d.ts', 'packages/nuqs/server.d.ts', 'packages/nuqs/src/adapters/custom.ts', 'packages/nuqs/src/adapters/lib/context.ts', 'packages/nuqs/src/adapters/lib/defs.ts', 'packages/nuqs/src/adapters/lib/patch-history.test.ts', 'packages/nuqs/src/adapters/lib/patch-history.ts', 'packages/nuqs/src/adapters/lib/react-router.ts', 'packages/nuqs/src/adapters/next.ts', 'packages/nuqs/src/adapters/next/app.ts', 'packages/nuqs/src/adapters/next/impl.app.ts', 'packages/nuqs/src/adapters/next/impl.pages.ts', 'packages/nuqs/src/adapters/next/pages.ts', 'packages/nuqs/src/adapters/next/shared.ts', 'packages/nuqs/src/adapters/react-router.ts', 'packages/nuqs/src/adapters/react-router/v6.ts', 'packages/nuqs/src/adapters/react-router/v7.ts', 'packages/nuqs/src/adapters/react.ts', 'packages/nuqs/src/adapters/remix.ts', 'packages/nuqs/src/adapters/testing.ts', 'packages/nuqs/src/cache.test.ts', 'packages/nuqs/src/cache.ts', 'packages/nuqs/src/debug.test.ts', 'packages/nuqs/src/debug.ts', 'packages/nuqs/src/defs.ts', 'packages/nuqs/src/errors.ts', 'packages/nuqs/src/index.server.ts', 'packages/nuqs/src/index.ts', 'packages/nuqs/src/parsers.test.ts', 'packages/nuqs/src/parsers.ts', 'packages/nuqs/src/serializer.test.ts', 'packages/nuqs/src/serializer.ts', 'packages/nuqs/src/sync.test.tsx', 'packages/nuqs/src/sync.ts', 'packages/nuqs/src/tests/cache.test-d.ts', 'packages/nuqs/src/tests/parsers.test-d.ts', 'packages/nuqs/src/tests/serializer.test-d.ts', 'packages/nuqs/src/tests/useQueryState.test-d.ts', 'packages/nuqs/src/tests/useQueryStates.test-d.ts', 'packages/nuqs/src/update-queue.test.ts', 'packages/nuqs/src/update-queue.ts', 'packages/nuqs/src/url-encoding.test.ts', 'packages/nuqs/src/url-encoding.ts', 'packages/nuqs/src/useQueryState.test.ts', 'packages/nuqs/src/useQueryState.ts', 'packages/nuqs/src/useQueryStates.test.ts', 'packages/nuqs/src/useQueryStates.ts', 'packages/nuqs/src/utils.ts')
+2. URL Handling subsystem (consisting of 'packages/nuqs/src/serializer.test.ts', 'packages/nuqs/src/serializer.ts', 'packages/nuqs/src/url-encoding.test.ts', 'packages/nuqs/src/url-encoding.ts')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

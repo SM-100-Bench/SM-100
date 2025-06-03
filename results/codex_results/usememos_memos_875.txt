@@ -1,0 +1,39 @@
+{
+"issues": [
+{
+"file": "web/src/helpers/polyfill.ts",
+"line": 3,
+"description": "Custom replaceAll implementation treats the search string as a regular expression. Special regex characters in the argument will change the semantics or throw syntax errors, deviating from standard String.replaceAll behavior."
+},
+{
+"file": "web/src/labs/highlighter/index.ts",
+"line": 6,
+"description": "User supplied search term is inserted into RegExp without escaping. Supplying characters like '(' or '[' will trigger a SyntaxError and break highlighting."
+},
+{
+"file": "web/src/helpers/filter.ts",
+"line": 189,
+"description": "When filtering text starting with '^', the value is passed directly to RegExp. Invalid patterns will raise a runtime exception."
+},
+{
+"file": "web/src/labs/marked/parser/Link.ts",
+"line": 20,
+"description": "URL placed into href attribute is only HTML‑escaped. Schemes such as 'javascript:' are allowed, enabling possible XSS when links are clicked."
+},
+{
+"file": "web/src/labs/html2image/index.ts",
+"line": 89,
+"description": "Temporary image element appended to the document is not removed if waitImageLoaded rejects (image fails to load), leading to resource leaks."
+},
+{
+"file": "web/src/labs/html2image/convertResourceToDataURL.ts",
+"line": 8,
+"description": "fetch() errors are not caught. Network failures will cause unhandled promise rejections."
+},
+{
+"file": "web/src/hooks/useLoading.ts",
+"line": 9,
+"description": "setState uses the current closure's state object. Rapid successive calls may override updates due to stale state values."
+}
+]
+}

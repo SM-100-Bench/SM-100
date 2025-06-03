@@ -1,0 +1,40 @@
+{
+  "session_id": "devin-fceea4081ee3497e95bb196df61a56d9",
+  "issues": [
+    {
+      "file": "packages/core/src/engine/Autodiff.ts",
+      "line": 1000,
+      "description": "Critical bug: 'floor' function is incorrectly implemented as 'ceil', which will cause incorrect mathematical calculations"
+    },
+    {
+      "file": "packages/core/src/engine/Autodiff.ts",
+      "line": 1684,
+      "description": "Functionality removed: 'polynomial roots not supported' error thrown when PolyRoots is used, breaking backward compatibility"
+    },
+    {
+      "file": "packages/core/src/engine/Autodiff.ts",
+      "line": 996,
+      "description": "Missing functionality: 'rounding not supported' error thrown when round function is used, breaking backward compatibility"
+    },
+    {
+      "file": "packages/core/src/engine/Autodiff.ts",
+      "line": 1,
+      "description": "Missing module declarations: Cannot find module 'rose' or its corresponding type declarations, which may lead to runtime errors"
+    },
+    {
+      "file": "packages/core/src/engine/Autodiff.ts",
+      "line": 99,
+      "description": "Type error: A rest parameter must be of an array type, which may cause unexpected behavior"
+    },
+    {
+      "file": "packages/core/src/engine/Autodiff.ts",
+      "line": 276,
+      "description": "Type error: Parameter 'y' implicitly has an 'any' type, which may lead to runtime errors"
+    },
+    {
+      "file": "packages/core/src/engine/Builtins.ts",
+      "line": 22,
+      "description": "Type error: Parameter 'x' implicitly has an 'any' type in sqrt function, which may lead to runtime errors"
+    }
+  ]
+}

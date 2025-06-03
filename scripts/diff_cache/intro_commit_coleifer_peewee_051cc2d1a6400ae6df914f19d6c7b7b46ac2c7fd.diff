@@ -1,0 +1,178 @@
+diff --git a/docs/peewee/api.rst b/docs/peewee/api.rst
+index d749a481d..5f1919e09 100644
+--- a/docs/peewee/api.rst
++++ b/docs/peewee/api.rst
+@@ -1454,12 +1454,19 @@ Query-builder
+     Represent a parameterized SQL query or query-fragment.
+ 
+ 
+-.. py:function:: Check(constraint)
++.. py:function:: Check(constraint[, name=None])
+ 
+     :param str constraint: Constraint SQL.
++    :param str name: constraint name.
+ 
+     Represent a CHECK constraint.
+ 
++    .. warning::
++         MySQL may not support a ``name`` parameter when inlining the
++         constraint along with the column definition. The solution is to just
++         put the named ``Check`` constraint in the model's ``Meta.constraints``
++         list instead of in the field instances ``constraints=[...]`` list.
++
+ 
+ .. py:class:: Function(name, arguments[, coerce=True[, python_value=None]])
+ 
+@@ -3244,7 +3251,7 @@ Fields
+     Accepts a special ``coerce`` parameter, a function that takes a value
+     coming from the database and converts it into the appropriate Python type.
+ 
+-.. py:class:: ForeignKeyField(model[, field=None[, backref=None[, on_delete=None[, on_update=None[, deferrable=None[, object_id_name=None[, lazy_load=True[, **kwargs]]]]]]]])
++.. py:class:: ForeignKeyField(model[, field=None[, backref=None[, on_delete=None[, on_update=None[, deferrable=None[, object_id_name=None[, lazy_load=True[, constraint_name=None[, **kwargs]]]]]]]]])
+ 
+     :param Model model: Model to reference or the string 'self' if declaring a
+         self-referential foreign key.
+@@ -3260,6 +3267,7 @@ Fields
+         attribute is accessed (if it was not already loaded). If this is
+         disabled, accessing the foreign-key field will return the value stored
+         in the foreign-key column.
++    :param str constraint_name: (optional) name to use for foreign-key constraint.
+ 
+     Field class for storing a foreign key.
+ 
+diff --git a/peewee.py b/peewee.py
+index 0e24d00e4..64e5ac4b2 100644
+--- a/peewee.py
++++ b/peewee.py
+@@ -1510,8 +1510,11 @@ def __sql__(self, ctx):
+         return ctx
+ 
+ 
+-def Check(constraint):
+-    return SQL('CHECK (%s)' % constraint)
++def Check(constraint, name=None):
++    check = SQL('CHECK (%s)' % constraint)
++    if not name:
++        return check
++    return NodeList((SQL('CONSTRAINT'), Entity(name), check))
+ 
+ 
+ class Function(ColumnBase):
+@@ -5135,7 +5138,8 @@ class ForeignKeyField(Field):
+     def __init__(self, model, field=None, backref=None, on_delete=None,
+                  on_update=None, deferrable=None, _deferred=None,
+                  rel_model=None, to_field=None, object_id_name=None,
+-                 lazy_load=True, related_name=None, *args, **kwargs):
++                 lazy_load=True, constraint_name=None, related_name=None,
++                 *args, **kwargs):
+         kwargs.setdefault('index', True)
+ 
+         super(ForeignKeyField, self).__init__(*args, **kwargs)
+@@ -5164,6 +5168,7 @@ def __init__(self, model, field=None, backref=None, on_delete=None,
+         self.deferred = _deferred
+         self.object_id_name = object_id_name
+         self.lazy_load = lazy_load
++        self.constraint_name = constraint_name
+ 
+     @property
+     def field_type(self):
+@@ -5227,12 +5232,15 @@ def bind(self, model, name, set_attribute=True):
+                 setattr(self.rel_model, self.backref, BackrefAccessor(self))
+ 
+     def foreign_key_constraint(self):
+-        parts = [
++        parts = []
++        if self.constraint_name:
++            parts.extend((SQL('CONSTRAINT'), Entity(self.constraint_name)))
++        parts.extend([
+             SQL('FOREIGN KEY'),
+             EnclosedNodeList((self,)),
+             SQL('REFERENCES'),
+             self.rel_model,
+-            EnclosedNodeList((self.rel_field,))]
++            EnclosedNodeList((self.rel_field,))])
+         if self.on_delete:
+             parts.append(SQL('ON DELETE %s' % self.on_delete))
+         if self.on_update:
+diff --git a/tests/schema.py b/tests/schema.py
+index 58bca8e30..b46ffbc26 100644
+--- a/tests/schema.py
++++ b/tests/schema.py
+@@ -40,6 +40,14 @@ class TMConstraints(TestModel):
+     value = TextField(collation='NOCASE')
+ 
+ 
++class TMNamedConstraints(TestModel):
++    fk = ForeignKeyField('self', null=True, constraint_name='tmc_fk')
++    k = TextField()
++    v = IntegerField(constraints=[Check('v in (1, 2)')])
++    class Meta:
++        constraints = [Check('k != \'kx\'', name='chk_k')]
++
++
+ class CacheData(TestModel):
+     key = TextField(unique=True)
+     value = TextField()
+@@ -67,7 +75,8 @@ class Article(TestModel):
+ class TestModelDDL(ModelDatabaseTestCase):
+     database = get_in_memory_db()
+     requires = [Article, CacheData, Category, Note, Person, Relationship,
+-                TMUnique, TMSequence, TMIndexes, TMConstraints, User]
++                TMUnique, TMSequence, TMIndexes, TMConstraints,
++                TMNamedConstraints, User]
+ 
+     def test_database_required(self):
+         class MissingDB(Model):
+@@ -472,10 +481,23 @@ def test_table_and_index_creation(self):
+ 
+         self.assertCreateTable(TMConstraints, [
+             ('CREATE TABLE "tm_constraints" ('
+-             '"id" INTEGER NOT NULL PRIMARY KEY,'
+-             ' "data" INTEGER CHECK (data < 5), '
++             '"id" INTEGER NOT NULL PRIMARY KEY, '
++             '"data" INTEGER CHECK (data < 5), '
+              '"value" TEXT NOT NULL COLLATE NOCASE)')])
+ 
++        self.assertCreateTable(TMNamedConstraints, [
++            ('CREATE TABLE "tm_named_constraints" ('
++             '"id" INTEGER NOT NULL PRIMARY KEY, '
++             '"fk_id" INTEGER, '
++             '"k" TEXT NOT NULL, '
++             '"v" INTEGER NOT NULL '
++             'CHECK (v in (1, 2)), '
++             'CONSTRAINT "tmc_fk" FOREIGN KEY ("fk_id") '
++             'REFERENCES "tm_named_constraints" ("id"), '
++             'CONSTRAINT "chk_k" CHECK (k != \'kx\'))'),
++            ('CREATE INDEX "tm_named_constraints_fk_id" '
++             'ON "tm_named_constraints" ("fk_id")')])
++
+     def test_index_name_truncation(self):
+         class LongIndex(TestModel):
+             a123456789012345678901234567890 = CharField()
+@@ -758,3 +780,26 @@ def test_truncate_table(self):
+ 
+         User.truncate_table()
+         self.assertEqual(User.select().count(), 0)
++
++
++class TestNamedConstraintsIntegration(ModelTestCase):
++    requires = [TMNamedConstraints]
++
++    def setUp(self):
++        super(TestNamedConstraintsIntegration, self).setUp()
++        if IS_SQLITE:
++            self.database.pragma('foreign_keys', 'on')
++
++    def test_named_constraints_integration(self):
++        t = TMNamedConstraints.create(k='k1', v=1)  # Sanity test.
++        fails = [
++            {'fk': t.id - 1, 'k': 'k2', 'v': 1},  # Invalid fk.
++            {'fk': t.id, 'k': 'k3', 'v': 0},  # Invalid val.
++            {'fk': t.id, 'k': 'kx', 'v': 1}]  # Invalid key.
++        for f in fails:
++            # MySQL may use OperationalError.
++            with self.assertRaises((IntegrityError, OperationalError)):
++                with self.database.atomic() as tx:
++                    TMNamedConstraints.create(**f)
++
++        self.assertEqual(len(TMNamedConstraints), 1)

@@ -1,0 +1,45 @@
+{
+  "session_id": "devin-2c9f152b60d2417c9433ea4e1b29b283",
+  "issues": [
+    {
+      "file": "requests/utils.py",
+      "line": 221,
+      "description": "Path traversal vulnerability: The extract_zipped_paths function extracts files from zip archives without validating member paths, potentially allowing directory traversal attacks if a malicious zip contains entries with '../' in their paths"
+    },
+    {
+      "file": "requests/utils.py",
+      "line": 240,
+      "description": "Resource leak: The ZipFile object is never explicitly closed with zip_file.close() or used in a context manager (with statement)"
+    },
+    {
+      "file": "requests/utils.py",
+      "line": 247,
+      "description": "Race condition: There's a time-of-check to time-of-use vulnerability between checking if extracted_path exists and extracting it"
+    },
+    {
+      "file": "requests/utils.py",
+      "line": 248,
+      "description": "Security vulnerability: Files are extracted to system temp directory without content validation, potentially allowing execution of malicious files"
+    },
+    {
+      "file": "requests/utils.py",
+      "line": 248,
+      "description": "Denial of service risk: No size limit on extracted files could lead to disk space exhaustion"
+    },
+    {
+      "file": "requests/utils.py",
+      "line": 246,
+      "description": "Path handling issue: Using os.path.join with member.split('/') doesn't handle Windows paths correctly if they contain backslashes"
+    },
+    {
+      "file": "requests/adapters.py",
+      "line": 222,
+      "description": "Potential security risk: Using extract_zipped_paths on DEFAULT_CA_BUNDLE_PATH could allow an attacker to manipulate SSL certificate validation by providing a malicious zip file"
+    },
+    {
+      "file": "requests/utils.py",
+      "line": 222,
+      "description": "Typo in documentation: 'nonexistant' should be 'nonexistent'"
+    }
+  ]
+}

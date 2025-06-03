@@ -1,0 +1,24 @@
+{
+"issues": [
+{
+"file": "pkg/controller/cassandrabackup/cassandrabackup_controller.go",
+"line": 277,
+"description": "time.NewTicker is created in a loop without calling Stop(), which leaks a goroutine after the loop exits"
+},
+{
+"file": "pkg/controller/cassandradatacenter/cassandradatacenter_controller.go",
+"line": 276,
+"description": "populateUnsetFields sets DummyVolume but forgets to mark the spec as populated, so changes may not be persisted"
+},
+{
+"file": "pkg/controller/cassandradatacenter/statefulset.go",
+"line": 356,
+"description": "sidecarEnv references cdc.Spec.SidecarEnv and is appended directly, which can unintentionally modify the CR spec if the slice has capacity"
+},
+{
+"file": "cmd/manager/main.go",
+"line": 168,
+"description": "CreateMetricsService errors are logged but the possibly nil Service is still passed to CreateServiceMonitors, risking a nil pointer panic"
+}
+]
+}

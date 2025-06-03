@@ -1,0 +1,19 @@
+Please review the code in the sinonjs_sinon_2407 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Spy Functionality subsystem (consisting of 'lib/sinon/proxy-call-util.js', 'lib/sinon/proxy-call.js', 'lib/sinon/proxy-invoke.js', 'lib/sinon/proxy.js', 'lib/sinon/spy-formatters.js', 'lib/sinon/spy.js')
+2. Tests subsystem (consisting of 'test/.eslintrc.yml', 'test/assert-test.js', 'test/behavior-test.js', 'test/es2015/.eslintrc.yml', 'test/es2015/check-esm-bundle-is-runnable.js', 'test/extend-test.js', 'test/fake-test.js', 'test/issues/issues-test.js', 'test/mock-test.js', 'test/promise-test.js', 'test/proxy-call-test.js', 'test/proxy-test.js', 'test/restore-object-test.js', 'test/sandbox-test.js', 'test/shared-spy-stub-everything-tests.js', 'test/sinon-test.js', 'test/spy-test.js', 'test/stub-test.js', 'test/test-helper.js', 'test/util/core/color-test.js', 'test/util/core/export-async-behaviors-test.js', 'test/util/core/format-test.js', 'test/util/core/function-to-string-test.js', 'test/util/core/get-config-test.js', 'test/util/core/get-next-tick-test.js', 'test/util/core/next-tick-test.js', 'test/util/core/restore-test.js', 'test/util/core/times-in-words-test.js', 'test/util/core/walk-object-test.js', 'test/util/core/walk-test.js', 'test/util/core/wrap-method-test.js', 'test/util/fake-timers-test.js', 'test/webworker/webworker-script.js', 'test/webworker/webworker-support-assessment.js')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

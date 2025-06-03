@@ -1,0 +1,19 @@
+Please review the code in the go-sql-driver_mysql_943 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Connection Management subsystem (consisting of 'buffer.go', 'conncheck.go', 'conncheck_windows.go', 'connection.go')
+2. Query Execution subsystem (consisting of 'result.go', 'rows.go', 'statement.go', 'transaction.go')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

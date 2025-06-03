@@ -1,0 +1,55 @@
+diff --git a/.yarn/versions/cf0befe3.yml b/.yarn/versions/cf0befe3.yml
+new file mode 100644
+index 000000000000..2d6a48f178d8
+--- /dev/null
++++ b/.yarn/versions/cf0befe3.yml
+@@ -0,0 +1,34 @@
++releases:
++  "@yarnpkg/cli": patch
++  "@yarnpkg/core": patch
++
++declined:
++  - "@yarnpkg/plugin-compat"
++  - "@yarnpkg/plugin-constraints"
++  - "@yarnpkg/plugin-dlx"
++  - "@yarnpkg/plugin-essentials"
++  - "@yarnpkg/plugin-exec"
++  - "@yarnpkg/plugin-file"
++  - "@yarnpkg/plugin-git"
++  - "@yarnpkg/plugin-github"
++  - "@yarnpkg/plugin-http"
++  - "@yarnpkg/plugin-init"
++  - "@yarnpkg/plugin-interactive-tools"
++  - "@yarnpkg/plugin-link"
++  - "@yarnpkg/plugin-nm"
++  - "@yarnpkg/plugin-npm"
++  - "@yarnpkg/plugin-npm-cli"
++  - "@yarnpkg/plugin-pack"
++  - "@yarnpkg/plugin-patch"
++  - "@yarnpkg/plugin-pnp"
++  - "@yarnpkg/plugin-pnpm"
++  - "@yarnpkg/plugin-stage"
++  - "@yarnpkg/plugin-typescript"
++  - "@yarnpkg/plugin-version"
++  - "@yarnpkg/plugin-workspace-tools"
++  - "@yarnpkg/builder"
++  - "@yarnpkg/doctor"
++  - "@yarnpkg/extensions"
++  - "@yarnpkg/nm"
++  - "@yarnpkg/pnpify"
++  - "@yarnpkg/sdks"
+diff --git a/packages/yarnpkg-core/sources/Cache.ts b/packages/yarnpkg-core/sources/Cache.ts
+index 66d891cd1f8f..b712ecf11bca 100644
+--- a/packages/yarnpkg-core/sources/Cache.ts
++++ b/packages/yarnpkg-core/sources/Cache.ts
+@@ -73,7 +73,9 @@ export class Cache {
+     checksum: string | null,
+   ]>> = new Map();
+ 
+-  private refCountedZipFsCache = new RefCountedCache<string, ZipFS>(zipFs => zipFs.discardAndClose);
++  private refCountedZipFsCache = new RefCountedCache<string, ZipFS>(zipFs => {
++    zipFs.discardAndClose();
++  });
+ 
+   /**
+    * To ensure different instances of `Cache` doesn't end up copying to the same

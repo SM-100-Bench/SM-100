@@ -1,0 +1,2320 @@
+diff --git a/langfuse/api/__init__.py b/langfuse/api/__init__.py
+index 975b95bee..cc8024450 100644
+--- a/langfuse/api/__init__.py
++++ b/langfuse/api/__init__.py
+@@ -6,6 +6,7 @@
+     BasePrompt,
+     ChatMessage,
+     ChatPrompt,
++    ConfigCategory,
+     CreateChatPromptRequest,
+     CreateDatasetItemRequest,
+     CreateDatasetRequest,
+@@ -25,12 +26,11 @@
+     DailyMetrics,
+     DailyMetricsDetails,
+     Dataset,
+-    DatasetCore,
+     DatasetItem,
+     DatasetRun,
+     DatasetRunItem,
++    DatasetRunWithItems,
+     DatasetStatus,
+-    DatasetWithReferences,
+     Error,
+     HealthResponse,
+     IngestionError,
+@@ -61,6 +61,8 @@
+     ObservationsViews,
+     OpenAiUsage,
+     OptionalObservationBody,
++    PaginatedDatasetItems,
++    PaginatedDatasetRuns,
+     PaginatedDatasets,
+     Project,
+     Projects,
+@@ -71,6 +73,9 @@
+     Prompt_Text,
+     Score,
+     ScoreBody,
++    ScoreConfig,
++    ScoreConfigs,
++    ScoreDataType,
+     ScoreEvent,
+     ScoreSource,
+     Scores,
+@@ -107,6 +112,7 @@
+     projects,
+     prompts,
+     score,
++    score_configs,
+     sessions,
+     trace,
+     utils,
+@@ -118,6 +124,7 @@
+     "BasePrompt",
+     "ChatMessage",
+     "ChatPrompt",
++    "ConfigCategory",
+     "CreateChatPromptRequest",
+     "CreateDatasetItemRequest",
+     "CreateDatasetRequest",
+@@ -137,12 +144,11 @@
+     "DailyMetrics",
+     "DailyMetricsDetails",
+     "Dataset",
+-    "DatasetCore",
+     "DatasetItem",
+     "DatasetRun",
+     "DatasetRunItem",
++    "DatasetRunWithItems",
+     "DatasetStatus",
+-    "DatasetWithReferences",
+     "Error",
+     "HealthResponse",
+     "IngestionError",
+@@ -173,6 +179,8 @@
+     "ObservationsViews",
+     "OpenAiUsage",
+     "OptionalObservationBody",
++    "PaginatedDatasetItems",
++    "PaginatedDatasetRuns",
+     "PaginatedDatasets",
+     "Project",
+     "Projects",
+@@ -183,6 +191,9 @@
+     "Prompt_Text",
+     "Score",
+     "ScoreBody",
++    "ScoreConfig",
++    "ScoreConfigs",
++    "ScoreDataType",
+     "ScoreEvent",
+     "ScoreSource",
+     "Scores",
+@@ -219,6 +230,7 @@
+     "projects",
+     "prompts",
+     "score",
++    "score_configs",
+     "sessions",
+     "trace",
+     "utils",
+diff --git a/langfuse/api/client.py b/langfuse/api/client.py
+index ae37a769a..89b4e260b 100644
+--- a/langfuse/api/client.py
++++ b/langfuse/api/client.py
+@@ -18,6 +18,7 @@
+ from .resources.projects.client import AsyncProjectsClient, ProjectsClient
+ from .resources.prompts.client import AsyncPromptsClient, PromptsClient
+ from .resources.score.client import AsyncScoreClient, ScoreClient
++from .resources.score_configs.client import AsyncScoreConfigsClient, ScoreConfigsClient
+ from .resources.sessions.client import AsyncSessionsClient, SessionsClient
+ from .resources.trace.client import AsyncTraceClient, TraceClient
+ 
+@@ -100,6 +101,7 @@ def __init__(
+         self.observations = ObservationsClient(client_wrapper=self._client_wrapper)
+         self.projects = ProjectsClient(client_wrapper=self._client_wrapper)
+         self.prompts = PromptsClient(client_wrapper=self._client_wrapper)
++        self.score_configs = ScoreConfigsClient(client_wrapper=self._client_wrapper)
+         self.score = ScoreClient(client_wrapper=self._client_wrapper)
+         self.sessions = SessionsClient(client_wrapper=self._client_wrapper)
+         self.trace = TraceClient(client_wrapper=self._client_wrapper)
+@@ -185,6 +187,9 @@ def __init__(
+         self.observations = AsyncObservationsClient(client_wrapper=self._client_wrapper)
+         self.projects = AsyncProjectsClient(client_wrapper=self._client_wrapper)
+         self.prompts = AsyncPromptsClient(client_wrapper=self._client_wrapper)
++        self.score_configs = AsyncScoreConfigsClient(
++            client_wrapper=self._client_wrapper
++        )
+         self.score = AsyncScoreClient(client_wrapper=self._client_wrapper)
+         self.sessions = AsyncSessionsClient(client_wrapper=self._client_wrapper)
+         self.trace = AsyncTraceClient(client_wrapper=self._client_wrapper)
+diff --git a/langfuse/api/resources/__init__.py b/langfuse/api/resources/__init__.py
+index 17ded9b1d..3d8abf79f 100644
+--- a/langfuse/api/resources/__init__.py
++++ b/langfuse/api/resources/__init__.py
+@@ -12,19 +12,20 @@
+     projects,
+     prompts,
+     score,
++    score_configs,
+     sessions,
+     trace,
+     utils,
+ )
+ from .commons import (
+     AccessDeniedError,
++    ConfigCategory,
+     Dataset,
+-    DatasetCore,
+     DatasetItem,
+     DatasetRun,
+     DatasetRunItem,
++    DatasetRunWithItems,
+     DatasetStatus,
+-    DatasetWithReferences,
+     Error,
+     MapValue,
+     MethodNotAllowedError,
+@@ -34,6 +35,8 @@
+     ObservationLevel,
+     ObservationsView,
+     Score,
++    ScoreConfig,
++    ScoreDataType,
+     ScoreSource,
+     Session,
+     SessionWithTraces,
+@@ -43,9 +46,9 @@
+     UnauthorizedError,
+     Usage,
+ )
+-from .dataset_items import CreateDatasetItemRequest
++from .dataset_items import CreateDatasetItemRequest, PaginatedDatasetItems
+ from .dataset_run_items import CreateDatasetRunItemRequest
+-from .datasets import CreateDatasetRequest, PaginatedDatasets
++from .datasets import CreateDatasetRequest, PaginatedDatasetRuns, PaginatedDatasets
+ from .health import HealthResponse, ServiceUnavailableError
+ from .ingestion import (
+     BaseEvent,
+@@ -108,6 +111,7 @@
+     TextPrompt,
+ )
+ from .score import CreateScoreRequest, Scores
++from .score_configs import ScoreConfigs
+ from .trace import Sort, Traces
+ 
+ __all__ = [
+@@ -116,6 +120,7 @@
+     "BasePrompt",
+     "ChatMessage",
+     "ChatPrompt",
++    "ConfigCategory",
+     "CreateChatPromptRequest",
+     "CreateDatasetItemRequest",
+     "CreateDatasetRequest",
+@@ -135,12 +140,11 @@
+     "DailyMetrics",
+     "DailyMetricsDetails",
+     "Dataset",
+-    "DatasetCore",
+     "DatasetItem",
+     "DatasetRun",
+     "DatasetRunItem",
++    "DatasetRunWithItems",
+     "DatasetStatus",
+-    "DatasetWithReferences",
+     "Error",
+     "HealthResponse",
+     "IngestionError",
+@@ -171,6 +175,8 @@
+     "ObservationsViews",
+     "OpenAiUsage",
+     "OptionalObservationBody",
++    "PaginatedDatasetItems",
++    "PaginatedDatasetRuns",
+     "PaginatedDatasets",
+     "Project",
+     "Projects",
+@@ -181,6 +187,9 @@
+     "Prompt_Text",
+     "Score",
+     "ScoreBody",
++    "ScoreConfig",
++    "ScoreConfigs",
++    "ScoreDataType",
+     "ScoreEvent",
+     "ScoreSource",
+     "Scores",
+@@ -217,6 +226,7 @@
+     "projects",
+     "prompts",
+     "score",
++    "score_configs",
+     "sessions",
+     "trace",
+     "utils",
+diff --git a/langfuse/api/resources/commons/__init__.py b/langfuse/api/resources/commons/__init__.py
+index 6e1aaeba8..b97d2885f 100644
+--- a/langfuse/api/resources/commons/__init__.py
++++ b/langfuse/api/resources/commons/__init__.py
+@@ -1,19 +1,21 @@
+ # This file was auto-generated by Fern from our API Definition.
+ 
+ from .types import (
++    ConfigCategory,
+     Dataset,
+-    DatasetCore,
+     DatasetItem,
+     DatasetRun,
+     DatasetRunItem,
++    DatasetRunWithItems,
+     DatasetStatus,
+-    DatasetWithReferences,
+     MapValue,
+     ModelUsageUnit,
+     Observation,
+     ObservationLevel,
+     ObservationsView,
+     Score,
++    ScoreConfig,
++    ScoreDataType,
+     ScoreSource,
+     Session,
+     SessionWithTraces,
+@@ -32,13 +34,13 @@
+ 
+ __all__ = [
+     "AccessDeniedError",
++    "ConfigCategory",
+     "Dataset",
+-    "DatasetCore",
+     "DatasetItem",
+     "DatasetRun",
+     "DatasetRunItem",
++    "DatasetRunWithItems",
+     "DatasetStatus",
+-    "DatasetWithReferences",
+     "Error",
+     "MapValue",
+     "MethodNotAllowedError",
+@@ -48,6 +50,8 @@
+     "ObservationLevel",
+     "ObservationsView",
+     "Score",
++    "ScoreConfig",
++    "ScoreDataType",
+     "ScoreSource",
+     "Session",
+     "SessionWithTraces",
+diff --git a/langfuse/api/resources/commons/types/__init__.py b/langfuse/api/resources/commons/types/__init__.py
+index f0970286f..67c2e888f 100644
+--- a/langfuse/api/resources/commons/types/__init__.py
++++ b/langfuse/api/resources/commons/types/__init__.py
+@@ -1,18 +1,20 @@
+ # This file was auto-generated by Fern from our API Definition.
+ 
++from .config_category import ConfigCategory
+ from .dataset import Dataset
+-from .dataset_core import DatasetCore
+ from .dataset_item import DatasetItem
+ from .dataset_run import DatasetRun
+ from .dataset_run_item import DatasetRunItem
++from .dataset_run_with_items import DatasetRunWithItems
+ from .dataset_status import DatasetStatus
+-from .dataset_with_references import DatasetWithReferences
+ from .map_value import MapValue
+ from .model_usage_unit import ModelUsageUnit
+ from .observation import Observation
+ from .observation_level import ObservationLevel
+ from .observations_view import ObservationsView
+ from .score import Score
++from .score_config import ScoreConfig
++from .score_data_type import ScoreDataType
+ from .score_source import ScoreSource
+ from .session import Session
+ from .session_with_traces import SessionWithTraces
+@@ -22,19 +24,21 @@
+ from .usage import Usage
+ 
+ __all__ = [
++    "ConfigCategory",
+     "Dataset",
+-    "DatasetCore",
+     "DatasetItem",
+     "DatasetRun",
+     "DatasetRunItem",
++    "DatasetRunWithItems",
+     "DatasetStatus",
+-    "DatasetWithReferences",
+     "MapValue",
+     "ModelUsageUnit",
+     "Observation",
+     "ObservationLevel",
+     "ObservationsView",
+     "Score",
++    "ScoreConfig",
++    "ScoreDataType",
+     "ScoreSource",
+     "Session",
+     "SessionWithTraces",
+diff --git a/langfuse/api/resources/commons/types/config_category.py b/langfuse/api/resources/commons/types/config_category.py
+new file mode 100644
+index 000000000..6448cbc4f
+--- /dev/null
++++ b/langfuse/api/resources/commons/types/config_category.py
+@@ -0,0 +1,34 @@
++# This file was auto-generated by Fern from our API Definition.
++
++import datetime as dt
++import typing
++
++from ....core.datetime_utils import serialize_datetime
++from ....core.pydantic_utilities import pydantic_v1
++
++
++class ConfigCategory(pydantic_v1.BaseModel):
++    value: float
++    label: str
++
++    def json(self, **kwargs: typing.Any) -> str:
++        kwargs_with_defaults: typing.Any = {
++            "by_alias": True,
++            "exclude_unset": True,
++            **kwargs,
++        }
++        return super().json(**kwargs_with_defaults)
++
++    def dict(self, **kwargs: typing.Any) -> typing.Dict[str, typing.Any]:
++        kwargs_with_defaults: typing.Any = {
++            "by_alias": True,
++            "exclude_unset": True,
++            **kwargs,
++        }
++        return super().dict(**kwargs_with_defaults)
++
++    class Config:
++        frozen = True
++        smart_union = True
++        extra = pydantic_v1.Extra.allow
++        json_encoders = {dt.datetime: serialize_datetime}
+diff --git a/langfuse/api/resources/commons/types/dataset.py b/langfuse/api/resources/commons/types/dataset.py
+index b732f7a76..194d99141 100644
+--- a/langfuse/api/resources/commons/types/dataset.py
++++ b/langfuse/api/resources/commons/types/dataset.py
+@@ -5,17 +5,16 @@
+ 
+ from ....core.datetime_utils import serialize_datetime
+ from ....core.pydantic_utilities import pydantic_v1
+-from .dataset_core import DatasetCore
+-from .dataset_item import DatasetItem
+ 
+ 
+-class Dataset(DatasetCore):
+-    """
+-    Dataset including all items
+-    """
+-
+-    items: typing.List[DatasetItem]
+-    runs: typing.List[str]
++class Dataset(pydantic_v1.BaseModel):
++    id: str
++    name: str
++    description: typing.Optional[str] = None
++    metadata: typing.Optional[typing.Any] = None
++    project_id: str = pydantic_v1.Field(alias="projectId")
++    created_at: dt.datetime = pydantic_v1.Field(alias="createdAt")
++    updated_at: dt.datetime = pydantic_v1.Field(alias="updatedAt")
+ 
+     def json(self, **kwargs: typing.Any) -> str:
+         kwargs_with_defaults: typing.Any = {
+diff --git a/langfuse/api/resources/commons/types/dataset_run.py b/langfuse/api/resources/commons/types/dataset_run.py
+index a62dca702..7ad121231 100644
+--- a/langfuse/api/resources/commons/types/dataset_run.py
++++ b/langfuse/api/resources/commons/types/dataset_run.py
+@@ -5,7 +5,6 @@
+ 
+ from ....core.datetime_utils import serialize_datetime
+ from ....core.pydantic_utilities import pydantic_v1
+-from .dataset_run_item import DatasetRunItem
+ 
+ 
+ class DatasetRun(pydantic_v1.BaseModel):
+@@ -17,9 +16,6 @@ class DatasetRun(pydantic_v1.BaseModel):
+     dataset_name: str = pydantic_v1.Field(alias="datasetName")
+     created_at: dt.datetime = pydantic_v1.Field(alias="createdAt")
+     updated_at: dt.datetime = pydantic_v1.Field(alias="updatedAt")
+-    dataset_run_items: typing.List[DatasetRunItem] = pydantic_v1.Field(
+-        alias="datasetRunItems"
+-    )
+ 
+     def json(self, **kwargs: typing.Any) -> str:
+         kwargs_with_defaults: typing.Any = {
+diff --git a/langfuse/api/resources/commons/types/dataset_with_references.py b/langfuse/api/resources/commons/types/dataset_run_with_items.py
+similarity index 78%
+rename from langfuse/api/resources/commons/types/dataset_with_references.py
+rename to langfuse/api/resources/commons/types/dataset_run_with_items.py
+index 50faf2e8e..3a17bdecb 100644
+--- a/langfuse/api/resources/commons/types/dataset_with_references.py
++++ b/langfuse/api/resources/commons/types/dataset_run_with_items.py
+@@ -5,19 +5,14 @@
+ 
+ from ....core.datetime_utils import serialize_datetime
+ from ....core.pydantic_utilities import pydantic_v1
+-from .dataset_core import DatasetCore
++from .dataset_run import DatasetRun
++from .dataset_run_item import DatasetRunItem
+ 
+ 
+-class DatasetWithReferences(DatasetCore):
+-    items: typing.List[str] = pydantic_v1.Field()
+-    """
+-    list of dataset item ids
+-    """
+-
+-    runs: typing.List[str] = pydantic_v1.Field()
+-    """
+-    list of dataset run names
+-    """
++class DatasetRunWithItems(DatasetRun):
++    dataset_run_items: typing.List[DatasetRunItem] = pydantic_v1.Field(
++        alias="datasetRunItems"
++    )
+ 
+     def json(self, **kwargs: typing.Any) -> str:
+         kwargs_with_defaults: typing.Any = {
+diff --git a/langfuse/api/resources/commons/types/dataset_core.py b/langfuse/api/resources/commons/types/score_config.py
+similarity index 67%
+rename from langfuse/api/resources/commons/types/dataset_core.py
+rename to langfuse/api/resources/commons/types/score_config.py
+index aa1b3507e..c8e564ebd 100644
+--- a/langfuse/api/resources/commons/types/dataset_core.py
++++ b/langfuse/api/resources/commons/types/score_config.py
+@@ -5,16 +5,30 @@
+ 
+ from ....core.datetime_utils import serialize_datetime
+ from ....core.pydantic_utilities import pydantic_v1
++from .config_category import ConfigCategory
++from .score_data_type import ScoreDataType
+ 
+ 
+-class DatasetCore(pydantic_v1.BaseModel):
++class ScoreConfig(pydantic_v1.BaseModel):
++    """
++    Configuration for a score
++    """
++
+     id: str
+     name: str
+-    description: typing.Optional[str] = None
+-    metadata: typing.Optional[typing.Any] = None
+-    project_id: str = pydantic_v1.Field(alias="projectId")
+     created_at: dt.datetime = pydantic_v1.Field(alias="createdAt")
+     updated_at: dt.datetime = pydantic_v1.Field(alias="updatedAt")
++    project_id: str = pydantic_v1.Field(alias="projectId")
++    data_type: ScoreDataType = pydantic_v1.Field(alias="dataType")
++    is_archived: bool = pydantic_v1.Field(alias="isArchived")
++    min_value: typing.Optional[float] = pydantic_v1.Field(
++        alias="minValue", default=None
++    )
++    max_value: typing.Optional[float] = pydantic_v1.Field(
++        alias="maxValue", default=None
++    )
++    categories: typing.Optional[typing.List[ConfigCategory]] = None
++    description: typing.Optional[str] = None
+ 
+     def json(self, **kwargs: typing.Any) -> str:
+         kwargs_with_defaults: typing.Any = {
+diff --git a/langfuse/api/resources/commons/types/score_data_type.py b/langfuse/api/resources/commons/types/score_data_type.py
+new file mode 100644
+index 000000000..c2eed12cd
+--- /dev/null
++++ b/langfuse/api/resources/commons/types/score_data_type.py
+@@ -0,0 +1,25 @@
++# This file was auto-generated by Fern from our API Definition.
++
++import enum
++import typing
++
++T_Result = typing.TypeVar("T_Result")
++
++
++class ScoreDataType(str, enum.Enum):
++    NUMERIC = "NUMERIC"
++    BOOLEAN = "BOOLEAN"
++    CATEGORICAL = "CATEGORICAL"
++
++    def visit(
++        self,
++        numeric: typing.Callable[[], T_Result],
++        boolean: typing.Callable[[], T_Result],
++        categorical: typing.Callable[[], T_Result],
++    ) -> T_Result:
++        if self is ScoreDataType.NUMERIC:
++            return numeric()
++        if self is ScoreDataType.BOOLEAN:
++            return boolean()
++        if self is ScoreDataType.CATEGORICAL:
++            return categorical()
+diff --git a/langfuse/api/resources/dataset_items/__init__.py b/langfuse/api/resources/dataset_items/__init__.py
+index 736df276e..2a0693046 100644
+--- a/langfuse/api/resources/dataset_items/__init__.py
++++ b/langfuse/api/resources/dataset_items/__init__.py
+@@ -1,5 +1,5 @@
+ # This file was auto-generated by Fern from our API Definition.
+ 
+-from .types import CreateDatasetItemRequest
++from .types import CreateDatasetItemRequest, PaginatedDatasetItems
+ 
+-__all__ = ["CreateDatasetItemRequest"]
++__all__ = ["CreateDatasetItemRequest", "PaginatedDatasetItems"]
+diff --git a/langfuse/api/resources/dataset_items/client.py b/langfuse/api/resources/dataset_items/client.py
+index 64c9134b8..2aed6ae12 100644
+--- a/langfuse/api/resources/dataset_items/client.py
++++ b/langfuse/api/resources/dataset_items/client.py
+@@ -17,6 +17,7 @@
+ from ..commons.errors.unauthorized_error import UnauthorizedError
+ from ..commons.types.dataset_item import DatasetItem
+ from .types.create_dataset_item_request import CreateDatasetItemRequest
++from .types.paginated_dataset_items import PaginatedDatasetItems
+ 
+ # this is used as the default value for optional parameters
+ OMIT = typing.cast(typing.Any, ...)
+@@ -213,6 +214,116 @@ def get(
+             raise ApiError(status_code=_response.status_code, body=_response.text)
+         raise ApiError(status_code=_response.status_code, body=_response_json)
+ 
++    def list(
++        self,
++        *,
++        dataset_name: typing.Optional[str] = None,
++        source_trace_id: typing.Optional[str] = None,
++        source_observation_id: typing.Optional[str] = None,
++        page: typing.Optional[int] = None,
++        limit: typing.Optional[int] = None,
++        request_options: typing.Optional[RequestOptions] = None,
++    ) -> PaginatedDatasetItems:
++        """
++        Get dataset items
++
++        Parameters:
++            - dataset_name: typing.Optional[str].
++
++            - source_trace_id: typing.Optional[str].
++
++            - source_observation_id: typing.Optional[str].
++
++            - page: typing.Optional[int]. page number, starts at 1
++
++            - limit: typing.Optional[int]. limit of items per page
++
++            - request_options: typing.Optional[RequestOptions]. Request-specific configuration.
++        ---
++        from finto.client import FernLangfuse
++
++        client = FernLangfuse(
++            x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
++            x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
++            x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
++            username="YOUR_USERNAME",
++            password="YOUR_PASSWORD",
++            base_url="https://yourhost.com/path/to/api",
++        )
++        client.dataset_items.list(
++            dataset_name="string",
++            source_trace_id="string",
++            source_observation_id="string",
++            page=1,
++            limit=1,
++        )
++        """
++        _response = self._client_wrapper.httpx_client.request(
++            "GET",
++            urllib.parse.urljoin(
++                f"{self._client_wrapper.get_base_url()}/", "api/public/dataset-items"
++            ),
++            params=jsonable_encoder(
++                remove_none_from_dict(
++                    {
++                        "datasetName": dataset_name,
++                        "sourceTraceId": source_trace_id,
++                        "sourceObservationId": source_observation_id,
++                        "page": page,
++                        "limit": limit,
++                        **(
++                            request_options.get("additional_query_parameters", {})
++                            if request_options is not None
++                            else {}
++                        ),
++                    }
++                )
++            ),
++            headers=jsonable_encoder(
++                remove_none_from_dict(
++                    {
++                        **self._client_wrapper.get_headers(),
++                        **(
++                            request_options.get("additional_headers", {})
++                            if request_options is not None
++                            else {}
++                        ),
++                    }
++                )
++            ),
++            timeout=request_options.get("timeout_in_seconds")
++            if request_options is not None
++            and request_options.get("timeout_in_seconds") is not None
++            else self._client_wrapper.get_timeout(),
++            retries=0,
++            max_retries=request_options.get("max_retries")
++            if request_options is not None
++            else 0,  # type: ignore
++        )
++        if 200 <= _response.status_code < 300:
++            return pydantic_v1.parse_obj_as(PaginatedDatasetItems, _response.json())  # type: ignore
++        if _response.status_code == 400:
++            raise Error(pydantic_v1.parse_obj_as(typing.Any, _response.json()))  # type: ignore
++        if _response.status_code == 401:
++            raise UnauthorizedError(
++                pydantic_v1.parse_obj_as(typing.Any, _response.json())
++            )  # type: ignore
++        if _response.status_code == 403:
++            raise AccessDeniedError(
++                pydantic_v1.parse_obj_as(typing.Any, _response.json())
++            )  # type: ignore
++        if _response.status_code == 405:
++            raise MethodNotAllowedError(
++                pydantic_v1.parse_obj_as(typing.Any, _response.json())
++            )  # type: ignore
++        if _response.status_code == 404:
++            raise NotFoundError(pydantic_v1.parse_obj_as(typing.Any, _response.json()))  # type: ignore
++        try:
++            _response_json = _response.json()
++        except JSONDecodeError:
++            raise ApiError(status_code=_response.status_code, body=_response.text)
++        raise ApiError(status_code=_response.status_code, body=_response_json)
++
+ 
+ class AsyncDatasetItemsClient:
+     def __init__(self, *, client_wrapper: AsyncClientWrapper):
+@@ -404,3 +515,113 @@ async def get(
+         except JSONDecodeError:
+             raise ApiError(status_code=_response.status_code, body=_response.text)
+         raise ApiError(status_code=_response.status_code, body=_response_json)
++
++    async def list(
++        self,
++        *,
++        dataset_name: typing.Optional[str] = None,
++        source_trace_id: typing.Optional[str] = None,
++        source_observation_id: typing.Optional[str] = None,
++        page: typing.Optional[int] = None,
++        limit: typing.Optional[int] = None,
++        request_options: typing.Optional[RequestOptions] = None,
++    ) -> PaginatedDatasetItems:
++        """
++        Get dataset items
++
++        Parameters:
++            - dataset_name: typing.Optional[str].
++
++            - source_trace_id: typing.Optional[str].
++
++            - source_observation_id: typing.Optional[str].
++
++            - page: typing.Optional[int]. page number, starts at 1
++
++            - limit: typing.Optional[int]. limit of items per page
++
++            - request_options: typing.Optional[RequestOptions]. Request-specific configuration.
++        ---
++        from finto.client import AsyncFernLangfuse
++
++        client = AsyncFernLangfuse(
++            x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
++            x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
++            x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
++            username="YOUR_USERNAME",
++            password="YOUR_PASSWORD",
++            base_url="https://yourhost.com/path/to/api",
++        )
++        await client.dataset_items.list(
++            dataset_name="string",
++            source_trace_id="string",
++            source_observation_id="string",
++            page=1,
++            limit=1,
++        )
++        """
++        _response = await self._client_wrapper.httpx_client.request(
++            "GET",
++            urllib.parse.urljoin(
++                f"{self._client_wrapper.get_base_url()}/", "api/public/dataset-items"
++            ),
++            params=jsonable_encoder(
++                remove_none_from_dict(
++                    {
++                        "datasetName": dataset_name,
++                        "sourceTraceId": source_trace_id,
++                        "sourceObservationId": source_observation_id,
++                        "page": page,
++                        "limit": limit,
++                        **(
++                            request_options.get("additional_query_parameters", {})
++                            if request_options is not None
++                            else {}
++                        ),
++                    }
++                )
++            ),
++            headers=jsonable_encoder(
++                remove_none_from_dict(
++                    {
++                        **self._client_wrapper.get_headers(),
++                        **(
++                            request_options.get("additional_headers", {})
++                            if request_options is not None
++                            else {}
++                        ),
++                    }
++                )
++            ),
++            timeout=request_options.get("timeout_in_seconds")
++            if request_options is not None
++            and request_options.get("timeout_in_seconds") is not None
++            else self._client_wrapper.get_timeout(),
++            retries=0,
++            max_retries=request_options.get("max_retries")
++            if request_options is not None
++            else 0,  # type: ignore
++        )
++        if 200 <= _response.status_code < 300:
++            return pydantic_v1.parse_obj_as(PaginatedDatasetItems, _response.json())  # type: ignore
++        if _response.status_code == 400:
++            raise Error(pydantic_v1.parse_obj_as(typing.Any, _response.json()))  # type: ignore
++        if _response.status_code == 401:
++            raise UnauthorizedError(
++                pydantic_v1.parse_obj_as(typing.Any, _response.json())
++            )  # type: ignore
++        if _response.status_code == 403:
++            raise AccessDeniedError(
++                pydantic_v1.parse_obj_as(typing.Any, _response.json())
++            )  # type: ignore
++        if _response.status_code == 405:
++            raise MethodNotAllowedError(
++                pydantic_v1.parse_obj_as(typing.Any, _response.json())
++            )  # type: ignore
++        if _response.status_code == 404:
++            raise NotFoundError(pydantic_v1.parse_obj_as(typing.Any, _response.json()))  # type: ignore
++        try:
++            _response_json = _response.json()
++        except JSONDecodeError:
++            raise ApiError(status_code=_response.status_code, body=_response.text)
++        raise ApiError(status_code=_response.status_code, body=_response_json)
+diff --git a/langfuse/api/resources/dataset_items/types/__init__.py b/langfuse/api/resources/dataset_items/types/__init__.py
+index 08238d0b6..24023de7b 100644
+--- a/langfuse/api/resources/dataset_items/types/__init__.py
++++ b/langfuse/api/resources/dataset_items/types/__init__.py
+@@ -1,5 +1,6 @@
+ # This file was auto-generated by Fern from our API Definition.
+ 
+ from .create_dataset_item_request import CreateDatasetItemRequest
++from .paginated_dataset_items import PaginatedDatasetItems
+ 
+-__all__ = ["CreateDatasetItemRequest"]
++__all__ = ["CreateDatasetItemRequest", "PaginatedDatasetItems"]
+diff --git a/langfuse/api/resources/dataset_items/types/create_dataset_item_request.py b/langfuse/api/resources/dataset_items/types/create_dataset_item_request.py
+index 1bb035542..67744256b 100644
+--- a/langfuse/api/resources/dataset_items/types/create_dataset_item_request.py
++++ b/langfuse/api/resources/dataset_items/types/create_dataset_item_request.py
+@@ -23,7 +23,7 @@ class CreateDatasetItemRequest(pydantic_v1.BaseModel):
+     )
+     id: typing.Optional[str] = pydantic_v1.Field(default=None)
+     """
+-    Dataset items are upserted on their id
++    Dataset items are upserted on their id. Id needs to be globally unique and cannot be reused across datasets.
+     """
+ 
+     status: typing.Optional[DatasetStatus] = pydantic_v1.Field(default=None)
+diff --git a/langfuse/api/resources/dataset_items/types/paginated_dataset_items.py b/langfuse/api/resources/dataset_items/types/paginated_dataset_items.py
+new file mode 100644
+index 000000000..461020231
+--- /dev/null
++++ b/langfuse/api/resources/dataset_items/types/paginated_dataset_items.py
+@@ -0,0 +1,36 @@
++# This file was auto-generated by Fern from our API Definition.
++
++import datetime as dt
++import typing
++
++from ....core.datetime_utils import serialize_datetime
++from ....core.pydantic_utilities import pydantic_v1
++from ...commons.types.dataset_item import DatasetItem
++from ...utils.resources.pagination.types.meta_response import MetaResponse
++
++
++class PaginatedDatasetItems(pydantic_v1.BaseModel):
++    data: typing.List[DatasetItem]
++    meta: MetaResponse
++
++    def json(self, **kwargs: typing.Any) -> str:
++        kwargs_with_defaults: typing.Any = {
++            "by_alias": True,
++            "exclude_unset": True,
++            **kwargs,
++        }
++        return super().json(**kwargs_with_defaults)
++
++    def dict(self, **kwargs: typing.Any) -> typing.Dict[str, typing.Any]:
++        kwargs_with_defaults: typing.Any = {
++            "by_alias": True,
++            "exclude_unset": True,
++            **kwargs,
++        }
++        return super().dict(**kwargs_with_defaults)
++
++    class Config:
++        frozen = True
++        smart_union = True
++        extra = pydantic_v1.Extra.allow
++        json_encoders = {dt.datetime: serialize_datetime}
+diff --git a/langfuse/api/resources/datasets/__init__.py b/langfuse/api/resources/datasets/__init__.py
+index f76cfe24c..d8a7fab0e 100644
+--- a/langfuse/api/resources/datasets/__init__.py
++++ b/langfuse/api/resources/datasets/__init__.py
+@@ -1,5 +1,5 @@
+ # This file was auto-generated by Fern from our API Definition.
+ 
+-from .types import CreateDatasetRequest, PaginatedDatasets
++from .types import CreateDatasetRequest, PaginatedDatasetRuns, PaginatedDatasets
+ 
+-__all__ = ["CreateDatasetRequest", "PaginatedDatasets"]
++__all__ = ["CreateDatasetRequest", "PaginatedDatasetRuns", "PaginatedDatasets"]
+diff --git a/langfuse/api/resources/datasets/client.py b/langfuse/api/resources/datasets/client.py
+index b1e19ecc1..0b9d4f24f 100644
+--- a/langfuse/api/resources/datasets/client.py
++++ b/langfuse/api/resources/datasets/client.py
+@@ -16,8 +16,9 @@
+ from ..commons.errors.not_found_error import NotFoundError
+ from ..commons.errors.unauthorized_error import UnauthorizedError
+ from ..commons.types.dataset import Dataset
+-from ..commons.types.dataset_run import DatasetRun
++from ..commons.types.dataset_run_with_items import DatasetRunWithItems
+ from .types.create_dataset_request import CreateDatasetRequest
++from .types.paginated_dataset_runs import PaginatedDatasetRuns
+ from .types.paginated_datasets import PaginatedDatasets
+ 
+ # this is used as the default value for optional parameters
+@@ -39,9 +40,9 @@ def list(
+         Get all datasets
+ 
+         Parameters:
+-            - page: typing.Optional[int].
++            - page: typing.Optional[int]. page number, starts at 1
+ 
+-            - limit: typing.Optional[int].
++            - limit: typing.Optional[int]. limit of items per page
+ 
+             - request_options: typing.Optional[RequestOptions]. Request-specific configuration.
+         ---
+@@ -63,7 +64,7 @@ def list(
+         _response = self._client_wrapper.httpx_client.request(
+             "GET",
+             urllib.parse.urljoin(
+-                f"{self._client_wrapper.get_base_url()}/", "api/public/datasets"
++                f"{self._client_wrapper.get_base_url()}/", "api/public/v2/datasets"
+             ),
+             params=jsonable_encoder(
+                 remove_none_from_dict(
+@@ -155,7 +156,7 @@ def get(
+             "GET",
+             urllib.parse.urljoin(
+                 f"{self._client_wrapper.get_base_url()}/",
+-                f"api/public/datasets/{jsonable_encoder(dataset_name)}",
++                f"api/public/v2/datasets/{jsonable_encoder(dataset_name)}",
+             ),
+             params=jsonable_encoder(
+                 request_options.get("additional_query_parameters")
+@@ -243,7 +244,7 @@ def create(
+         _response = self._client_wrapper.httpx_client.request(
+             "POST",
+             urllib.parse.urljoin(
+-                f"{self._client_wrapper.get_base_url()}/", "api/public/datasets"
++                f"{self._client_wrapper.get_base_url()}/", "api/public/v2/datasets"
+             ),
+             params=jsonable_encoder(
+                 request_options.get("additional_query_parameters")
+@@ -308,13 +309,13 @@ def create(
+             raise ApiError(status_code=_response.status_code, body=_response.text)
+         raise ApiError(status_code=_response.status_code, body=_response_json)
+ 
+-    def get_runs(
++    def get_run(
+         self,
+         dataset_name: str,
+         run_name: str,
+         *,
+         request_options: typing.Optional[RequestOptions] = None,
+-    ) -> DatasetRun:
++    ) -> DatasetRunWithItems:
+         """
+         Get a dataset run and its items
+ 
+@@ -335,7 +336,7 @@ def get_runs(
+             password="YOUR_PASSWORD",
+             base_url="https://yourhost.com/path/to/api",
+         )
+-        client.datasets.get_runs(
++        client.datasets.get_run(
+             dataset_name="string",
+             run_name="string",
+         )
+@@ -373,7 +374,107 @@ def get_runs(
+             else 0,  # type: ignore
+         )
+         if 200 <= _response.status_code < 300:
+-            return pydantic_v1.parse_obj_as(DatasetRun, _response.json())  # type: ignore
++            return pydantic_v1.parse_obj_as(DatasetRunWithItems, _response.json())  # type: ignore
++        if _response.status_code == 400:
++            raise Error(pydantic_v1.parse_obj_as(typing.Any, _response.json()))  # type: ignore
++        if _response.status_code == 401:
++            raise UnauthorizedError(
++                pydantic_v1.parse_obj_as(typing.Any, _response.json())
++            )  # type: ignore
++        if _response.status_code == 403:
++            raise AccessDeniedError(
++                pydantic_v1.parse_obj_as(typing.Any, _response.json())
++            )  # type: ignore
++        if _response.status_code == 405:
++            raise MethodNotAllowedError(
++                pydantic_v1.parse_obj_as(typing.Any, _response.json())
++            )  # type: ignore
++        if _response.status_code == 404:
++            raise NotFoundError(pydantic_v1.parse_obj_as(typing.Any, _response.json()))  # type: ignore
++        try:
++            _response_json = _response.json()
++        except JSONDecodeError:
++            raise ApiError(status_code=_response.status_code, body=_response.text)
++        raise ApiError(status_code=_response.status_code, body=_response_json)
++
++    def get_runs(
++        self,
++        dataset_name: str,
++        *,
++        page: typing.Optional[int] = None,
++        limit: typing.Optional[int] = None,
++        request_options: typing.Optional[RequestOptions] = None,
++    ) -> PaginatedDatasetRuns:
++        """
++        Get a dataset runs
++
++        Parameters:
++            - dataset_name: str.
++
++            - page: typing.Optional[int]. page number, starts at 1
++
++            - limit: typing.Optional[int]. limit of items per page
++
++            - request_options: typing.Optional[RequestOptions]. Request-specific configuration.
++        ---
++        from finto.client import FernLangfuse
++
++        client = FernLangfuse(
++            x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
++            x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
++            x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
++            username="YOUR_USERNAME",
++            password="YOUR_PASSWORD",
++            base_url="https://yourhost.com/path/to/api",
++        )
++        client.datasets.get_runs(
++            dataset_name="string",
++            page=1,
++            limit=1,
++        )
++        """
++        _response = self._client_wrapper.httpx_client.request(
++            "GET",
++            urllib.parse.urljoin(
++                f"{self._client_wrapper.get_base_url()}/",
++                f"api/public/datasets/{jsonable_encoder(dataset_name)}/runs",
++            ),
++            params=jsonable_encoder(
++                remove_none_from_dict(
++                    {
++                        "page": page,
++                        "limit": limit,
++                        **(
++                            request_options.get("additional_query_parameters", {})
++                            if request_options is not None
++                            else {}
++                        ),
++                    }
++                )
++            ),
++            headers=jsonable_encoder(
++                remove_none_from_dict(
++                    {
++                        **self._client_wrapper.get_headers(),
++                        **(
++                            request_options.get("additional_headers", {})
++                            if request_options is not None
++                            else {}
++                        ),
++                    }
++                )
++            ),
++            timeout=request_options.get("timeout_in_seconds")
++            if request_options is not None
++            and request_options.get("timeout_in_seconds") is not None
++            else self._client_wrapper.get_timeout(),
++            retries=0,
++            max_retries=request_options.get("max_retries")
++            if request_options is not None
++            else 0,  # type: ignore
++        )
++        if 200 <= _response.status_code < 300:
++            return pydantic_v1.parse_obj_as(PaginatedDatasetRuns, _response.json())  # type: ignore
+         if _response.status_code == 400:
+             raise Error(pydantic_v1.parse_obj_as(typing.Any, _response.json()))  # type: ignore
+         if _response.status_code == 401:
+@@ -412,9 +513,9 @@ async def list(
+         Get all datasets
+ 
+         Parameters:
+-            - page: typing.Optional[int].
++            - page: typing.Optional[int]. page number, starts at 1
+ 
+-            - limit: typing.Optional[int].
++            - limit: typing.Optional[int]. limit of items per page
+ 
+             - request_options: typing.Optional[RequestOptions]. Request-specific configuration.
+         ---
+@@ -436,7 +537,7 @@ async def list(
+         _response = await self._client_wrapper.httpx_client.request(
+             "GET",
+             urllib.parse.urljoin(
+-                f"{self._client_wrapper.get_base_url()}/", "api/public/datasets"
++                f"{self._client_wrapper.get_base_url()}/", "api/public/v2/datasets"
+             ),
+             params=jsonable_encoder(
+                 remove_none_from_dict(
+@@ -528,7 +629,7 @@ async def get(
+             "GET",
+             urllib.parse.urljoin(
+                 f"{self._client_wrapper.get_base_url()}/",
+-                f"api/public/datasets/{jsonable_encoder(dataset_name)}",
++                f"api/public/v2/datasets/{jsonable_encoder(dataset_name)}",
+             ),
+             params=jsonable_encoder(
+                 request_options.get("additional_query_parameters")
+@@ -616,7 +717,7 @@ async def create(
+         _response = await self._client_wrapper.httpx_client.request(
+             "POST",
+             urllib.parse.urljoin(
+-                f"{self._client_wrapper.get_base_url()}/", "api/public/datasets"
++                f"{self._client_wrapper.get_base_url()}/", "api/public/v2/datasets"
+             ),
+             params=jsonable_encoder(
+                 request_options.get("additional_query_parameters")
+@@ -681,13 +782,13 @@ async def create(
+             raise ApiError(status_code=_response.status_code, body=_response.text)
+         raise ApiError(status_code=_response.status_code, body=_response_json)
+ 
+-    async def get_runs(
++    async def get_run(
+         self,
+         dataset_name: str,
+         run_name: str,
+         *,
+         request_options: typing.Optional[RequestOptions] = None,
+-    ) -> DatasetRun:
++    ) -> DatasetRunWithItems:
+         """
+         Get a dataset run and its items
+ 
+@@ -708,7 +809,7 @@ async def get_runs(
+             password="YOUR_PASSWORD",
+             base_url="https://yourhost.com/path/to/api",
+         )
+-        await client.datasets.get_runs(
++        await client.datasets.get_run(
+             dataset_name="string",
+             run_name="string",
+         )
+@@ -746,7 +847,107 @@ async def get_runs(
+             else 0,  # type: ignore
+         )
+         if 200 <= _response.status_code < 300:
+-            return pydantic_v1.parse_obj_as(DatasetRun, _response.json())  # type: ignore
++            return pydantic_v1.parse_obj_as(DatasetRunWithItems, _response.json())  # type: ignore
++        if _response.status_code == 400:
++            raise Error(pydantic_v1.parse_obj_as(typing.Any, _response.json()))  # type: ignore
++        if _response.status_code == 401:
++            raise UnauthorizedError(
++                pydantic_v1.parse_obj_as(typing.Any, _response.json())
++            )  # type: ignore
++        if _response.status_code == 403:
++            raise AccessDeniedError(
++                pydantic_v1.parse_obj_as(typing.Any, _response.json())
++            )  # type: ignore
++        if _response.status_code == 405:
++            raise MethodNotAllowedError(
++                pydantic_v1.parse_obj_as(typing.Any, _response.json())
++            )  # type: ignore
++        if _response.status_code == 404:
++            raise NotFoundError(pydantic_v1.parse_obj_as(typing.Any, _response.json()))  # type: ignore
++        try:
++            _response_json = _response.json()
++        except JSONDecodeError:
++            raise ApiError(status_code=_response.status_code, body=_response.text)
++        raise ApiError(status_code=_response.status_code, body=_response_json)
++
++    async def get_runs(
++        self,
++        dataset_name: str,
++        *,
++        page: typing.Optional[int] = None,
++        limit: typing.Optional[int] = None,
++        request_options: typing.Optional[RequestOptions] = None,
++    ) -> PaginatedDatasetRuns:
++        """
++        Get a dataset runs
++
++        Parameters:
++            - dataset_name: str.
++
++            - page: typing.Optional[int]. page number, starts at 1
++
++            - limit: typing.Optional[int]. limit of items per page
++
++            - request_options: typing.Optional[RequestOptions]. Request-specific configuration.
++        ---
++        from finto.client import AsyncFernLangfuse
++
++        client = AsyncFernLangfuse(
++            x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
++            x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
++            x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
++            username="YOUR_USERNAME",
++            password="YOUR_PASSWORD",
++            base_url="https://yourhost.com/path/to/api",
++        )
++        await client.datasets.get_runs(
++            dataset_name="string",
++            page=1,
++            limit=1,
++        )
++        """
++        _response = await self._client_wrapper.httpx_client.request(
++            "GET",
++            urllib.parse.urljoin(
++                f"{self._client_wrapper.get_base_url()}/",
++                f"api/public/datasets/{jsonable_encoder(dataset_name)}/runs",
++            ),
++            params=jsonable_encoder(
++                remove_none_from_dict(
++                    {
++                        "page": page,
++                        "limit": limit,
++                        **(
++                            request_options.get("additional_query_parameters", {})
++                            if request_options is not None
++                            else {}
++                        ),
++                    }
++                )
++            ),
++            headers=jsonable_encoder(
++                remove_none_from_dict(
++                    {
++                        **self._client_wrapper.get_headers(),
++                        **(
++                            request_options.get("additional_headers", {})
++                            if request_options is not None
++                            else {}
++                        ),
++                    }
++                )
++            ),
++            timeout=request_options.get("timeout_in_seconds")
++            if request_options is not None
++            and request_options.get("timeout_in_seconds") is not None
++            else self._client_wrapper.get_timeout(),
++            retries=0,
++            max_retries=request_options.get("max_retries")
++            if request_options is not None
++            else 0,  # type: ignore
++        )
++        if 200 <= _response.status_code < 300:
++            return pydantic_v1.parse_obj_as(PaginatedDatasetRuns, _response.json())  # type: ignore
+         if _response.status_code == 400:
+             raise Error(pydantic_v1.parse_obj_as(typing.Any, _response.json()))  # type: ignore
+         if _response.status_code == 401:
+diff --git a/langfuse/api/resources/datasets/types/__init__.py b/langfuse/api/resources/datasets/types/__init__.py
+index 57efa9891..befecc4c0 100644
+--- a/langfuse/api/resources/datasets/types/__init__.py
++++ b/langfuse/api/resources/datasets/types/__init__.py
+@@ -1,6 +1,7 @@
+ # This file was auto-generated by Fern from our API Definition.
+ 
+ from .create_dataset_request import CreateDatasetRequest
++from .paginated_dataset_runs import PaginatedDatasetRuns
+ from .paginated_datasets import PaginatedDatasets
+ 
+-__all__ = ["CreateDatasetRequest", "PaginatedDatasets"]
++__all__ = ["CreateDatasetRequest", "PaginatedDatasetRuns", "PaginatedDatasets"]
+diff --git a/langfuse/api/resources/datasets/types/paginated_dataset_runs.py b/langfuse/api/resources/datasets/types/paginated_dataset_runs.py
+new file mode 100644
+index 000000000..0fb8c82b0
+--- /dev/null
++++ b/langfuse/api/resources/datasets/types/paginated_dataset_runs.py
+@@ -0,0 +1,36 @@
++# This file was auto-generated by Fern from our API Definition.
++
++import datetime as dt
++import typing
++
++from ....core.datetime_utils import serialize_datetime
++from ....core.pydantic_utilities import pydantic_v1
++from ...commons.types.dataset_run import DatasetRun
++from ...utils.resources.pagination.types.meta_response import MetaResponse
++
++
++class PaginatedDatasetRuns(pydantic_v1.BaseModel):
++    data: typing.List[DatasetRun]
++    meta: MetaResponse
++
++    def json(self, **kwargs: typing.Any) -> str:
++        kwargs_with_defaults: typing.Any = {
++            "by_alias": True,
++            "exclude_unset": True,
++            **kwargs,
++        }
++        return super().json(**kwargs_with_defaults)
++
++    def dict(self, **kwargs: typing.Any) -> typing.Dict[str, typing.Any]:
++        kwargs_with_defaults: typing.Any = {
++            "by_alias": True,
++            "exclude_unset": True,
++            **kwargs,
++        }
++        return super().dict(**kwargs_with_defaults)
++
++    class Config:
++        frozen = True
++        smart_union = True
++        extra = pydantic_v1.Extra.allow
++        json_encoders = {dt.datetime: serialize_datetime}
+diff --git a/langfuse/api/resources/datasets/types/paginated_datasets.py b/langfuse/api/resources/datasets/types/paginated_datasets.py
+index 485c5c6f5..d24aee162 100644
+--- a/langfuse/api/resources/datasets/types/paginated_datasets.py
++++ b/langfuse/api/resources/datasets/types/paginated_datasets.py
+@@ -5,12 +5,12 @@
+ 
+ from ....core.datetime_utils import serialize_datetime
+ from ....core.pydantic_utilities import pydantic_v1
+-from ...commons.types.dataset_with_references import DatasetWithReferences
++from ...commons.types.dataset import Dataset
+ from ...utils.resources.pagination.types.meta_response import MetaResponse
+ 
+ 
+ class PaginatedDatasets(pydantic_v1.BaseModel):
+-    data: typing.List[DatasetWithReferences]
++    data: typing.List[Dataset]
+     meta: MetaResponse
+ 
+     def json(self, **kwargs: typing.Any) -> str:
+diff --git a/langfuse/api/resources/ingestion/client.py b/langfuse/api/resources/ingestion/client.py
+index eb0ff96a2..15c5561fa 100644
+--- a/langfuse/api/resources/ingestion/client.py
++++ b/langfuse/api/resources/ingestion/client.py
+@@ -30,13 +30,21 @@ def batch(
+         self,
+         *,
+         batch: typing.Sequence[IngestionEvent],
++        metadata: typing.Optional[typing.Any] = OMIT,
+         request_options: typing.Optional[RequestOptions] = None,
+     ) -> IngestionResponse:
+         """
+-        Batched ingestion for Langfuse Tracing
++        Batched ingestion for Langfuse Tracing. If you want to use tracing via the API, such as to build your own Langfuse client implementation, this is the only API route you need to implement.
++
++        Notes:
++
++        - Batch sizes are limited to 3.5 MB in total. You need to adjust the number of events per batch accordingly.
++        - The API does not return a 4xx status code for input errors. Instead, it responds with a 207 status code, which includes a list of the encountered errors.
+ 
+         Parameters:
+-            - batch: typing.Sequence[IngestionEvent].
++            - batch: typing.Sequence[IngestionEvent]. Batch of tracing events to be ingested. Discriminated by attribute `type`.
++
++            - metadata: typing.Optional[typing.Any]. Optional. Metadata field used by the Langfuse SDKs for debugging.
+ 
+             - request_options: typing.Optional[RequestOptions]. Request-specific configuration.
+         ---
+@@ -77,8 +85,12 @@ def batch(
+                     metadata={"key": "value"},
+                 )
+             ],
++            metadata={"key": "value"},
+         )
+         """
++        _request: typing.Dict[str, typing.Any] = {"batch": batch}
++        if metadata is not OMIT:
++            _request["metadata"] = metadata
+         _response = self._client_wrapper.httpx_client.request(
+             "POST",
+             urllib.parse.urljoin(
+@@ -89,11 +101,11 @@ def batch(
+                 if request_options is not None
+                 else None
+             ),
+-            json=jsonable_encoder({"batch": batch})
++            json=jsonable_encoder(_request)
+             if request_options is None
+             or request_options.get("additional_body_parameters") is None
+             else {
+-                **jsonable_encoder({"batch": batch}),
++                **jsonable_encoder(_request),
+                 **(
+                     jsonable_encoder(
+                         remove_none_from_dict(
+@@ -156,13 +168,21 @@ async def batch(
+         self,
+         *,
+         batch: typing.Sequence[IngestionEvent],
++        metadata: typing.Optional[typing.Any] = OMIT,
+         request_options: typing.Optional[RequestOptions] = None,
+     ) -> IngestionResponse:
+         """
+-        Batched ingestion for Langfuse Tracing
++        Batched ingestion for Langfuse Tracing. If you want to use tracing via the API, such as to build your own Langfuse client implementation, this is the only API route you need to implement.
++
++        Notes:
++
++        - Batch sizes are limited to 3.5 MB in total. You need to adjust the number of events per batch accordingly.
++        - The API does not return a 4xx status code for input errors. Instead, it responds with a 207 status code, which includes a list of the encountered errors.
+ 
+         Parameters:
+-            - batch: typing.Sequence[IngestionEvent].
++            - batch: typing.Sequence[IngestionEvent]. Batch of tracing events to be ingested. Discriminated by attribute `type`.
++
++            - metadata: typing.Optional[typing.Any]. Optional. Metadata field used by the Langfuse SDKs for debugging.
+ 
+             - request_options: typing.Optional[RequestOptions]. Request-specific configuration.
+         ---
+@@ -203,8 +223,12 @@ async def batch(
+                     metadata={"key": "value"},
+                 )
+             ],
++            metadata={"key": "value"},
+         )
+         """
++        _request: typing.Dict[str, typing.Any] = {"batch": batch}
++        if metadata is not OMIT:
++            _request["metadata"] = metadata
+         _response = await self._client_wrapper.httpx_client.request(
+             "POST",
+             urllib.parse.urljoin(
+@@ -215,11 +239,11 @@ async def batch(
+                 if request_options is not None
+                 else None
+             ),
+-            json=jsonable_encoder({"batch": batch})
++            json=jsonable_encoder(_request)
+             if request_options is None
+             or request_options.get("additional_body_parameters") is None
+             else {
+-                **jsonable_encoder({"batch": batch}),
++                **jsonable_encoder(_request),
+                 **(
+                     jsonable_encoder(
+                         remove_none_from_dict(
+diff --git a/langfuse/api/resources/ingestion/types/base_event.py b/langfuse/api/resources/ingestion/types/base_event.py
+index 739c42e95..7d980703c 100644
+--- a/langfuse/api/resources/ingestion/types/base_event.py
++++ b/langfuse/api/resources/ingestion/types/base_event.py
+@@ -8,9 +8,20 @@
+ 
+ 
+ class BaseEvent(pydantic_v1.BaseModel):
+-    id: str
+-    timestamp: str
+-    metadata: typing.Any
++    id: str = pydantic_v1.Field()
++    """
++    UUID v4 that identifies the event
++    """
++
++    timestamp: str = pydantic_v1.Field()
++    """
++    Datetime (ISO 8601) of event creation in client. Should be as close to actual event creation in client as possible, this timestamp will be used for ordering of events in future release. Resolution: milliseconds (required), microseconds (optimal).
++    """
++
++    metadata: typing.Optional[typing.Any] = pydantic_v1.Field(default=None)
++    """
++    Optional. Metadata field used by the Langfuse SDKs for debugging.
++    """
+ 
+     def json(self, **kwargs: typing.Any) -> str:
+         kwargs_with_defaults: typing.Any = {
+diff --git a/langfuse/api/resources/ingestion/types/ingestion_event.py b/langfuse/api/resources/ingestion/types/ingestion_event.py
+index 23a43f2ae..850977f26 100644
+--- a/langfuse/api/resources/ingestion/types/ingestion_event.py
++++ b/langfuse/api/resources/ingestion/types/ingestion_event.py
+@@ -36,8 +36,8 @@ class Config:
+         populate_by_name = True
+ 
+ 
+-class IngestionEvent_EventCreate(CreateEventEvent):
+-    type: typing.Literal["event-create"] = "event-create"
++class IngestionEvent_SpanCreate(CreateSpanEvent):
++    type: typing.Literal["span-create"] = "span-create"
+ 
+     class Config:
+         frozen = True
+@@ -46,8 +46,8 @@ class Config:
+         populate_by_name = True
+ 
+ 
+-class IngestionEvent_GenerationCreate(CreateGenerationEvent):
+-    type: typing.Literal["generation-create"] = "generation-create"
++class IngestionEvent_SpanUpdate(UpdateSpanEvent):
++    type: typing.Literal["span-update"] = "span-update"
+ 
+     class Config:
+         frozen = True
+@@ -56,8 +56,8 @@ class Config:
+         populate_by_name = True
+ 
+ 
+-class IngestionEvent_GenerationUpdate(UpdateGenerationEvent):
+-    type: typing.Literal["generation-update"] = "generation-update"
++class IngestionEvent_GenerationCreate(CreateGenerationEvent):
++    type: typing.Literal["generation-create"] = "generation-create"
+ 
+     class Config:
+         frozen = True
+@@ -66,8 +66,8 @@ class Config:
+         populate_by_name = True
+ 
+ 
+-class IngestionEvent_SpanCreate(CreateSpanEvent):
+-    type: typing.Literal["span-create"] = "span-create"
++class IngestionEvent_GenerationUpdate(UpdateGenerationEvent):
++    type: typing.Literal["generation-update"] = "generation-update"
+ 
+     class Config:
+         frozen = True
+@@ -76,8 +76,8 @@ class Config:
+         populate_by_name = True
+ 
+ 
+-class IngestionEvent_SpanUpdate(UpdateSpanEvent):
+-    type: typing.Literal["span-update"] = "span-update"
++class IngestionEvent_EventCreate(CreateEventEvent):
++    type: typing.Literal["event-create"] = "event-create"
+ 
+     class Config:
+         frozen = True
+@@ -119,11 +119,11 @@ class Config:
+ IngestionEvent = typing.Union[
+     IngestionEvent_TraceCreate,
+     IngestionEvent_ScoreCreate,
+-    IngestionEvent_EventCreate,
+-    IngestionEvent_GenerationCreate,
+-    IngestionEvent_GenerationUpdate,
+     IngestionEvent_SpanCreate,
+     IngestionEvent_SpanUpdate,
++    IngestionEvent_GenerationCreate,
++    IngestionEvent_GenerationUpdate,
++    IngestionEvent_EventCreate,
+     IngestionEvent_SdkLog,
+     IngestionEvent_ObservationCreate,
+     IngestionEvent_ObservationUpdate,
+diff --git a/langfuse/api/resources/prompts/client.py b/langfuse/api/resources/prompts/client.py
+index d49edd618..1819b528d 100644
+--- a/langfuse/api/resources/prompts/client.py
++++ b/langfuse/api/resources/prompts/client.py
+@@ -147,9 +147,9 @@ def list(
+ 
+             - tag: typing.Optional[str].
+ 
+-            - page: typing.Optional[int].
++            - page: typing.Optional[int]. page number, starts at 1
+ 
+-            - limit: typing.Optional[int].
++            - limit: typing.Optional[int]. limit of items per page
+ 
+             - request_options: typing.Optional[RequestOptions]. Request-specific configuration.
+         ---
+@@ -465,9 +465,9 @@ async def list(
+ 
+             - tag: typing.Optional[str].
+ 
+-            - page: typing.Optional[int].
++            - page: typing.Optional[int]. page number, starts at 1
+ 
+-            - limit: typing.Optional[int].
++            - limit: typing.Optional[int]. limit of items per page
+ 
+             - request_options: typing.Optional[RequestOptions]. Request-specific configuration.
+         ---
+diff --git a/langfuse/api/resources/score_configs/__init__.py b/langfuse/api/resources/score_configs/__init__.py
+new file mode 100644
+index 000000000..7a6cb334c
+--- /dev/null
++++ b/langfuse/api/resources/score_configs/__init__.py
+@@ -0,0 +1,5 @@
++# This file was auto-generated by Fern from our API Definition.
++
++from .types import ScoreConfigs
++
++__all__ = ["ScoreConfigs"]
+diff --git a/langfuse/api/resources/score_configs/client.py b/langfuse/api/resources/score_configs/client.py
+new file mode 100644
+index 000000000..4bbf58553
+--- /dev/null
++++ b/langfuse/api/resources/score_configs/client.py
+@@ -0,0 +1,381 @@
++# This file was auto-generated by Fern from our API Definition.
++
++import typing
++import urllib.parse
++from json.decoder import JSONDecodeError
++
++from ...core.api_error import ApiError
++from ...core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
++from ...core.jsonable_encoder import jsonable_encoder
++from ...core.pydantic_utilities import pydantic_v1
++from ...core.remove_none_from_dict import remove_none_from_dict
++from ...core.request_options import RequestOptions
++from ..commons.errors.access_denied_error import AccessDeniedError
++from ..commons.errors.error import Error
++from ..commons.errors.method_not_allowed_error import MethodNotAllowedError
++from ..commons.errors.not_found_error import NotFoundError
++from ..commons.errors.unauthorized_error import UnauthorizedError
++from ..commons.types.score_config import ScoreConfig
++from .types.score_configs import ScoreConfigs
++
++
++class ScoreConfigsClient:
++    def __init__(self, *, client_wrapper: SyncClientWrapper):
++        self._client_wrapper = client_wrapper
++
++    def get(
++        self,
++        *,
++        page: typing.Optional[int] = None,
++        limit: typing.Optional[int] = None,
++        request_options: typing.Optional[RequestOptions] = None,
++    ) -> ScoreConfigs:
++        """
++        Get all score configs
++
++        Parameters:
++            - page: typing.Optional[int]. Page number, starts at 1.
++
++            - limit: typing.Optional[int]. Limit of items per page. If you encounter api issues due to too large page sizes, try to reduce the limit.
++
++            - request_options: typing.Optional[RequestOptions]. Request-specific configuration.
++        ---
++        from finto.client import FernLangfuse
++
++        client = FernLangfuse(
++            x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
++            x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
++            x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
++            username="YOUR_USERNAME",
++            password="YOUR_PASSWORD",
++            base_url="https://yourhost.com/path/to/api",
++        )
++        client.score_configs.get(
++            page=1,
++            limit=1,
++        )
++        """
++        _response = self._client_wrapper.httpx_client.request(
++            "GET",
++            urllib.parse.urljoin(
++                f"{self._client_wrapper.get_base_url()}/", "api/public/score-configs"
++            ),
++            params=jsonable_encoder(
++                remove_none_from_dict(
++                    {
++                        "page": page,
++                        "limit": limit,
++                        **(
++                            request_options.get("additional_query_parameters", {})
++                            if request_options is not None
++                            else {}
++                        ),
++                    }
++                )
++            ),
++            headers=jsonable_encoder(
++                remove_none_from_dict(
++                    {
++                        **self._client_wrapper.get_headers(),
++                        **(
++                            request_options.get("additional_headers", {})
++                            if request_options is not None
++                            else {}
++                        ),
++                    }
++                )
++            ),
++            timeout=request_options.get("timeout_in_seconds")
++            if request_options is not None
++            and request_options.get("timeout_in_seconds") is not None
++            else self._client_wrapper.get_timeout(),
++            retries=0,
++            max_retries=request_options.get("max_retries")
++            if request_options is not None
++            else 0,  # type: ignore
++        )
++        if 200 <= _response.status_code < 300:
++            return pydantic_v1.parse_obj_as(ScoreConfigs, _response.json())  # type: ignore
++        if _response.status_code == 400:
++            raise Error(pydantic_v1.parse_obj_as(typing.Any, _response.json()))  # type: ignore
++        if _response.status_code == 401:
++            raise UnauthorizedError(
++                pydantic_v1.parse_obj_as(typing.Any, _response.json())
++            )  # type: ignore
++        if _response.status_code == 403:
++            raise AccessDeniedError(
++                pydantic_v1.parse_obj_as(typing.Any, _response.json())
++            )  # type: ignore
++        if _response.status_code == 405:
++            raise MethodNotAllowedError(
++                pydantic_v1.parse_obj_as(typing.Any, _response.json())
++            )  # type: ignore
++        if _response.status_code == 404:
++            raise NotFoundError(pydantic_v1.parse_obj_as(typing.Any, _response.json()))  # type: ignore
++        try:
++            _response_json = _response.json()
++        except JSONDecodeError:
++            raise ApiError(status_code=_response.status_code, body=_response.text)
++        raise ApiError(status_code=_response.status_code, body=_response_json)
++
++    def get_by_id(
++        self, config_id: str, *, request_options: typing.Optional[RequestOptions] = None
++    ) -> ScoreConfig:
++        """
++        Get a score config
++
++        Parameters:
++            - config_id: str. The unique langfuse identifier of a score config
++
++            - request_options: typing.Optional[RequestOptions]. Request-specific configuration.
++        ---
++        from finto.client import FernLangfuse
++
++        client = FernLangfuse(
++            x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
++            x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
++            x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
++            username="YOUR_USERNAME",
++            password="YOUR_PASSWORD",
++            base_url="https://yourhost.com/path/to/api",
++        )
++        client.score_configs.get_by_id(
++            config_id="string",
++        )
++        """
++        _response = self._client_wrapper.httpx_client.request(
++            "GET",
++            urllib.parse.urljoin(
++                f"{self._client_wrapper.get_base_url()}/",
++                f"api/public/score-configs/{jsonable_encoder(config_id)}",
++            ),
++            params=jsonable_encoder(
++                request_options.get("additional_query_parameters")
++                if request_options is not None
++                else None
++            ),
++            headers=jsonable_encoder(
++                remove_none_from_dict(
++                    {
++                        **self._client_wrapper.get_headers(),
++                        **(
++                            request_options.get("additional_headers", {})
++                            if request_options is not None
++                            else {}
++                        ),
++                    }
++                )
++            ),
++            timeout=request_options.get("timeout_in_seconds")
++            if request_options is not None
++            and request_options.get("timeout_in_seconds") is not None
++            else self._client_wrapper.get_timeout(),
++            retries=0,
++            max_retries=request_options.get("max_retries")
++            if request_options is not None
++            else 0,  # type: ignore
++        )
++        if 200 <= _response.status_code < 300:
++            return pydantic_v1.parse_obj_as(ScoreConfig, _response.json())  # type: ignore
++        if _response.status_code == 400:
++            raise Error(pydantic_v1.parse_obj_as(typing.Any, _response.json()))  # type: ignore
++        if _response.status_code == 401:
++            raise UnauthorizedError(
++                pydantic_v1.parse_obj_as(typing.Any, _response.json())
++            )  # type: ignore
++        if _response.status_code == 403:
++            raise AccessDeniedError(
++                pydantic_v1.parse_obj_as(typing.Any, _response.json())
++            )  # type: ignore
++        if _response.status_code == 405:
++            raise MethodNotAllowedError(
++                pydantic_v1.parse_obj_as(typing.Any, _response.json())
++            )  # type: ignore
++        if _response.status_code == 404:
++            raise NotFoundError(pydantic_v1.parse_obj_as(typing.Any, _response.json()))  # type: ignore
++        try:
++            _response_json = _response.json()
++        except JSONDecodeError:
++            raise ApiError(status_code=_response.status_code, body=_response.text)
++        raise ApiError(status_code=_response.status_code, body=_response_json)
++
++
++class AsyncScoreConfigsClient:
++    def __init__(self, *, client_wrapper: AsyncClientWrapper):
++        self._client_wrapper = client_wrapper
++
++    async def get(
++        self,
++        *,
++        page: typing.Optional[int] = None,
++        limit: typing.Optional[int] = None,
++        request_options: typing.Optional[RequestOptions] = None,
++    ) -> ScoreConfigs:
++        """
++        Get all score configs
++
++        Parameters:
++            - page: typing.Optional[int]. Page number, starts at 1.
++
++            - limit: typing.Optional[int]. Limit of items per page. If you encounter api issues due to too large page sizes, try to reduce the limit.
++
++            - request_options: typing.Optional[RequestOptions]. Request-specific configuration.
++        ---
++        from finto.client import AsyncFernLangfuse
++
++        client = AsyncFernLangfuse(
++            x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
++            x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
++            x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
++            username="YOUR_USERNAME",
++            password="YOUR_PASSWORD",
++            base_url="https://yourhost.com/path/to/api",
++        )
++        await client.score_configs.get(
++            page=1,
++            limit=1,
++        )
++        """
++        _response = await self._client_wrapper.httpx_client.request(
++            "GET",
++            urllib.parse.urljoin(
++                f"{self._client_wrapper.get_base_url()}/", "api/public/score-configs"
++            ),
++            params=jsonable_encoder(
++                remove_none_from_dict(
++                    {
++                        "page": page,
++                        "limit": limit,
++                        **(
++                            request_options.get("additional_query_parameters", {})
++                            if request_options is not None
++                            else {}
++                        ),
++                    }
++                )
++            ),
++            headers=jsonable_encoder(
++                remove_none_from_dict(
++                    {
++                        **self._client_wrapper.get_headers(),
++                        **(
++                            request_options.get("additional_headers", {})
++                            if request_options is not None
++                            else {}
++                        ),
++                    }
++                )
++            ),
++            timeout=request_options.get("timeout_in_seconds")
++            if request_options is not None
++            and request_options.get("timeout_in_seconds") is not None
++            else self._client_wrapper.get_timeout(),
++            retries=0,
++            max_retries=request_options.get("max_retries")
++            if request_options is not None
++            else 0,  # type: ignore
++        )
++        if 200 <= _response.status_code < 300:
++            return pydantic_v1.parse_obj_as(ScoreConfigs, _response.json())  # type: ignore
++        if _response.status_code == 400:
++            raise Error(pydantic_v1.parse_obj_as(typing.Any, _response.json()))  # type: ignore
++        if _response.status_code == 401:
++            raise UnauthorizedError(
++                pydantic_v1.parse_obj_as(typing.Any, _response.json())
++            )  # type: ignore
++        if _response.status_code == 403:
++            raise AccessDeniedError(
++                pydantic_v1.parse_obj_as(typing.Any, _response.json())
++            )  # type: ignore
++        if _response.status_code == 405:
++            raise MethodNotAllowedError(
++                pydantic_v1.parse_obj_as(typing.Any, _response.json())
++            )  # type: ignore
++        if _response.status_code == 404:
++            raise NotFoundError(pydantic_v1.parse_obj_as(typing.Any, _response.json()))  # type: ignore
++        try:
++            _response_json = _response.json()
++        except JSONDecodeError:
++            raise ApiError(status_code=_response.status_code, body=_response.text)
++        raise ApiError(status_code=_response.status_code, body=_response_json)
++
++    async def get_by_id(
++        self, config_id: str, *, request_options: typing.Optional[RequestOptions] = None
++    ) -> ScoreConfig:
++        """
++        Get a score config
++
++        Parameters:
++            - config_id: str. The unique langfuse identifier of a score config
++
++            - request_options: typing.Optional[RequestOptions]. Request-specific configuration.
++        ---
++        from finto.client import AsyncFernLangfuse
++
++        client = AsyncFernLangfuse(
++            x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
++            x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
++            x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
++            username="YOUR_USERNAME",
++            password="YOUR_PASSWORD",
++            base_url="https://yourhost.com/path/to/api",
++        )
++        await client.score_configs.get_by_id(
++            config_id="string",
++        )
++        """
++        _response = await self._client_wrapper.httpx_client.request(
++            "GET",
++            urllib.parse.urljoin(
++                f"{self._client_wrapper.get_base_url()}/",
++                f"api/public/score-configs/{jsonable_encoder(config_id)}",
++            ),
++            params=jsonable_encoder(
++                request_options.get("additional_query_parameters")
++                if request_options is not None
++                else None
++            ),
++            headers=jsonable_encoder(
++                remove_none_from_dict(
++                    {
++                        **self._client_wrapper.get_headers(),
++                        **(
++                            request_options.get("additional_headers", {})
++                            if request_options is not None
++                            else {}
++                        ),
++                    }
++                )
++            ),
++            timeout=request_options.get("timeout_in_seconds")
++            if request_options is not None
++            and request_options.get("timeout_in_seconds") is not None
++            else self._client_wrapper.get_timeout(),
++            retries=0,
++            max_retries=request_options.get("max_retries")
++            if request_options is not None
++            else 0,  # type: ignore
++        )
++        if 200 <= _response.status_code < 300:
++            return pydantic_v1.parse_obj_as(ScoreConfig, _response.json())  # type: ignore
++        if _response.status_code == 400:
++            raise Error(pydantic_v1.parse_obj_as(typing.Any, _response.json()))  # type: ignore
++        if _response.status_code == 401:
++            raise UnauthorizedError(
++                pydantic_v1.parse_obj_as(typing.Any, _response.json())
++            )  # type: ignore
++        if _response.status_code == 403:
++            raise AccessDeniedError(
++                pydantic_v1.parse_obj_as(typing.Any, _response.json())
++            )  # type: ignore
++        if _response.status_code == 405:
++            raise MethodNotAllowedError(
++                pydantic_v1.parse_obj_as(typing.Any, _response.json())
++            )  # type: ignore
++        if _response.status_code == 404:
++            raise NotFoundError(pydantic_v1.parse_obj_as(typing.Any, _response.json()))  # type: ignore
++        try:
++            _response_json = _response.json()
++        except JSONDecodeError:
++            raise ApiError(status_code=_response.status_code, body=_response.text)
++        raise ApiError(status_code=_response.status_code, body=_response_json)
+diff --git a/langfuse/api/resources/score_configs/types/__init__.py b/langfuse/api/resources/score_configs/types/__init__.py
+new file mode 100644
+index 000000000..761962859
+--- /dev/null
++++ b/langfuse/api/resources/score_configs/types/__init__.py
+@@ -0,0 +1,5 @@
++# This file was auto-generated by Fern from our API Definition.
++
++from .score_configs import ScoreConfigs
++
++__all__ = ["ScoreConfigs"]
+diff --git a/langfuse/api/resources/score_configs/types/score_configs.py b/langfuse/api/resources/score_configs/types/score_configs.py
+new file mode 100644
+index 000000000..f1876c24c
+--- /dev/null
++++ b/langfuse/api/resources/score_configs/types/score_configs.py
+@@ -0,0 +1,36 @@
++# This file was auto-generated by Fern from our API Definition.
++
++import datetime as dt
++import typing
++
++from ....core.datetime_utils import serialize_datetime
++from ....core.pydantic_utilities import pydantic_v1
++from ...commons.types.score_config import ScoreConfig
++from ...utils.resources.pagination.types.meta_response import MetaResponse
++
++
++class ScoreConfigs(pydantic_v1.BaseModel):
++    data: typing.List[ScoreConfig]
++    meta: MetaResponse
++
++    def json(self, **kwargs: typing.Any) -> str:
++        kwargs_with_defaults: typing.Any = {
++            "by_alias": True,
++            "exclude_unset": True,
++            **kwargs,
++        }
++        return super().json(**kwargs_with_defaults)
++
++    def dict(self, **kwargs: typing.Any) -> typing.Dict[str, typing.Any]:
++        kwargs_with_defaults: typing.Any = {
++            "by_alias": True,
++            "exclude_unset": True,
++            **kwargs,
++        }
++        return super().dict(**kwargs_with_defaults)
++
++    class Config:
++        frozen = True
++        smart_union = True
++        extra = pydantic_v1.Extra.allow
++        json_encoders = {dt.datetime: serialize_datetime}
+diff --git a/langfuse/client.py b/langfuse/client.py
+index 2b57cca95..4b52b1c47 100644
+--- a/langfuse/client.py
++++ b/langfuse/client.py
+@@ -12,6 +12,12 @@
+ import urllib.parse
+ 
+ 
++from langfuse.api.resources.commons.types.dataset_run_with_items import (
++    DatasetRunWithItems,
++)
++from langfuse.api.resources.datasets.types.paginated_dataset_runs import (
++    PaginatedDatasetRuns,
++)
+ from langfuse.api.resources.ingestion.types.create_event_body import CreateEventBody
+ from langfuse.api.resources.ingestion.types.create_generation_body import (
+     CreateGenerationBody,
+@@ -38,7 +44,6 @@
+     CreateDatasetRunItemRequest,
+     ChatMessageDict,
+     DatasetItem,
+-    DatasetRun,
+     DatasetStatus,
+     ModelUsage,
+     PromptClient,
+@@ -255,11 +260,14 @@ def get_trace_url(self) -> str:
+         """Get the URL of the current trace to view it in the Langfuse UI."""
+         return f"{self.base_url}/trace/{self.trace_id}"
+ 
+-    def get_dataset(self, name: str) -> "DatasetClient":
++    def get_dataset(
++        self, name: str, *, fetch_items_page_size: Optional[int] = 50
++    ) -> "DatasetClient":
+         """Fetch a dataset by its name.
+ 
+         Args:
+             name (str): The name of the dataset to fetch.
++            fetch_items_page_size (Optional[int]): All items of the dataset will be fetched in chunks of this size. Defaults to 50.
+ 
+         Returns:
+             DatasetClient: The dataset with the given name.
+@@ -268,7 +276,18 @@ def get_dataset(self, name: str) -> "DatasetClient":
+             self.log.debug(f"Getting datasets {name}")
+             dataset = self.client.datasets.get(dataset_name=name)
+ 
+-            items = [DatasetItemClient(i, langfuse=self) for i in dataset.items]
++            dataset_items = []
++            page = 1
++            while True:
++                new_items = self.client.dataset_items.list(
++                    dataset_name=name, page=page, limit=fetch_items_page_size
++                )
++                dataset_items.extend(new_items.data)
++                if new_items.meta.total_pages <= page:
++                    break
++                page += 1
++
++            items = [DatasetItemClient(i, langfuse=self) for i in dataset_items]
+ 
+             return DatasetClient(dataset, items=items)
+         except Exception as e:
+@@ -309,11 +328,37 @@ def auth_check(self) -> bool:
+             self.log.exception(e)
+             raise e
+ 
++    def get_dataset_runs(
++        self,
++        dataset_name: str,
++        *,
++        page: typing.Optional[int] = None,
++        limit: typing.Optional[int] = None,
++    ) -> PaginatedDatasetRuns:
++        """Get all dataset runs.
++
++        Args:
++            dataset_name (str): Name of the dataset.
++            page (Optional[int]): Page number of the dataset runs to return, starts at 1. Defaults to None.
++            limit (Optional[int]): Maximum number of dataset runs to return. Defaults to 50.
++
++        Returns:
++            PaginatedDatasetRuns: The dataset runs.
++        """
++        try:
++            self.log.debug("Getting dataset runs")
++            return self.client.datasets.get_runs(
++                dataset_name=dataset_name, page=page, limit=limit
++            )
++        except Exception as e:
++            self.log.exception(e)
++            raise e
++
+     def get_dataset_run(
+         self,
+         dataset_name: str,
+         dataset_run_name: str,
+-    ) -> DatasetRun:
++    ) -> DatasetRunWithItems:
+         """Get a dataset run.
+ 
+         Args:
+@@ -321,13 +366,13 @@ def get_dataset_run(
+             dataset_run_name: Name of the dataset run.
+ 
+         Returns:
+-            DatasetRun: The dataset run.
++            DatasetRunWithItems: The dataset run.
+         """
+         try:
+             self.log.debug(
+                 f"Getting dataset runs for dataset {dataset_name} and run {dataset_run_name}"
+             )
+-            return self.client.datasets.get_runs(
++            return self.client.datasets.get_run(
+                 dataset_name=dataset_name, run_name=dataset_run_name
+             )
+         except Exception as e:
+@@ -2792,7 +2837,7 @@ class DatasetClient:
+         created_at (datetime): Timestamp of dataset creation.
+         updated_at (datetime): Timestamp of the last update to the dataset.
+         items (List[DatasetItemClient]): List of dataset items associated with the dataset.
+-        runs (List[str]): List of dataset runs associated with the dataset.
++        runs (List[str]): List of dataset runs associated with the dataset. Deprecated.
+ 
+     Example:
+         Print the input of each dataset item in a dataset.
+@@ -2817,7 +2862,7 @@ class DatasetClient:
+     created_at: dt.datetime
+     updated_at: dt.datetime
+     items: typing.List[DatasetItemClient]
+-    runs: typing.List[str]
++    runs: typing.List[str] = []  # deprecated
+ 
+     def __init__(self, dataset: Dataset, items: typing.List[DatasetItemClient]):
+         """Initialize the DatasetClient."""
+@@ -2830,4 +2875,3 @@ def __init__(self, dataset: Dataset, items: typing.List[DatasetItemClient]):
+         self.created_at = dataset.created_at
+         self.updated_at = dataset.updated_at
+         self.items = items
+-        self.runs = dataset.runs
+diff --git a/tests/test_datasets.py b/tests/test_datasets.py
+index 8b0a46e43..9265167f3 100644
+--- a/tests/test_datasets.py
++++ b/tests/test_datasets.py
+@@ -75,6 +75,25 @@ def test_create_dataset_item():
+     assert dataset.items[0].dataset_name == name
+ 
+ 
++def test_get_all_items():
++    langfuse = Langfuse(debug=False)
++    name = create_uuid()
++    langfuse.create_dataset(name=name)
++
++    input = {"input": "Hello World"}
++    for _ in range(99):
++        langfuse.create_dataset_item(dataset_name=name, input=input)
++
++    dataset = langfuse.get_dataset(name)
++    assert len(dataset.items) == 99
++
++    dataset_2 = langfuse.get_dataset(name, fetch_items_page_size=9)
++    assert len(dataset_2.items) == 99
++
++    dataset_3 = langfuse.get_dataset(name, fetch_items_page_size=2)
++    assert len(dataset_3.items) == 99
++
++
+ def test_upsert_and_get_dataset_item():
+     langfuse = Langfuse(debug=False)
+     name = create_uuid()
+@@ -171,6 +190,58 @@ def test_linking_trace_and_run_metadata_and_description():
+     assert run.dataset_run_items[0].observation_id is None
+ 
+ 
++def test_get_runs():
++    langfuse = Langfuse(debug=False)
++
++    dataset_name = create_uuid()
++    langfuse.create_dataset(name=dataset_name)
++
++    input = json.dumps({"input": "Hello World"})
++    langfuse.create_dataset_item(dataset_name=dataset_name, input=input)
++
++    dataset = langfuse.get_dataset(dataset_name)
++    assert len(dataset.items) == 1
++    assert dataset.items[0].input == input
++
++    run_name_1 = create_uuid()
++    trace_id_1 = create_uuid()
++
++    for item in dataset.items:
++        trace = langfuse.trace(id=trace_id_1)
++
++        item.link(
++            trace,
++            run_name_1,
++            run_metadata={"key": "value"},
++            run_description="This is a test run",
++        )
++
++    run_name_2 = create_uuid()
++    trace_id_2 = create_uuid()
++
++    for item in dataset.items:
++        trace = langfuse.trace(id=trace_id_2)
++
++        item.link(
++            trace,
++            run_name_2,
++            run_metadata={"key": "value"},
++            run_description="This is a test run",
++        )
++
++    runs = langfuse.get_dataset_runs(dataset_name)
++
++    assert len(runs.data) == 2
++    assert runs.data[0].name == run_name_2
++    assert runs.data[0].metadata == {"key": "value"}
++    assert runs.data[0].description == "This is a test run"
++    assert runs.data[1].name == run_name_1
++    assert runs.meta.total_items == 2
++    assert runs.meta.total_pages == 1
++    assert runs.meta.page == 1
++    assert runs.meta.limit == 50
++
++
+ def test_linking_via_id_observation_arg_legacy():
+     langfuse = Langfuse(debug=False)
+ 
+diff --git a/tests/test_prompt.py b/tests/test_prompt.py
+index 9a5dd44b1..167b42d91 100644
+--- a/tests/test_prompt.py
++++ b/tests/test_prompt.py
+@@ -212,9 +212,10 @@ def test_create_prompt_with_null_config():
+ 
+     assert prompt.config == {}
+ 
++
+ def test_create_prompt_with_tags():
+     langfuse = Langfuse(debug=False)
+-    prompt_name=create_uuid()
++    prompt_name = create_uuid()
+ 
+     langfuse.create_prompt(
+         name=prompt_name,
+@@ -229,7 +230,7 @@ def test_create_prompt_with_tags():
+ 
+ def test_create_prompt_with_empty_tags():
+     langfuse = Langfuse(debug=False)
+-    prompt_name=create_uuid()
++    prompt_name = create_uuid()
+ 
+     langfuse.create_prompt(
+         name=prompt_name,
+@@ -244,7 +245,7 @@ def test_create_prompt_with_empty_tags():
+ 
+ def test_create_prompt_with_previous_tags():
+     langfuse = Langfuse(debug=False)
+-    prompt_name=create_uuid()
++    prompt_name = create_uuid()
+ 
+     langfuse.create_prompt(
+         name=prompt_name,
+@@ -277,7 +278,7 @@ def test_create_prompt_with_previous_tags():
+ 
+ def test_remove_prompt_tags():
+     langfuse = Langfuse(debug=False)
+-    prompt_name=create_uuid()
++    prompt_name = create_uuid()
+ 
+     langfuse.create_prompt(
+         name=prompt_name,
+@@ -300,7 +301,7 @@ def test_remove_prompt_tags():
+ 
+ def test_update_prompt_tags():
+     langfuse = Langfuse(debug=False)
+-    prompt_name=create_uuid()
++    prompt_name = create_uuid()
+ 
+     langfuse.create_prompt(
+         name=prompt_name,
+@@ -550,7 +551,7 @@ def test_get_valid_cached_production_chat_prompt(langfuse):
+         labels=["test"],
+         type="chat",
+         config={},
+-        tags=[]
++        tags=[],
+     )
+     prompt_client = ChatPromptClient(prompt)
+ 
+@@ -645,7 +646,7 @@ def test_get_fresh_prompt_when_expired_cache_default_ttl(mock_time, langfuse):
+         labels=[],
+         type="text",
+         config={},
+-        tags=[]
++        tags=[],
+     )
+     prompt_client = TextPromptClient(prompt)
+ 
+@@ -684,7 +685,7 @@ def test_get_expired_prompt_when_failing_fetch(mock_time, langfuse):
+         labels=[],
+         type="text",
+         config={},
+-        tags=[]
++        tags=[],
+     )
+     prompt_client = TextPromptClient(prompt)
+ 
+@@ -715,7 +716,7 @@ def test_get_fresh_prompt_when_version_changes(langfuse):
+         labels=[],
+         type="text",
+         config={},
+-        tags=[]
++        tags=[],
+     )
+     prompt_client = TextPromptClient(prompt)
+ 
+@@ -733,7 +734,7 @@ def test_get_fresh_prompt_when_version_changes(langfuse):
+         prompt="Make me laugh",
+         type="text",
+         config={},
+-        tags=[]
++        tags=[],
+     )
+     version_changed_prompt_client = TextPromptClient(version_changed_prompt)
+     mock_server_call.return_value = version_changed_prompt

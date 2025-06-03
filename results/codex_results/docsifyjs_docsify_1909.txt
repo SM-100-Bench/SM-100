@@ -1,0 +1,29 @@
+{
+"issues": [
+{
+"file": "src/core/event/scroll.js",
+"line": 134,
+"description": "scrollActiveSidebar registers and unregisters the scroll listener using different function instances. The call to dom.off cannot remove the previously added listener, so multiple handlers accumulate over time."
+},
+{
+"file": "src/core/fetch/index.js",
+"line": 7,
+"description": "loadNested() stops recursion without invoking the callback when no parent path remains. When sidebar files are missing, the caller’s callback never executes, leaving the fetch logic incomplete."
+},
+{
+"file": "src/core/render/compiler/headline.js",
+"line": 5,
+"description": "headingCompiler assigns its function to renderer.code instead of renderer.heading, so using this compiler would overwrite the code renderer rather than the heading renderer."
+},
+{
+"file": "src/core/fetch/index.js",
+"line": 217,
+"description": "_fetchFallbackPage builds a RegExp with an unescaped path segment. Special characters in the locale name may corrupt the regular expression or cause unexpected behavior."
+},
+{
+"file": "src/core/render/index.js",
+"line": 16,
+"description": "executeScript() runs inline scripts from loaded markdown using new Function(). Unless executeScript is explicitly disabled, this allows arbitrary code execution when untrusted content is rendered."
+}
+]
+}

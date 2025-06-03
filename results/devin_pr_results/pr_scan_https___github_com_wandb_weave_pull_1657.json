@@ -1,0 +1,20 @@
+{
+  "session_id": "devin-eeb982a7ccfc479d89002a86dae56a23",
+  "issues": [
+    {
+      "file": "weave/weave_server.py",
+      "line": 206,
+      "description": "Security vulnerability: The path validation doesn't resolve symlinks before checking if the path is within the allowed directory. An attacker could use symlinks to access files outside the allowed directory."
+    },
+    {
+      "file": "weave/weave_server.py",
+      "line": 206,
+      "description": "Path traversal vulnerability: The check 'local_artifacts_path not in list(abspath.parents)' doesn't properly handle path traversal with '../' sequences. The test shows that paths with '..' appear to be within the allowed directory when checking with parents, but the resolved path points outside."
+    },
+    {
+      "file": "weave/weave_server.py",
+      "line": 202,
+      "description": "Incorrect path handling: The code uses '/' / pathlib.Path(path) to create an absolute path, but this doesn't correctly handle the case where path contains symlinks or directory traversal sequences."
+    }
+  ]
+}

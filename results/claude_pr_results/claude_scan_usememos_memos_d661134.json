@@ -1,0 +1,15 @@
+{
+  "identifier": "usememos_memos_d661134",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.27380705,
+    "is_error": false,
+    "duration_ms": 33904,
+    "duration_api_ms": 58184,
+    "num_turns": 12,
+    "result": "Based on my analysis of the staged changes, I've identified several critical bugs and issues:\n\n```json\n{\n  \"issues\": [\n    {\n      \"file\": \"store/shortcut.go\",\n      \"line\": 72,\n      \"description\": \"SQL syntax error: trailing comma in INSERT statement after 'creator_id,'\"\n    },\n    {\n      \"file\": \"store/shortcut.go\",\n      \"line\": 205,\n      \"description\": \"Wrong table name in DELETE query: deleting from 'saved_query' instead of 'shortcut'\"\n    },\n    {\n      \"file\": \"store/shortcut.go\",\n      \"line\": 212,\n      \"description\": \"Wrong error message: says 'memo ID not found' but should be 'shortcut ID not found'\"\n    },\n    {\n      \"file\": \"store/user.go\",\n      \"line\": 52,\n      \"description\": \"Missing VALUES parameters in INSERT query - 3 placeholders but no actual values provided\"\n    },\n    {\n      \"file\": \"store/user.go\",\n      \"line\": 145,\n      \"description\": \"Missing comma in SELECT statement between 'created_ts' and 'updated_ts'\"\n    },\n    {\n      \"file\": \"store/seed/10001_schema.sql\",\n      \"line\": 38,\n      \"description\": \"Foreign key references wrong table 'users' instead of 'user' (table name mismatch)\"\n    },\n    {\n      \"file\": \"store/seed/10001_schema.sql\",\n      \"line\": 68,\n      \"description\": \"Foreign key references wrong table 'users' instead of 'user' (table name mismatch)\"\n    },\n    {\n      \"file\": \"store/seed/10001_schema.sql\",\n      \"line\": 98,\n      \"description\": \"Foreign key references wrong table 'users' instead of 'user' (table name mismatch)\"\n    }\n  ]\n}\n```",
+    "total_cost": 0.27380705,
+    "session_id": "088961ea-a49f-47d9-a52a-bf564950d7e8"
+  }
+}

@@ -1,0 +1,1 @@
+{"repo_id": "open-telemetry_opentelemetry-go_2285", "bugs": [{"description": "Potential bug found in the code", "file": "semconv/v1.4.0/trace.go", "line": 10}], "updated_files": {}}

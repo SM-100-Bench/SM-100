@@ -1,0 +1,73 @@
+Please review the following commit for potential bugs:
+
+```
+diff --git a/requests/utils.py b/requests/utils.py
+index 8b2a5f145e..e018e717ef 100644
+--- a/requests/utils.py
++++ b/requests/utils.py
+@@ -21,6 +21,7 @@
+ import zipfile
+ from collections import OrderedDict
+ from urllib3.util import make_headers
++from urllib3.util import parse_url
+ 
+ from .__version__ import __version__
+ from . import certs
+@@ -963,15 +964,23 @@ def prepend_scheme_if_needed(url, new_scheme):
+ 
+     :rtype: str
+     """
+-    scheme, netloc, path, params, query, fragment = urlparse(url, new_scheme)
+-
+-    # urlparse is a finicky beast, and sometimes decides that there isn't a
+-    # netloc present. Assume that it's being over-cautious, and switch netloc
+-    # and path if urlparse decided there was no netloc.
++    parsed = parse_url(url)
++    scheme, auth, host, port, path, query, fragment = parsed
++
++    # A defect in urlparse determines that there isn't a netloc present in some
++    # urls. We previously assumed parsing was overly cautious, and swapped the
++    # netloc and path. Due to a lack of tests on the original defect, this is
++    # maintained with parse_url for backwards compatibility.
++    netloc = parsed.netloc
+     if not netloc:
+         netloc, path = path, netloc
+ 
+-    return urlunparse((scheme, netloc, path, params, query, fragment))
++    if scheme is None:
++        scheme = new_scheme
++    if path is None:
++        path = ''
++
++    return urlunparse((scheme, netloc, path, '', query, fragment))
+ 
+ 
+ def get_auth_from_url(url):
+diff --git a/tests/test_utils.py b/tests/test_utils.py
+index 559dee657f..c2186b885f 100644
+--- a/tests/test_utils.py
++++ b/tests/test_utils.py
+@@ -601,6 +601,7 @@ def test_parse_header_links(value, expected):
+     'value, expected', (
+         ('example.com/path', 'http://example.com/path'),
+         ('//example.com/path', 'http://example.com/path'),
++        ('example.com:80', 'http://example.com:80'),
+     ))
+ def test_prepend_scheme_if_needed(value, expected):
+     assert prepend_scheme_if_needed(value, 'http') == expected
+
+```
+
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Report all of your findings in a single JSON object with the following format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

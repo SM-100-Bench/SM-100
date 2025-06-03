@@ -1,0 +1,18 @@
+Please review the code in the evilsocket_opensnitch_5828ba861ce6aa0a0523d52df0b797128b830657 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Daemon Rules Engine subsystem (consisting of 'daemon/data/rules/000-allow-localhost.json', 'daemon/rule/loader.go', 'daemon/rule/operator.go', 'daemon/rule/operator_lists.go', 'daemon/rule/rule.go', 'daemon/rule/testdata/000-allow-chrome.json', 'daemon/rule/testdata/001-deny-chrome.json', 'daemon/rule/testdata/invalid-regexp-list.json', 'daemon/rule/testdata/invalid-regexp.json', 'daemon/rule/testdata/lists/domains/domainlists.txt', 'daemon/rule/testdata/lists/ips/ips.txt', 'daemon/rule/testdata/lists/nets/nets.txt', 'daemon/rule/testdata/lists/regexp/domainsregexp.txt', 'daemon/rule/testdata/live_reload/test-live-reload-delete.json', 'daemon/rule/testdata/live_reload/test-live-reload-remove.json', 'daemon/rule/testdata/rule-disabled-operator-list-expanded.json', 'daemon/rule/testdata/rule-disabled-operator-list.json', 'daemon/rule/testdata/rule-operator-list-data-empty.json', 'daemon/rule/testdata/rule-operator-list.json')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

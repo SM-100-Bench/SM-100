@@ -1,0 +1,24 @@
+{
+"issues": [
+{
+"file": "zstd/snappy.go",
+"line": 355,
+"description": "COPY1 tag offset calculation lacks parentheses, so the bitmask is applied after the shift. This causes the high bits to be discarded, resulting in an incorrect offset."
+},
+{
+"file": "internal/snapref/decode_other.go",
+"line": 64,
+"description": "COPY1 tag offset calculation uses uint32(src[s-2])&0xe0<<3 without parentheses. Due to operator precedence the mask is applied after shifting, giving a wrong offset."
+},
+{
+"file": "zstd/snappy.go",
+"line": 419,
+"description": "Checksum computation is missing parentheses. c>>15 | c<<17 + 0xa282ead8 adds before OR’ing, producing incorrect CRC values."
+},
+{
+"file": "zstd/blockenc.go",
+"line": 573,
+"description": "TODO comment notes possible bug when encoding number of sequences; this logic may produce invalid sequence headers for counts near 0x7f00."
+}
+]
+}

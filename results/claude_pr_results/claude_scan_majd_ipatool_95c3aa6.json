@@ -1,0 +1,15 @@
+{
+  "identifier": "majd_ipatool_95c3aa6",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.26722195,
+    "is_error": false,
+    "duration_ms": 33819,
+    "duration_api_ms": 54910,
+    "num_turns": 13,
+    "result": "Based on my review of the git staged changes, I've identified several potential bugs and issues:\n\n```json\n{\n  \"issues\": [\n    {\n      \"file\": \"cmd/common.go\",\n      \"line\": 131,\n      \"description\": \"util.Must call with mismatched parameters - first argument is string literal, function expects T type matching second parameter's return type\"\n    },\n    {\n      \"file\": \"cmd/auth.go\", \n      \"line\": 57,\n      \"description\": \"Type assertion without safety check could panic if context value is not bool or is nil\"\n    },\n    {\n      \"file\": \"cmd/common.go\",\n      \"line\": 114,\n      \"description\": \"Type assertion without safety check could panic if context value is not bool or is nil\"\n    },\n    {\n      \"file\": \"cmd/common.go\",\n      \"line\": 78,\n      \"description\": \"Potential panic from string slice operation if ' unlock ' pattern is not found in string\"\n    },\n    {\n      \"file\": \"cmd/auth.go\",\n      \"line\": 33,\n      \"description\": \"Password logging in verbose mode exposes sensitive credentials in logs\"\n    }\n  ]\n}\n```",
+    "total_cost": 0.26722195,
+    "session_id": "d9731ae9-5e8c-4f3d-bc30-2cfafae6eae6"
+  }
+}

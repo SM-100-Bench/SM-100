@@ -1,0 +1,40 @@
+{
+  "session_id": "devin-2d2f93d8662d4df2906f001b177dae74",
+  "issues": [
+    {
+      "file": "scrapy/trunk/scrapy/http/response/text.py",
+      "line": 32,
+      "description": "Potential TypeError when body is None - set_body() tries to encode None with self._encoding which will fail"
+    },
+    {
+      "file": "scrapy/trunk/scrapy/http/response/text.py",
+      "line": 60,
+      "description": "Race condition in body_as_unicode() - possible_encodings tuple may contain None values which could cause UnicodeDammit to fail unpredictably"
+    },
+    {
+      "file": "scrapy/trunk/scrapy/http/response/html.py",
+      "line": 32,
+      "description": "Potential AttributeError in _body_declared_encoding() - if match is None, accessing group() will fail"
+    },
+    {
+      "file": "scrapy/trunk/scrapy/http/response/xml.py",
+      "line": 28,
+      "description": "Potential AttributeError in _body_declared_encoding() - if match is None, accessing group() will fail"
+    },
+    {
+      "file": "scrapy/trunk/scrapy/core/downloader/responsetypes.py",
+      "line": 42,
+      "description": "Case sensitivity bug in from_headers() - uses 'Content-type' instead of 'Content-Type' which could lead to incorrect response type selection"
+    },
+    {
+      "file": "scrapy/trunk/scrapy/utils/response.py",
+      "line": 12,
+      "description": "Potential error in body_or_str() - assumes all Response objects have body_as_unicode() method which may not be true for custom Response subclasses"
+    },
+    {
+      "file": "scrapy/trunk/scrapy/xpath/extension.py",
+      "line": 12,
+      "description": "Compatibility issue - getlibxml2doc method is added only to the base Response class but not to subclasses, which could cause problems when XPath selectors are used with different response types"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "url": "https://github.com/prevwong/craft.js/pull/131",
+  "identifier": "prevwong_craft.js_a3666c0",
+  "code_blocks": [
+    "json\nApply\n[\n\u00a0\u00a0{\n\u00a0\u00a0\u00a0\u00a0\"file\":\u00a0\"packages/core/src/utils/serializeNode.tsx\",\n\u00a0\u00a0\u00a0\u00a0\"line\":\u00a019,\n\u00a0\u00a0\u00a0\u00a0\"description\":\u00a0\"Early\u00a0return\u00a0on\u00a0falsy\u00a0props\u00a0could\u00a0lead\u00a0to\u00a0data\u00a0loss.\u00a0The\u00a0code\u00a0now\u00a0returns\u00a0early\u00a0if\u00a0a\u00a0prop\u00a0is\u00a0falsy\u00a0(null,\u00a0undefined,\u00a00,\u00a0false,\u00a0empty\u00a0string),\u00a0which\u00a0might\u00a0unintentionally\u00a0drop\u00a0valid\u00a0props\u00a0that\u00a0are\u00a0meant\u00a0to\u00a0be\u00a0falsy\u00a0values.\"\n\u00a0\u00a0}\n]"
+  ],
+  "timestamp": "2025-05-26 17:29:59"
+}

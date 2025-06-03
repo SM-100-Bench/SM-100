@@ -1,0 +1,1 @@
+{"scanned_subsystems":[{"name":"Etebase FastAPI Routers","files":["etebase_fastapi/routers/__init__.py","etebase_fastapi/routers/authentication.py","etebase_fastapi/routers/collection.py","etebase_fastapi/routers/invitation.py","etebase_fastapi/routers/member.py","etebase_fastapi/routers/websocket.py"]}],"changesets":[]}

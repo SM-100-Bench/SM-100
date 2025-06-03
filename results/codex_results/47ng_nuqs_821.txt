@@ -1,0 +1,24 @@
+{
+"issues": [
+{
+"file": "packages/nuqs/src/cache.ts",
+"line": 108,
+"description": "compareSearchParams only checks reference equality and misses arrays with the same contents, which can cause createSearchParamsCache.parse to throw error 501 when passed equivalent search parameters again."
+},
+{
+"file": "packages/nuqs/src/url-encoding.ts",
+"line": 11,
+"description": "renderQueryString leaves spaces (and other characters) unescaped in query keys, resulting in non‑standard or incorrectly parsed URLs."
+},
+{
+"file": "packages/nuqs/src/parsers.ts",
+"line": 363,
+"description": "parseAsJson.eq uses JSON.stringify for deep equality, so objects with identical contents but different key order are not considered equal."
+},
+{
+"file": "packages/nuqs/src/update-queue.ts",
+"line": 104,
+"description": "scheduleFlushToURL rejects the Promise with the search parameters instead of the actual error, losing useful debugging information."
+}
+]
+}

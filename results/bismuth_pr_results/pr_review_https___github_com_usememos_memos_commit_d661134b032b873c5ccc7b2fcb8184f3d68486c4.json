@@ -1,0 +1,65 @@
+{
+  "bug_detected": false,
+  "detection_details": [],
+  "raw": {
+    "message": "# Bug Summary Report\n\n## Total Bugs Found: 7\n\n### Most Critical Bugs:\n1. **SQL Query Parameter Omission**: In `store/user.go`, the `createUser` function has SQL query placeholders without corresponding values, which could lead to SQL errors or data corruption.\n\n2. **Session Cookie Security Vulnerability**: In `server/jwt.go`, session cookies are not configured securely, potentially exposing sensitive session information and making the application vulnerable to CSRF attacks.\n\n3. **Database Schema Foreign Key Mismatch**: In `store/seed/10001_schema.sql`, there's a foreign key constraint referencing the wrong table name, which could cause database integrity issues.\n\n### Bug Categories:\n- Error Message Inconsistencies: 3 bugs\n- Security Vulnerabilities: 1 bug\n- SQL Query Errors: 2 bugs\n- Database Schema Issue: 1 bug\n\n### Detailed Bug Locations:\n- `server/memo.go`: Incorrect error message for GET endpoint\n- `server/auth.go`: Incorrect error messages for signup process\n- `server/jwt.go`: Grammatically incorrect error message and insecure cookie configuration\n- `store/user.go`: SQL query parameter and syntax issues\n- `store/seed/10001_schema.sql`: Foreign key constraint error",
+    "bugs": [
+      {
+        "description": "There is a copy-paste error in the error message for GET /memo/:memoId endpoint. The error message incorrectly says \"Failed to delete memo ID\" when it should say \"Failed to find memo ID\" since this is a GET operation, not a DELETE operation.",
+        "file": "server/memo.go",
+        "start_line": 92,
+        "end_line": 92,
+        "suggested_fix": "\t\t\treturn echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf(\"Failed to find memo ID: %v\", memoId)).SetInternal(err)"
+      },
+      {
+        "description": "The error message for a malformatted signup request incorrectly says \"Malformatted login request\" which is confusing since this is in the signup endpoint, not the login endpoint. This appears to be a copy-paste error that should be corrected to \"Malformatted signup request\" for clarity.",
+        "file": "server/auth.go",
+        "start_line": 55,
+        "end_line": 57,
+        "suggested_fix": "\t\tif err := jsonapi.UnmarshalPayload(c.Request().Body, signup); err != nil {\n\t\t\treturn echo.NewHTTPError(http.StatusBadRequest, \"Malformatted signup request\").SetInternal(err)\n\t\t}"
+      },
+      {
+        "description": "The error message \"Failed to malformatted user id in the session\" is grammatically incorrect. It appears to be a combination of two different error messages. It should be corrected to something like \"Failed to parse user id in the session\" for clarity and proper grammar.",
+        "file": "server/jwt.go",
+        "start_line": 60,
+        "end_line": 60,
+        "suggested_fix": "\t\t\treturn echo.NewHTTPError(http.StatusUnauthorized, \"Failed to parse user id in the session.\")"
+      },
+      {
+        "description": "The HTTP status code 401 (Unauthorized) is inappropriate for the case where a user already exists during signup. Status code 409 (Conflict) would be more appropriate since this is a resource conflict situation. Additionally, the error message \"Exist user found\" is grammatically awkward and should be improved to something like \"User already exists\" for better clarity.",
+        "file": "server/auth.go",
+        "start_line": 67,
+        "end_line": 67,
+        "suggested_fix": "\t\t\treturn echo.NewHTTPError(http.StatusConflict, fmt.Sprintf(\"User already exists: %s\", signup.Name))"
+      },
+      {
+        "description": "In the createUser function, the SQL query has placeholders (?, ?, ?) but no corresponding values are provided to the Query method. This will cause SQL errors or data corruption as the database won't know what values to insert. The fix adds the necessary parameters from the create object to match the placeholders in the query.",
+        "file": "store/user.go",
+        "start_line": 52,
+        "end_line": 60,
+        "suggested_fix": "\trow, err := db.Db.Query(`\n\t\tINSERT INTO user (\n\t\t\tname,\n\t\t\tpassword,\n\t\t\topen_id\n\t\t)\n\t\tVALUES (?, ?, ?)\n\t\tRETURNING id, name, password, open_id, created_ts, updated_ts\n\t`, create.Name, create.Password, create.OpenId)"
+      },
+      {
+        "description": "There's a missing comma in the SQL query between 'created_ts' and 'updated_ts' in the findUserList function. This will cause a syntax error when executing the query. The fix adds the necessary comma between the two column names.",
+        "file": "store/user.go",
+        "start_line": 139,
+        "end_line": 150,
+        "suggested_fix": "\trows, err := db.Db.Query(`\n\t\tSELECT \n\t\t\tid,\n\t\t\tname,\n\t\t\tpassword,\n\t\t\topen_id,\n\t\t\tcreated_ts,\n\t\t\tupdated_ts\n\t\tFROM user\n\t\tWHERE `+strings.Join(where, \" AND \"),\n\t\targs...,\n\t)"
+      },
+      {
+        "description": "There's a foreign key constraint error in the schema. The memo, shortcut, and resource tables reference 'users(id)' but the table is actually named 'user' (singular). This mismatch will cause integrity issues when the database tries to enforce the foreign key constraints. The references should be changed from 'users(id)' to 'user(id)' to match the actual table name.",
+        "file": "store/seed/10001_schema.sql",
+        "start_line": 38,
+        "end_line": 38,
+        "suggested_fix": "  FOREIGN KEY(creator_id) REFERENCES user(id)"
+      },
+      {
+        "description": "The session cookies are not secure. The 'Secure' flag is not set to true, which means cookies could be transmitted over non-HTTPS connections, potentially exposing sensitive session information. Additionally, the cookies don't have a SameSite attribute set, making the application vulnerable to CSRF attacks. Both security issues should be fixed by setting Secure to true and adding a SameSite attribute.",
+        "file": "server/jwt.go",
+        "start_line": 26,
+        "end_line": 30,
+        "suggested_fix": "\tsess.Options = &sessions.Options{\n\t\tPath:     \"/\",\n\t\tMaxAge:   1000 * 3600 * 24 * 30,\n\t\tHttpOnly: true,\n\t\tSecure:   true,\n\t\tSameSite: http.SameSiteStrictMode,\n\t}"
+      }
+    ]
+  }
+}

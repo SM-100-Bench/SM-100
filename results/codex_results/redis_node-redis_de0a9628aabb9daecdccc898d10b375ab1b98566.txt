@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "lib/extendedApi.js",
+"line": 101,
+"description": "Incorrect removal of event listener. removeAllListeners expects an event name string, but a function is passed, so the 'error' listener remains attached and can cause memory leaks. Should call client.removeListener('error', error_listener) instead."
+},
+{
+"file": "lib/multi.js",
+"line": 61,
+"description": "When EXEC returns an error, multi_callback exits without clearing the queued commands. This leaves self.queue populated and may lead to memory leaks if the Multi instance persists."
+},
+{
+"file": "lib/multi.js",
+"line": 11,
+"description": "Constructor comment states arguments should be validated ('Fail hard if it's not an array'), but no actual check is performed. Supplying a non-array value could lead to unexpected behavior."
+}
+]
+}

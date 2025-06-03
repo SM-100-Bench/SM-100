@@ -1,0 +1,18 @@
+Please review the code in the mozilla_bleach_eb8aebd45737ffba8abd23ba88b14dede47f35af repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Core Bleach Library subsystem (consisting of 'bleach/__init__.py', 'bleach/callbacks.py', 'bleach/html5lib_shim.py', 'bleach/linkifier.py', 'bleach/sanitizer.py', 'bleach/utils.py')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

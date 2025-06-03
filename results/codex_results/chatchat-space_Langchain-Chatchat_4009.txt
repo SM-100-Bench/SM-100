@@ -1,0 +1,44 @@
+{
+"issues": [
+{
+"file": "server/knowledge_base/kb_service/base.py",
+"line": 191,
+"description": "Variable docs is overwritten with a list before iterating over the original dictionary. Calling docs.items() then raises an AttributeError."
+},
+{
+"file": "server/knowledge_base/kb_service/base.py",
+"line": 225,
+"description": "In get_relative_source_path, the exception handler references source, which is undefined, leading to a NameError if triggered."
+},
+{
+"file": "server/knowledge_base/utils.py",
+"line": 25,
+"description": "validate_kb_name only checks for '../' and ignores backslashes, allowing path traversal on Windows systems."
+},
+{
+"file": "server/knowledge_base/kb_service/base.py",
+"line": 331,
+"description": "Duplicate checks for SupportedVSType.DEFAULT mean the later branch is unreachable and may select the wrong KB service."
+},
+{
+"file": "server/knowledge_base/utils.py",
+"line": 382,
+"description": "files2docs_in_thread may reference kb_name or filename before assignment when an exception occurs, causing UnboundLocalError."
+},
+{
+"file": "server/knowledge_base/kb_service/es_kb_service.py",
+"line": 218,
+"description": "search_results may be used without initialization if the index doesn't exist; query also defines duplicate term keys, discarding the first."
+},
+{
+"file": "server/knowledge_base/kb_summary/base.py",
+"line": 75,
+"description": "drop_kb_summary deletes the summary directory without checking for existence, which can raise FileNotFoundError."
+},
+{
+"file": "server/knowledge_base/kb_service/pg_kb_service.py",
+"line": 72,
+"description": "File path is interpolated directly into a SQL statement, exposing a risk of SQL injection if a malicious path is provided."
+}
+]
+}

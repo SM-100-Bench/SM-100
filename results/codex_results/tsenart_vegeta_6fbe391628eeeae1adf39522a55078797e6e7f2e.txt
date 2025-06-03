@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "lib/util_fuzz.go",
+"line": 10,
+"description": "decodeFuzzHeaders mistakenly references the original byte slice instead of the remaining data. Using fuzz[0] and len(fuzz) inside the loop causes incorrect termination and header parsing because rest changes on each iteration."
+},
+{
+"file": "lib/attack_fuzz.go",
+"line": 64,
+"description": "FuzzAttackerTCP invokes attacker.hit with a string parameter where the method expects *attack, which would not compile when built with the gofuzz tag."
+},
+{
+"file": "lib/attack_fuzz.go",
+"line": 124,
+"description": "FuzzAttackerHTTP also passes a string to attacker.hit instead of the required *attack argument, making the file fail to compile for gofuzz builds."
+}
+]
+}

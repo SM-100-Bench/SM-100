@@ -1,0 +1,20 @@
+Please review the code in the containrrr_watchtower_1830 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Core Application subsystem (consisting of 'cmd/notify-upgrade.go', 'cmd/root.go', 'internal/flags/flags.go', 'internal/meta/meta.go', 'main.go')
+2. Container Management subsystem (consisting of 'pkg/container/cgroup_id.go', 'pkg/container/client.go', 'pkg/container/container.go', 'pkg/container/errors.go', 'pkg/container/metadata.go', 'pkg/container/mocks/ApiServer.go', 'pkg/container/mocks/FilterableContainer.go', 'pkg/container/mocks/container_ref.go', 'pkg/container/mocks/data/container_net_consumer-missing_supplier.json', 'pkg/container/mocks/data/container_net_consumer.json', 'pkg/container/mocks/data/container_net_supplier.json', 'pkg/container/mocks/data/container_restarting.json', 'pkg/container/mocks/data/container_running.json', 'pkg/container/mocks/data/container_stopped.json', 'pkg/container/mocks/data/container_watchtower.json', 'pkg/container/mocks/data/containers.json', 'pkg/container/mocks/data/image_default.json', 'pkg/container/mocks/data/image_net_consumer.json', 'pkg/container/mocks/data/image_net_producer.json', 'pkg/container/mocks/data/image_running.json', 'pkg/filters/filters.go', 'pkg/types/container.go', 'pkg/types/filterable_container.go')
+3. Notifications subsystem (consisting of 'pkg/notifications/common_templates.go', 'pkg/notifications/email.go', 'pkg/notifications/gotify.go', 'pkg/notifications/json.go', 'pkg/notifications/model.go', 'pkg/notifications/msteams.go', 'pkg/notifications/notifier.go', 'pkg/notifications/preview/data/data.go', 'pkg/notifications/preview/data/logs.go', 'pkg/notifications/preview/data/preview_strings.go', 'pkg/notifications/preview/data/report.go', 'pkg/notifications/preview/data/status.go', 'pkg/notifications/preview/tplprev.go', 'pkg/notifications/shoutrrr.go', 'pkg/notifications/slack.go', 'pkg/notifications/templates/funcs.go', 'pkg/types/convertible_notifier.go', 'pkg/types/notifier.go')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

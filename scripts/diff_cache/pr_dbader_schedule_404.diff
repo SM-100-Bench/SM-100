@@ -1,0 +1,93 @@
+diff --git a/schedule/__init__.py b/schedule/__init__.py
+index 8bca61ac..646d42dc 100644
+--- a/schedule/__init__.py
++++ b/schedule/__init__.py
+@@ -537,9 +537,11 @@ def _schedule_next_run(self):
+             if self.unit in ['days', 'hours'] or self.start_day is not None:
+                 kwargs['minute'] = self.at_time.minute
+             self.next_run = self.next_run.replace(**kwargs)
+-            # If we are running for the first time, make sure we run
+-            # at the specified time *today* (or *this hour*) as well
+-            if not self.last_run:
++            # Make sure we run at the specified time *today* (or *this hour*)
++            # as well. This accounts for when a job takes so long it finished
++            # in the next period.
++            if not self.last_run \
++                    or (self.next_run - self.last_run) > self.period:
+                 now = datetime.datetime.now()
+                 if (self.unit == 'days' and self.at_time > now.time() and
+                         self.interval == 1):
+diff --git a/test_schedule.py b/test_schedule.py
+index 01eea1d0..d8f53c2d 100644
+--- a/test_schedule.py
++++ b/test_schedule.py
+@@ -275,6 +275,69 @@ def test_next_run_time(self):
+             assert every().saturday.do(mock_job).next_run.day == 9
+             assert every().sunday.do(mock_job).next_run.day == 10
+ 
++    def test_next_run_time_day_end(self):
++        mock_job = make_mock_job()
++        # At day 1, schedule job to run at daily 23:30
++        with mock_datetime(2010, 12, 1, 23, 0, 0):
++            job = every().day.at('23:30').do(mock_job)
++            # first occurrence same day
++            assert job.next_run.day == 1
++            assert job.next_run.hour == 23
++
++        # Running the job 01:00 on day 2, afterwards the job should be
++        # scheduled at 23:30 the same day. This simulates a job that started
++        # on day 1 at 23:30 and took 1,5 hours to finish
++        with mock_datetime(2010, 12, 2, 1, 0, 0):
++            job.run()
++            assert job.next_run.day == 2
++            assert job.next_run.hour == 23
++
++        # Run the job at 23:30 on day 2, afterwards the job should be
++        # scheduled at 23:30 the next day
++        with mock_datetime(2010, 12, 2, 23, 30, 0):
++            job.run()
++            assert job.next_run.day == 3
++            assert job.next_run.hour == 23
++
++    def test_next_run_time_hour_end(self):
++        mock_job = make_mock_job()
++        with mock_datetime(2010, 10, 10, 12, 0, 0):
++            job = every().hour.at(':10').do(mock_job)
++            assert job.next_run.hour == 12
++            assert job.next_run.minute == 10
++
++        with mock_datetime(2010, 10, 10, 13, 0, 0):
++            job.run()
++            assert job.next_run.hour == 13
++            assert job.next_run.minute == 10
++
++        with mock_datetime(2010, 10, 10, 13, 15, 0):
++            job.run()
++            assert job.next_run.hour == 14
++            assert job.next_run.minute == 10
++
++    def test_next_run_time_minute_end(self):
++        mock_job = make_mock_job()
++        with mock_datetime(2010, 10, 10, 10, 10, 0):
++            job = every().minute.at(':15').do(mock_job)
++            assert job.next_run.minute == 10
++            assert job.next_run.second == 15
++
++        with mock_datetime(2010, 10, 10, 10, 10, 59):
++            job.run()
++            assert job.next_run.minute == 11
++            assert job.next_run.second == 15
++
++        with mock_datetime(2010, 10, 10, 10, 12, 14):
++            job.run()
++            assert job.next_run.minute == 12
++            assert job.next_run.second == 15
++
++        with mock_datetime(2010, 10, 10, 10, 12, 16):
++            job.run()
++            assert job.next_run.minute == 13
++            assert job.next_run.second == 15
++
+     def test_run_all(self):
+         mock_job = make_mock_job()
+         every().minute.do(mock_job)

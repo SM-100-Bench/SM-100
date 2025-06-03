@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "addon/runmode/colorize.js",
+"line": 20,
+"description": "Function textContent incorrectly tests node.nodeType against a regex designed for tag names, so newline is never added after block elements."
+},
+{
+"file": "addon/lint/lint.js",
+"line": 145,
+"description": "annotationTooltip assigns ann.messageHTML to innerHTML without sanitization, allowing potential DOM XSS if messageHTML is attacker-controlled."
+}
+]
+}

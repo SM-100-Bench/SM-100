@@ -1,0 +1,41 @@
+diff --git a/CHANGES b/CHANGES
+index 1542e883490..c794ec61485 100644
+--- a/CHANGES
++++ b/CHANGES
+@@ -16,6 +16,8 @@ Features added
+ Bugs fixed
+ ----------
+ 
++* #8952: Exceptions raised in a Directive cause parallel builds to hang
++
+ Testing
+ --------
+ 
+diff --git a/sphinx/util/parallel.py b/sphinx/util/parallel.py
+index ab27a5128dd..ed73ee4d6b9 100644
+--- a/sphinx/util/parallel.py
++++ b/sphinx/util/parallel.py
+@@ -103,8 +103,21 @@ def add_task(self, task_func: Callable, arg: Any = None, result_func: Callable =
+         self._join_one()
+ 
+     def join(self) -> None:
+-        while self._pworking:
+-            self._join_one()
++        try:
++            while self._pworking:
++                self._join_one()
++        except Exception:
++            # shutdown other child processes on failure
++            self.terminate()
++            raise
++
++    def terminate(self) -> None:
++        for tid in list(self._precvs):
++            self._procs[tid].terminate()
++            self._result_funcs.pop(tid)
++            self._procs.pop(tid)
++            self._precvs.pop(tid)
++            self._pworking -= 1
+ 
+     def _join_one(self) -> None:
+         for tid, pipe in self._precvs.items():

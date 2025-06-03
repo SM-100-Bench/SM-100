@@ -1,0 +1,4729 @@
+diff --git a/packages/components/src/editing/languages/SubstanceConfig.ts b/packages/components/src/editing/languages/SubstanceConfig.ts
+index 7ef907100e..ce932be71e 100644
+--- a/packages/components/src/editing/languages/SubstanceConfig.ts
++++ b/packages/components/src/editing/languages/SubstanceConfig.ts
+@@ -37,7 +37,19 @@ export const SubstanceLanguageTokens = (
+       ...domainCache.functions.keys(),
+       ...domainCache.predicates.keys(),
+     ],
+-    control: ["AutoLabel", "Label", "NoLabel", "All", "Let"],
++    control: [
++      "AutoLabel",
++      "Label",
++      "NoLabel",
++      "All",
++      "Let",
++      "for",
++      "in",
++      "where",
++      "true",
++      "false",
++      "mod",
++    ],
+   };
+   return {
+     ...refs,
+diff --git a/packages/core/src/compiler/Style.ts b/packages/core/src/compiler/Style.ts
+index 7f4527bd88..fa23412a2a 100644
+--- a/packages/core/src/compiler/Style.ts
++++ b/packages/core/src/compiler/Style.ts
+@@ -101,6 +101,8 @@ import {
+   ApplyConstructor,
+   ApplyFunction,
+   ApplyPredicate,
++  CompiledSubProg,
++  CompiledSubStmt,
+   Decl,
+   SubExpr,
+   SubPredArg,
+@@ -475,10 +477,10 @@ const checkRelPattern = (
+ 
+       // TODO(error)
+       if (isErr(res1)) {
+-        const subErr1: SubstanceError = res1.error;
++        const subErr1 = res1.error;
+         // TODO(error): Do we need to wrap this error further, or is returning SubstanceError with no additional Style info ok?
+         // return ["substance typecheck error in B"];
+-        return [{ tag: "TaggedSubstanceError", error: subErr1 }];
++        return [{ tag: "TaggedSubstanceError", error: subErr1[0] }];
+       }
+ 
+       const { type: vtype } = res1.value; // ignore env
+@@ -488,8 +490,8 @@ const checkRelPattern = (
+ 
+       // TODO(error)
+       if (isErr(res2)) {
+-        const subErr2: SubstanceError = res2.error;
+-        return [{ tag: "TaggedSubstanceError", error: subErr2 }];
++        const subErr2 = res2.error;
++        return [{ tag: "TaggedSubstanceError", error: subErr2[0] }];
+         // return ["substance typecheck error in E"];
+       }
+ 
+@@ -519,7 +521,7 @@ const checkRelPattern = (
+       }
+       const res = checkPredicate(toSubPred(rel), varEnv);
+       if (isErr(res)) {
+-        const subErr3: SubstanceError = res.error;
++        const subErr3: SubstanceError = res.error[0];
+         return [{ tag: "TaggedSubstanceError", error: subErr3 }];
+         // return ["substance typecheck error in Pred"];
+       }
+@@ -529,7 +531,7 @@ const checkRelPattern = (
+       // check if the Substance name exists
+       const nameOk = checkVar(rel.name.contents, varEnv);
+       if (isErr(nameOk)) {
+-        const subErr1: SubstanceError = nameOk.error;
++        const subErr1: SubstanceError = nameOk.error[0];
+         return [{ tag: "TaggedSubstanceError", error: subErr1 }];
+       }
+       // check if the field is supported. Currently, we only support matching on `label`
+@@ -1129,7 +1131,7 @@ const matchBvar = (
+ // Judgment 12. G; theta |- S <| |S_o
+ const matchDeclLine = (
+   varEnv: Env,
+-  line: SubStmt<A>,
++  line: CompiledSubStmt<A>,
+   decl: DeclPattern<A>,
+ ): Subst | undefined => {
+   if (line.tag === "Decl") {
+@@ -1149,19 +1151,22 @@ const matchDeclLine = (
+ // Judgment 16. G; [theta] |- [S] <| [|S_o] ~> [theta']
+ const matchDecl = (
+   varEnv: Env,
+-  subProg: SubProg<A>,
++  subProg: CompiledSubProg<A>,
+   decl: DeclPattern<A>,
+ ): im.List<Subst> => {
+   const initDSubsts: im.List<Subst> = im.List();
+   // Judgment 14. G; [theta] |- [S] <| |S_o
+-  const newDSubsts = subProg.statements.reduce((dSubsts, line) => {
+-    const subst = matchDeclLine(varEnv, line, decl);
+-    if (subst === undefined) {
+-      return dSubsts;
+-    } else {
+-      return dSubsts.push(subst);
+-    }
+-  }, initDSubsts);
++  const newDSubsts = subProg.statements.reduce(
++    (dSubsts, line: CompiledSubStmt<A>) => {
++      const subst = matchDeclLine(varEnv, line, decl);
++      if (subst === undefined) {
++        return dSubsts;
++      } else {
++        return dSubsts.push(subst);
++      }
++    },
++    initDSubsts,
++  );
+   return newDSubsts;
+ };
+ 
+@@ -1461,14 +1466,14 @@ const matchStyRelToSubRels = (
+   varEnv: Env,
+   subEnv: SubstanceEnv,
+   rel: RelationPattern<A>,
+-  subProg: SubProg<A>,
+-): [im.Set<string>, im.List<[Subst, im.Set<SubStmt<A>>]>] => {
++  subProg: CompiledSubProg<A>,
++): [im.Set<string>, im.List<[Subst, im.Set<CompiledSubStmt<A>>]>] => {
+   const initUsedStyVars = im.Set<string>();
+-  const initRSubsts = im.List<[Subst, im.Set<SubStmt<A>>]>();
++  const initRSubsts = im.List<[Subst, im.Set<CompiledSubStmt<A>>]>();
+   if (rel.tag === "RelPred") {
+     const styPred = rel;
+     const newRSubsts = subProg.statements.reduce(
+-      (rSubsts, statement: SubStmt<A>) => {
++      (rSubsts, statement: CompiledSubStmt<A>) => {
+         if (statement.tag !== "ApplyPredicate") {
+           return rSubsts;
+         }
+@@ -1483,7 +1488,7 @@ const matchStyRelToSubRels = (
+         return rSubstsForPred.reduce((rSubsts, rSubstForPred) => {
+           return rSubsts.push([
+             rSubstForPred,
+-            im.Set<SubStmt<A>>().add(statement),
++            im.Set<CompiledSubStmt<A>>().add(statement),
+           ]);
+         }, rSubsts);
+       },
+@@ -1515,7 +1520,7 @@ const matchStyRelToSubRels = (
+         rSubstForBind[styBindedName] = subBindedName;
+         return rSubsts.push([
+           rSubstForBind,
+-          im.Set<SubStmt<A>>().add(statement),
++          im.Set<CompiledSubStmt<A>>().add(statement),
+         ]);
+       }, rSubsts);
+     }, initRSubsts);
+@@ -1535,7 +1540,7 @@ const matchStyRelToSubRels = (
+         if (rSubst === undefined) {
+           return rSubsts;
+         } else {
+-          return rSubsts.push([rSubst, im.Set<SubStmt<A>>()]);
++          return rSubsts.push([rSubst, im.Set<CompiledSubStmt<A>>()]);
+         }
+       } else {
+         return rSubsts;
+@@ -1567,7 +1572,7 @@ const makeListRSubstsForStyleRels = (
+   varEnv: Env,
+   subEnv: SubstanceEnv,
+   rels: RelationPattern<A>[],
+-  subProg: SubProg<A>,
++  subProg: CompiledSubProg<A>,
+ ): [im.Set<string>, im.List<im.List<[Subst, im.Set<SubStmt<A>>]>>] => {
+   const initUsedStyVars: im.Set<string> = im.Set();
+   const initListRSubsts: im.List<im.List<[Subst, im.Set<SubStmt<A>>]>> =
+@@ -1598,7 +1603,7 @@ const makePotentialSubsts = (
+   varEnv: Env,
+   selEnv: SelEnv,
+   subEnv: SubstanceEnv,
+-  subProg: SubProg<A>,
++  subProg: CompiledSubProg<A>,
+   decls: DeclPattern<A>[],
+   rels: RelationPattern<A>[],
+ ): im.List<[Subst, im.Set<SubStmt<A>>]> => {
+@@ -1665,7 +1670,7 @@ const getSubsts = (
+   varEnv: Env,
+   subEnv: SubstanceEnv,
+   selEnv: SelEnv,
+-  subProg: SubProg<A>,
++  subProg: CompiledSubProg<A>,
+   header: Collector<A> | Selector<A>,
+ ): Subst[] => {
+   const decls = getDecls(header);
+@@ -1741,7 +1746,7 @@ const collectSubsts = (
+ const findSubstsSel = (
+   varEnv: Env,
+   subEnv: SubstanceEnv,
+-  subProg: SubProg<A>,
++  subProg: CompiledSubProg<A>,
+   [header, selEnv]: [Header<A>, SelEnv],
+ ): StySubst[] => {
+   if (header.tag === "Selector") {
+diff --git a/packages/core/src/compiler/Substance.test.ts b/packages/core/src/compiler/Substance.test.ts
+index 4b8883a050..890924da8f 100644
+--- a/packages/core/src/compiler/Substance.test.ts
++++ b/packages/core/src/compiler/Substance.test.ts
+@@ -1,7 +1,7 @@
+ import nearley from "nearley";
+ import { beforeEach, describe, expect, test } from "vitest";
+ import grammar from "../parser/SubstanceParser.js";
+-import { A } from "../types/ast.js";
++import { A, Identifier } from "../types/ast.js";
+ import { Env } from "../types/domain.js";
+ import { PenroseError } from "../types/errors.js";
+ import { ApplyPredicate, SubRes, SubstanceEnv } from "../types/substance.js";
+@@ -265,7 +265,7 @@ Both(IsSubset(A, B), IsSubset(C, D))
+     const env = envOrError(domainProg);
+     subEnvOrError(prog, env);
+   });
+-  test("predicates: nesting", () => {
++  test("labeling", () => {
+     const prog = `
+ Set A, B, C
+ Label A $\\vec{A}$
+@@ -277,12 +277,93 @@ NoLabel B, C
+     const env = envOrError(domainProg);
+     subEnvOrError(prog, env);
+   });
++  describe("indexed expressions", () => {
++    test("indexed set decl - sets with even indices", () => {
++      const env = envOrError(domainProg);
++      const prog = `Set a_i for i in [1, 10] where i % 2 == 0`;
++      const res = compileSubstance(prog, env);
++      expect(res.isOk()).toBe(true);
++      if (res.isOk()) {
++        hasVars(res.value[1], [
++          ["a_2", "Set"],
++          ["a_4", "Set"],
++          ["a_6", "Set"],
++          ["a_8", "Set"],
++          ["a_10", "Set"],
++        ]);
++      }
++    });
++
++    test("indexed set decl - no satisfying indices", () => {
++      const env1 = envOrError(domainProg);
++      const prog1 = `Set a_i for i in [1, 10] where i % 2 == 0.5`;
++      const res1 = compileSubstance(prog1, env1);
++      expect(res1.isOk()).toBe(true);
++      if (res1.isOk()) {
++        expect(res1.value[1].vars.size).toBe(0);
++      }
++
++      const env2 = envOrError(domainProg);
++      const prog2 = `Set a_i for i in [11, 10]`;
++      const res2 = compileSubstance(prog2, env2);
++      expect(res2.isOk()).toBe(true);
++      if (res2.isOk()) {
++        expect(res2.value[1].vars.size).toBe(0);
++      }
++    });
++
++    test("indexed set decllist", () => {
++      const env = envOrError(domainProg);
++      const prog = `Set a_i, a_j for i in [0, 9], j in [0, 9] where i % 2 == 0 && j == i + 1`;
++      // first iteration: a_0, a_1
++      // second iteration: a_2, a_3
++      // third iteration: a_4, a_5
++      // ...
++      const res = compileSubstance(prog, env);
++      expect(res.isOk()).toBe(true);
++      if (res.isOk()) {
++        hasVars(
++          res.value[1],
++          [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => [`a_${n}`, "Set"]),
++        );
++      }
++    });
++
++    test("indexed set pred", () => {
++      const env = envOrError(domainProg);
++      const prog = `
++        Set s_i for i in [0, 5]
++        IsSubset(s_i, s_j) for i in [0, 4], j in [1, 5] where j == i + 1
++      `;
++      const res = compileSubstance(prog, env);
++      expect(res.isOk()).toBe(true);
++      if (res.isOk()) {
++        const preds = res.value[0].ast.statements.filter(
++          (s) => s.tag === "ApplyPredicate",
++        ) as ApplyPredicate<A>[];
++        expect(preds.length).toBe(5);
++        expect(preds.every((p) => p.name.value === "IsSubset")).toBe(true);
++        expect(
++          preds
++            .map((p) =>
++              [
++                (p.args[0] as Identifier<A>).value,
++                (p.args[1] as Identifier<A>).value,
++              ].join(" "),
++            )
++            .sort(),
++        ).toEqual(
++          ["s_0 s_1", "s_1 s_2", "s_2 s_3", "s_3 s_4", "s_4 s_5"].sort(),
++        );
++      }
++    });
++  });
+ });
+ 
+ describe("Errors", () => {
+   const expectErrorOf = (
+     result: Result<[SubstanceEnv, Env], PenroseError>,
+-    errorType: string,
++    errorType: PenroseError["tag"],
+   ) => {
+     if (result.isErr()) {
+       if (printError) console.log(showError(result.error));
+@@ -308,6 +389,23 @@ AutoLabel All
+     `;
+     const res = compileSubstance(prog, env);
+     expectErrorOf(res, "DuplicateName");
++
++    // some indexed expressions
++    const env1 = envOrError(domainProg);
++    const prog1 = `Point p_i, p_j for i in [1, 2], j in [1, 2]`;
++    const res1 = compileSubstance(prog1, env1);
++    expectErrorOf(res1, "DuplicateName");
++
++    const env2 = envOrError(domainProg);
++    const prog2 = `Point p_10
++    Point p_j for j in [1, 11]`;
++    const res2 = compileSubstance(prog2, env2);
++    expectErrorOf(res2, "DuplicateName");
++
++    const env3 = envOrError(domainProg);
++    const prog3 = `Point p_i, p_i for i in [1, 10]`;
++    const res3 = compileSubstance(prog3, env3);
++    expectErrorOf(res3, "DuplicateName");
+   });
+   test("decl type not found", () => {
+     const env = envOrError(domainProg);
+@@ -319,6 +417,12 @@ NotExistentType b
+     `;
+     const res = compileSubstance(prog, env);
+     expectErrorOf(res, "TypeNotFound");
++
++    // test set
++    const env1 = envOrError(domainProg);
++    const prog1 = `Sset a_i, a_j for i in [10, 20], j in [20, 30]`;
++    const res1 = compileSubstance(prog1, env1);
++    expectErrorOf(res1, "TypeNotFound");
+   });
+   test("func type not found", () => {
+     const env = envOrError(domainProg);
+@@ -467,6 +571,48 @@ Label D $\\vec{d}$
+     const res = compileSubstance(prog, env);
+     expectErrorOf(res, "VarNotFound");
+   });
++
++  test("invalid index", () => {
++    const env1 = envOrError(domainProg);
++    const prog1 = `Set a_i for j in [1, 10]`;
++    const res1 = compileSubstance(prog1, env1);
++    expectErrorOf(res1, "InvalidSetIndexingError");
++
++    const env2 = envOrError(domainProg);
++    const prog2 = `Set a_i for i in [1, 10] where hello > i`;
++    const res2 = compileSubstance(prog2, env2);
++    expectErrorOf(res2, "InvalidSetIndexingError");
++  });
++
++  test("duplicate index", () => {
++    const env = envOrError(domainProg);
++    const prog = `Set a_i for i in [1, 10], j in [2, 10], i in [1, 10]`;
++    const res = compileSubstance(prog, env);
++    expectErrorOf(res, "DuplicateIndexError");
++  });
++
++  test("divide by zero in index condition", () => {
++    const env = envOrError(domainProg);
++    const prog = `Set a_i for i in [1, 10] where i / (i - i) == 3`;
++    const res = compileSubstance(prog, env);
++    expectErrorOf(res, "DivideByZeroError");
++  });
++
++  test("NaN in index condition arithmetics", () => {
++    const env = envOrError(domainProg);
++    const prog = `Set a_i for i in [1, 10] where (-i) ^ 0.5 == 1 `;
++    const res = compileSubstance(prog, env);
++    expectErrorOf(res, "InvalidArithmeticValueError");
++    // error because -1 ^ 0.5 is NaN
++  });
++
++  test("unsupported indexing statement", () => {
++    const env = envOrError(domainProg);
++    const prog = `Set a, b
++    IsSubset(a, b) <-> IsSubset(b, a) for i in [1, 10]`;
++    const res = compileSubstance(prog, env);
++    expectErrorOf(res, "UnsupportedIndexingError");
++  });
+ });
+ 
+ describe("Subtypes", () => {
+@@ -514,6 +660,8 @@ Empty(AddPoint(p, A))`;
+ });
+ 
+ describe("Pretty printer", () => {
++  // Don't test for aggregated or indexed statements
++  // since they get expanded during compilation.
+   test("decls and args", () => {
+     const env = envOrError(domainProg);
+     const prog = `Set A
+diff --git a/packages/core/src/compiler/Substance.ts b/packages/core/src/compiler/Substance.ts
+index 4c922448da..48adcc10f0 100644
+--- a/packages/core/src/compiler/Substance.ts
++++ b/packages/core/src/compiler/Substance.ts
+@@ -4,7 +4,14 @@ import nearley from "nearley";
+ import { dummyIdentifier } from "../engine/EngineUtils.js";
+ import { idOf, lastLocation, prettyParseError } from "../parser/ParserUtil.js";
+ import substanceGrammar from "../parser/SubstanceParser.js";
+-import { A, ASTNode, C, Identifier } from "../types/ast.js";
++import {
++  A,
++  ASTNode,
++  AbstractNode,
++  C,
++  Identifier,
++  location,
++} from "../types/ast.js";
+ import {
+   Arg,
+   ConstructorDecl,
+@@ -18,13 +25,25 @@ import {
+   ApplyConstructor,
+   ApplyFunction,
+   ApplyPredicate,
++  AutoLabel,
+   Bind,
++  BooleanExpr,
++  CompiledSubProg,
++  CompiledSubStmt,
+   Decl,
++  DeclBind,
++  DeclList,
+   Deconstructor,
+   Func,
++  IndexSet,
++  LabelDecl,
+   LabelMap,
+   LabelOption,
+   LabelValue,
++  NoLabel,
++  NumExpr,
++  Stmt,
++  StmtSet,
+   SubExpr,
+   SubPredArg,
+   SubProg,
+@@ -35,8 +54,8 @@ import {
+ } from "../types/substance.js";
+ import {
+   Result,
++  all,
+   and,
+-  andThen,
+   argLengthMismatch,
+   deconstructNonconstructor,
+   duplicateName,
+@@ -51,7 +70,7 @@ import {
+   unexpectedExprForNestedPred,
+   varNotFound,
+ } from "../utils/Error.js";
+-import { zip2 } from "../utils/Util.js";
++import { cartesianProduct, zip2 } from "../utils/Util.js";
+ import {
+   bottomType,
+   checkTypeConstructor,
+@@ -112,21 +131,22 @@ export const compileSubstance = (
+     const checkerOk = checkSubstance(astWithPrelude, env);
+     return checkerOk.match({
+       Ok: ({ env, contents: ast }) => ok([postprocessSubstance(ast, env), env]),
+-      Err: (e) => err({ ...e, errorType: "SubstanceError" }),
++      Err: (e) => {
++        return err({ ...e[0], errorType: "SubstanceError" });
++      },
+     });
+   } else {
+     return err({ ...astOk.error, errorType: "SubstanceError" });
+   }
+ };
+ 
+-const initEnv = (ast: SubProg<A>, env: Env): SubstanceEnv => ({
++const initEnv = (ast: CompiledSubProg<A>, env: Env): SubstanceEnv => ({
+   exprEqualities: [],
+   predEqualities: [],
+   bindings: im.Map<string, SubExpr<C>>(),
+   labels: im.Map<string, LabelValue>(
+     [...env.vars.keys()].map((id: string) => [id, EMPTY_LABEL]),
+   ),
+-  predicates: [],
+   ast,
+ });
+ 
+@@ -135,13 +155,13 @@ const initEnv = (ast: SubProg<A>, env: Env): SubstanceEnv => ({
+ const EMPTY_LABEL: LabelValue = { value: "", type: "NoLabel" };
+ 
+ export const postprocessSubstance = (
+-  prog: SubProg<A>,
++  prog: CompiledSubProg<A>,
+   env: Env,
+ ): SubstanceEnv => {
+   // post process all statements
+   const subEnv = initEnv(prog, env);
+   return prog.statements.reduce(
+-    (e, stmt) => processLabelStmt(stmt, env, e),
++    (e, stmt: CompiledSubStmt<A>) => processLabelStmt(stmt, env, e),
+     subEnv,
+   );
+ };
+@@ -221,8 +241,8 @@ interface WithEnvAndType<T> {
+   contents: T;
+   type: TypeConsApp<A>;
+ }
+-type CheckerResult<T> = Result<WithEnv<T>, SubstanceError>;
+-type ResultWithType<T> = Result<WithEnvAndType<T>, SubstanceError>;
++type CheckerResult<T> = Result<WithEnv<T>, SubstanceError[]>;
++type ResultWithType<T> = Result<WithEnvAndType<T>, SubstanceError[]>;
+ 
+ const stringName = idOf("String", "Substance");
+ const stringType: TypeConsApp<A> = {
+@@ -241,74 +261,119 @@ const stringType: TypeConsApp<A> = {
+ export const checkSubstance = (
+   prog: SubProg<A>,
+   env: Env,
+-): CheckerResult<SubProg<A>> => {
++): CheckerResult<CompiledSubProg<A>> => {
+   const { statements } = prog;
+   // check all statements
+-  const contents: SubStmt<A>[] = [];
+-  const stmtsOk: CheckerResult<SubStmt<A>[]> = safeChain(
++  const contents: CompiledSubStmt<A>[] = [];
++  const stmtsOk: CheckerResult<CompiledSubStmt<A>[]> = safeChain(
+     statements,
+     (stmt, { env, contents: stmts }) =>
+-      andThen(
+-        ({ env, contents: checkedStmt }) =>
+-          ok({ env, contents: [...stmts, checkedStmt] }),
+-        checkStmt(stmt, env),
++      checkStmt(stmt, env).andThen(({ env, contents: checkedStmt }) =>
++        ok({ env, contents: [...stmts, ...checkedStmt] }),
+       ),
+     ok({ env, contents }),
+   );
+-  return andThen(
+-    ({ env, contents }) =>
+-      ok({
+-        env,
+-        contents: { ...prog, statements: contents },
+-      }),
+-    stmtsOk,
++  return stmtsOk.andThen(({ env, contents }) =>
++    ok({
++      env,
++      contents: { ...prog, statements: contents },
++    }),
+   );
+ };
+ 
+-const checkStmt = (stmt: SubStmt<A>, env: Env): CheckerResult<SubStmt<A>> => {
++const checkStmt = (
++  stmt: Stmt<A>,
++  env: Env,
++): CheckerResult<CompiledSubStmt<A>[]> => {
++  if (stmt.tag === "StmtSet") return checkStmtISetHelper(stmt, env);
++  else return checkSingleStmt(stmt, env);
++};
++
++const checkStmtISetHelper = (
++  stmtSet: StmtSet<A>,
++  env: Env,
++): CheckerResult<CompiledSubStmt<A>[]> => {
++  const { stmt } = stmtSet;
+   switch (stmt.tag) {
+     case "Decl": {
+-      const { type, name } = stmt;
+-      // check type constructor
+-      const typeOk = checkTypeConstructor(type, env);
+-      // check name collisions
+-      const existingName = env.vars.get(name.value);
+-      if (existingName) {
+-        return err(
+-          duplicateName(
+-            name,
+-            stmt,
+-            env.varIDs.filter((v) => v.value === name.value)[0],
+-          ),
+-        );
+-      } else {
+-        const updatedEnv: Env = {
+-          ...env,
+-          vars: env.vars.set(name.value, type),
+-          varIDs: [name, ...env.varIDs],
+-        };
+-        const res: WithEnv<SubStmt<A>> = {
+-          env: updatedEnv,
+-          contents: stmt,
+-        };
+-        return and(ok(res), typeOk);
+-      }
++      // special, smarter handling for decl
++      return checkDeclISet({ ...stmtSet, stmt }, env);
++    }
++    case "DeclList": {
++      // special, smarter handling for declList
++      return checkDeclListISet({ ...stmtSet, stmt }, env);
+     }
+     case "Bind": {
+-      const { variable, expr } = stmt;
+-      const varOk = checkVar(variable, env);
+-      const exprOk = checkExpr(expr, env, variable);
+-      return andThen(
+-        ({ env, contents: [e, v] }) => {
+-          const updatedBind: Bind<A> = { ...stmt, variable: v, expr: e };
+-          return ok({
+-            env,
+-            contents: updatedBind,
+-          });
+-        },
+-        subtypeOf(exprOk, varOk),
++      return checkStmtISet({ ...stmtSet, stmt }, env, substISetBind, checkBind);
++    }
++    case "DeclBind": {
++      return checkStmtISet(
++        { ...stmtSet, stmt },
++        env,
++        substISetDeclBind,
++        checkDeclBind,
+       );
+     }
++    case "ApplyPredicate": {
++      return checkStmtISet(
++        { ...stmtSet, stmt },
++        env,
++        substISetPredicate,
++        checkPredicate,
++      );
++    }
++    case "AutoLabel": {
++      return checkStmtISet(
++        { ...stmtSet, stmt },
++        env,
++        substISetAutoLabel,
++        checkAutoLabel,
++      );
++    }
++    case "LabelDecl": {
++      return checkStmtISet(
++        { ...stmtSet, stmt },
++        env,
++        substISetLabelDecl,
++        checkLabelDecl,
++      );
++    }
++    case "NoLabel": {
++      return checkStmtISet(
++        { ...stmtSet, stmt },
++        env,
++        substISetNoLabel,
++        checkNoLabel,
++      );
++    }
++    default: {
++      return err([
++        {
++          tag: "UnsupportedIndexingError",
++          iset: stmtSet,
++        },
++      ]);
++    }
++  }
++};
++
++const checkSingleStmt = (
++  stmt: SubStmt<A>,
++  env: Env,
++): CheckerResult<CompiledSubStmt<A>[]> => {
++  switch (stmt.tag) {
++    case "Decl": {
++      return checkDecl(stmt, env);
++    }
++    case "DeclList": {
++      return checkDeclList(stmt, env);
++    }
++    case "Bind": {
++      return checkBind(stmt, env);
++    }
++    case "DeclBind": {
++      return checkDeclBind(stmt, env);
++    }
+     case "ApplyPredicate": {
+       return checkPredicate(stmt, env);
+     }
+@@ -316,47 +381,603 @@ const checkStmt = (stmt: SubStmt<A>, env: Env): CheckerResult<SubStmt<A>> => {
+       const { left, right } = stmt;
+       const leftOk = checkExpr(left, env);
+       const rightOk = checkExpr(right, env);
+-      return andThen(
+-        ({ env }) => ok({ env, contents: stmt }),
+-        every(leftOk, rightOk),
++      return every(leftOk, rightOk).andThen(({ env }) =>
++        ok({ env, contents: [stmt] }),
+       );
+     }
+     case "EqualPredicates": {
+       const { left, right } = stmt;
+       const leftOk = checkPredicate(left, env);
+       const rightOk = checkPredicate(right, env);
+-      return andThen(
+-        ({ env }) => ok({ env, contents: stmt }),
+-        every(leftOk, rightOk),
++      return every(leftOk, rightOk).andThen(({ env }) =>
++        ok({ env, contents: [stmt] }),
+       );
+     }
+     case "AutoLabel": {
+-      // NOTE: no checking required
+-      if (stmt.option.tag === "DefaultLabels") {
+-        return ok({ env, contents: stmt });
++      return checkAutoLabel(stmt, env);
++    }
++    case "LabelDecl": {
++      return checkLabelDecl(stmt, env);
++    }
++    case "NoLabel": {
++      return checkNoLabel(stmt, env);
++    }
++  }
++};
++
++type ISetSubst = Map<string, number>;
++
++const evalISet = (iset: IndexSet<A>): Result<ISetSubst[], SubstanceError> => {
++  const { indices, condition } = iset;
++
++  // Check for duplication in variable declarations
++  const variables = new Set<string>();
++  for (const varName of indices.map((i) => i.variable.value)) {
++    if (variables.has(varName)) {
++      return err({
++        tag: "DuplicateIndexError",
++        index: varName,
++        location: iset,
++      });
++    }
++    variables.add(varName);
++  }
++
++  type VarValPair = [string, number];
++  const possValsPerVar: [VarValPair][][] = [];
++  for (const { variable, range } of indices) {
++    const name = variable.value;
++    const { high, low } = range;
++
++    // a list of [[name, value]]
++    const possVals = im
++      .Range(low.value, high.value + 1)
++      .toArray()
++      .map((n): [VarValPair] => [[name, n]]);
++    // for example, if we write `i in [1, 3]`,
++    // then possVals would contain `[["i", 1]], [["i", 2]], [["i", 3]]`
++    // This structure makes it easier to combine these using Cartesian products.
++    possValsPerVar.push(possVals);
++  }
++
++  const [first, ...rest] = possValsPerVar;
++  if (first !== undefined) {
++    const cprod = rest.reduce(
++      (p: VarValPair[][], c: VarValPair[][]) =>
++        cartesianProduct(
++          p,
++          c,
++          () => true,
++          (p1, p2) => [...p1, ...p2],
++        ),
++      first,
++    );
++
++    // Each element of "cprod" represents a substitution.
++
++    const substitutions = cprod.map((cprod) => new Map(cprod));
++
++    const condVals = all(substitutions.map((s) => evalCond(condition, s)));
++    if (condVals.isErr()) {
++      // Outputting the first error because if there were to be multiple errors,
++      // the errors will all be the same, caused by different substitutions.
++      return err(condVals.error[0]);
++    } else return ok(substitutions.filter((s, i) => condVals.value[i]));
++  } else {
++    return ok([]);
++  }
++};
++
++const evalCond = (
++  b: BooleanExpr<A> | undefined,
++  subst: ISetSubst,
++): Result<boolean, SubstanceError> => {
++  if (b === undefined) {
++    return ok(true);
++  }
++  if (b.tag === "BooleanConstant") {
++    const { value } = b;
++    return ok(value);
++  } else if (b.tag === "BinaryBooleanExpr") {
++    const { operator, left, right } = b;
++    if (operator === "&&") {
++      const lValRes = evalCond(left, subst);
++      if (lValRes.isErr()) return err(lValRes.error);
++      // short-circuiting - if left side is false, then return false.
++      if (!lValRes.value) return ok(false);
++      else return evalCond(right, subst);
++    } else {
++      const lValRes = evalCond(left, subst);
++      if (lValRes.isErr()) return err(lValRes.error);
++      // short-cirsuiting - if left side is true, then return true
++      if (lValRes.value) return ok(true);
++      else return evalCond(right, subst);
++    }
++  } else if (b.tag === "UnaryBooleanExpr") {
++    const { arg } = b;
++    const argValRes = evalCond(arg, subst);
++    return argValRes.andThen((b) => ok(!b));
++  } else {
++    const { operator, left, right } = b;
++    const lValRes = evalNum(left, subst);
++    if (lValRes.isErr()) return err(lValRes.error);
++    const rValRes = evalNum(right, subst);
++    if (rValRes.isErr()) return err(rValRes.error);
++
++    const lVal = lValRes.value,
++      rVal = rValRes.value;
++
++    // We use closeEqual due to floating-point precision issues
++    // since numbers are internally represented as floating-point numbers
++    if (operator === "<")
++      return ok(closeEqual(lVal, rVal) ? false : lVal < rVal);
++    else if (operator === ">")
++      return ok(closeEqual(lVal, rVal) ? false : lVal > rVal);
++    else if (operator === "<=")
++      return ok(closeEqual(lVal, rVal) ? true : lVal <= rVal);
++    else if (operator === ">=")
++      return ok(closeEqual(lVal, rVal) ? true : lVal >= rVal);
++    else if (operator === "==") return ok(closeEqual(lVal, rVal));
++    else return ok(!closeEqual(lVal, rVal));
++  }
++};
++
++const closeEqual = (x: number, y: number): boolean => {
++  const EPS = 0.00001;
++  return Math.abs(x - y) < EPS;
++};
++
++const evalNum = (
++  n: NumExpr<A>,
++  subst: ISetSubst,
++): Result<number, SubstanceError> => {
++  const result = evalNumHelper(n, subst);
++  if (result.isErr()) return err(result.error);
++
++  const value = result.value;
++
++  if (isNaN(value)) {
++    // NaN is invalid
++    return err({
++      tag: "InvalidArithmeticValueError",
++      location: n,
++      value,
++    });
++  }
++  return ok(value);
++};
++
++const evalNumHelper = (
++  n: NumExpr<A>,
++  subst: ISetSubst,
++): Result<number, SubstanceError> => {
++  if (n.tag === "NumberConstant") {
++    return ok(n.value);
++  } else if (n.tag === "Identifier") {
++    return substISetVarNumber(n.value, n, subst);
++  } else if (n.tag === "UnaryExpr") {
++    const { arg } = n;
++    const argValRes = evalNum(arg, subst);
++    return argValRes.andThen((n) => ok(-n));
++  } else {
++    const { operator, left, right } = n;
++    const lValRes = evalNum(left, subst);
++    if (lValRes.isErr()) return err(lValRes.error);
++    const rValRes = evalNum(right, subst);
++    if (rValRes.isErr()) return err(rValRes.error);
++
++    const lVal = lValRes.value,
++      rVal = rValRes.value;
++
++    if (operator === "+") return ok(lVal + rVal);
++    else if (operator === "-") return ok(lVal - rVal);
++    else if (operator === "*") return ok(lVal * rVal);
++    else if (operator === "^") return ok(lVal ** rVal);
++    else {
++      // div or mod
++      if (rVal === 0) {
++        return err({
++          tag: "DivideByZeroError",
++          location: n,
++        });
++      }
++      if (operator === "/") return ok(lVal / rVal);
++      else return ok(lVal % rVal);
++    }
++  }
++};
++
++const substISetVarNumber = (
++  v: string,
++  location: AbstractNode,
++  subst: ISetSubst,
++): Result<number, SubstanceError> => {
++  // If already a number, use that number.
++  if (!isNaN(Number(v))) {
++    return ok(Number(v));
++  }
++
++  const isetVarValue = subst.get(v);
++  if (isetVarValue === undefined) {
++    return err({
++      tag: "InvalidSetIndexingError",
++      index: v,
++      location,
++      suggestions: [...subst.keys()],
++    });
++  }
++  return ok(isetVarValue);
++};
++
++const substISetVarStr = (
++  v: string,
++  location: AbstractNode,
++  subst: ISetSubst,
++): Result<string, SubstanceError> => {
++  const underscorePos = v.lastIndexOf("_");
++  if (underscorePos === -1) {
++    return ok(v);
++  }
++
++  const prefix = v.slice(0, underscorePos);
++  const isetVarName = v.slice(underscorePos + 1);
++
++  const isetVarValue = substISetVarNumber(isetVarName, location, subst);
++  return isetVarValue.andThen((idx) => ok(`${prefix}_${idx}`));
++};
++
++const substISetId = (
++  id: Identifier<A>,
++  subst: ISetSubst,
++): Result<Identifier<A>, SubstanceError> =>
++  substISetVarStr(id.value, id, subst).andThen((substitutedID: string) =>
++    ok({
++      ...id,
++      value: substitutedID,
++    }),
++  );
++
++const substISetExpr = (
++  expr: SubExpr<A>,
++  subst: ISetSubst,
++): Result<SubExpr<A>, SubstanceError> => {
++  const { tag } = expr;
++  switch (tag) {
++    case "Identifier":
++      return substISetId(expr, subst);
++    case "ApplyFunction":
++    case "ApplyConstructor":
++    case "Func":
++      return substISetFunc(expr, subst);
++    case "Deconstructor":
++      return substISetDeconstructor(expr, subst);
++    case "StringLit":
++      return ok(expr);
++  }
++};
++
++const substISetFunc = (
++  func: ApplyFunction<A> | ApplyConstructor<A> | Func<A>,
++  subst: ISetSubst,
++): Result<ApplyFunction<A> | ApplyConstructor<A> | Func<A>, SubstanceError> => {
++  // Don't substitute over function names
++  const substArgs = safeChain<SubExpr<A>, SubExpr<A>[], SubstanceError>(
++    func.args,
++    (arg, curr: SubExpr<A>[]) =>
++      substISetExpr(arg, subst).andThen((sArg) => ok([...curr, sArg])),
++    ok([]),
++  );
++  if (substArgs.isErr()) {
++    return err(substArgs.error);
++  }
++
++  return ok({
++    ...func,
++    args: substArgs.value,
++  });
++};
++
++const substISetDeconstructor = (
++  deconstr: Deconstructor<A>,
++  subst: ISetSubst,
++): Result<Deconstructor<A>, SubstanceError> =>
++  substISetId(deconstr.variable, subst).andThen((id) =>
++    ok({
++      ...deconstr,
++      variable: id,
++    }),
++  );
++
++const substISetBind = (
++  bind: Bind<A>,
++  subst: ISetSubst,
++): Result<Bind<A>, SubstanceError> => {
++  const { variable, expr } = bind;
++  const substVariable = substISetId(variable, subst);
++  if (substVariable.isErr()) return err(substVariable.error);
++  const substExpr = substISetExpr(expr, subst);
++  if (substExpr.isErr()) return err(substExpr.error);
++  return ok({
++    ...bind,
++    variable: substVariable.value,
++    expr: substExpr.value,
++  });
++};
++
++const substISetDeclBind = (
++  declBind: DeclBind<A>,
++  subst: ISetSubst,
++): Result<DeclBind<A>, SubstanceError> => {
++  const { variable, expr } = declBind;
++  const substVariable = substISetId(variable, subst);
++  if (substVariable.isErr()) return err(substVariable.error);
++  const substExpr = substISetExpr(expr, subst);
++  if (substExpr.isErr()) return err(substExpr.error);
++  return ok({
++    ...declBind,
++    variable: substVariable.value,
++    expr: substExpr.value,
++  });
++};
++
++const substISetPredicate = (
++  pred: ApplyPredicate<A>,
++  subst: ISetSubst,
++): Result<ApplyPredicate<A>, SubstanceError> => {
++  const { args } = pred;
++
++  const substArgs = safeChain<SubPredArg<A>, SubPredArg<A>[], SubstanceError>(
++    args,
++    (arg, curr: SubPredArg<A>[]) => {
++      if (arg.tag === "ApplyPredicate") {
++        const substArg = substISetPredicate(arg, subst);
++        return substArg.andThen((sArg) => ok([...curr, sArg]));
+       } else {
+-        const varsOk = every(
+-          ...stmt.option.variables.map((v) => checkVar(v, env)),
+-        );
+-        return andThen(({ env }) => ok({ env, contents: stmt }), varsOk);
++        const substArg = substISetExpr(arg, subst);
++        return substArg.andThen((sArg) => ok([...curr, sArg]));
+       }
++    },
++    ok([]),
++  );
++
++  if (substArgs.isErr()) return err(substArgs.error);
++  return ok({ ...pred, args: substArgs.value });
++};
++
++const substISetLabelDecl = (
++  labelDecl: LabelDecl<A>,
++  subst: ISetSubst,
++): Result<LabelDecl<A>, SubstanceError> =>
++  substISetId(labelDecl.variable, subst).andThen((id) =>
++    ok({ ...labelDecl, variable: id }),
++  );
++
++const substISetAutoLabel = (
++  autoLabel: AutoLabel<A>,
++  subst: ISetSubst,
++): Result<AutoLabel<A>, SubstanceError> => {
++  if (autoLabel.option.tag === "DefaultLabels") {
++    return ok(autoLabel);
++  } else {
++    const { variables } = autoLabel.option;
++    const substVariablesResult = all(
++      variables.map((variable) => substISetId(variable, subst)),
++    );
++    if (substVariablesResult.isErr()) {
++      return err(substVariablesResult.error[0]);
+     }
+-    case "LabelDecl":
+-      return andThen(
+-        ({ env }) => ok({ env, contents: stmt }),
+-        checkVar(stmt.variable, env),
+-      );
+-    case "NoLabel": {
+-      const argsOk = every(...stmt.args.map((a) => checkVar(a, env)));
+-      return andThen(({ env }) => ok({ env, contents: stmt }), argsOk);
++
++    return ok({
++      ...autoLabel,
++      option: {
++        ...autoLabel.option,
++        variables: substVariablesResult.value,
++      },
++    });
++  }
++};
++
++const substISetNoLabel = (
++  noLabel: NoLabel<A>,
++  subst: ISetSubst,
++): Result<NoLabel<A>, SubstanceError> => {
++  const { args: variables } = noLabel;
++  const substVariablesResult = all(
++    variables.map((variable) => substISetId(variable, subst)),
++  );
++  if (substVariablesResult.isErr()) {
++    return err(substVariablesResult.error[0]);
++  }
++
++  return ok({
++    ...noLabel,
++    args: substVariablesResult.value,
++  });
++};
++
++const checkDecl = (stmt: Decl<A>, env: Env): CheckerResult<Decl<A>[]> => {
++  const decl = stmt;
++  const { type, name: nameId } = decl;
++  // check type constructor
++  const typeOk = checkTypeConstructor(type, env);
++  if (typeOk.isErr()) return err([typeOk.error]);
++
++  return createVars(type, [nameId], env, decl);
++};
++
++const checkDeclISet = (
++  stmtSet: StmtSet<A> & { stmt: Decl<A> },
++  env: Env,
++): CheckerResult<Decl<A>[]> => {
++  const { stmt: decl, iset } = stmtSet;
++  const { type, name: uncompiledNameId } = decl;
++  const typeOk = checkTypeConstructor(type, env);
++  if (typeOk.isErr()) return err([typeOk.error]);
++
++  const isetSubstsResult = evalISet(iset);
++  if (isetSubstsResult.isErr()) return err([isetSubstsResult.error]);
++
++  const isetSubsts = isetSubstsResult.value;
++  const substIdsResult = all(
++    isetSubsts.map((subst) => substISetId(uncompiledNameId, subst)),
++  );
++
++  if (substIdsResult.isErr()) {
++    return err(substIdsResult.error);
++  }
++
++  const substIds = substIdsResult.value;
++
++  return createVars(type, substIds, env, decl);
++};
++
++const checkDeclList = (
++  stmt: DeclList<A>,
++  env: Env,
++): CheckerResult<Decl<A>[]> => {
++  const declList = stmt;
++  const { type, names: nameIds } = declList;
++
++  // check type constructor
++  const typeOk = checkTypeConstructor(type, env);
++  if (typeOk.isErr()) {
++    return err([typeOk.error]);
++  }
++
++  return createVars(type, nameIds, env, declList);
++};
++
++const checkDeclListISet = (
++  stmtSet: StmtSet<A> & { stmt: DeclList<A> },
++  env: Env,
++): CheckerResult<Decl<A>[]> => {
++  const { stmt: declList, iset } = stmtSet;
++  const { type, names: uncompiledNameIds } = declList;
++  const typeOk = checkTypeConstructor(type, env);
++  if (typeOk.isErr()) return err([typeOk.error]);
++
++  const isetSubstsResult = evalISet(iset);
++  if (isetSubstsResult.isErr()) return err([isetSubstsResult.error]);
++
++  const isetSubsts = isetSubstsResult.value;
++  const substIdsResult = all(
++    isetSubsts
++      .map((subst) =>
++        uncompiledNameIds.map((uncompiledNameId) =>
++          substISetId(uncompiledNameId, subst),
++        ),
++      )
++      .flat(),
++  );
++
++  if (substIdsResult.isErr()) {
++    return err(substIdsResult.error);
++  }
++
++  const substIds = substIdsResult.value;
++
++  return createVars(type, substIds, env, declList);
++};
++
++const createVars = (
++  type: TypeConsApp<A>,
++  nameIds: Identifier<A>[],
++  env: Env,
++  node:
++    | Decl<A>
++    | DeclList<A>
++    | (StmtSet<A> & { stmt: Decl<A> })
++    | (StmtSet<A> & { stmt: DeclList<A> }),
++): CheckerResult<Decl<A>[]> => {
++  let vars = env.vars;
++  const varIDs = [...env.varIDs];
++  const equivalentDecls: Decl<A>[] = [];
++  const errs: SubstanceError[] = [];
++
++  for (const nameId of nameIds) {
++    const { value: name } = nameId;
++    const dup = varIDs.find((id) => id.value === name);
++    if (dup !== undefined) {
++      errs.push(duplicateName(nameId, node, dup));
+     }
++
++    vars = vars.set(name, type);
++    varIDs.push(nameId);
++    equivalentDecls.push({
++      ...location(node),
++      tag: "Decl",
++      type,
++      name: nameId,
++    });
++  }
++
++  if (errs.length > 0) {
++    return err(errs);
+   }
++
++  return ok({
++    env: { ...env, vars, varIDs },
++    contents: equivalentDecls,
++  });
++};
++
++const checkBind = (stmt: Bind<A>, env: Env): CheckerResult<Bind<A>[]> => {
++  const { variable, expr } = stmt;
++  const varOk = checkVar(variable, env);
++  const exprOk = checkExpr(expr, env, variable);
++  return subtypeOf(exprOk, varOk).andThen(({ env, contents: [e, v] }) => {
++    const updatedBind: Bind<A> = { ...stmt, variable: v, expr: e };
++    return ok({
++      env,
++      contents: [updatedBind],
++    });
++  });
++};
++
++const checkDeclBind = (
++  stmt: DeclBind<A>,
++  env: Env,
++): CheckerResult<(Decl<A> | Bind<A>)[]> => {
++  const declBind = stmt;
++  const { type, variable, expr } = declBind;
++
++  const decl: Decl<A> = {
++    ...declBind,
++    tag: "Decl",
++    name: variable,
++  };
++
++  if ("expr" in decl) {
++    delete decl.expr;
++  }
++
++  const declResult = checkDecl(decl, env);
++  if (declResult.isErr()) return err(declResult.error);
++  const { env: checkedDeclEnv, contents: checkedDecls } = declResult.value;
++
++  const bind: Bind<A> = {
++    ...declBind,
++    tag: "Bind",
++  };
++
++  if ("type" in bind) {
++    delete bind.type;
++  }
++
++  const bindResult = checkBind(bind, checkedDeclEnv);
++  if (bindResult.isErr()) return err(bindResult.error);
++  const { env: checkedBindEnv, contents: checkedBinds } = bindResult.value;
++
++  return ok({
++    env: checkedBindEnv,
++    contents: [...checkedDecls, ...checkedBinds],
++  });
+ };
+ 
+ export const checkPredicate = (
+   stmt: ApplyPredicate<A>,
+   env: Env,
+-): CheckerResult<ApplyPredicate<A>> => {
++): CheckerResult<[ApplyPredicate<A>]> => {
+   const { name, args } = stmt;
+   const predDecl = env.predicates.get(name.value);
+   // check if predicate exists and retrieve its decl
+@@ -368,27 +989,96 @@ export const checkPredicate = (
+     const argsOk: SubstitutionResult<SubPredArg<A>[]> = safeChain(
+       argPairs,
+       ([expr, arg], { substEnv: cxt, env: e, contents: args }) =>
+-        andThen(
+-          (res) => ok({ ...res, contents: [...args, res.contents] }),
+-          checkPredArg(expr, arg, cxt, e),
++        checkPredArg(expr, arg, cxt, e).andThen((res) =>
++          ok({ ...res, contents: [...args, res.contents] }),
+         ),
+       ok({ substEnv, env, contents }),
+     );
+     // NOTE: throw away the substitution because this layer above doesn't need to typecheck
+-    return andThen(
+-      ({ env, contents: args }) => ok({ env, contents: { ...stmt, args } }),
+-      argsOk,
++    return argsOk.andThen(({ env, contents: args }) =>
++      ok({ env, contents: [{ ...stmt, args }] }),
+     );
+   } else {
+-    return err(
++    return err([
+       typeNotFound(
+         name,
+         [...env.predicates.values()].map((p) => p.name),
+       ),
+-    );
++    ]);
+   }
+ };
+ 
++const checkLabelDecl = (
++  stmt: LabelDecl<A>,
++  env: Env,
++): CheckerResult<LabelDecl<A>[]> => {
++  return checkVar(stmt.variable, env).andThen(({ env }) =>
++    ok({ env, contents: [stmt] }),
++  );
++};
++
++const checkAutoLabel = (
++  stmt: AutoLabel<A>,
++  env: Env,
++): CheckerResult<AutoLabel<A>[]> => {
++  // NOTE: no checking required
++  if (stmt.option.tag === "DefaultLabels") {
++    return ok({ env, contents: [stmt] });
++  } else {
++    const varsOk = every(...stmt.option.variables.map((v) => checkVar(v, env)));
++    return varsOk.andThen(({ env }) => ok({ env, contents: [stmt] }));
++  }
++};
++
++const checkNoLabel = (
++  stmt: NoLabel<A>,
++  env: Env,
++): CheckerResult<NoLabel<A>[]> => {
++  const argsOk = every(...stmt.args.map((a) => checkVar(a, env)));
++  return argsOk.andThen(({ env }) => ok({ env, contents: [stmt] }));
++};
++
++const checkStmtISet = <T extends StmtSet<A>>(
++  stmtSet: T,
++  env: Env,
++  substFunc: (
++    stmt: T["stmt"],
++    isetSubst: ISetSubst,
++  ) => Result<T["stmt"], SubstanceError>,
++  checkerFunc: (
++    stmt: T["stmt"],
++    env: Env,
++  ) => CheckerResult<CompiledSubStmt<A>[]>,
++): CheckerResult<CompiledSubStmt<A>[]> => {
++  const { stmt, iset } = stmtSet;
++  const isetSubstsResult = evalISet(iset);
++  if (isetSubstsResult.isErr()) return err([isetSubstsResult.error]);
++
++  const isetSubsts = isetSubstsResult.value;
++  const substStmtsResult = all(
++    isetSubsts.map((subst) => substFunc(stmt, subst)),
++  );
++  if (substStmtsResult.isErr()) {
++    return err(substStmtsResult.error);
++  }
++  const substStmts = substStmtsResult.value;
++
++  return safeChain(
++    substStmts,
++    (substStmt, curr: WithEnv<CompiledSubStmt<A>[]>) => {
++      const { env: currEnv, contents: currStmts } = curr;
++      const checked = checkerFunc(substStmt, currEnv);
++      if (checked.isErr()) return err(checked.error);
++      const { env: checkedEnv, contents: newStmts } = checked.value;
++      return ok({
++        env: checkedEnv,
++        contents: [...currStmts, ...newStmts],
++      });
++    },
++    ok({ env, contents: [] }),
++  );
++};
++
+ const checkPredArg = (
+   arg: SubPredArg<A>,
+   argDecl: Arg<C>,
+@@ -410,20 +1100,16 @@ const checkPredArg = (
+     // if the argument is a nested predicate, call checkPredicate again
+     const predOk = checkPredicate(arg, env);
+     // NOTE: throw out the env from the check because it's not updating anything
+-    return andThen(
+-      ({ env, contents: predArg }) =>
+-        ok({ substEnv: subst, env, contents: predArg }),
+-      predOk,
++    return predOk.andThen(({ env, contents: predArg }) =>
++      ok({ substEnv: subst, env, contents: predArg[0] }),
+     );
+   } else {
+     const argExpr: SubExpr<A> = arg; // HACK: make sure the lambda function below will typecheck
+     // if the argument is an expr, check and get the type of the expression
+     const exprOk: ResultWithType<SubExpr<A>> = checkExpr(arg, env);
+     // check against the formal argument
+-    const argSubstOk = andThen(
+-      ({ type, env }) =>
+-        substituteArg(type, argDecl.type, argExpr, argDecl, subst, env),
+-      exprOk,
++    const argSubstOk = exprOk.andThen(({ type, env }) =>
++      substituteArg(type, argDecl.type, argExpr, argDecl, subst, env),
+     );
+     // if everything checks out, return env as a formality
+     return argSubstOk;
+@@ -445,7 +1131,7 @@ export const subtypeOf = <T1 extends ASTNode<A>, T2 extends ASTNode<A>>(
+           if (isSubtype(t1, t2, updatedenv))
+             return ok({ env: updatedenv, contents: [expr1, expr2] });
+           else {
+-            return err(typeMismatch(t1, t2, expr1, expr2));
++            return err([typeMismatch(t1, t2, expr1, expr2)]);
+           }
+         },
+         Err: (e) => err(e),
+@@ -486,7 +1172,7 @@ export const checkExpr = (
+ type SubstitutionEnv = im.Map<string, TypeConsApp<A>>; // mapping from type var to concrete types
+ type SubstitutionResult<T> = Result<
+   WithEnv<T> & { substEnv: SubstitutionEnv },
+-  SubstanceError
++  SubstanceError[]
+ >; // included env as a potential error accumulator TODO: check if the env passing chain is intact
+ 
+ /**
+@@ -511,15 +1197,15 @@ const substituteArg = (
+     // TODO: check ordering of types
+     if (expectedArgs.length !== type.args.length) {
+       if (type.name.value === formalType.name.value) {
+-        return err(
++        return err([
+           typeArgLengthMismatch(type, formalType, sourceExpr, expectedExpr),
+-        );
++        ]);
+       } else
+-        return err(typeMismatch(type, formalType, sourceExpr, expectedExpr));
++        return err([typeMismatch(type, formalType, sourceExpr, expectedExpr)]);
+     } else {
+       // if there are no arguments, check for type equality and return mismatch error if types do not match
+       if (type.args.length === 0 && !isSubtype(type, formalType, env)) {
+-        return err(typeMismatch(type, formalType, sourceExpr, expectedExpr));
++        return err([typeMismatch(type, formalType, sourceExpr, expectedExpr)]);
+       }
+       // if there are more arguments, substitute them one by one
+       // NOTE: we already know the lengths are the same, so `zipStrict` shouldn't throw
+@@ -549,7 +1235,9 @@ const substituteArg = (
+         return ok({ substEnv, env, contents: sourceExpr });
+       // type doesn't match with the previous substitution
+       else {
+-        return err(typeMismatch(type, expectedType, sourceExpr, expectedExpr));
++        return err([
++          typeMismatch(type, expectedType, sourceExpr, expectedExpr),
++        ]);
+       }
+     } else {
+       // if type var is not substituted yet, add new substitution to the env
+@@ -560,7 +1248,7 @@ const substituteArg = (
+       });
+     }
+   } else {
+-    return err(unexpectedExprForNestedPred(type, sourceExpr, expectedExpr));
++    return err([unexpectedExprForNestedPred(type, sourceExpr, expectedExpr)]);
+   }
+ };
+ const matchArg = (
+@@ -572,9 +1260,8 @@ const matchArg = (
+   // check and get the type of the expression
+   const exprOk: ResultWithType<SubExpr<A>> = checkExpr(expr, env);
+   // check against the formal argument
+-  const argSubstOk = andThen(
+-    ({ type }) => substituteArg(type, arg.type, expr, arg, subst, env),
+-    exprOk,
++  const argSubstOk = exprOk.andThen(({ type }) =>
++    substituteArg(type, arg.type, expr, arg, subst, env),
+   );
+   // if everything checks out, return env as a formality
+   return argSubstOk;
+@@ -624,12 +1311,12 @@ const checkFunc = (
+     func = { ...func, tag: "ApplyFunction" };
+     funcDecl = env.functions.get(name);
+   } else {
+-    return err(
++    return err([
+       typeNotFound(func.name, [
+         ...[...env.constructors.values()].map((c) => c.name),
+         ...[...env.functions.values()].map((c) => c.name),
+       ]),
+-    );
++    ]);
+   }
+   // reassign `func` so the type is more precise
+   const consOrFunc: ApplyConstructor<A> | ApplyFunction<A> = func;
+@@ -639,9 +1326,9 @@ const checkFunc = (
+     // initialize substitution environment
+     const substContext: SubstitutionEnv = im.Map<string, TypeConsApp<C>>();
+     if (funcDecl.args.length !== func.args.length) {
+-      return err(
++      return err([
+         argLengthMismatch(func.name, func.args, funcDecl.args, func, funcDecl),
+-      );
++      ]);
+     } else {
+       const argPairs = zip2(func.args, funcDecl.args);
+       const argsOk: SubstitutionResult<SubExpr<A>> = safeChain(
+@@ -650,10 +1337,8 @@ const checkFunc = (
+         ok({ substEnv: substContext, env, contents: func.args[0] }),
+       );
+       const outputOk: ResultWithType<ApplyConstructor<A> | ApplyFunction<A>> =
+-        andThen(
+-          ({ substEnv, env }) =>
+-            withType(env, applySubstitution(output.type, substEnv), consOrFunc),
+-          argsOk,
++        argsOk.andThen(({ substEnv, env }) =>
++          withType(env, applySubstitution(output.type, substEnv), consOrFunc),
+         );
+       // if the func is a constructor and bounded by a variable, cache the binding to env
+       if (
+@@ -668,13 +1353,12 @@ const checkFunc = (
+             funcDecl,
+           ]),
+         };
+-        return andThen(
+-          ({ type }) => withType(updatedEnv, type, consOrFunc),
+-          outputOk,
++        return outputOk.andThen(({ type }) =>
++          withType(updatedEnv, type, consOrFunc),
+         );
+       } else return outputOk;
+     }
+-  } else return err(typeNotFound(func.name)); // TODO: suggest possible types
++  } else return err([typeNotFound(func.name)]); // TODO: suggest possible types
+ };
+ 
+ const checkDeconstructor = (
+@@ -704,16 +1388,14 @@ const checkField = (
+     );
+     // TODO: the field type call is a bit redundant. Is there a better way to get the type of the field?
+     const fieldType = checkExpr(cons.args[fieldIndex], env);
+-    return andThen(
+-      ({ type, env }) =>
+-        ok({
+-          type: type,
+-          env,
+-          contents: decons,
+-        }),
+-      fieldType,
++    return fieldType.andThen(({ type, env }) =>
++      ok({
++        type: type,
++        env,
++        contents: decons,
++      }),
+     );
+-  } else return err(deconstructNonconstructor(decons));
++  } else return err([deconstructNonconstructor(decons)]);
+ };
+ 
+ export const checkVar = (
+@@ -726,7 +1408,7 @@ export const checkVar = (
+   } else {
+     const possibleVars = env.varIDs;
+     // TODO: find vars of the same type for error reporting (need to check expr first)
+-    return err(varNotFound(variable, possibleVars));
++    return err([varNotFound(variable, possibleVars)]);
+   }
+ };
+ //#endregion
+@@ -736,16 +1418,88 @@ export const checkVar = (
+ export const prettySubstance = (prog: SubProg<A>): string =>
+   prog.statements.map((stmt) => prettyStmt(stmt)).join("\n");
+ 
+-export const prettyStmt = (stmt: SubStmt<A>): string => {
++export const prettyCompiledSubstance = (prog: CompiledSubProg<A>): string =>
++  prettySubstance(prog);
++
++export const prettyStmt = (stmt: Stmt<A>): string => {
++  if (stmt.tag !== "StmtSet") {
++    return prettySingleStmt(stmt);
++  } else {
++    // TOOD: use more informative pretty-printing
++    return `${prettySingleStmt(stmt.stmt)} ${prettyIndexSet(stmt.iset)}`;
++  }
++};
++
++const prettyIndexSet = (iset: IndexSet<A>): string => {
++  const rangeStrings: string[] = [];
++  for (const range of iset.indices) {
++    const varName = range.variable.value;
++    const low = range.range.low.value;
++    const high = range.range.high.value;
++    rangeStrings.push(`${varName} in [${low}, ${high}]`);
++  }
++  const rangeString = rangeStrings.join(", ");
++
++  if (iset.condition === undefined) {
++    return `for ${rangeString}`;
++  } else {
++    return `for ${rangeString} where ${prettyCond(iset.condition)}`;
++  }
++};
++
++const prettyCond = (cond: BooleanExpr<A>): string => {
++  if (cond.tag === "BooleanConstant") {
++    return cond.value.toString();
++  } else if (cond.tag === "BinaryBooleanExpr") {
++    return `(${prettyCond(cond.left)} ${cond.operator} ${prettyCond(
++      cond.right,
++    )})`;
++  } else if (cond.tag === "UnaryBooleanExpr") {
++    return `(${cond.operator}${prettyCond(cond.arg)})`;
++  } else {
++    return `(${prettyNum(cond.left)} ${cond.operator} ${prettyNum(
++      cond.right,
++    )})`;
++  }
++};
++
++const prettyNum = (n: NumExpr<A>): string => {
++  if (n.tag === "NumberConstant") {
++    return `${n.value}`;
++  } else if (n.tag === "Identifier") {
++    return n.value;
++  } else if (n.tag === "UnaryExpr") {
++    return `(${n.operator}${prettyNum(n.arg)})`;
++  } else {
++    return `(${prettyNum(n.left)} ${n.operator} ${prettyNum(n.right)})`;
++  }
++};
++
++const prettyCompiledStmt = (stmt: CompiledSubStmt<A>): string => {
++  return prettySingleStmt(stmt);
++};
++
++const prettySingleStmt = (stmt: SubStmt<A>): string => {
+   switch (stmt.tag) {
+     case "Decl": {
+       const { type, name } = stmt;
+       return `${prettyType(type)} ${prettyVar(name)}`;
+     }
++    case "DeclList": {
++      const { type, names } = stmt;
++      const pNames = names.map(prettyVar).join(", ");
++      return `${prettyType(type)} ${pNames}`;
++    }
+     case "Bind": {
+       const { variable, expr } = stmt;
+       return `${prettyVar(variable)} := ${prettyExpr(expr)}`;
+     }
++    case "DeclBind": {
++      const { type, variable, expr } = stmt;
++      return `${prettyType(type)} ${prettyVar(variable)} := ${prettyExpr(
++        expr,
++      )}`;
++    }
+     case "AutoLabel":
+       return `AutoLabel ${prettyLabelOpt(stmt.option)}`;
+     case "NoLabel":
+@@ -758,8 +1512,6 @@ export const prettyStmt = (stmt: SubStmt<A>): string => {
+       return `${prettyExpr(stmt.left)} = ${prettyExpr(stmt.right)}`;
+     case "EqualPredicates":
+       return `${prettyPredicate(stmt.left)} <-> ${prettyPredicate(stmt.right)}`;
+-    default:
+-      throw new Error(`unsupported substance statement type`);
+   }
+ };
+ 
+@@ -777,6 +1529,8 @@ export const prettySubNode = (
+     case "ApplyPredicate":
+     case "EqualExprs":
+     case "EqualPredicates":
++    case "DeclList":
++    case "DeclBind":
+       return prettyStmt(node);
+     default:
+       return prettyExpr(node);
+@@ -813,7 +1567,9 @@ const prettyLabelOpt = (opt: LabelOption<A>): string => {
+   }
+ };
+ 
+-const prettyVar = (v: Identifier<A>): string => v.value;
++export const prettyVar = (v: Identifier<A>): string => {
++  return v.value;
++};
+ const prettyExpr = (expr: SubExpr<A>): string => {
+   switch (expr.tag) {
+     case "Identifier":
+diff --git a/packages/core/src/index.ts b/packages/core/src/index.ts
+index f5b55547e5..2d2724d4f0 100644
+--- a/packages/core/src/index.ts
++++ b/packages/core/src/index.ts
+@@ -360,6 +360,7 @@ export {
+   checkSubstance,
+   compileSubstance,
+   parseSubstance,
++  prettyCompiledSubstance,
+   prettySubstance,
+ } from "./compiler/Substance.js";
+ export { constrDict } from "./contrib/Constraints.js";
+diff --git a/packages/core/src/parser/Domain.ne b/packages/core/src/parser/Domain.ne
+index 6efd471f1f..a4c1d30c0c 100644
+--- a/packages/core/src/parser/Domain.ne
++++ b/packages/core/src/parser/Domain.ne
+@@ -71,7 +71,7 @@ statement
+   |  subtype     {% id %}
+ 
+ # not to be confused with `type`, defined below
+-type_decl -> "type" __ identifier (_ "(" _ type_params _ ")"):? (_ "<:" _ sepBy1[type_constructor, ","]):? {%
++type_decl -> "type" __ identifier (_ "(" _ type_params _ ")"):? (_ "<:" _ sepEndBy1[type_constructor, ","]):? {%
+   ([typ, , name, ps, sub]): TypeDecl<C> => {
+     const params = ps ? ps[3] : [];
+     const superTypes = sub ? sub[3] : [];
+@@ -234,15 +234,15 @@ type_constructor -> identifier type_arg_list:? {%
+ 
+ # Various kinds of parameters and arguments
+ 
+-type_arg_list -> _ "(" _ sepBy1[type, ","] _ ")" {% ([, , , d]): Type<C>[] => _.flatten(d) %}
++type_arg_list -> _ "(" _ sepEndBy1[type, ","] _ ")" {% ([, , , d]): Type<C>[] => _.flatten(d) %}
+ 
+ type_params_list 
+   -> null {% d => [] %}
+   |  _ "[" _ type_params _ "]" {% nth(3) %}
+-type_params -> sepBy1[type_var, ","] {% ([d]) => d %}
++type_params -> sepEndBy1[type_var, ","] {% ([d]) => d %}
+ 
+ args_list 
+-  -> _ "(" _ sepBy[arg, ","] _ ")" {% ([, , , d]): Arg<C>[] => _.flatten(d) %}
++  -> _ "(" _ sepEndBy[arg, ","] _ ")" {% ([, , , d]): Arg<C>[] => _.flatten(d) %}
+ arg -> type (__ var):? {% 
+   ([type, v]): Arg<C> => {
+     const variable = v ? v[1] : undefined;
+@@ -255,7 +255,7 @@ arg -> type (__ var):? {%
+   }
+ %}
+ named_args_list 
+-  -> _ "(" _ sepBy[named_arg, ","] _ ")" {% ([, , , d]): Arg<C>[] => _.flatten(d) %}
++  -> _ "(" _ sepEndBy[named_arg, ","] _ ")" {% ([, , , d]): Arg<C>[] => _.flatten(d) %}
+ named_arg -> type __ var {% 
+   ([type, , variable]): Arg<C> => ({
+      ...nodeData,
+diff --git a/packages/core/src/parser/ParserUtil.ts b/packages/core/src/parser/ParserUtil.ts
+index e941ac3fab..65f71450fa 100644
+--- a/packages/core/src/parser/ParserUtil.ts
++++ b/packages/core/src/parser/ParserUtil.ts
+@@ -17,6 +17,7 @@ export const basicSymbols: moo.Rules = {
+   gte: ">=",
+   gt: ">",
+   eq: "==",
++  neq: "!=",
+   rarrow: "->",
+   tilda: "~",
+   lparen: "(",
+@@ -59,6 +60,9 @@ export const basicSymbols: moo.Rules = {
+   question: "?",
+   dollar: "$",
+   tick: "`",
++  and: "&&",
++  or: "||",
++  not: "!",
+ };
+ 
+ const tokenStart = (token: moo.Token): SourceLoc => {
+diff --git a/packages/core/src/parser/Style.ne b/packages/core/src/parser/Style.ne
+index 5235151416..095622ea33 100644
+--- a/packages/core/src/parser/Style.ne
++++ b/packages/core/src/parser/Style.ne
+@@ -240,7 +240,7 @@ select_with -> "with" __ decl_patterns _ml {% d => d[2] %}
+ 
+ foreach -> "foreach" __ decl_patterns _ml {% d => d[2] %}
+ 
+-decl_patterns -> sepBy1[decl_list, ";"] {% 
++decl_patterns -> sepEndBy1[decl_list, ";"] {% 
+   ([d]): DeclPatterns<C> => {
+     const contents = _.flatten(d) as DeclPattern<C>[];
+     return {
+@@ -251,7 +251,7 @@ decl_patterns -> sepBy1[decl_list, ";"] {%
+   }
+ %}
+ 
+-decl_list -> identifier __ sepBy1[binding_form, ","] {% 
++decl_list -> identifier __ sepEndBy1[binding_form, ","] {% 
+   ([type, , ids]): DeclPattern<C>[] => {
+     return declList(type, ids);
+   }
+@@ -266,7 +266,7 @@ decl -> identifier __ binding_form {%
+ 
+ select_where -> "where" __ relation_list _ml {% d => d[2] %}
+ 
+-relation_list -> sepBy1[relation, ";"]  {% 
++relation_list -> sepEndBy1[relation, ";"]  {% 
+   ([d]): RelationPatterns<C> => ({
+     ...nodeData,
+     ...rangeFrom(d),
+@@ -323,7 +323,7 @@ field_desc
+ 
+ sel_expr_list 
+   -> _ {% d => [] %}
+-  |  _ sepBy1[sel_expr, ","] _ {% nth(1) %}
++  |  _ sepEndBy1[sel_expr, ","] _ {% nth(1) %}
+ 
+ sel_expr 
+   -> identifier _ "(" sel_expr_list ")" {% 
+@@ -343,7 +343,7 @@ sel_expr
+ 
+ pred_arg_list 
+   -> _ {% d => [] %}
+-  |  _ sepBy1[pred_arg, ","] _ {% nth(1) %}
++  |  _ sepEndBy1[pred_arg, ","] _ {% nth(1) %}
+ 
+ # NOTE: resolve ambiguity here by allowing only rel_pred or `binding_form`
+ # Can't use sel_expr because sel_expr has valcons or func, which looks exactly the same as predicates. 
+@@ -608,6 +608,7 @@ string_lit -> %string_literal {%
+   })
+ %}
+ 
++number ->  %float_literal {% id %} 
+ annotated_float 
+   -> "?" (__ ("in"|"except") __ stage_list):? {% 
+     ([d, stages]): Vary<C> => ({
+@@ -618,7 +619,7 @@ annotated_float
+       exclude: stages ? stages[1][0].value === "except" : true,
+     })
+   %}
+-  |  %float_literal {% 
++  | number {% 
+     ([d]): Fix<C> => ({ ...nodeData, ...rangeOf(d), tag: 'Fix', contents: parseFloat(d) }) 
+   %}
+ 
+@@ -631,7 +632,7 @@ layer_op
+   -> "below" {% () => "below" %} 
+   |  "above" {% () => "above" %}
+ 
+-path_list -> sepBy1[expr, ","] {% id %}
++path_list -> sepEndBy1[expr, ","] {% id %}
+ 
+ computation_function -> identifier _ "(" expr_list ")" {% 
+   ([name, , , args, rparen]): CompApp<C> => ({
+@@ -663,7 +664,7 @@ sty_var_expr
+ 
+ stage_list 
+   -> identifier {% (d) => d %}
+-  |  "[" _ sepBy1[identifier, ","] _ "]" {% nth(2) %}
++  |  "[" _ sepEndBy1[identifier, ","] _ "]" {% nth(2) %}
+ 
+ comparison_op
+   -> "==" {%
+@@ -741,7 +742,7 @@ constraint -> "ensure" __ obj_constr_body (__ ("in"|"except") __ stage_list):? {
+ 
+ expr_list 
+   -> _ {% d => [] %}
+-  |  _ sepBy1[expr, ","] _ {% nth(1) %}
++  |  _ sepEndBy1[expr, ","] _ {% nth(1) %}
+ 
+ gpi_decl -> identifier _ml "{" property_decl_list "}" {%
+   ([shapeName, , , properties, rbrace]): GPIDecl<C> => ({
+diff --git a/packages/core/src/parser/Substance.ne b/packages/core/src/parser/Substance.ne
+index 4998e0676e..29763f458b 100644
+--- a/packages/core/src/parser/Substance.ne
++++ b/packages/core/src/parser/Substance.ne
+@@ -9,15 +9,16 @@ import moo from "moo";
+ import _ from 'lodash'
+ import { optional, basicSymbols, rangeOf, rangeBetween, rangeFrom, nth, convertTokenId } from './ParserUtil.js'
+ import { C, ConcreteNode, Identifier, StringLit } from "../types/ast.js";
+-import { SubProg, SubStmt, Decl, Bind, ApplyPredicate, Deconstructor, Func, EqualExprs, EqualPredicates, LabelDecl, NoLabel, AutoLabel, LabelOption, TypeConsApp } from "../types/substance.js";
++import { IndexSet, RangeAssign, Range, NumberConstant, BinaryExpr, UnaryExpr, ComparisonExpr, BooleanExpr, BinaryBooleanExpr, UnaryBooleanExpr, BooleanConstant, SubProg, SubStmt, Decl, DeclList, Bind, DeclBind, ApplyPredicate, Deconstructor, Func, EqualExprs, EqualPredicates, LabelDecl, NoLabel, AutoLabel, LabelOption, TypeConsApp } from "../types/substance.js";
+ 
+ 
+ // NOTE: ordering matters here. Top patterns get matched __first__
+ const lexer = moo.compile({
+   tex_literal: /\$.*?\$/, // TeX string enclosed by dollar signs
+   double_arrow: "<->",
++  int_literal: /[+-]?(?<!\.)\b[0-9]+\b(?!\.[0-9])/,
++  float_literal: /([+-]?([0-9]*[.])?[0-9]+)/,
+   ...basicSymbols,
+-  // tex_literal: /\$(?:[^\n\$]|\\["\\ntbfr])*\$/,
+   identifier: {
+     match: /[A-z_][A-Za-z_0-9]*/,
+     type: moo.keywords({
+@@ -27,7 +28,13 @@ const lexer = moo.compile({
+       label: "Label",
+       noLabel: "NoLabel",
+       autoLabel: "AutoLabel",
+-      let: "Let"
++      let: "Let",
++      bool_true: "true",
++      bool_false: "false",
++      for: "for",
++      in: "in",
++      where: "where",
++      mod: "mod",
+     })
+   }
+ });
+@@ -63,6 +70,80 @@ statements
+     |  _ statement _c_ nl statements {% d => [d[1], ...d[4]] %}
+ 
+ statement 
++  -> stmt_iset {% id %}
++  |  stmt     {% id %}
++
++stmt_iset -> stmt __ iset {% 
++  ([stmt, , iset]) => {
++    return {
++      ...nodeData,
++      ...rangeFrom([stmt, iset]),
++      tag: "StmtSet",
++      stmt, iset
++    }
++  }
++%}
++
++
++iset
++  -> "for" __ sepBy1[range_assign, ","] __ "where" __ boolean_expr {% 
++      ([kw, , d, ,,,b]): IndexSet<C> => {
++        return {
++          ...nodeData,
++          ...rangeBetween(kw, b),
++          tag: "IndexSet", 
++          indices: d, condition: b
++        };
++      }
++  %}
++  |  "for" __ sepBy1[range_assign, ","] {% 
++      ([kw, , d]): IndexSet<C> => {
++        return {
++          ...nodeData,
++          ...rangeBetween(kw, d[d.length - 1]),
++          tag: "IndexSet", 
++          indices: d, condition: undefined
++        };
++      }
++     %}
++
++range_assign -> identifier _ "in" _ int_range {%
++  ([variable, , , , range]): RangeAssign<C> => ({
++    ...nodeData,
++    ...rangeBetween(variable, range),
++    tag: "RangeAssign", variable, range
++  })
++%}
++
++int_range -> "[" _ integer _ "," _ integer _ "]" {%
++  ([lbracket, , low, , , , high, , rbracket]): Range<C> => ({
++    ...nodeData,
++    ...rangeBetween(lbracket, rbracket),
++    tag: "Range", low, high
++  })
++%}
++
++integer -> %int_literal {% 
++  ([d]): NumberConstant<C> => ({
++    ...nodeData,
++    ...rangeOf(d),
++    tag: "NumberConstant", value: +d.value
++  })
++%}
++
++float -> %float_literal {% 
++    ([d]): NumberConstant<C> => ({
++      ...nodeData,
++      ...rangeOf(d),
++      tag: "NumberConstant", value: +d.value
++    })
++  %}
++
++number 
++  -> integer {%id%}
++  |  float {%id%}
++
++stmt 
+   -> decl            {% id %}
+   |  bind            {% id %}
+   |  let_bind        {% id %}   
+@@ -72,12 +153,25 @@ statement
+   |  equal_exprs     {% id %}
+   |  equal_predicates {% id %}
+ 
+-decl -> type_constructor __ sepBy1[identifier, ","] {%
+-  ([type, , ids]): Decl<C>[] => ids.map((name: Identifier<C>): Decl<C> => ({
+-    ...nodeData,
+-    ...rangeBetween(type, name),
+-    tag: "Decl", type, name
+-  }))
++decl -> type_constructor __ sepEndBy1[identifier, ","] {%
++  ([type, , ids]): Decl<C> | DeclList<C> => {
++    if (ids.length === 1) {
++      // single identifier means one decl
++      return {
++        ...nodeData,
++        ...rangeFrom([type, ...ids]),
++        tag: "Decl",
++        type, name: ids[0]
++      };
++    } else {
++      return {
++        ...nodeData,
++        ...rangeFrom([type, ...ids]),
++        tag: "DeclList",
++        type, names: ids
++      }
++    }
++  }
+ %}
+ 
+ bind -> identifier _ ":=" _ sub_expr {%
+@@ -89,43 +183,33 @@ bind -> identifier _ ":=" _ sub_expr {%
+ %}
+ 
+ decl_bind -> type_constructor __ identifier _ ":=" _ sub_expr {%
+-  ([type, , variable, , , , expr]): [Decl<C>, Bind<C>] => {
+-    const decl: Decl<C> = {
+-      ...nodeData,
+-      ...rangeBetween(type, variable),
+-      tag: "Decl", type, name: variable
+-    };
+-    const bind: Bind<C> = {
++  ([type, , variable, , , , expr]): DeclBind<C> => {
++    return {
+       ...nodeData,
+-      ...rangeBetween(variable, expr),
+-      tag: "Bind", variable, expr
++      ...rangeBetween(type, expr),
++      tag: "DeclBind",
++      type, variable, expr
+     };
+-    return [decl, bind];
+   }
+ %}
+ 
+ let_bind -> "Let" __ identifier _ ":=" _ sub_expr {%
+-  ([prefix, , variable, , , , expr]): [Decl<C>, Bind<C>] => {
++  ([prefix, , variable, , , , expr]): DeclBind<C> => {
+     const type: TypeConsApp<C> = {
+-        ...nodeData,
+-        ...rangeBetween(variable, expr),
+-        tag: "TypeConstructor", args: [], name: expr.name
+-      };
+-    const decl: Decl<C> = {
+       ...nodeData,
+-      ...rangeBetween(type, variable),
+-      tag: "Decl", type, name: variable
++      ...rangeBetween(variable, expr),
++      tag: "TypeConstructor", args: [], name: expr.name
+     };
+-    const bind: Bind<C> = {
++    return {
+       ...nodeData,
+-      ...rangeBetween(variable, expr),
+-      tag: "Bind", variable, expr
++      ...rangeBetween(type, expr),
++      tag: "DeclBind",
++      type, variable, expr
+     };
+-    return [decl, bind];
+   }
+ %}
+ 
+-apply_predicate -> identifier _ "(" _ sepBy1[pred_arg, ","] _ ")" {%
++apply_predicate -> identifier _ "(" _ sepEndBy1[pred_arg, ","] _ ")" {%
+   ([name, , , , args]): ApplyPredicate<C> => ({
+     ...nodeData,
+     ...rangeFrom([name, ...args]),
+@@ -150,7 +234,7 @@ deconstructor -> identifier _ "." _ identifier {%
+ %}
+ 
+ # NOTE: generic func type for consturction, predicate, or function
+-func -> identifier _ "(" _ sepBy[sub_expr, ","] _ ")" {%
++func -> identifier _ "(" _ sepEndBy[sub_expr, ","] _ ")" {%
+   ([name, , , , args]): Func<C> => ({
+     ...nodeData,
+     ...rangeFrom([name, ...args]),
+@@ -199,7 +283,7 @@ label_decl
+     })
+   %}
+ 
+-no_label -> "NoLabel" __ sepBy1[identifier, ","] {%
++no_label -> "NoLabel" __ sepEndBy1[identifier, ","] {%
+   ([kw, , args]): NoLabel<C> => ({
+     ...nodeData,
+     ...rangeFrom([rangeOf(kw), ...args]),
+@@ -217,7 +301,7 @@ auto_label -> "AutoLabel" __ label_option {%
+ 
+ label_option 
+   -> "All" {% ([kw]): LabelOption<C> => ({ ...nodeData, ...rangeOf(kw), tag: "DefaultLabels" }) %}
+-  |  sepBy1[identifier, ","] {% 
++  |  sepEndBy1[identifier, ","] {% 
+        ([variables]): LabelOption<C> => ({ ...nodeData, ...rangeFrom(variables), tag: "LabelIDs", variables }) 
+      %}
+ 
+@@ -235,10 +319,53 @@ type_constructor -> identifier type_arg_list:? {%
+ %}
+ 
+ # NOTE: only type constructors are alloed in Substance
+-type_arg_list -> _ "(" _ sepBy1[type_constructor, ","] _ ")" {% 
++type_arg_list -> _ "(" _ sepEndBy1[type_constructor, ","] _ ")" {% 
+   ([, , , d]): TypeConsApp<C>[] => _.flatten(d) 
+ %}
+ 
++# Exprs
++
++expr -> 
++    expr _ "+" _ term {% ([left, , , , right]): BinaryExpr<C> => ({...nodeData, ...rangeBetween(left, right), tag: "BinaryExpr", operator: "+", left, right}) %}
++  | expr _ "-" _ term {% ([left, , , , right]): BinaryExpr<C> => ({...nodeData, ...rangeBetween(left, right), tag: "BinaryExpr", operator: "-", left, right}) %}
++  | term {% id %}
++
++term -> 
++    term _ "^" _ factor {% ([left, , , , right]): BinaryExpr<C> => ({...nodeData, ...rangeBetween(left, right), tag: "BinaryExpr", operator: "^", left, right}) %}
++  | term _ "*" _ factor {% ([left, , , , right]): BinaryExpr<C> => ({...nodeData, ...rangeBetween(left, right), tag: "BinaryExpr", operator: "*", left, right}) %}
++  | term _ "/" _ factor {% ([left, , , , right]): BinaryExpr<C> => ({...nodeData, ...rangeBetween(left, right), tag: "BinaryExpr", operator: "/", left, right}) %}
++  | term _ "%" _ factor {% ([left, , , , right]): BinaryExpr<C> => ({...nodeData, ...rangeBetween(left, right), tag: "BinaryExpr", operator: "%", left, right}) %}
++  | term _ "mod" _ factor {% ([left, , , , right]): BinaryExpr<C> => ({...nodeData, ...rangeBetween(left, right), tag: "BinaryExpr", operator: "%", left, right}) %}
++  | "-" _ factor {% ([op, , arg]): UnaryExpr<C> => ({...nodeData, ...rangeBetween(op, arg), tag: "UnaryExpr", operator: "-", arg }) %}
++  | factor {% id %}
++
++factor -> 
++    "(" _ expr _ ")" {% nth(2) %}
++  | number {% id %}
++  | identifier {% id %}
++
++comparison_expr -> 
++    expr _ "<" _ expr {% ([left, , , , right]): ComparisonExpr<C> => ({...nodeData, ...rangeBetween(left, right), tag: "ComparisonExpr", operator: "<", left, right}) %}
++  | expr _ ">" _ expr {% ([left, , , , right]): ComparisonExpr<C> => ({...nodeData, ...rangeBetween(left, right), tag: "ComparisonExpr", operator: ">", left, right}) %}
++  | expr _ "<=" _ expr {% ([left, , , , right]): ComparisonExpr<C> => ({...nodeData, ...rangeBetween(left, right), tag: "ComparisonExpr", operator: "<=", left, right}) %}
++  | expr _ ">=" _ expr {% ([left, , , , right]): ComparisonExpr<C> => ({...nodeData, ...rangeBetween(left, right), tag: "ComparisonExpr", operator: ">=", left, right}) %}
++  | expr _ "==" _ expr {% ([left, , , , right]): ComparisonExpr<C> => ({...nodeData, ...rangeBetween(left, right), tag: "ComparisonExpr", operator: "==", left, right}) %}
++  | expr _ "!=" _ expr {% ([left, , , , right]): ComparisonExpr<C> => ({...nodeData, ...rangeBetween(left, right), tag: "ComparisonExpr", operator: "!=", left, right}) %}
++
++boolean_expr ->
++    boolean_expr _ "||" _ boolean_term {% ([left, , , , right]): BinaryBooleanExpr<C> => ({...nodeData, ...rangeBetween(left, right), tag: "BinaryBooleanExpr", operator: "||", left, right}) %}
++  | boolean_term {% id %}
++
++boolean_term ->
++    boolean_term _ "&&" _ boolean_factor {% ([left, , , , right]): BinaryBooleanExpr<C> => ({...nodeData, ...rangeBetween(left, right), tag: "BinaryBooleanExpr", operator: "&&", left, right}) %}
++  | "!" _ boolean_factor {% ([op, , arg]): UnaryBooleanExpr<C> => ({...nodeData, ...rangeBetween(op, arg), tag: "UnaryBooleanExpr", operator: "!", arg}) %}
++  | boolean_factor {% id %}
++
++boolean_factor ->
++    "(" _ boolean_expr _ ")" {% nth(2) %}
++  | "true" {% ([kw]): BooleanConstant<C> => ({...nodeData, ...rangeOf(kw), tag: "BooleanConstant", value: true}) %}
++  | "false" {% ([kw]): BooleanConstant<C> => ({...nodeData, ...rangeOf(kw), tag: "BooleanConstant", value: false}) %}
++  | comparison_expr {% id %}
+ # Common 
+ 
+ string_lit -> %string_literal {%
+diff --git a/packages/core/src/parser/SubstanceParser.test.ts b/packages/core/src/parser/SubstanceParser.test.ts
+index 124e78cc44..e6d6d6726c 100644
+--- a/packages/core/src/parser/SubstanceParser.test.ts
++++ b/packages/core/src/parser/SubstanceParser.test.ts
+@@ -66,6 +66,40 @@ Set D
+ });
+ 
+ describe("statements", () => {
++  describe("isets", () => {
++    test.each([
++      "Set A for i in [0, 10]",
++      "Set A for i in [0, 10], j in [1, 5]",
++    ])("decl iset %s", (iset: string) => {
++      const { results } = parser.feed(iset);
++      sameASTs(results);
++    });
++
++    test.each([
++      "Set A := MakeSet(hello_j) for j in [0, 20]",
++      "Let B := Set(hello_world) for abc in [80, 70]",
++    ])("declbind iset %s", (iset: string) => {
++      const { results } = parser.feed(iset);
++      sameASTs(results);
++    });
++
++    test.each([
++      "Edge(a_i, a_j) for i in [0, 20], j in [20, 30] where i + 1 == j && j + 1 == i || !(j == 1 && y == 2)",
++      "Edge(v_i, v_i) for i in [0, 20] where 20 != 20",
++    ])("pred conditional iset %s", (iset: string) => {
++      const { results } = parser.feed(iset);
++      sameASTs(results);
++    });
++
++    test.each([
++      'Label x_i "abcde" for i in [0, 10]',
++      "Label y $abc$ for j in [0, 15]",
++    ])("label iset %s", (iset: string) => {
++      const { results } = parser.feed(iset);
++      sameASTs(results);
++    });
++  });
++
+   test("decl and decl list", () => {
+     const prog = `
+ Set A
+@@ -75,15 +109,25 @@ List(Map) l1
+     `;
+     const { results } = parser.feed(prog);
+     sameASTs(results);
+-    expect(results[0].statements.map((s: any) => s.name.value)).toEqual([
+-      "A",
+-      "f",
+-      "g",
+-      "h",
+-      "l",
+-      "l1",
+-    ]);
++    expect(
++      results[0].statements
++        .map((statement: any) => {
++          if (statement.tag === "Decl") {
++            return statement.name.value;
++          } else if (statement.tag === "DeclList") {
++            return statement.names.map((n: any) => n.value);
++          }
++        })
++        .flat(),
++    ).toEqual(["A", "f", "g", "h", "l", "l1"]);
+   });
++
++  test.each(["Set a", "Set a, b"])("decl list %s", (iset: string) => {
++    const { results } = parser.feed(iset);
++
++    sameASTs(results);
++  });
++
+   test("label decl", () => {
+     const prog = `
+ Set A, B, C
+@@ -92,8 +136,8 @@ Label B $B_1$
+     `;
+     const { results } = parser.feed(prog);
+     sameASTs(results);
+-    expect(results[0].statements[3].label.contents).toEqual("\\vec{A}");
+-    expect(results[0].statements[4].label.contents).toEqual("B_1");
++    expect(results[0].statements[1].label.contents).toEqual("\\vec{A}");
++    expect(results[0].statements[2].label.contents).toEqual("B_1");
+   });
+   test("no label decl", () => {
+     const prog = `
+@@ -103,8 +147,8 @@ NoLabel B, C
+     `;
+     const { results } = parser.feed(prog);
+     sameASTs(results);
+-    expect(results[0].statements[3].args[0].value).toEqual("A");
+-    expect(results[0].statements[4].args.map((a: any) => a.value)).toEqual([
++    expect(results[0].statements[1].args[0].value).toEqual("A");
++    expect(results[0].statements[2].args.map((a: any) => a.value)).toEqual([
+       "B",
+       "C",
+     ]);
+@@ -118,9 +162,9 @@ NoLabel B, C
+     `;
+     const { results } = parser.feed(prog);
+     sameASTs(results);
+-    expect(results[0].statements[3].option.tag).toEqual("DefaultLabels");
++    expect(results[0].statements[1].option.tag).toEqual("DefaultLabels");
+     expect(
+-      results[0].statements[4].option.variables.map((a: any) => a.value),
++      results[0].statements[2].option.variables.map((a: any) => a.value),
+     ).toEqual(["B", "C"]);
+   });
+   test("bind and exprs", () => {
+@@ -143,7 +187,7 @@ Not(IsSubset(A, B))
+     const { results } = parser.feed(prog);
+     sameASTs(results);
+   });
+-  test("predicates", () => {
++  test("equal predicate", () => {
+     const prog = `
+ Set A, B, C
+ IsSubset(Not(A), B) <-> IsSubset(B, C)
+diff --git a/packages/core/src/parser/macros.ne b/packages/core/src/parser/macros.ne
+index 80e2dd791f..7c6eb191b5 100644
+--- a/packages/core/src/parser/macros.ne
++++ b/packages/core/src/parser/macros.ne
+@@ -1,11 +1,11 @@
+-sepBy1[ITEM, SEP] -> $ITEM (_ $SEP _ $ITEM):* (_ $SEP):? {%
++sepEndBy1[ITEM, SEP] -> $ITEM (_ $SEP _ $ITEM):* (_ $SEP):? {%
+   ([first, rest]) => {
+     const restNodes = rest.map((ts: any[]) => ts[3]);
+     return _.concat(first, ...restNodes);
+   }
+ %}
+ 
+-sepBy[ITEM, SEP] 
++sepEndBy[ITEM, SEP] 
+   -> null {% d => [] %} 
+   | $ITEM (_ $SEP _ $ITEM):* (_ $SEP):? {%
+     ([first, rest]) => {
+@@ -13,3 +13,19 @@ sepBy[ITEM, SEP]
+       return _.concat(first, ...restNodes);
+     }
+   %}
++
++sepBy1[ITEM, SEP] -> $ITEM (_ $SEP _ $ITEM):* {%
++  ([first, rest]) => {
++    const restNodes = rest.map((ts: any[]) => ts[3]);
++    return _.concat(first, ...restNodes);
++  }
++%}
++
++sepBy[ITEM, SEP] 
++  -> null {% d => [] %} 
++  | $ITEM (_ $SEP _ $ITEM):* {%
++    ([first, rest]) => {
++      const restNodes = rest.map((ts: any[]) => ts[3]);
++      return _.concat(first, ...restNodes);
++    }
++  %}
+diff --git a/packages/core/src/types/ast.ts b/packages/core/src/types/ast.ts
+index c87b6b8406..df2211ba58 100644
+--- a/packages/core/src/types/ast.ts
++++ b/packages/core/src/types/ast.ts
+@@ -1,3 +1,5 @@
++import { isConcrete } from "../engine/EngineUtils.js";
++
+ //#region AST nodes
+ export interface SourceLoc {
+   line: number;
+@@ -49,3 +51,22 @@ export type StringLit<T> = ASTNode<T> & {
+   contents: string;
+ };
+ //#endregion
++
++export const location = (
++  node: ASTNode<A>,
++): {
++  start?: SourceLoc;
++  end?: SourceLoc;
++  nodeType: NodeType;
++} => {
++  if (isConcrete(node)) {
++    return {
++      start: node.start,
++      end: node.end,
++      nodeType: node.nodeType,
++    };
++  } else
++    return {
++      nodeType: node.nodeType,
++    };
++};
+diff --git a/packages/core/src/types/errors.ts b/packages/core/src/types/errors.ts
+index 5fa1c911c1..dd6033193d 100644
+--- a/packages/core/src/types/errors.ts
++++ b/packages/core/src/types/errors.ts
+@@ -23,7 +23,7 @@ import {
+   UOp,
+ } from "./style.js";
+ import { ResolvedPath } from "./styleSemantics.js";
+-import { Deconstructor, SubExpr, TypeConsApp } from "./substance.js";
++import { Deconstructor, StmtSet, SubExpr, TypeConsApp } from "./substance.js";
+ import { ArgValWithSourceLoc, ShapeVal, Val, Value } from "./value.js";
+ 
+ //#region ErrorTypes
+@@ -60,6 +60,11 @@ export type SubstanceError =
+   | VarNotFound
+   | DeconstructNonconstructor
+   | UnexpectedExprForNestedPred
++  | InvalidSetIndexingError
++  | DuplicateIndexError
++  | DivideByZeroError
++  | InvalidArithmeticValueError
++  | UnsupportedIndexingError
+   | FatalError; // TODO: resolve all fatal errors in the Substance module
+ 
+ export type DomainError =
+@@ -82,6 +87,35 @@ export interface SymmetricArgLengthMismatch {
+   sourceExpr: AbstractNode;
+ }
+ 
++export interface InvalidSetIndexingError {
++  tag: "InvalidSetIndexingError";
++  index: string;
++  location: AbstractNode;
++  suggestions: string[];
++}
++
++export interface DuplicateIndexError {
++  tag: "DuplicateIndexError";
++  index: string;
++  location: AbstractNode;
++}
++
++export interface DivideByZeroError {
++  tag: "DivideByZeroError";
++  location: AbstractNode;
++}
++
++export interface InvalidArithmeticValueError {
++  tag: "InvalidArithmeticValueError";
++  location: AbstractNode;
++  value: number;
++}
++
++export interface UnsupportedIndexingError {
++  tag: "UnsupportedIndexingError";
++  iset: StmtSet<A>;
++}
++
+ export interface UnexpectedExprForNestedPred {
+   tag: "UnexpectedExprForNestedPred";
+   sourceType: TypeConstructor<A>;
+diff --git a/packages/core/src/types/substance.ts b/packages/core/src/types/substance.ts
+index c60d5d4687..57e179d4bf 100644
+--- a/packages/core/src/types/substance.ts
++++ b/packages/core/src/types/substance.ts
+@@ -12,19 +12,23 @@ export interface SubstanceEnv {
+   predEqualities: [ApplyPredicate<A>, ApplyPredicate<A>][];
+   bindings: im.Map<string, SubExpr<A>>;
+   labels: LabelMap;
+-  predicates: ApplyPredicate<A>[];
+-  ast: SubProg<A>;
++  ast: CompiledSubProg<A>;
+ }
+ 
+ //#region Substance AST
++
+ export type SubProg<T> = ASTNode<T> & {
+   tag: "SubProg";
+-  statements: SubStmt<T>[];
++  statements: Stmt<T>[];
+ };
+ 
++export type Stmt<T> = SubStmt<T> | StmtSet<T>;
++
+ export type SubStmt<T> =
+   | Decl<T>
++  | DeclList<T>
+   | Bind<T>
++  | DeclBind<T>
+   | EqualExprs<T>
+   | EqualPredicates<T>
+   | ApplyPredicate<T>
+@@ -32,6 +36,15 @@ export type SubStmt<T> =
+   | AutoLabel<T>
+   | NoLabel<T>;
+ 
++// DeclList compiles into two Decl
++// DeclBind compiles into Decl and Bind
++export type AggregateSubStmt<T> = DeclList<T> | DeclBind<T>;
++export type CompiledSubStmt<T> = Exclude<SubStmt<T>, AggregateSubStmt<T>>;
++
++export type CompiledSubProg<T> = SubProg<T> & {
++  statements: CompiledSubStmt<T>[];
++};
++
+ // An application of relation
+ // A relation is a predicate or a binding.
+ export type ApplyRel<T> = ApplyPredicate<T> | Bind<T>;
+@@ -75,6 +88,12 @@ export type Decl<T> = ASTNode<T> & {
+   name: Identifier<T>;
+ };
+ 
++export type DeclList<T> = ASTNode<T> & {
++  tag: "DeclList";
++  type: TypeConsApp<T>;
++  names: Identifier<T>[];
++};
++
+ type TypeConsAppArgs<T> = {
+   args: TypeConsApp<T>[];
+ };
+@@ -90,6 +109,13 @@ export type Bind<T> = ASTNode<T> & {
+   expr: SubExpr<T>;
+ };
+ 
++export type DeclBind<T> = ASTNode<T> & {
++  tag: "DeclBind";
++  type: TypeConsApp<T>;
++  variable: Identifier<T>;
++  expr: SubExpr<T>;
++};
++
+ export type SubExpr<T> =
+   | Identifier<T>
+   | ApplyFunction<T>
+@@ -137,3 +163,90 @@ export type ApplyPredicate<T> = ASTNode<T> & {
+ };
+ 
+ export type SubPredArg<T> = SubExpr<T> | ApplyPredicate<T>; // NOTE: the parser only parse nested preds into `Func`, but the checker will look up and fix the type dynamically
++
++//#region basic expression parser
++
++export type BooleanExpr<T> =
++  | ComparisonExpr<T>
++  | BinaryBooleanExpr<T>
++  | UnaryBooleanExpr<T>
++  | BooleanConstant<T>;
++
++export type BinaryBooleanExpr<T> = ASTNode<T> & {
++  tag: "BinaryBooleanExpr";
++  operator: "&&" | "||";
++  left: BooleanExpr<T>;
++  right: BooleanExpr<T>;
++};
++
++export type UnaryBooleanExpr<T> = ASTNode<T> & {
++  tag: "UnaryBooleanExpr";
++  operator: "!";
++  arg: BooleanExpr<T>;
++};
++
++export type BooleanConstant<T> = ASTNode<T> & {
++  tag: "BooleanConstant";
++  value: boolean;
++};
++
++export type ComparisonExpr<T> = ASTNode<T> & {
++  tag: "ComparisonExpr";
++  operator: "<" | ">" | "<=" | ">=" | "==" | "!=";
++  left: NumExpr<T>;
++  right: NumExpr<T>;
++};
++
++export type NumExpr<T> =
++  | BinaryExpr<T>
++  | UnaryExpr<T>
++  | NumberConstant<T>
++  | Identifier<T>;
++
++export type BinaryExpr<T> = ASTNode<T> & {
++  tag: "BinaryExpr";
++  operator: "+" | "-" | "*" | "/" | "^" | "%";
++  left: NumExpr<T>;
++  right: NumExpr<T>;
++};
++
++export type UnaryExpr<T> = ASTNode<T> & {
++  tag: "UnaryExpr";
++  operator: "-";
++  arg: NumExpr<T>;
++};
++
++export type NumberConstant<T> = ASTNode<T> & {
++  tag: "NumberConstant";
++  value: number;
++};
++
++//#endregion
++
++//#region Substance Sets
++
++export type StmtSet<T> = ASTNode<T> & {
++  tag: "StmtSet";
++  stmt: SubStmt<T>;
++  iset: IndexSet<T>;
++};
++
++export type Range<T> = ASTNode<T> & {
++  tag: "Range";
++  low: NumberConstant<T>;
++  high: NumberConstant<T>;
++};
++
++export type IndexSet<T> = ASTNode<T> & {
++  tag: "IndexSet";
++  indices: RangeAssign<T>[];
++  condition?: BooleanExpr<T>;
++};
++
++export type RangeAssign<T> = ASTNode<T> & {
++  tag: "RangeAssign";
++  variable: Identifier<T>;
++  range: Range<T>;
++};
++
++//#endregion
+diff --git a/packages/core/src/utils/Error.ts b/packages/core/src/utils/Error.ts
+index 7ceffba807..927bc82e92 100644
+--- a/packages/core/src/utils/Error.ts
++++ b/packages/core/src/utils/Error.ts
+@@ -252,6 +252,36 @@ export const showError = (
+         sourceType,
+       )}' type was given at ${loc(sourceExpr)}.`;
+     }
++    case "InvalidSetIndexingError": {
++      const { index, location, suggestions } = error;
++      return `Name \`${index}\` (which is used at ${loc(
++        location,
++      )}) is not a valid index. Possible indices are: ${suggestions.join(
++        ", ",
++      )}`;
++    }
++    case "DuplicateIndexError": {
++      const { index, location } = error;
++      return `Index variable \`${index}\` has been declared multiple times at ${loc(
++        location,
++      )}.`;
++    }
++    case "DivideByZeroError": {
++      const { location } = error;
++      return `The expression at ${loc(location)} resulted in division-by-zero.`;
++    }
++    case "InvalidArithmeticValueError": {
++      const { value, location } = error;
++      return `The expression at ${loc(
++        location,
++      )} resulted in the invalid value of ${value}.`;
++    }
++    case "UnsupportedIndexingError": {
++      const { iset } = error;
++      return `Indexing on expressions of type ${iset.stmt.tag} (at ${loc(
++        iset,
++      )}) is not supported`;
++    }
+ 
+     // ---- BEGIN STYLE ERRORS
+     // COMBAK suggest improvements after reporting errors
+@@ -686,7 +716,7 @@ export const errLocs = (
+       return locOrNone(e.typeVar);
+     }
+     case "DuplicateName": {
+-      return locOrNone(e.name);
++      return locOrNone(e.location);
+     }
+     case "CyclicSubtypes": {
+       return [];
+@@ -702,6 +732,15 @@ export const errLocs = (
+     case "DeconstructNonconstructor": {
+       return locOrNone(e.deconstructor);
+     }
++    case "InvalidSetIndexingError":
++    case "DuplicateIndexError":
++    case "DivideByZeroError":
++    case "InvalidArithmeticValueError": {
++      return locOrNone(e.location);
++    }
++    case "UnsupportedIndexingError": {
++      return locOrNone(e.iset);
++    }
+ 
+     // ---- BEGIN STYLE ERRORS
+     // COMBAK suggest improvements after reporting errors
+diff --git a/packages/docs-site/docs/ref/style/usage.md b/packages/docs-site/docs/ref/style/usage.md
+index e7d7adeace..01313a8c29 100644
+--- a/packages/docs-site/docs/ref/style/usage.md
++++ b/packages/docs-site/docs/ref/style/usage.md
+@@ -631,8 +631,31 @@ Note that _elementside_ multiplication `.*` and division `./` get applied indepe
+ 
+ #### Scalar-Scalar
+ 
++:::warning
++
++Because of an internal tokenizer bug, expressions like `+1` are always parsed as one single token `+1` denoting the integer "positive one", instead of two tokens `+` and `1`, regardless of their locations in the program. Similarly, `-1` is always parsed as a single `-1` instead of `-` and `1`.
++
++As such, expressions like `2+1` are always interpreted as `2` and `+1` instead of the expected `2`, `+`, and `1`; the same occurs for `2-1` which is interpreted as `2` and `-1` instead of the expected `2`, `-`, and `1`. In other words, they are interpreted as two numbers side-by-side instead of a number, an operator, and another number. This bug causes errors like
++
++```error
++Error: Syntax error at line 16 col 8:
++
++    y = 2+1
++         ^
++Unexpected float_literal token: "+1".
++```
++
++since the `+` operator is absorbed into the token `+1` so the parser can no longer find the `+` operator.
++
++This bug has been documented [here](https://github.com/penrose/penrose/issues/1516).
++
++The workaround to this bug is to always put spaces around the `+` and `-` operators, writing expressions like `2 + 1`, `n - 1`, etc., unless signed numbers like `-1` and `+3` are specifically required.
++
++:::
++
+ - `c + d` - sum of `c` and `d`
+ - `c - d` - difference of `c` and `d`
++
+ - `c * d` - multiplies `c` and `d`
+ - `c / d` - divides `c` by `d`
+ 
+diff --git a/packages/docs-site/docs/ref/substance/usage.md b/packages/docs-site/docs/ref/substance/usage.md
+index 4dea0b4985..717b4ed77b 100644
+--- a/packages/docs-site/docs/ref/substance/usage.md
++++ b/packages/docs-site/docs/ref/substance/usage.md
+@@ -14,11 +14,13 @@ AutoLabel All
+ 
+ The first line declares the objects that are to be drawn, the last line tells Penrose to automatically label the objects based on their names. All other lines invoke the predicates defined in the _domain_ schema to declare relations between objects.
+ 
+-Notably, like the _domain_ schema, the _substance_ program does not contain any instructions about how, say, a `Set` must be rendered, or how the relation `IsSubset` should be reflected in the diagram. The _substance_ program only declares the existence of these objects and relations, whereas the _style_ schema shows _how_ these objects and relations can be drawn.
++Notably, like the _domain_ schema, the _substance_ program does not contain any instructions about how, say, a `Set` must be rendered, or how the relation `IsSubset` should be reflected in the diagram. The _substance_ program only declares the existence of these objects and relations, whereas the _style_ program shows _how_ these objects and relations can be drawn.
+ 
+-Formally, a _substance_ program can contain five types of statements.
++A _substance_ program may contain two types of statements: single statements or indexed statements.
+ 
+-## Object Declarations
++## Single Substance Statements
++
++### Object Declarations
+ 
+ An _object declaration_ declares the existence of an object, and specifies its type:
+ 
+@@ -41,7 +43,7 @@ type_name object_name_1, object_name_2, ...
+ 
+ This is equivalent to declaring the objects sequentially and separately.
+ 
+-## Predicate Applications
++### Predicate Applications
+ 
+ We can _apply_ the predicates (first defined in the _domain_ schema) in our _substance_ program simply by invoking it. The syntax is
+ 
+@@ -88,7 +90,7 @@ Then,
+ | `Not (H)`             | No     | `H` has type `Hydrogen` which does not match the required `Prop`           |
+ | `Not (Bond (H, O))`   | Yes    | `Bond (H, O)` is a predicate application which matches the required `Prop` |
+ 
+-## Function and Constructor Applications
++### Function and Constructor Applications
+ 
+ In Penrose, functions and constructors behave almost equivalently (the only difference being that constructors can additionally be invoked with the `Let` keyword explained below). Both functions and constructors can be invoked in the following two ways. The first way is
+ 
+@@ -110,9 +112,9 @@ Let object_name := function_constructor_name (argument_list)
+ 
+ The rules for `argument_list` remain the same as in predicate applications. We further require that the output type of the function or constructor must match the type of `object_name`, up to subtyping. That is, if the function outputs type `A` and `object_name` has type `B`, then if `A` is a subtype of `B`, then the assignment is valid.
+ 
+-## Labeling Statements
++### Labeling Statements
+ 
+-Each declared object has a label, which can be accessed in the _style_ schema. In the _substance_ program, the _labeling statements_ specify the value of these labels.
++Each declared object has a label, which can be accessed in the _style_ language. In the _substance_ program, the _labeling statements_ specify the value of these labels.
+ 
+ There are three types of labeling statements:
+ 
+@@ -122,7 +124,139 @@ There are three types of labeling statements:
+   - A text label is a plain-text string delimited by double quotes, e.g., `Label p "a point"`.
+ - `NoLabel object_list`: this statement ensures that objects in `object_list` do not have a label.
+ 
+-If an object has an assigned label, then in the _style_ schema, we can access the object's `label` property.
++If an object has an assigned label, then in the _style_ language, we can access the object's `label` property.
++
++## Indexed Variables
++
++The _substance_ language allows users to define indexed expressions that expand into multiple statements. An indexed statement is a single substance statement (as described above) with templated identifiers and an indexing clause. A common example is declaring an indexed set of variables:
++
++```substance
++Vector v_i for i in [0, 2]
++-- is equivalent to Vector v_0, v_1, v_2
++```
++
++Templated identifiers (like `v_i` in the example) are regular _substance_ identifiers consisting alphanumeric characters and underscores, except that the last underscore and the substring following it denote an indexed variable. In the example, `_i` in `v_i` denotes an index variable `i` taking on the values in the range of `[0, 2]`, i.e. `0, 1, 2`. This line of code then gets expanded into three statements `Vector v_0`, `Vector v_1`, and `Vector v_2`.
++
++:::info
++The phrase `i in [x, y]` for some `x` and `y` requires that `i` is an integer, `i` $\geq$ `x`, and `i` $\leq$ `y`. As such, expressions like `Vector v_i for i in [3, 0]` has no effect, since there is no integer `i` that is at least `3` and at most `0`.
++:::
++
++When templated identifiers collide with regular identifiers, the latter is shadowed in indexing statements:
++
++```substance
++Vector v_i, v_j, vec1
++
++Vector v_i for i in [0, 10]
++  -- ok: expands into v_0, v_1, v_2, ..., v_10
++
++Vector v_j for i in [0, 1]
++  -- error: the range of `j` is not defined by `i in [0, 1]`
++  -- notice that `v_j` here does not refer to the `v_j` defined above
++  -- since `v_j` occurs in an indexed statement.
++
++Orthogonal(v_i, vec1) for i in [0, 3]
++  -- ok: expands into Orthogonal(v_0, vec1); Orthogonal(v_1, vec1);
++  --     Orthogonal(v_2, vec1); Orthogonal(v_3, vec1)
++  -- notice that `vec1` does not have an underscore, so it is treated
++  -- as a regular substance variable
++
++Orthogonal(v_i, v_j) for i in [0, 5]
++  -- error: the range of `j` is not defined by `i in [0, 5]`
++```
++
++When multiple template variables and ranges are present, _substance_ takes all combinations (cartisian product) of the indices in the ranges, like
++
++```substance
++Orthogonal(v_i, v_j) for i in [0, 1], j in [1, 2]
++  -- expands into Orthogonal(v_0, v_1); Orthogonal(v_0, v_2);
++  -- Orthogonal(v_1, v_1); Orthogonal(v_1, v_2)
++```
++
++### Conditional Filtering
++
++Sometimes, we don't want to iterate through all possible combinations, since some combinations are undesirable. _Substance_ allows users to filter the combinations using a Boolean expression in the `where` clause. _Substance_ would discard all combinations that make the Boolean expression false.
++
++```substance
++Vector v_i for i in [0, 10] where i % 2 == 0
++  -- even indices: 0, 2, 4, 6, 8, 10
++
++Orthogonal(v_i, v_j) for i in [0, 2], j in [0, 2] where i <= j
++  -- triangular range: [0, 0], [0, 1], [0, 2], [1, 1], [1, 2], [2, 2]
++
++Orthogonal(v_i, v_j) for i in [0, 3], j in [0, 3] where i + 1 == j
++  -- consecutive pairs: [0, 1], [1, 2], [2, 3]
++
++Edge(v_i, v_j) for i in [0, 4], j in [0, 4] where j == (i + 1) mod 5
++  -- cyclic pairs: [0, 1], [1, 2], [2, 3], [3, 4], [4, 0]
++
++Orthogonal(v_i, v_j) for i in [0, 3], j in [0, 3] where i % 2 == 0 && j == i + 1
++  -- disjoint pairs of 2: [0, 1], [2, 3]
++```
++
++Specifically, the Boolean expressions may contain:
++
++- Boolean constants (`true` and `false`),
++- Unary logical operator (`!` for logical-not) followed by a Boolean expression,
++- Binary logical operators (`&&` for logical-and and `||` for logical-or) between Boolean expressions, and
++- Numerical comparisons (`==` for equality, `!=` for non-equality, `<` for less-than, `>` for greater-than, `<=` for less-than-or-equal-to, and `>=` for greater-than-or-equal-to) between numerical expressions.
++
++Numerical expressions may contain:
++
++- Floating-point constants,
++- Index variables defined in the ranges, like `i` in `for i in [0, 2]`,
++- Unary numerical operators (`-`) followed by a numerical expression, and
++- Binary numerical operators (`+` for plus, `-` for minus, `*` for multiplication, `/` for division, either `%` or `mod` for modulo, and `^` for power) between two numerical expressions.
++
++:::warning
++
++Because of an internal tokenizer bug, expressions like `+1` are always parsed as one single token `+1` denoting the integer "positive one", instead of two tokens `+` and `1`, regardless of their locations in the program. Similarly, `-1` is always parsed as a single `-1` instead of `-` and `1`.
++
++As such, expressions like `2+1` are always interpreted as `2` and `+1` instead of the expected `2`, `+`, and `1`; the same occurs for `2-1` which is interpreted as `2` and `-1` instead of the expected `2`, `-`, and `1`. In other words, they are interpreted as two numbers side-by-side instead of a number, an operator, and another number. This bug causes errors like
++
++```error
++Error: Syntax error at line 1 col 39:
++
++  Node n0_i for i in [0,15] where i == 2+1
++                                        ^
++Unexpected int_literal token: "+1".
++```
++
++since the `+` operator is absorbed into the token `+1` so the parser can no longer find the `+` operator.
++
++This bug has been documented [here](https://github.com/penrose/penrose/issues/1516).
++
++The workaround to this bug is to always put spaces around the `+` and `-` operators, writing expressions like `2 + 1`, `n - 1`, etc., unless signed numbers like `-1` and `+3` are specifically required.
++:::
++
++The default order of operations is the same as other programming languages, and parentheses can be used to override the default order of operations.
++
++### Duplications
++
++An indexed statement generates a list of _substance_ statements. The existing semantics on duplicates apply to them as well.
++
++```substance
++Vector v_0
++
++Vector v_i for i in [0, 2]
++  -- error: `v_0` is declared and cannot be re-declared
++
++Vector v_i, v_j for i in [0, 2], j in [0, 2]
++  -- error: `v_0` is declared and cannot be re-declared
++
++Orthogonal(v_0, v_1)
++
++Orthogonal(v_i, v_j) for i in [0, 2], j in [0, 2] where i != j
++  -- ok, because duplicated predicates are ok
++```
++
++### Accessing Individual Elements of an Indexed Set
++
++An indexing statement generates identifiers by replacing index variables with strings of integer values. Therefore, generated identifiers can be used just like regular identifiers as long as they exist:
++
++```substance
++Vector v_i for i in [0, 2]
++LinearlyDependent(v_0, v_2) -- ok
++```
+ 
+ ## Comments
+ 
+diff --git a/packages/edgeworth/src/analysis/SubstanceAnalysis.test.ts b/packages/edgeworth/src/analysis/SubstanceAnalysis.test.ts
+index d6edfa303b..bce76769bf 100644
+--- a/packages/edgeworth/src/analysis/SubstanceAnalysis.test.ts
++++ b/packages/edgeworth/src/analysis/SubstanceAnalysis.test.ts
+@@ -1,3 +1,4 @@
++import { showError } from "@penrose/core";
+ import { compileDomain } from "@penrose/core/dist/compiler/Domain";
+ import {
+   compileSubstance,
+@@ -7,7 +8,10 @@ import {
+ import { dummyIdentifier } from "@penrose/core/dist/engine/EngineUtils";
+ import { A } from "@penrose/core/dist/types/ast";
+ import { Env } from "@penrose/core/dist/types/domain";
+-import { SubProg, SubStmt } from "@penrose/core/dist/types/substance";
++import {
++  CompiledSubProg as SubProg,
++  CompiledSubStmt as SubStmt,
++} from "@penrose/core/dist/types/substance";
+ import _ from "lodash";
+ import { describe, expect, test } from "vitest";
+ import { SubNode, similarMappings, similarNodes } from "../synthesis/Search.js";
+@@ -29,8 +33,13 @@ function Subset(Set a, Set b) -> Set
+ `;
+ const env: Env = compileDomain(domain).unsafelyUnwrap();
+ 
+-const compile = (src: string): SubProg<A> =>
+-  compileSubstance(src, env).unsafelyUnwrap()[0].ast;
++const compile = (src: string): SubProg<A> => {
++  const compiled = compileSubstance(src, env);
++  if (compiled.isErr()) {
++    throw new Error(src + "    " + showError(compiled.error));
++  }
++  return compiled.value[0].ast;
++};
+ 
+ describe("Substance AST queries", () => {
+   test("Similar AST nodes", () => {
+@@ -79,10 +88,10 @@ describe("Substance AST queries", () => {
+     const leftAST = compile(left);
+     const rightAST = compile(right);
+     const commonStmts = intersection(leftAST, rightAST);
+-    const leftFiltered = leftAST.statements.filter((a) => {
++    const leftFiltered = leftAST.statements.filter((a: SubStmt<A>) => {
+       return _.intersectionWith(commonStmts, [a], nodesEqual).length === 0;
+     });
+-    const rightFiltered = rightAST.statements.filter((a) => {
++    const rightFiltered = rightAST.statements.filter((a: SubStmt<A>) => {
+       return _.intersectionWith(commonStmts, [a], nodesEqual).length === 0;
+     });
+     expect(commonStmts.map(prettyStmt)).toEqual([
+diff --git a/packages/edgeworth/src/analysis/SubstanceAnalysis.ts b/packages/edgeworth/src/analysis/SubstanceAnalysis.ts
+index 2655736b40..c448722213 100644
+--- a/packages/edgeworth/src/analysis/SubstanceAnalysis.ts
++++ b/packages/edgeworth/src/analysis/SubstanceAnalysis.ts
+@@ -30,8 +30,8 @@ import {
+   LabelDecl,
+   SubExpr,
+   SubPredArg,
+-  SubProg,
+-  SubStmt,
++  CompiledSubProg as SubProg,
++  CompiledSubStmt as SubStmt,
+   TypeConsApp,
+ } from "@penrose/core/dist/types/substance";
+ import consola from "consola";
+@@ -132,7 +132,9 @@ export const replaceStmt = <T>(
+   newStmt: SubStmt<T>,
+ ): SubProg<T> => ({
+   ...prog,
+-  statements: prog.statements.map((s) => (s === originalStmt ? newStmt : s)),
++  statements: prog.statements.map((s: SubStmt<T>) =>
++    s === originalStmt ? newStmt : s,
++  ),
+ });
+ 
+ /**
+@@ -329,7 +331,7 @@ export const cascadingDelete = <T>(
+   while (ids.length > 0) {
+     const id = ids.pop()!;
+     // look for statements that take id as arg
+-    const toDelete = prog.statements.filter((s): boolean => {
++    const toDelete = prog.statements.filter((s: SubStmt<T>): boolean => {
+       switch (s.tag) {
+         case "Bind": {
+           const expr = s.expr as unknown as ApplyPredicate<T>;
+diff --git a/packages/edgeworth/src/components/Content.tsx b/packages/edgeworth/src/components/Content.tsx
+index da208c9eb6..ccb951d470 100644
+--- a/packages/edgeworth/src/components/Content.tsx
++++ b/packages/edgeworth/src/components/Content.tsx
+@@ -13,10 +13,8 @@ import {
+   PenroseState,
+   prettySubstance,
+   showError,
+-  SubProg,
+   toSVG,
+ } from "@penrose/core";
+-import { A } from "@penrose/core/dist/types/ast";
+ import { saveAs } from "file-saver";
+ import JSZip from "jszip";
+ import { shuffle } from "lodash";
+@@ -157,7 +155,7 @@ export class Content extends React.Component<ContentProps, ContentState> {
+         }
+         const synth = new Synthesizer(env, setting, subResult, seed);
+         let progs = synth.generateSubstances(numPrograms);
+-        const template: SubProg<A> | undefined = synth.getTemplate();
++        const template = synth.getTemplate();
+ 
+         if (template) {
+           this.setState({
+diff --git a/packages/edgeworth/src/synthesis/Mutation.ts b/packages/edgeworth/src/synthesis/Mutation.ts
+index b10e090867..2dbf5bfc3d 100644
+--- a/packages/edgeworth/src/synthesis/Mutation.ts
++++ b/packages/edgeworth/src/synthesis/Mutation.ts
+@@ -7,8 +7,8 @@ import { A, Identifier } from "@penrose/core/dist/types/ast";
+ import {
+   ApplyPredicate,
+   Bind,
+-  SubProg,
+-  SubStmt,
++  CompiledSubProg as SubProg,
++  CompiledSubStmt as SubStmt,
+ } from "@penrose/core/dist/types/substance";
+ import consola from "consola";
+ import _ from "lodash";
+@@ -818,6 +818,8 @@ export const enumerateProgMutations = (
+   prog: SubProg<A>,
+   cxt: SynthesisContext,
+ ): Mutation[] =>
+-  prog.statements.map((stmt) => enumerateStmtMutations(stmt, prog, cxt)).flat();
++  prog.statements
++    .map((stmt: SubStmt<A>) => enumerateStmtMutations(stmt, prog, cxt))
++    .flat();
+ 
+ //#endregion
+diff --git a/packages/edgeworth/src/synthesis/Search.test.ts b/packages/edgeworth/src/synthesis/Search.test.ts
+index e1274a83be..2b46568a27 100644
+--- a/packages/edgeworth/src/synthesis/Search.test.ts
++++ b/packages/edgeworth/src/synthesis/Search.test.ts
+@@ -7,7 +7,10 @@ import {
+   prettySubstance,
+ } from "@penrose/core/dist/compiler/Substance";
+ import { A } from "@penrose/core/dist/types/ast";
+-import { SubProg, SubRes } from "@penrose/core/dist/types/substance";
++import {
++  CompiledSubProg as SubProg,
++  SubRes,
++} from "@penrose/core/dist/types/substance";
+ import { showError } from "@penrose/core/dist/utils/Error";
+ import _ from "lodash";
+ import pc from "pandemonium/choice";
+diff --git a/packages/edgeworth/src/synthesis/Search.ts b/packages/edgeworth/src/synthesis/Search.ts
+index b5e5a19187..21059c557f 100644
+--- a/packages/edgeworth/src/synthesis/Search.ts
++++ b/packages/edgeworth/src/synthesis/Search.ts
+@@ -12,8 +12,8 @@ import { Env, Type } from "@penrose/core/dist/types/domain";
+ import {
+   LabelOption,
+   SubExpr,
+-  SubProg,
+-  SubStmt,
++  CompiledSubProg as SubProg,
++  CompiledSubStmt as SubStmt,
+ } from "@penrose/core/dist/types/substance";
+ import _ from "lodash";
+ import rdiff from "recursive-diff";
+@@ -133,7 +133,7 @@ const children = <T>(node: SubNode<T>): SubNode<T>[] => {
+     case "ApplyPredicate":
+     case "Func":
+     case "TypeConstructor": {
+-      return [node.name, ...node.args];
++      return [node.name, ...(node.args as SubNode<T>[])];
+     }
+     case "AutoLabel": {
+       return [node.option];
+@@ -155,7 +155,7 @@ const children = <T>(node: SubNode<T>): SubNode<T>[] => {
+     }
+     case "EqualExprs":
+     case "EqualPredicates": {
+-      return [node.left, node.right];
++      return [node.left as SubNode<T>, node.right as SubNode<T>];
+     }
+     case "LabelDecl": {
+       return [node.variable, node.label];
+@@ -184,12 +184,9 @@ const children = <T>(node: SubNode<T>): SubNode<T>[] => {
+  */
+ export const similarNodes = (left: SubNode<A>, right: SubNode<A>): boolean => {
+   const equalNodes = nodesEqual(left, right);
+-  const similarChildren = _.intersectionWith(
+-    children(left),
+-    children(right),
+-    similarNodes,
+-  );
+-
++  const cLeft = children(left);
++  const cRight = children(right);
++  const similarChildren = _.intersectionWith(cLeft, cRight, similarNodes);
+   const similarLeft = _.intersectionWith([left], children(right), similarNodes);
+   const similarRight = _.intersectionWith(
+     children(left),
+@@ -222,10 +219,10 @@ interface SimilarMapping {
+ 
+ export const subProgDiffs = (left: SubProg<A>, right: SubProg<A>): DiffSet => {
+   const commonStmts = intersection(left, right);
+-  const leftFiltered = left.statements.filter((a) => {
++  const leftFiltered = left.statements.filter((a: SubStmt<A>) => {
+     return _.intersectionWith(commonStmts, [a], nodesEqual).length === 0;
+   });
+-  const rightFiltered = right.statements.filter((a) => {
++  const rightFiltered = right.statements.filter((a: SubStmt<A>) => {
+     return _.intersectionWith(commonStmts, [a], nodesEqual).length === 0;
+   });
+   const similarMap = similarMappings(leftFiltered, rightFiltered);
+diff --git a/packages/edgeworth/src/synthesis/Synthesizer.test.ts b/packages/edgeworth/src/synthesis/Synthesizer.test.ts
+index 65997dbf7a..eb2e5110a2 100644
+--- a/packages/edgeworth/src/synthesis/Synthesizer.test.ts
++++ b/packages/edgeworth/src/synthesis/Synthesizer.test.ts
+@@ -7,7 +7,7 @@ import {
+ } from "@penrose/core/dist/compiler/Substance";
+ import { A } from "@penrose/core/dist/types/ast";
+ import { Env } from "@penrose/core/dist/types/domain";
+-import { Decl, SubStmt } from "@penrose/core/dist/types/substance";
++import { CompiledSubStmt, Decl } from "@penrose/core/dist/types/substance";
+ import { describe, expect, test } from "vitest";
+ import { cascadingDelete } from "../analysis/SubstanceAnalysis.js";
+ import { Delete, executeMutations, removeStmtCtx } from "./Mutation.js";
+@@ -89,7 +89,7 @@ Set D`;
+     );
+     const toDelete = synth.currentProg.statements[0] as Decl<A>;
+     expect("Set A").toEqual(prettyStmt(toDelete));
+-    const cascadedStmts: SubStmt<A>[] = cascadingDelete(
++    const cascadedStmts: CompiledSubStmt<A>[] = cascadingDelete(
+       toDelete,
+       synth.currentProg,
+     );
+diff --git a/packages/edgeworth/src/synthesis/Synthesizer.ts b/packages/edgeworth/src/synthesis/Synthesizer.ts
+index 807dbd14f8..57fad24265 100644
+--- a/packages/edgeworth/src/synthesis/Synthesizer.ts
++++ b/packages/edgeworth/src/synthesis/Synthesizer.ts
+@@ -24,9 +24,9 @@ import {
+   Decl,
+   SubExpr,
+   SubPredArg,
+-  SubProg,
++  CompiledSubProg as SubProg,
+   SubRes,
+-  SubStmt,
++  CompiledSubStmt as SubStmt,
+   TypeConsApp,
+ } from "@penrose/core/dist/types/substance";
+ import { combinations2 } from "@penrose/core/dist/utils/Util";
+@@ -697,7 +697,7 @@ export class Synthesizer {
+     log.debug(`Picking a statement to edit...`);
+     // enumerate all available edit mutations for all statements
+     // NOTE: this implementation actually ignores the configuration. Need to clarify the semantics of configration first.
+-    const mutations = this.currentProg.statements.map((stmt) => {
++    const mutations = this.currentProg.statements.map((stmt: SubStmt<A>) => {
+       const mutations = this.findMutations(stmt, ctx);
+       log.debug(
+         `Possible update mutations for ${prettyStmt(stmt)} are:\n${mutations
+@@ -821,7 +821,7 @@ export class Synthesizer {
+     stmtType: DomainStmt<A>["tag"],
+     name: string,
+   ): SubStmt<A> | undefined => {
+-    const stmts = this.currentProg.statements.filter((s) => {
++    const stmts = this.currentProg.statements.filter((s: SubStmt<A>) => {
+       const subType = domainToSubType(stmtType);
+       if (s.tag === "Bind") {
+         const expr = s.expr;
+diff --git a/packages/examples/src/curve-examples/curve.substance b/packages/examples/src/curve-examples/curve.substance
+index a1ae9dc7e8..d46972cd1e 100644
+--- a/packages/examples/src/curve-examples/curve.substance
++++ b/packages/examples/src/curve-examples/curve.substance
+@@ -1,18 +1,4 @@
+-Point p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16
++Point p_i for i in [1, 16]
+ Curve c
+-In(c, p1)
+-In(c, p2)
+-In(c, p3)
+-In(c, p4)
+-In(c, p5)
+-In(c, p6)
+-In(c, p7)
+-In(c, p8)
+-In(c, p9)
+-In(c, p10)
+-In(c, p11)
+-In(c, p12)
+-In(c, p13)
+-In(c, p14)
+-In(c, p15)
+-In(c, p16)
+\ No newline at end of file
++
++In(c, p_i) for i in [1, 16]
+\ No newline at end of file
+diff --git a/packages/examples/src/curve-examples/frenet-frame.substance b/packages/examples/src/curve-examples/frenet-frame.substance
+index d2c53882e9..ed9cbac343 100644
+--- a/packages/examples/src/curve-examples/frenet-frame.substance
++++ b/packages/examples/src/curve-examples/frenet-frame.substance
+@@ -1,19 +1,4 @@
+ Curve c
+-Point p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16
++Point p_i for i in [1, 16]
+ 
+-In( c, p1 )
+-In( c, p2 )
+-In( c, p3 )
+-In( c, p4 )
+-In( c, p5 )
+-In( c, p6 )
+-In( c, p7 )
+-In( c, p8 )
+-In( c, p9 )
+-In( c, p10 )
+-In( c, p11 )
+-In( c, p12 )
+-In( c, p13 )
+-In( c, p14 )
+-In( c, p15 )
+-In( c, p16 )
++In(c, p_i) for i in [1, 16]
+\ No newline at end of file
+diff --git a/packages/examples/src/registry.json b/packages/examples/src/registry.json
+index 95161e3d9d..a1be9a6e25 100644
+--- a/packages/examples/src/registry.json
++++ b/packages/examples/src/registry.json
+@@ -84,6 +84,14 @@
+     "name": "Hexagonal Lattice Graph",
+     "gallery": true
+   },
++  "spectral-graphs/examples/grid": {
++    "name": "5x5 Grid",
++    "gallery": false
++  },
++  "spectral-graphs/examples/box": {
++    "name": "4x4x4 Box",
++    "gallery": false
++  },
+   "graph-domain/textbook/sec1/fig5": {
+     "name": "Computer Network with Multiple One-Way Links",
+     "gallery": true
+@@ -454,6 +462,10 @@
+     "name": "Periodic 2D Grid",
+     "gallery": false
+   },
++  "spectral-graphs/examples/mobius": {
++    "name": "Mobius Strip",
++    "gallery": true
++  },
+   "spectral-graphs/examples/periodic-hexagonal-lattice": {
+     "name": "Periodic Hexagonal Grid",
+     "gallery": false
+diff --git a/packages/examples/src/spectral-graphs/examples/4x4-sudoku-graph.substance b/packages/examples/src/spectral-graphs/examples/4x4-sudoku-graph.substance
+index 27b9714670..0593d21bcb 100644
+--- a/packages/examples/src/spectral-graphs/examples/4x4-sudoku-graph.substance
++++ b/packages/examples/src/spectral-graphs/examples/4x4-sudoku-graph.substance
+@@ -1,72 +1,58 @@
+-Node n0
+-Node n1
+-Node n2
+-Node n3
+-Node n4
+-Node n5
+-Node n6
+-Node n7
+-Node n8
+-Node n9
+-Node n10
+-Node n11
+-Node n12
+-Node n13
+-Node n14
+-Node n15
+-Edge e0 := MakeEdge(n0, n1)
+-Edge e1 := MakeEdge(n0, n2)
+-Edge e2 := MakeEdge(n0, n3)
+-Edge e3 := MakeEdge(n0, n4)
+-Edge e4 := MakeEdge(n0, n8)
+-Edge e5 := MakeEdge(n0, n12)
+-Edge e6 := MakeEdge(n0, n5)
+-Edge e7 := MakeEdge(n1, n2)
+-Edge e8 := MakeEdge(n1, n3)
+-Edge e9 := MakeEdge(n1, n5)
+-Edge e10 := MakeEdge(n1, n9)
+-Edge e11 := MakeEdge(n1, n13)
+-Edge e12 := MakeEdge(n1, n4)
+-Edge e13 := MakeEdge(n2, n3)
+-Edge e14 := MakeEdge(n2, n6)
+-Edge e15 := MakeEdge(n2, n10)
+-Edge e16 := MakeEdge(n2, n14)
+-Edge e17 := MakeEdge(n2, n7)
+-Edge e18 := MakeEdge(n3, n7)
+-Edge e19 := MakeEdge(n3, n11)
+-Edge e20 := MakeEdge(n3, n15)
+-Edge e21 := MakeEdge(n3, n6)
+-Edge e22 := MakeEdge(n4, n5)
+-Edge e23 := MakeEdge(n4, n6)
+-Edge e24 := MakeEdge(n4, n7)
+-Edge e25 := MakeEdge(n4, n8)
+-Edge e26 := MakeEdge(n4, n12)
+-Edge e27 := MakeEdge(n5, n6)
+-Edge e28 := MakeEdge(n5, n7)
+-Edge e29 := MakeEdge(n5, n9)
+-Edge e30 := MakeEdge(n5, n13)
+-Edge e31 := MakeEdge(n6, n7)
+-Edge e32 := MakeEdge(n6, n10)
+-Edge e33 := MakeEdge(n6, n14)
+-Edge e34 := MakeEdge(n7, n11)
+-Edge e35 := MakeEdge(n7, n15)
+-Edge e36 := MakeEdge(n8, n9)
+-Edge e37 := MakeEdge(n8, n10)
+-Edge e38 := MakeEdge(n8, n11)
+-Edge e39 := MakeEdge(n8, n12)
+-Edge e40 := MakeEdge(n8, n13)
+-Edge e41 := MakeEdge(n9, n10)
+-Edge e42 := MakeEdge(n9, n11)
+-Edge e43 := MakeEdge(n9, n13)
+-Edge e44 := MakeEdge(n9, n12)
+-Edge e45 := MakeEdge(n10, n11)
+-Edge e46 := MakeEdge(n10, n14)
+-Edge e47 := MakeEdge(n10, n15)
+-Edge e48 := MakeEdge(n11, n15)
+-Edge e49 := MakeEdge(n11, n14)
+-Edge e50 := MakeEdge(n12, n13)
+-Edge e51 := MakeEdge(n12, n14)
+-Edge e52 := MakeEdge(n12, n15)
+-Edge e53 := MakeEdge(n13, n14)
+-Edge e54 := MakeEdge(n13, n15)
+-Edge e55 := MakeEdge(n14, n15)
+\ No newline at end of file
++Node n_i for i in [0, 15]
++
++Edge e_0 := MakeEdge(n_0, n_1)
++Edge e_1 := MakeEdge(n_0, n_2)
++Edge e_2 := MakeEdge(n_0, n_3)
++Edge e_3 := MakeEdge(n_0, n_4)
++Edge e_4 := MakeEdge(n_0, n_8)
++Edge e_5 := MakeEdge(n_0, n_12)
++Edge e_6 := MakeEdge(n_0, n_5)
++Edge e_7 := MakeEdge(n_1, n_2)
++Edge e_8 := MakeEdge(n_1, n_3)
++Edge e_9 := MakeEdge(n_1, n_5)
++Edge e_10 := MakeEdge(n_1, n_9)
++Edge e_11 := MakeEdge(n_1, n_13)
++Edge e_12 := MakeEdge(n_1, n_4)
++Edge e_13 := MakeEdge(n_2, n_3)
++Edge e_14 := MakeEdge(n_2, n_6)
++Edge e_15 := MakeEdge(n_2, n_10)
++Edge e_16 := MakeEdge(n_2, n_14)
++Edge e_17 := MakeEdge(n_2, n_7)
++Edge e_18 := MakeEdge(n_3, n_7)
++Edge e_19 := MakeEdge(n_3, n_11)
++Edge e_20 := MakeEdge(n_3, n_15)
++Edge e_21 := MakeEdge(n_3, n_6)
++Edge e_22 := MakeEdge(n_4, n_5)
++Edge e_23 := MakeEdge(n_4, n_6)
++Edge e_24 := MakeEdge(n_4, n_7)
++Edge e_25 := MakeEdge(n_4, n_8)
++Edge e_26 := MakeEdge(n_4, n_12)
++Edge e_27 := MakeEdge(n_5, n_6)
++Edge e_28 := MakeEdge(n_5, n_7)
++Edge e_29 := MakeEdge(n_5, n_9)
++Edge e_30 := MakeEdge(n_5, n_13)
++Edge e_31 := MakeEdge(n_6, n_7)
++Edge e_32 := MakeEdge(n_6, n_10)
++Edge e_33 := MakeEdge(n_6, n_14)
++Edge e_34 := MakeEdge(n_7, n_11)
++Edge e_35 := MakeEdge(n_7, n_15)
++Edge e_36 := MakeEdge(n_8, n_9)
++Edge e_37 := MakeEdge(n_8, n_10)
++Edge e_38 := MakeEdge(n_8, n_11)
++Edge e_39 := MakeEdge(n_8, n_12)
++Edge e_40 := MakeEdge(n_8, n_13)
++Edge e_41 := MakeEdge(n_9, n_10)
++Edge e_42 := MakeEdge(n_9, n_11)
++Edge e_43 := MakeEdge(n_9, n_13)
++Edge e_44 := MakeEdge(n_9, n_12)
++Edge e_45 := MakeEdge(n_10, n_11)
++Edge e_46 := MakeEdge(n_10, n_14)
++Edge e_47 := MakeEdge(n_10, n_15)
++Edge e_48 := MakeEdge(n_11, n_15)
++Edge e_49 := MakeEdge(n_11, n_14)
++Edge e_50 := MakeEdge(n_12, n_13)
++Edge e_51 := MakeEdge(n_12, n_14)
++Edge e_52 := MakeEdge(n_12, n_15)
++Edge e_53 := MakeEdge(n_13, n_14)
++Edge e_54 := MakeEdge(n_13, n_15)
++Edge e_55 := MakeEdge(n_14, n_15)
+\ No newline at end of file
+diff --git a/packages/examples/src/spectral-graphs/examples/box.substance b/packages/examples/src/spectral-graphs/examples/box.substance
+new file mode 100644
+index 0000000000..f989902419
+--- /dev/null
++++ b/packages/examples/src/spectral-graphs/examples/box.substance
+@@ -0,0 +1,5 @@
++Node n_i for i in [0,63]
++
++Edge x_i := MakeEdge( n_i, n_j ) for i in [0,63], j in [0,63] where j == (i + 1) mod 64 && i % 4 < 3
++Edge y_i := MakeEdge( n_i, n_j ) for i in [0,63], j in [0,63] where j == (i + 4) mod 64 && i % 16 < 12
++Edge z_i := MakeEdge( n_i, n_j ) for i in [0,47], j in [0,63] where j == (i + 16) mod 64
+diff --git a/packages/examples/src/spectral-graphs/examples/box.trio.json b/packages/examples/src/spectral-graphs/examples/box.trio.json
+new file mode 100644
+index 0000000000..90fa8e75ec
+--- /dev/null
++++ b/packages/examples/src/spectral-graphs/examples/box.trio.json
+@@ -0,0 +1,6 @@
++{
++  "substance": "./box.substance",
++  "style": ["../3d.style"],
++  "domain": "../graph.domain",
++  "variation": "ButterballWoodcock17126"
++}
+diff --git a/packages/examples/src/spectral-graphs/examples/circular-graph.substance b/packages/examples/src/spectral-graphs/examples/circular-graph.substance
+index ee0b9905c3..04114b0c60 100644
+--- a/packages/examples/src/spectral-graphs/examples/circular-graph.substance
++++ b/packages/examples/src/spectral-graphs/examples/circular-graph.substance
+@@ -1,40 +1,3 @@
+-Node n00
+-Node n01
+-Node n02
+-Node n03
+-Node n04
+-Node n05
+-Node n06
+-Node n07
+-Node n08
+-Node n09
+-Node n10
+-Node n11
+-Node n12
+-Node n13
+-Node n14
+-Node n15
+-Node n16
+-Node n17
+-Node n18
+-Node n19
+-Edge e00 := MakeEdge(n00, n01)
+-Edge e01 := MakeEdge(n01, n02)
+-Edge e02 := MakeEdge(n02, n03)
+-Edge e03 := MakeEdge(n03, n04)
+-Edge e04 := MakeEdge(n04, n05)
+-Edge e05 := MakeEdge(n05, n06)
+-Edge e06 := MakeEdge(n06, n07)
+-Edge e07 := MakeEdge(n07, n08)
+-Edge e08 := MakeEdge(n08, n09)
+-Edge e09 := MakeEdge(n09, n10)
+-Edge e10 := MakeEdge(n10, n11)
+-Edge e11 := MakeEdge(n11, n12)
+-Edge e12 := MakeEdge(n12, n13)
+-Edge e13 := MakeEdge(n13, n14)
+-Edge e14 := MakeEdge(n14, n15)
+-Edge e15 := MakeEdge(n15, n16)
+-Edge e16 := MakeEdge(n16, n17)
+-Edge e17 := MakeEdge(n17, n18)
+-Edge e18 := MakeEdge(n18, n19)
+-Edge e19 := MakeEdge(n19, n00)
+\ No newline at end of file
++Node n_i for i in [0, 19]
++
++Edge e_i := MakeEdge(n_i, n_j) for i in [0, 19], j in [0, 19] where j == (i + 1) mod 20
+diff --git a/packages/examples/src/spectral-graphs/examples/circular-ladder-graph.substance b/packages/examples/src/spectral-graphs/examples/circular-ladder-graph.substance
+index 49281491ec..22abc94990 100644
+--- a/packages/examples/src/spectral-graphs/examples/circular-ladder-graph.substance
++++ b/packages/examples/src/spectral-graphs/examples/circular-ladder-graph.substance
+@@ -1,75 +1,8 @@
+-Node n0
+-Node n1
+-Node n2
+-Node n3
+-Node n4
+-Node n5
+-Node n6
+-Node n7
+-Node n8
+-Node n9
+-Node n10
+-Node n11
+-Node n12
+-Node n13
+-Node n14
+-Node n15
+-Node n16
+-Node n17
+-Node n18
+-Node n19
+-Node n20
+-Node n21
+-Node n22
+-Node n23
+-Node n24
+-Node n25
+-Node n26
+-Node n27
+-Node n28
+-Node n29
+-Edge e0 := MakeEdge(n0, n1)
+-Edge e1 := MakeEdge(n0, n15)
+-Edge e2 := MakeEdge(n0, n14)
+-Edge e3 := MakeEdge(n1, n2)
+-Edge e4 := MakeEdge(n1, n16)
+-Edge e5 := MakeEdge(n2, n3)
+-Edge e6 := MakeEdge(n2, n17)
+-Edge e7 := MakeEdge(n3, n4)
+-Edge e8 := MakeEdge(n3, n18)
+-Edge e9 := MakeEdge(n4, n5)
+-Edge e10 := MakeEdge(n4, n19)
+-Edge e11 := MakeEdge(n5, n6)
+-Edge e12 := MakeEdge(n5, n20)
+-Edge e13 := MakeEdge(n6, n7)
+-Edge e14 := MakeEdge(n6, n21)
+-Edge e15 := MakeEdge(n7, n8)
+-Edge e16 := MakeEdge(n7, n22)
+-Edge e17 := MakeEdge(n8, n9)
+-Edge e18 := MakeEdge(n8, n23)
+-Edge e19 := MakeEdge(n9, n10)
+-Edge e20 := MakeEdge(n9, n24)
+-Edge e21 := MakeEdge(n10, n11)
+-Edge e22 := MakeEdge(n10, n25)
+-Edge e23 := MakeEdge(n11, n12)
+-Edge e24 := MakeEdge(n11, n26)
+-Edge e25 := MakeEdge(n12, n13)
+-Edge e26 := MakeEdge(n12, n27)
+-Edge e27 := MakeEdge(n13, n14)
+-Edge e28 := MakeEdge(n13, n28)
+-Edge e29 := MakeEdge(n14, n29)
+-Edge e30 := MakeEdge(n15, n16)
+-Edge e31 := MakeEdge(n15, n29)
+-Edge e32 := MakeEdge(n16, n17)
+-Edge e33 := MakeEdge(n17, n18)
+-Edge e34 := MakeEdge(n18, n19)
+-Edge e35 := MakeEdge(n19, n20)
+-Edge e36 := MakeEdge(n20, n21)
+-Edge e37 := MakeEdge(n21, n22)
+-Edge e38 := MakeEdge(n22, n23)
+-Edge e39 := MakeEdge(n23, n24)
+-Edge e40 := MakeEdge(n24, n25)
+-Edge e41 := MakeEdge(n25, n26)
+-Edge e42 := MakeEdge(n26, n27)
+-Edge e43 := MakeEdge(n27, n28)
+-Edge e44 := MakeEdge(n28, n29)
+\ No newline at end of file
++Node a_i for i in [0, 14]
++Node b_i for i in [0, 14]
++
++Edge ea_i := MakeEdge(a_i, a_j) for i in [0, 14], j in [0, 14] where (i + 1) % 15 == j
++
++Edge eb_i := MakeEdge(b_i, b_j) for i in [0, 14], j in [0, 14] where (i + 1) % 15 == j
++
++Edge ec_i := MakeEdge(a_i, b_i) for i in [0, 14]
+diff --git a/packages/examples/src/spectral-graphs/examples/dodecahedral-graph.substance b/packages/examples/src/spectral-graphs/examples/dodecahedral-graph.substance
+index a224e6ece6..d8447909b7 100644
+--- a/packages/examples/src/spectral-graphs/examples/dodecahedral-graph.substance
++++ b/packages/examples/src/spectral-graphs/examples/dodecahedral-graph.substance
+@@ -1,50 +1,14 @@
+-Node n0
+-Node n1
+-Node n2
+-Node n3
+-Node n4
+-Node n5
+-Node n6
+-Node n7
+-Node n8
+-Node n9
+-Node n10
+-Node n11
+-Node n12
+-Node n13
+-Node n14
+-Node n15
+-Node n16
+-Node n17
+-Node n18
+-Node n19
+-Edge e0 := MakeEdge(n0, n1)
+-Edge e1 := MakeEdge(n0, n19)
+-Edge e2 := MakeEdge(n0, n10)
+-Edge e3 := MakeEdge(n1, n2)
+-Edge e4 := MakeEdge(n1, n8)
+-Edge e5 := MakeEdge(n2, n3)
+-Edge e6 := MakeEdge(n2, n6)
+-Edge e7 := MakeEdge(n3, n4)
+-Edge e8 := MakeEdge(n3, n19)
+-Edge e9 := MakeEdge(n4, n5)
+-Edge e10 := MakeEdge(n4, n17)
+-Edge e11 := MakeEdge(n5, n6)
+-Edge e12 := MakeEdge(n5, n15)
+-Edge e13 := MakeEdge(n6, n7)
+-Edge e14 := MakeEdge(n7, n8)
+-Edge e15 := MakeEdge(n7, n14)
+-Edge e16 := MakeEdge(n8, n9)
+-Edge e17 := MakeEdge(n9, n10)
+-Edge e18 := MakeEdge(n9, n13)
+-Edge e19 := MakeEdge(n10, n11)
+-Edge e20 := MakeEdge(n11, n12)
+-Edge e21 := MakeEdge(n11, n18)
+-Edge e22 := MakeEdge(n12, n13)
+-Edge e23 := MakeEdge(n12, n16)
+-Edge e24 := MakeEdge(n13, n14)
+-Edge e25 := MakeEdge(n14, n15)
+-Edge e26 := MakeEdge(n15, n16)
+-Edge e27 := MakeEdge(n16, n17)
+-Edge e28 := MakeEdge(n17, n18)
+-Edge e29 := MakeEdge(n18, n19)
+\ No newline at end of file
++Node n_i for i in [0, 19] where true
++
++Edge e_i := MakeEdge(n_i, n_j) for i in [0, 19], j in [0, 19] where (i + 1) % 20 == j
++
++Edge e_20 := MakeEdge(n_0, n_10)
++Edge e_21 := MakeEdge(n_1, n_8)
++Edge e_22 := MakeEdge(n_2, n_6)
++Edge e_23 := MakeEdge(n_3, n_19)
++Edge e_24 := MakeEdge(n_4, n_17)
++Edge e_25 := MakeEdge(n_5, n_15)
++Edge e_26 := MakeEdge(n_7, n_14)
++Edge e_27 := MakeEdge(n_9, n_13)
++Edge e_28 := MakeEdge(n_11, n_18)
++Edge e_29 := MakeEdge(n_12, n_16)
+\ No newline at end of file
+diff --git a/packages/examples/src/spectral-graphs/examples/grid.substance b/packages/examples/src/spectral-graphs/examples/grid.substance
+new file mode 100644
+index 0000000000..202862212e
+--- /dev/null
++++ b/packages/examples/src/spectral-graphs/examples/grid.substance
+@@ -0,0 +1,4 @@
++Node n_i for i in [0,24]
++
++Edge x_i := MakeEdge( n_i, n_j ) for i in [0,24], j in [0,24] where j == (i + 1) mod 25 && i % 5 < 4
++Edge y_i := MakeEdge( n_i, n_j ) for i in [0,19], j in [0,24] where j == (i + 5) mod 25
+diff --git a/packages/examples/src/spectral-graphs/examples/grid.trio.json b/packages/examples/src/spectral-graphs/examples/grid.trio.json
+new file mode 100644
+index 0000000000..331ee6e821
+--- /dev/null
++++ b/packages/examples/src/spectral-graphs/examples/grid.trio.json
+@@ -0,0 +1,6 @@
++{
++  "substance": "./box.substance",
++  "style": ["../3d.style"],
++  "domain": "../graph.domain",
++  "variation": "BelfastBat2857"
++}
+diff --git a/packages/examples/src/spectral-graphs/examples/mobius.substance b/packages/examples/src/spectral-graphs/examples/mobius.substance
+new file mode 100644
+index 0000000000..ccb7ab9f01
+--- /dev/null
++++ b/packages/examples/src/spectral-graphs/examples/mobius.substance
+@@ -0,0 +1,30 @@
++Node n0_i for i in [0,15]
++Node n1_i for i in [0,15]
++Node n2_i for i in [0,15]
++Node n3_i for i in [0,15]
++Node n4_i for i in [0,15]
++Node n5_i for i in [0,15]
++
++-- horizontal edges
++Edge u0_i := MakeEdge( n0_i, n0_j ) for i in [0,15], j in [0,14] where j == (i + 1) mod 16
++Edge u1_i := MakeEdge( n1_i, n1_j ) for i in [0,15], j in [0,14] where j == (i + 1) mod 16
++Edge u2_i := MakeEdge( n2_i, n2_j ) for i in [0,15], j in [0,14] where j == (i + 1) mod 16
++Edge u3_i := MakeEdge( n3_i, n3_j ) for i in [0,15], j in [0,14] where j == (i + 1) mod 16
++Edge u4_i := MakeEdge( n4_i, n4_j ) for i in [0,15], j in [0,14] where j == (i + 1) mod 16
++Edge u5_i := MakeEdge( n5_i, n5_j ) for i in [0,15], j in [0,14] where j == (i + 1) mod 16
++
++-- join last column with opposite identification
++Edge u0_f := MakeEdge( n0_14, n5_15 )
++Edge u1_f := MakeEdge( n1_14, n4_15 )
++Edge u2_f := MakeEdge( n2_14, n3_15 )
++Edge u3_f := MakeEdge( n3_14, n2_15 )
++Edge u4_f := MakeEdge( n4_14, n1_15 )
++Edge u5_f := MakeEdge( n5_14, n0_15 )
++
++-- vertical edges
++Edge v0_i := MakeEdge( n0_i, n1_i ) for i in [0,15]
++Edge v1_i := MakeEdge( n1_i, n2_i ) for i in [0,15]
++Edge v2_i := MakeEdge( n2_i, n3_i ) for i in [0,15]
++Edge v3_i := MakeEdge( n3_i, n4_i ) for i in [0,15]
++Edge v4_i := MakeEdge( n4_i, n5_i ) for i in [0,15]
++
+diff --git a/packages/examples/src/spectral-graphs/examples/mobius.trio.json b/packages/examples/src/spectral-graphs/examples/mobius.trio.json
+new file mode 100644
+index 0000000000..72d2363906
+--- /dev/null
++++ b/packages/examples/src/spectral-graphs/examples/mobius.trio.json
+@@ -0,0 +1,6 @@
++{
++  "substance": "./mobius.substance",
++  "style": ["../3d.style"],
++  "domain": "../graph.domain",
++  "variation": "AngelicoWolverine47264"
++}
+diff --git a/packages/examples/src/spectral-graphs/examples/moebius-kantor-graph.substance b/packages/examples/src/spectral-graphs/examples/moebius-kantor-graph.substance
+index a4e17fe235..291510cb3a 100644
+--- a/packages/examples/src/spectral-graphs/examples/moebius-kantor-graph.substance
++++ b/packages/examples/src/spectral-graphs/examples/moebius-kantor-graph.substance
+@@ -1,40 +1,26 @@
+-Node n0
+-Node n1
+-Node n2
+-Node n3
+-Node n4
+-Node n5
+-Node n6
+-Node n7
+-Node n8
+-Node n9
+-Node n10
+-Node n11
+-Node n12
+-Node n13
+-Node n14
+-Node n15
+-Edge e0 := MakeEdge(n0, n1)
+-Edge e1 := MakeEdge(n0, n15)
+-Edge e2 := MakeEdge(n0, n5)
+-Edge e3 := MakeEdge(n1, n2)
+-Edge e4 := MakeEdge(n1, n12)
+-Edge e5 := MakeEdge(n2, n3)
+-Edge e6 := MakeEdge(n2, n7)
+-Edge e7 := MakeEdge(n3, n4)
+-Edge e8 := MakeEdge(n3, n14)
+-Edge e9 := MakeEdge(n4, n5)
+-Edge e10 := MakeEdge(n4, n9)
+-Edge e11 := MakeEdge(n5, n6)
+-Edge e12 := MakeEdge(n6, n7)
+-Edge e13 := MakeEdge(n6, n11)
+-Edge e14 := MakeEdge(n7, n8)
+-Edge e15 := MakeEdge(n8, n9)
+-Edge e16 := MakeEdge(n8, n13)
+-Edge e17 := MakeEdge(n9, n10)
+-Edge e18 := MakeEdge(n10, n11)
+-Edge e19 := MakeEdge(n10, n15)
+-Edge e20 := MakeEdge(n11, n12)
+-Edge e21 := MakeEdge(n12, n13)
+-Edge e22 := MakeEdge(n13, n14)
+-Edge e23 := MakeEdge(n14, n15)
+\ No newline at end of file
++Node n_i for i in [0, 15]
++
++Edge e0 := MakeEdge(n_0, n_1)
++Edge e1 := MakeEdge(n_0, n_15)
++Edge e2 := MakeEdge(n_0, n_5)
++Edge e3 := MakeEdge(n_1, n_2)
++Edge e4 := MakeEdge(n_1, n_12)
++Edge e5 := MakeEdge(n_2, n_3)
++Edge e6 := MakeEdge(n_2, n_7)
++Edge e7 := MakeEdge(n_3, n_4)
++Edge e8 := MakeEdge(n_3, n_14)
++Edge e9 := MakeEdge(n_4, n_5)
++Edge e10 := MakeEdge(n_4, n_9)
++Edge e11 := MakeEdge(n_5, n_6)
++Edge e12 := MakeEdge(n_6, n_7)
++Edge e13 := MakeEdge(n_6, n_11)
++Edge e14 := MakeEdge(n_7, n_8)
++Edge e15 := MakeEdge(n_8, n_9)
++Edge e16 := MakeEdge(n_8, n_13)
++Edge e17 := MakeEdge(n_9, n_10)
++Edge e18 := MakeEdge(n_10, n_11)
++Edge e19 := MakeEdge(n_10, n_15)
++Edge e20 := MakeEdge(n_11, n_12)
++Edge e21 := MakeEdge(n_12, n_13)
++Edge e22 := MakeEdge(n_13, n_14)
++Edge e23 := MakeEdge(n_14, n_15)
+\ No newline at end of file
+diff --git a/packages/examples/src/spectral-graphs/examples/mycielski-graph.substance b/packages/examples/src/spectral-graphs/examples/mycielski-graph.substance
+index 599c4a589d..bfe6a09eed 100644
+--- a/packages/examples/src/spectral-graphs/examples/mycielski-graph.substance
++++ b/packages/examples/src/spectral-graphs/examples/mycielski-graph.substance
+@@ -1,94 +1,73 @@
+-Node n0
+-Node n1
+-Node n2
+-Node n3
+-Node n4
+-Node n5
+-Node n6
+-Node n7
+-Node n8
+-Node n9
+-Node n10
+-Node n11
+-Node n12
+-Node n13
+-Node n14
+-Node n15
+-Node n16
+-Node n17
+-Node n18
+-Node n19
+-Node n20
+-Node n21
+-Node n22
+-Edge e0 := MakeEdge(n0, n1)
+-Edge e1 := MakeEdge(n0, n3)
+-Edge e2 := MakeEdge(n0, n6)
+-Edge e3 := MakeEdge(n0, n8)
+-Edge e4 := MakeEdge(n0, n12)
+-Edge e5 := MakeEdge(n0, n14)
+-Edge e6 := MakeEdge(n0, n17)
+-Edge e7 := MakeEdge(n0, n19)
+-Edge e8 := MakeEdge(n1, n2)
+-Edge e9 := MakeEdge(n1, n7)
+-Edge e10 := MakeEdge(n1, n5)
+-Edge e11 := MakeEdge(n1, n13)
+-Edge e12 := MakeEdge(n1, n18)
+-Edge e13 := MakeEdge(n1, n16)
+-Edge e14 := MakeEdge(n1, n11)
+-Edge e15 := MakeEdge(n2, n4)
+-Edge e16 := MakeEdge(n2, n9)
+-Edge e17 := MakeEdge(n2, n6)
+-Edge e18 := MakeEdge(n2, n15)
+-Edge e19 := MakeEdge(n2, n20)
+-Edge e20 := MakeEdge(n2, n17)
+-Edge e21 := MakeEdge(n2, n12)
+-Edge e22 := MakeEdge(n3, n4)
+-Edge e23 := MakeEdge(n3, n9)
+-Edge e24 := MakeEdge(n3, n5)
+-Edge e25 := MakeEdge(n3, n15)
+-Edge e26 := MakeEdge(n3, n20)
+-Edge e27 := MakeEdge(n3, n16)
+-Edge e28 := MakeEdge(n3, n11)
+-Edge e29 := MakeEdge(n4, n7)
+-Edge e30 := MakeEdge(n4, n8)
+-Edge e31 := MakeEdge(n4, n18)
+-Edge e32 := MakeEdge(n4, n19)
+-Edge e33 := MakeEdge(n4, n13)
+-Edge e34 := MakeEdge(n4, n14)
+-Edge e35 := MakeEdge(n5, n10)
+-Edge e36 := MakeEdge(n5, n21)
+-Edge e37 := MakeEdge(n5, n12)
+-Edge e38 := MakeEdge(n5, n14)
+-Edge e39 := MakeEdge(n6, n10)
+-Edge e40 := MakeEdge(n6, n21)
+-Edge e41 := MakeEdge(n6, n11)
+-Edge e42 := MakeEdge(n6, n13)
+-Edge e43 := MakeEdge(n7, n10)
+-Edge e44 := MakeEdge(n7, n21)
+-Edge e45 := MakeEdge(n7, n12)
+-Edge e46 := MakeEdge(n7, n15)
+-Edge e47 := MakeEdge(n8, n10)
+-Edge e48 := MakeEdge(n8, n21)
+-Edge e49 := MakeEdge(n8, n11)
+-Edge e50 := MakeEdge(n8, n15)
+-Edge e51 := MakeEdge(n9, n10)
+-Edge e52 := MakeEdge(n9, n21)
+-Edge e53 := MakeEdge(n9, n13)
+-Edge e54 := MakeEdge(n9, n14)
+-Edge e55 := MakeEdge(n10, n16)
+-Edge e56 := MakeEdge(n10, n17)
+-Edge e57 := MakeEdge(n10, n18)
+-Edge e58 := MakeEdge(n10, n19)
+-Edge e59 := MakeEdge(n10, n20)
+-Edge e60 := MakeEdge(n11, n22)
+-Edge e61 := MakeEdge(n12, n22)
+-Edge e62 := MakeEdge(n13, n22)
+-Edge e63 := MakeEdge(n14, n22)
+-Edge e64 := MakeEdge(n15, n22)
+-Edge e65 := MakeEdge(n16, n22)
+-Edge e66 := MakeEdge(n17, n22)
+-Edge e67 := MakeEdge(n18, n22)
+-Edge e68 := MakeEdge(n19, n22)
+-Edge e69 := MakeEdge(n20, n22)
+-Edge e70 := MakeEdge(n21, n22)
+\ No newline at end of file
++Node n_i for i in [0, 22]
++
++Edge e0 := MakeEdge(n_0, n_1)
++Edge e1 := MakeEdge(n_0, n_3)
++Edge e2 := MakeEdge(n_0, n_6)
++Edge e3 := MakeEdge(n_0, n_8)
++Edge e4 := MakeEdge(n_0, n_12)
++Edge e5 := MakeEdge(n_0, n_14)
++Edge e6 := MakeEdge(n_0, n_17)
++Edge e7 := MakeEdge(n_0, n_19)
++Edge e8 := MakeEdge(n_1, n_2)
++Edge e9 := MakeEdge(n_1, n_7)
++Edge e10 := MakeEdge(n_1, n_5)
++Edge e11 := MakeEdge(n_1, n_13)
++Edge e12 := MakeEdge(n_1, n_18)
++Edge e13 := MakeEdge(n_1, n_16)
++Edge e14 := MakeEdge(n_1, n_11)
++Edge e15 := MakeEdge(n_2, n_4)
++Edge e16 := MakeEdge(n_2, n_9)
++Edge e17 := MakeEdge(n_2, n_6)
++Edge e18 := MakeEdge(n_2, n_15)
++Edge e19 := MakeEdge(n_2, n_20)
++Edge e20 := MakeEdge(n_2, n_17)
++Edge e21 := MakeEdge(n_2, n_12)
++Edge e22 := MakeEdge(n_3, n_4)
++Edge e23 := MakeEdge(n_3, n_9)
++Edge e24 := MakeEdge(n_3, n_5)
++Edge e25 := MakeEdge(n_3, n_15)
++Edge e26 := MakeEdge(n_3, n_20)
++Edge e27 := MakeEdge(n_3, n_16)
++Edge e28 := MakeEdge(n_3, n_11)
++Edge e29 := MakeEdge(n_4, n_7)
++Edge e30 := MakeEdge(n_4, n_8)
++Edge e31 := MakeEdge(n_4, n_18)
++Edge e32 := MakeEdge(n_4, n_19)
++Edge e33 := MakeEdge(n_4, n_13)
++Edge e34 := MakeEdge(n_4, n_14)
++Edge e35 := MakeEdge(n_5, n_10)
++Edge e36 := MakeEdge(n_5, n_21)
++Edge e37 := MakeEdge(n_5, n_12)
++Edge e38 := MakeEdge(n_5, n_14)
++Edge e39 := MakeEdge(n_6, n_10)
++Edge e40 := MakeEdge(n_6, n_21)
++Edge e41 := MakeEdge(n_6, n_11)
++Edge e42 := MakeEdge(n_6, n_13)
++Edge e43 := MakeEdge(n_7, n_10)
++Edge e44 := MakeEdge(n_7, n_21)
++Edge e45 := MakeEdge(n_7, n_12)
++Edge e46 := MakeEdge(n_7, n_15)
++Edge e47 := MakeEdge(n_8, n_10)
++Edge e48 := MakeEdge(n_8, n_21)
++Edge e49 := MakeEdge(n_8, n_11)
++Edge e50 := MakeEdge(n_8, n_15)
++Edge e51 := MakeEdge(n_9, n_10)
++Edge e52 := MakeEdge(n_9, n_21)
++Edge e53 := MakeEdge(n_9, n_13)
++Edge e54 := MakeEdge(n_9, n_14)
++Edge e55 := MakeEdge(n_10, n_16)
++Edge e56 := MakeEdge(n_10, n_17)
++Edge e57 := MakeEdge(n_10, n_18)
++Edge e58 := MakeEdge(n_10, n_19)
++Edge e59 := MakeEdge(n_10, n_20)
++Edge e60 := MakeEdge(n_11, n_22)
++Edge e61 := MakeEdge(n_12, n_22)
++Edge e62 := MakeEdge(n_13, n_22)
++Edge e63 := MakeEdge(n_14, n_22)
++Edge e64 := MakeEdge(n_15, n_22)
++Edge e65 := MakeEdge(n_16, n_22)
++Edge e66 := MakeEdge(n_17, n_22)
++Edge e67 := MakeEdge(n_18, n_22)
++Edge e68 := MakeEdge(n_19, n_22)
++Edge e69 := MakeEdge(n_20, n_22)
++Edge e70 := MakeEdge(n_21, n_22)
+\ No newline at end of file
+diff --git a/packages/examples/src/spectral-graphs/examples/star-graph.substance b/packages/examples/src/spectral-graphs/examples/star-graph.substance
+index fe78a6bf9a..ee214e6987 100644
+--- a/packages/examples/src/spectral-graphs/examples/star-graph.substance
++++ b/packages/examples/src/spectral-graphs/examples/star-graph.substance
+@@ -1,201 +1,3 @@
+-Node n0
+-Node n1
+-Node n2
+-Node n3
+-Node n4
+-Node n5
+-Node n6
+-Node n7
+-Node n8
+-Node n9
+-Node n10
+-Node n11
+-Node n12
+-Node n13
+-Node n14
+-Node n15
+-Node n16
+-Node n17
+-Node n18
+-Node n19
+-Node n20
+-Node n21
+-Node n22
+-Node n23
+-Node n24
+-Node n25
+-Node n26
+-Node n27
+-Node n28
+-Node n29
+-Node n30
+-Node n31
+-Node n32
+-Node n33
+-Node n34
+-Node n35
+-Node n36
+-Node n37
+-Node n38
+-Node n39
+-Node n40
+-Node n41
+-Node n42
+-Node n43
+-Node n44
+-Node n45
+-Node n46
+-Node n47
+-Node n48
+-Node n49
+-Node n50
+-Node n51
+-Node n52
+-Node n53
+-Node n54
+-Node n55
+-Node n56
+-Node n57
+-Node n58
+-Node n59
+-Node n60
+-Node n61
+-Node n62
+-Node n63
+-Node n64
+-Node n65
+-Node n66
+-Node n67
+-Node n68
+-Node n69
+-Node n70
+-Node n71
+-Node n72
+-Node n73
+-Node n74
+-Node n75
+-Node n76
+-Node n77
+-Node n78
+-Node n79
+-Node n80
+-Node n81
+-Node n82
+-Node n83
+-Node n84
+-Node n85
+-Node n86
+-Node n87
+-Node n88
+-Node n89
+-Node n90
+-Node n91
+-Node n92
+-Node n93
+-Node n94
+-Node n95
+-Node n96
+-Node n97
+-Node n98
+-Node n99
+-Node n100
+-Edge e0 := MakeEdge(n0, n1)
+-Edge e1 := MakeEdge(n0, n2)
+-Edge e2 := MakeEdge(n0, n3)
+-Edge e3 := MakeEdge(n0, n4)
+-Edge e4 := MakeEdge(n0, n5)
+-Edge e5 := MakeEdge(n0, n6)
+-Edge e6 := MakeEdge(n0, n7)
+-Edge e7 := MakeEdge(n0, n8)
+-Edge e8 := MakeEdge(n0, n9)
+-Edge e9 := MakeEdge(n0, n10)
+-Edge e10 := MakeEdge(n0, n11)
+-Edge e11 := MakeEdge(n0, n12)
+-Edge e12 := MakeEdge(n0, n13)
+-Edge e13 := MakeEdge(n0, n14)
+-Edge e14 := MakeEdge(n0, n15)
+-Edge e15 := MakeEdge(n0, n16)
+-Edge e16 := MakeEdge(n0, n17)
+-Edge e17 := MakeEdge(n0, n18)
+-Edge e18 := MakeEdge(n0, n19)
+-Edge e19 := MakeEdge(n0, n20)
+-Edge e20 := MakeEdge(n0, n21)
+-Edge e21 := MakeEdge(n0, n22)
+-Edge e22 := MakeEdge(n0, n23)
+-Edge e23 := MakeEdge(n0, n24)
+-Edge e24 := MakeEdge(n0, n25)
+-Edge e25 := MakeEdge(n0, n26)
+-Edge e26 := MakeEdge(n0, n27)
+-Edge e27 := MakeEdge(n0, n28)
+-Edge e28 := MakeEdge(n0, n29)
+-Edge e29 := MakeEdge(n0, n30)
+-Edge e30 := MakeEdge(n0, n31)
+-Edge e31 := MakeEdge(n0, n32)
+-Edge e32 := MakeEdge(n0, n33)
+-Edge e33 := MakeEdge(n0, n34)
+-Edge e34 := MakeEdge(n0, n35)
+-Edge e35 := MakeEdge(n0, n36)
+-Edge e36 := MakeEdge(n0, n37)
+-Edge e37 := MakeEdge(n0, n38)
+-Edge e38 := MakeEdge(n0, n39)
+-Edge e39 := MakeEdge(n0, n40)
+-Edge e40 := MakeEdge(n0, n41)
+-Edge e41 := MakeEdge(n0, n42)
+-Edge e42 := MakeEdge(n0, n43)
+-Edge e43 := MakeEdge(n0, n44)
+-Edge e44 := MakeEdge(n0, n45)
+-Edge e45 := MakeEdge(n0, n46)
+-Edge e46 := MakeEdge(n0, n47)
+-Edge e47 := MakeEdge(n0, n48)
+-Edge e48 := MakeEdge(n0, n49)
+-Edge e49 := MakeEdge(n0, n50)
+-Edge e50 := MakeEdge(n0, n51)
+-Edge e51 := MakeEdge(n0, n52)
+-Edge e52 := MakeEdge(n0, n53)
+-Edge e53 := MakeEdge(n0, n54)
+-Edge e54 := MakeEdge(n0, n55)
+-Edge e55 := MakeEdge(n0, n56)
+-Edge e56 := MakeEdge(n0, n57)
+-Edge e57 := MakeEdge(n0, n58)
+-Edge e58 := MakeEdge(n0, n59)
+-Edge e59 := MakeEdge(n0, n60)
+-Edge e60 := MakeEdge(n0, n61)
+-Edge e61 := MakeEdge(n0, n62)
+-Edge e62 := MakeEdge(n0, n63)
+-Edge e63 := MakeEdge(n0, n64)
+-Edge e64 := MakeEdge(n0, n65)
+-Edge e65 := MakeEdge(n0, n66)
+-Edge e66 := MakeEdge(n0, n67)
+-Edge e67 := MakeEdge(n0, n68)
+-Edge e68 := MakeEdge(n0, n69)
+-Edge e69 := MakeEdge(n0, n70)
+-Edge e70 := MakeEdge(n0, n71)
+-Edge e71 := MakeEdge(n0, n72)
+-Edge e72 := MakeEdge(n0, n73)
+-Edge e73 := MakeEdge(n0, n74)
+-Edge e74 := MakeEdge(n0, n75)
+-Edge e75 := MakeEdge(n0, n76)
+-Edge e76 := MakeEdge(n0, n77)
+-Edge e77 := MakeEdge(n0, n78)
+-Edge e78 := MakeEdge(n0, n79)
+-Edge e79 := MakeEdge(n0, n80)
+-Edge e80 := MakeEdge(n0, n81)
+-Edge e81 := MakeEdge(n0, n82)
+-Edge e82 := MakeEdge(n0, n83)
+-Edge e83 := MakeEdge(n0, n84)
+-Edge e84 := MakeEdge(n0, n85)
+-Edge e85 := MakeEdge(n0, n86)
+-Edge e86 := MakeEdge(n0, n87)
+-Edge e87 := MakeEdge(n0, n88)
+-Edge e88 := MakeEdge(n0, n89)
+-Edge e89 := MakeEdge(n0, n90)
+-Edge e90 := MakeEdge(n0, n91)
+-Edge e91 := MakeEdge(n0, n92)
+-Edge e92 := MakeEdge(n0, n93)
+-Edge e93 := MakeEdge(n0, n94)
+-Edge e94 := MakeEdge(n0, n95)
+-Edge e95 := MakeEdge(n0, n96)
+-Edge e96 := MakeEdge(n0, n97)
+-Edge e97 := MakeEdge(n0, n98)
+-Edge e98 := MakeEdge(n0, n99)
+-Edge e99 := MakeEdge(n0, n100)
+\ No newline at end of file
++Node n_i for i in [0, 100]
++
++Edge e_j := MakeEdge(n_0, n_j) for j in [1, 100]
+\ No newline at end of file
+diff --git a/packages/examples/src/spectral-graphs/examples/theta-graph.substance b/packages/examples/src/spectral-graphs/examples/theta-graph.substance
+index 8b27164838..e0fd28326b 100644
+--- a/packages/examples/src/spectral-graphs/examples/theta-graph.substance
++++ b/packages/examples/src/spectral-graphs/examples/theta-graph.substance
+@@ -1,52 +1,10 @@
+-Node n00
+-Node n01
+-Node n02
+-Node n03
+-Node n04
+-Node n05
+-Node n06
+-Node n07
+-Node n08
+-Node n09
+-Node n10
+-Node n11
+-Node n12
+-Node n13
+-Node n14
+-Node n15
+-Node n16
+-Node n17
+-Node n18
+-Node n19
+-Node n20
+-Node n21
+-Node n22
+-Node n23
+-Node n24
+-Node n25
+-Edge e00 := MakeEdge(n00, n01)
+-Edge e01 := MakeEdge(n01, n02)
+-Edge e02 := MakeEdge(n02, n03)
+-Edge e03 := MakeEdge(n03, n04)
+-Edge e04 := MakeEdge(n04, n05)
+-Edge e05 := MakeEdge(n05, n06)
+-Edge e06 := MakeEdge(n06, n07)
+-Edge e07 := MakeEdge(n07, n08)
+-Edge e08 := MakeEdge(n08, n09)
+-Edge e09 := MakeEdge(n09, n10)
+-Edge e10 := MakeEdge(n10, n11)
+-Edge e11 := MakeEdge(n11, n12)
+-Edge e12 := MakeEdge(n12, n13)
+-Edge e13 := MakeEdge(n13, n14)
+-Edge e14 := MakeEdge(n14, n15)
+-Edge e15 := MakeEdge(n15, n16)
+-Edge e16 := MakeEdge(n16, n17)
+-Edge e17 := MakeEdge(n17, n18)
+-Edge e18 := MakeEdge(n18, n19)
+-Edge e19 := MakeEdge(n19, n00)
+-Edge e20 := MakeEdge(n00, n20)
+-Edge e21 := MakeEdge(n20, n21)
+-Edge e22 := MakeEdge(n21, n22)
+-Edge e23 := MakeEdge(n22, n23)
+-Edge e24 := MakeEdge(n23, n24)
+-Edge e25 := MakeEdge(n24, n10)
+\ No newline at end of file
++Node n_i for i in [0, 24]
++
++Edge e_i := MakeEdge(n_i, n_j) for i in [0, 19], j in [0, 19] where (i + 1) % 20 == j
++
++Edge e_20 := MakeEdge(n_0, n_20)
++Edge e_21 := MakeEdge(n_20, n_21)
++Edge e_22 := MakeEdge(n_21, n_22)
++Edge e_23 := MakeEdge(n_22, n_23)
++Edge e_24 := MakeEdge(n_23, n_24)
++Edge e_25 := MakeEdge(n_24, n_10)
+\ No newline at end of file
+diff --git a/packages/examples/src/spectral-graphs/examples/torus.substance b/packages/examples/src/spectral-graphs/examples/torus.substance
+index 1e0403c236..24a8247629 100644
+--- a/packages/examples/src/spectral-graphs/examples/torus.substance
++++ b/packages/examples/src/spectral-graphs/examples/torus.substance
+@@ -1,289 +1,20 @@
+-Node n0x0
+-Node n0x1
+-Node n0x2
+-Node n0x3
+-Node n0x4
+-Node n0x5
+-Node n0x6
+-Node n0x7
+-Node n0x8
+-Node n0x9
+-Node n0x10
+-Node n0x11
+-Node n0x12
+-Node n0x13
+-Node n0x14
+-Node n0x15
+-Node n1x0
+-Node n1x1
+-Node n1x2
+-Node n1x3
+-Node n1x4
+-Node n1x5
+-Node n1x6
+-Node n1x7
+-Node n1x8
+-Node n1x9
+-Node n1x10
+-Node n1x11
+-Node n1x12
+-Node n1x13
+-Node n1x14
+-Node n1x15
+-Node n2x0
+-Node n2x1
+-Node n2x2
+-Node n2x3
+-Node n2x4
+-Node n2x5
+-Node n2x6
+-Node n2x7
+-Node n2x8
+-Node n2x9
+-Node n2x10
+-Node n2x11
+-Node n2x12
+-Node n2x13
+-Node n2x14
+-Node n2x15
+-Node n3x0
+-Node n3x1
+-Node n3x2
+-Node n3x3
+-Node n3x4
+-Node n3x5
+-Node n3x6
+-Node n3x7
+-Node n3x8
+-Node n3x9
+-Node n3x10
+-Node n3x11
+-Node n3x12
+-Node n3x13
+-Node n3x14
+-Node n3x15
+-Node n4x0
+-Node n4x1
+-Node n4x2
+-Node n4x3
+-Node n4x4
+-Node n4x5
+-Node n4x6
+-Node n4x7
+-Node n4x8
+-Node n4x9
+-Node n4x10
+-Node n4x11
+-Node n4x12
+-Node n4x13
+-Node n4x14
+-Node n4x15
+-Node n5x0
+-Node n5x1
+-Node n5x2
+-Node n5x3
+-Node n5x4
+-Node n5x5
+-Node n5x6
+-Node n5x7
+-Node n5x8
+-Node n5x9
+-Node n5x10
+-Node n5x11
+-Node n5x12
+-Node n5x13
+-Node n5x14
+-Node n5x15
++Node n0_i for i in [0,15]
++Node n1_i for i in [0,15]
++Node n2_i for i in [0,15]
++Node n3_i for i in [0,15]
++Node n4_i for i in [0,15]
++Node n5_i for i in [0,15]
+ 
+-Edge e0 := MakeEdge(n0x0, n1x0)
+-Edge e1 := MakeEdge(n0x0, n5x0)
+-Edge e2 := MakeEdge(n0x0, n0x1)
+-Edge e3 := MakeEdge(n0x0, n0x15)
+-Edge e4 := MakeEdge(n0x1, n1x1)
+-Edge e5 := MakeEdge(n0x1, n5x1)
+-Edge e6 := MakeEdge(n0x1, n0x2)
+-Edge e7 := MakeEdge(n0x2, n1x2)
+-Edge e8 := MakeEdge(n0x2, n5x2)
+-Edge e9 := MakeEdge(n0x2, n0x3)
+-Edge e10 := MakeEdge(n0x3, n1x3)
+-Edge e11 := MakeEdge(n0x3, n5x3)
+-Edge e12 := MakeEdge(n0x3, n0x4)
+-Edge e13 := MakeEdge(n0x4, n1x4)
+-Edge e14 := MakeEdge(n0x4, n5x4)
+-Edge e15 := MakeEdge(n0x4, n0x5)
+-Edge e16 := MakeEdge(n0x5, n1x5)
+-Edge e17 := MakeEdge(n0x5, n5x5)
+-Edge e18 := MakeEdge(n0x5, n0x6)
+-Edge e19 := MakeEdge(n0x6, n1x6)
+-Edge e20 := MakeEdge(n0x6, n5x6)
+-Edge e21 := MakeEdge(n0x6, n0x7)
+-Edge e22 := MakeEdge(n0x7, n1x7)
+-Edge e23 := MakeEdge(n0x7, n5x7)
+-Edge e24 := MakeEdge(n0x7, n0x8)
+-Edge e25 := MakeEdge(n0x8, n1x8)
+-Edge e26 := MakeEdge(n0x8, n5x8)
+-Edge e27 := MakeEdge(n0x8, n0x9)
+-Edge e28 := MakeEdge(n0x9, n1x9)
+-Edge e29 := MakeEdge(n0x9, n5x9)
+-Edge e30 := MakeEdge(n0x9, n0x10)
+-Edge e31 := MakeEdge(n0x10, n1x10)
+-Edge e32 := MakeEdge(n0x10, n5x10)
+-Edge e33 := MakeEdge(n0x10, n0x11)
+-Edge e34 := MakeEdge(n0x11, n1x11)
+-Edge e35 := MakeEdge(n0x11, n5x11)
+-Edge e36 := MakeEdge(n0x11, n0x12)
+-Edge e37 := MakeEdge(n0x12, n1x12)
+-Edge e38 := MakeEdge(n0x12, n5x12)
+-Edge e39 := MakeEdge(n0x12, n0x13)
+-Edge e40 := MakeEdge(n0x13, n1x13)
+-Edge e41 := MakeEdge(n0x13, n5x13)
+-Edge e42 := MakeEdge(n0x13, n0x14)
+-Edge e43 := MakeEdge(n0x14, n1x14)
+-Edge e44 := MakeEdge(n0x14, n5x14)
+-Edge e45 := MakeEdge(n0x14, n0x15)
+-Edge e46 := MakeEdge(n0x15, n1x15)
+-Edge e47 := MakeEdge(n0x15, n5x15)
+-Edge e48 := MakeEdge(n1x0, n2x0)
+-Edge e49 := MakeEdge(n1x0, n1x1)
+-Edge e50 := MakeEdge(n1x0, n1x15)
+-Edge e51 := MakeEdge(n1x1, n2x1)
+-Edge e52 := MakeEdge(n1x1, n1x2)
+-Edge e53 := MakeEdge(n1x2, n2x2)
+-Edge e54 := MakeEdge(n1x2, n1x3)
+-Edge e55 := MakeEdge(n1x3, n2x3)
+-Edge e56 := MakeEdge(n1x3, n1x4)
+-Edge e57 := MakeEdge(n1x4, n2x4)
+-Edge e58 := MakeEdge(n1x4, n1x5)
+-Edge e59 := MakeEdge(n1x5, n2x5)
+-Edge e60 := MakeEdge(n1x5, n1x6)
+-Edge e61 := MakeEdge(n1x6, n2x6)
+-Edge e62 := MakeEdge(n1x6, n1x7)
+-Edge e63 := MakeEdge(n1x7, n2x7)
+-Edge e64 := MakeEdge(n1x7, n1x8)
+-Edge e65 := MakeEdge(n1x8, n2x8)
+-Edge e66 := MakeEdge(n1x8, n1x9)
+-Edge e67 := MakeEdge(n1x9, n2x9)
+-Edge e68 := MakeEdge(n1x9, n1x10)
+-Edge e69 := MakeEdge(n1x10, n2x10)
+-Edge e70 := MakeEdge(n1x10, n1x11)
+-Edge e71 := MakeEdge(n1x11, n2x11)
+-Edge e72 := MakeEdge(n1x11, n1x12)
+-Edge e73 := MakeEdge(n1x12, n2x12)
+-Edge e74 := MakeEdge(n1x12, n1x13)
+-Edge e75 := MakeEdge(n1x13, n2x13)
+-Edge e76 := MakeEdge(n1x13, n1x14)
+-Edge e77 := MakeEdge(n1x14, n2x14)
+-Edge e78 := MakeEdge(n1x14, n1x15)
+-Edge e79 := MakeEdge(n1x15, n2x15)
+-Edge e80 := MakeEdge(n2x0, n3x0)
+-Edge e81 := MakeEdge(n2x0, n2x1)
+-Edge e82 := MakeEdge(n2x0, n2x15)
+-Edge e83 := MakeEdge(n2x1, n3x1)
+-Edge e84 := MakeEdge(n2x1, n2x2)
+-Edge e85 := MakeEdge(n2x2, n3x2)
+-Edge e86 := MakeEdge(n2x2, n2x3)
+-Edge e87 := MakeEdge(n2x3, n3x3)
+-Edge e88 := MakeEdge(n2x3, n2x4)
+-Edge e89 := MakeEdge(n2x4, n3x4)
+-Edge e90 := MakeEdge(n2x4, n2x5)
+-Edge e91 := MakeEdge(n2x5, n3x5)
+-Edge e92 := MakeEdge(n2x5, n2x6)
+-Edge e93 := MakeEdge(n2x6, n3x6)
+-Edge e94 := MakeEdge(n2x6, n2x7)
+-Edge e95 := MakeEdge(n2x7, n3x7)
+-Edge e96 := MakeEdge(n2x7, n2x8)
+-Edge e97 := MakeEdge(n2x8, n3x8)
+-Edge e98 := MakeEdge(n2x8, n2x9)
+-Edge e99 := MakeEdge(n2x9, n3x9)
+-Edge e100 := MakeEdge(n2x9, n2x10)
+-Edge e101 := MakeEdge(n2x10, n3x10)
+-Edge e102 := MakeEdge(n2x10, n2x11)
+-Edge e103 := MakeEdge(n2x11, n3x11)
+-Edge e104 := MakeEdge(n2x11, n2x12)
+-Edge e105 := MakeEdge(n2x12, n3x12)
+-Edge e106 := MakeEdge(n2x12, n2x13)
+-Edge e107 := MakeEdge(n2x13, n3x13)
+-Edge e108 := MakeEdge(n2x13, n2x14)
+-Edge e109 := MakeEdge(n2x14, n3x14)
+-Edge e110 := MakeEdge(n2x14, n2x15)
+-Edge e111 := MakeEdge(n2x15, n3x15)
+-Edge e112 := MakeEdge(n3x0, n4x0)
+-Edge e113 := MakeEdge(n3x0, n3x1)
+-Edge e114 := MakeEdge(n3x0, n3x15)
+-Edge e115 := MakeEdge(n3x1, n4x1)
+-Edge e116 := MakeEdge(n3x1, n3x2)
+-Edge e117 := MakeEdge(n3x2, n4x2)
+-Edge e118 := MakeEdge(n3x2, n3x3)
+-Edge e119 := MakeEdge(n3x3, n4x3)
+-Edge e120 := MakeEdge(n3x3, n3x4)
+-Edge e121 := MakeEdge(n3x4, n4x4)
+-Edge e122 := MakeEdge(n3x4, n3x5)
+-Edge e123 := MakeEdge(n3x5, n4x5)
+-Edge e124 := MakeEdge(n3x5, n3x6)
+-Edge e125 := MakeEdge(n3x6, n4x6)
+-Edge e126 := MakeEdge(n3x6, n3x7)
+-Edge e127 := MakeEdge(n3x7, n4x7)
+-Edge e128 := MakeEdge(n3x7, n3x8)
+-Edge e129 := MakeEdge(n3x8, n4x8)
+-Edge e130 := MakeEdge(n3x8, n3x9)
+-Edge e131 := MakeEdge(n3x9, n4x9)
+-Edge e132 := MakeEdge(n3x9, n3x10)
+-Edge e133 := MakeEdge(n3x10, n4x10)
+-Edge e134 := MakeEdge(n3x10, n3x11)
+-Edge e135 := MakeEdge(n3x11, n4x11)
+-Edge e136 := MakeEdge(n3x11, n3x12)
+-Edge e137 := MakeEdge(n3x12, n4x12)
+-Edge e138 := MakeEdge(n3x12, n3x13)
+-Edge e139 := MakeEdge(n3x13, n4x13)
+-Edge e140 := MakeEdge(n3x13, n3x14)
+-Edge e141 := MakeEdge(n3x14, n4x14)
+-Edge e142 := MakeEdge(n3x14, n3x15)
+-Edge e143 := MakeEdge(n3x15, n4x15)
+-Edge e144 := MakeEdge(n4x0, n5x0)
+-Edge e145 := MakeEdge(n4x0, n4x1)
+-Edge e146 := MakeEdge(n4x0, n4x15)
+-Edge e147 := MakeEdge(n4x1, n5x1)
+-Edge e148 := MakeEdge(n4x1, n4x2)
+-Edge e149 := MakeEdge(n4x2, n5x2)
+-Edge e150 := MakeEdge(n4x2, n4x3)
+-Edge e151 := MakeEdge(n4x3, n5x3)
+-Edge e152 := MakeEdge(n4x3, n4x4)
+-Edge e153 := MakeEdge(n4x4, n5x4)
+-Edge e154 := MakeEdge(n4x4, n4x5)
+-Edge e155 := MakeEdge(n4x5, n5x5)
+-Edge e156 := MakeEdge(n4x5, n4x6)
+-Edge e157 := MakeEdge(n4x6, n5x6)
+-Edge e158 := MakeEdge(n4x6, n4x7)
+-Edge e159 := MakeEdge(n4x7, n5x7)
+-Edge e160 := MakeEdge(n4x7, n4x8)
+-Edge e161 := MakeEdge(n4x8, n5x8)
+-Edge e162 := MakeEdge(n4x8, n4x9)
+-Edge e163 := MakeEdge(n4x9, n5x9)
+-Edge e164 := MakeEdge(n4x9, n4x10)
+-Edge e165 := MakeEdge(n4x10, n5x10)
+-Edge e166 := MakeEdge(n4x10, n4x11)
+-Edge e167 := MakeEdge(n4x11, n5x11)
+-Edge e168 := MakeEdge(n4x11, n4x12)
+-Edge e169 := MakeEdge(n4x12, n5x12)
+-Edge e170 := MakeEdge(n4x12, n4x13)
+-Edge e171 := MakeEdge(n4x13, n5x13)
+-Edge e172 := MakeEdge(n4x13, n4x14)
+-Edge e173 := MakeEdge(n4x14, n5x14)
+-Edge e174 := MakeEdge(n4x14, n4x15)
+-Edge e175 := MakeEdge(n4x15, n5x15)
+-Edge e176 := MakeEdge(n5x0, n5x1)
+-Edge e177 := MakeEdge(n5x0, n5x15)
+-Edge e178 := MakeEdge(n5x1, n5x2)
+-Edge e179 := MakeEdge(n5x2, n5x3)
+-Edge e180 := MakeEdge(n5x3, n5x4)
+-Edge e181 := MakeEdge(n5x4, n5x5)
+-Edge e182 := MakeEdge(n5x5, n5x6)
+-Edge e183 := MakeEdge(n5x6, n5x7)
+-Edge e184 := MakeEdge(n5x7, n5x8)
+-Edge e185 := MakeEdge(n5x8, n5x9)
+-Edge e186 := MakeEdge(n5x9, n5x10)
+-Edge e187 := MakeEdge(n5x10, n5x11)
+-Edge e188 := MakeEdge(n5x11, n5x12)
+-Edge e189 := MakeEdge(n5x12, n5x13)
+-Edge e190 := MakeEdge(n5x13, n5x14)
+-Edge e191 := MakeEdge(n5x14, n5x15)
+\ No newline at end of file
++Edge u0_i := MakeEdge( n0_i, n0_j ) for i in [0,15], j in [0,15] where j == (i + 1) mod 16
++Edge u1_i := MakeEdge( n1_i, n1_j ) for i in [0,15], j in [0,15] where j == (i + 1) mod 16
++Edge u2_i := MakeEdge( n2_i, n2_j ) for i in [0,15], j in [0,15] where j == (i + 1) mod 16
++Edge u3_i := MakeEdge( n3_i, n3_j ) for i in [0,15], j in [0,15] where j == (i + 1) mod 16
++Edge u4_i := MakeEdge( n4_i, n4_j ) for i in [0,15], j in [0,15] where j == (i + 1) mod 16
++Edge u5_i := MakeEdge( n5_i, n5_j ) for i in [0,15], j in [0,15] where j == (i + 1) mod 16
++
++Edge v0_i := MakeEdge( n0_i, n1_i ) for i in [0,15]
++Edge v1_i := MakeEdge( n1_i, n2_i ) for i in [0,15]
++Edge v2_i := MakeEdge( n2_i, n3_i ) for i in [0,15]
++Edge v3_i := MakeEdge( n3_i, n4_i ) for i in [0,15]
++Edge v4_i := MakeEdge( n4_i, n5_i ) for i in [0,15]
++Edge v5_i := MakeEdge( n5_i, n0_i ) for i in [0,15]
+diff --git a/packages/examples/src/spectral-graphs/examples/wheel-graph.substance b/packages/examples/src/spectral-graphs/examples/wheel-graph.substance
+index 97be91555d..8a2b4b8cab 100644
+--- a/packages/examples/src/spectral-graphs/examples/wheel-graph.substance
++++ b/packages/examples/src/spectral-graphs/examples/wheel-graph.substance
+@@ -1,88 +1,5 @@
+-Node n0
+-Node n1
+-Node n2
+-Node n3
+-Node n4
+-Node n5
+-Node n6
+-Node n7
+-Node n8
+-Node n9
+-Node n10
+-Node n11
+-Node n12
+-Node n13
+-Node n14
+-Node n15
+-Node n16
+-Node n17
+-Node n18
+-Node n19
+-Node n20
+-Node n21
+-Node n22
+-Node n23
+-Node n24
+-Node n25
+-Node n26
+-Node n27
+-Node n28
+-Node n29
+-Edge e0 := MakeEdge(n0, n1)
+-Edge e1 := MakeEdge(n0, n2)
+-Edge e2 := MakeEdge(n0, n3)
+-Edge e3 := MakeEdge(n0, n4)
+-Edge e4 := MakeEdge(n0, n5)
+-Edge e5 := MakeEdge(n0, n6)
+-Edge e6 := MakeEdge(n0, n7)
+-Edge e7 := MakeEdge(n0, n8)
+-Edge e8 := MakeEdge(n0, n9)
+-Edge e9 := MakeEdge(n0, n10)
+-Edge e10 := MakeEdge(n0, n11)
+-Edge e11 := MakeEdge(n0, n12)
+-Edge e12 := MakeEdge(n0, n13)
+-Edge e13 := MakeEdge(n0, n14)
+-Edge e14 := MakeEdge(n0, n15)
+-Edge e15 := MakeEdge(n0, n16)
+-Edge e16 := MakeEdge(n0, n17)
+-Edge e17 := MakeEdge(n0, n18)
+-Edge e18 := MakeEdge(n0, n19)
+-Edge e19 := MakeEdge(n0, n20)
+-Edge e20 := MakeEdge(n0, n21)
+-Edge e21 := MakeEdge(n0, n22)
+-Edge e22 := MakeEdge(n0, n23)
+-Edge e23 := MakeEdge(n0, n24)
+-Edge e24 := MakeEdge(n0, n25)
+-Edge e25 := MakeEdge(n0, n26)
+-Edge e26 := MakeEdge(n0, n27)
+-Edge e27 := MakeEdge(n0, n28)
+-Edge e28 := MakeEdge(n0, n29)
+-Edge e29 := MakeEdge(n1, n2)
+-Edge e30 := MakeEdge(n1, n29)
+-Edge e31 := MakeEdge(n2, n3)
+-Edge e32 := MakeEdge(n3, n4)
+-Edge e33 := MakeEdge(n4, n5)
+-Edge e34 := MakeEdge(n5, n6)
+-Edge e35 := MakeEdge(n6, n7)
+-Edge e36 := MakeEdge(n7, n8)
+-Edge e37 := MakeEdge(n8, n9)
+-Edge e38 := MakeEdge(n9, n10)
+-Edge e39 := MakeEdge(n10, n11)
+-Edge e40 := MakeEdge(n11, n12)
+-Edge e41 := MakeEdge(n12, n13)
+-Edge e42 := MakeEdge(n13, n14)
+-Edge e43 := MakeEdge(n14, n15)
+-Edge e44 := MakeEdge(n15, n16)
+-Edge e45 := MakeEdge(n16, n17)
+-Edge e46 := MakeEdge(n17, n18)
+-Edge e47 := MakeEdge(n18, n19)
+-Edge e48 := MakeEdge(n19, n20)
+-Edge e49 := MakeEdge(n20, n21)
+-Edge e50 := MakeEdge(n21, n22)
+-Edge e51 := MakeEdge(n22, n23)
+-Edge e52 := MakeEdge(n23, n24)
+-Edge e53 := MakeEdge(n24, n25)
+-Edge e54 := MakeEdge(n25, n26)
+-Edge e55 := MakeEdge(n26, n27)
+-Edge e56 := MakeEdge(n27, n28)
+-Edge e57 := MakeEdge(n28, n29)
+\ No newline at end of file
++Node n_i for i in [0, 10]
++
++Edge e0_i := MakeEdge(n_0, n_i) for i in [1, 10]
++
++Edge e1_i := MakeEdge(n_i, n_j) for i in [1, 10], j in [1, 10] where i % 10 == j - 1
+diff --git a/packages/examples/src/tsne/empty.substance b/packages/examples/src/tsne/empty.substance
+index 8c4964062d..52d472be59 100644
+--- a/packages/examples/src/tsne/empty.substance
++++ b/packages/examples/src/tsne/empty.substance
+@@ -1,20 +1 @@
+-Point p00
+-Point p01
+-Point p02
+-Point p03
+-Point p04
+-Point p05
+-Point p06
+-Point p07
+-Point p08
+-Point p09
+-Point p10
+-Point p11
+-Point p12
+-Point p13
+-Point p14
+-Point p15
+-Point p16
+-Point p17
+-Point p18
+-Point p19
+\ No newline at end of file
++Point p_i for i in [0, 19]
+\ No newline at end of file
+diff --git a/packages/vscode/syntaxes/substance.tmGrammar.json b/packages/vscode/syntaxes/substance.tmGrammar.json
+index 4e3b2519e0..a7c7e8fa35 100644
+--- a/packages/vscode/syntaxes/substance.tmGrammar.json
++++ b/packages/vscode/syntaxes/substance.tmGrammar.json
+@@ -4,10 +4,11 @@
+   "scopeName": "source.penrose-substance",
+   "fileTypes": [".substance"],
+   "patterns": [
++    { "include": "#comments" },
+     { "include": "#keywords" },
+     { "include": "#latex" },
+     { "include": "#strings" },
+-    { "include": "#comments" }
++    { "include": "#numbers" }
+   ],
+   "repository": {
+     "strings": {
+@@ -31,16 +32,24 @@
+       "patterns": [
+         {
+           "name": "keyword.control.penrose",
+-          "match": "\\b(AutoLabel|Label|NoLabel|All|Let)\\b"
++          "match": "\\b(AutoLabel|Label|NoLabel|All|Let|for|where|in)\\b"
+         },
+         {
+-          "name": "keyword.operator",
+-          "match": ":="
++          "name": "keyword.operator.penrose",
++          "match": ":=|>=|<=|>|<|==|\\|\\||&&|!|\\+|\\*|-|%|/|mod|="
+         }
+       ]
+     },
+     "latex": {
+       "patterns": [{ "name": "constant.language.penrose", "match": "\\$.*\\$" }]
++    },
++    "numbers": {
++      "patterns": [
++        {
++          "name": "constant.numeric.float",
++          "match": "\\b[+-]?(?:\\d+(?:[.]\\d*)?(?:[eE][+-]?\\d+)?|[.]\\d+(?:[eE][+-]?\\d+)?)\\b"
++        }
++      ]
+     }
+   }
+ }
+diff --git a/util/emacs/penrose-modes.el b/util/emacs/penrose-modes.el
+index 11e469afc5..68b70b2e36 100644
+--- a/util/emacs/penrose-modes.el
++++ b/util/emacs/penrose-modes.el
+@@ -63,7 +63,7 @@
+     "Set" "Reals" "Real" "Point" "Function" "Interval" "OpenInterval" "ClosedInterval" "LeftClopenInterval" "RightClopenInterval" "CreateInterval" "CreateOpenInterval" "CreateClosedInterval" "CreateLeftClopenInterval" "CreateRightClopenInterval" "CreateFunction" "Pt" "union" "intersection" "derivativeAtP" "derivativeOverD" "integral" "apply" "compose" "Bounded" "LeftBounded" "RightBounded" "Unbounded" "Compact" "Disconnected" "Degenerate" "Empty" "Continuous" "Discontinuous" "Differentiable" "Integrable" "Invertible" "Monotonic" "Decreasing" "Increasing" "In" "In2" "Subset" "LessThan" "ClosedEnd" "OpenEnd" 
+ 
+     ;; Reserved over all domains
+-    "AutoLabel" "All" "Label" "NoLabel"
++    "AutoLabel" "All" "Label" "NoLabel" "for" "in" "where" "true" "false" "mod"
+     )
+ 
+   ;; Operators, regexes

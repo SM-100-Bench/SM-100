@@ -1,0 +1,35 @@
+{
+  "session_id": "devin-cdd8febfc0294f96aa095a199140cafa",
+  "issues": [
+    {
+      "file": "cmd/containerd-shim-runc-v2/task/service.go",
+      "line": 724,
+      "description": "Potential goroutine leak: The goroutine started in handleInitExit has no cancellation mechanism if the service is shut down before all exec processes exit"
+    },
+    {
+      "file": "cmd/containerd-shim-runc-v2/task/service.go",
+      "line": 719,
+      "description": "Possible resource leak: The 'events' channel created in handleInitExit is never closed, which could lead to a resource leak if the goroutine exits abnormally"
+    },
+    {
+      "file": "cmd/containerd-shim-runc-v2/task/service.go",
+      "line": 734,
+      "description": "Potential deadlock: If a container's exec processes never reach zero (e.g., if a process is stuck), the goroutine will block indefinitely, preventing the init exit from being published"
+    },
+    {
+      "file": "cmd/containerd-shim-runc-v2/task/service.go",
+      "line": 671,
+      "description": "Memory leak: containerInitExit map entries are never cleaned up when containers are removed, potentially leading to memory growth over time"
+    },
+    {
+      "file": "cmd/containerd-shim-runc-v2/task/service.go",
+      "line": 726,
+      "description": "Race condition: The deferred cleanup in the goroutine might execute before all processes have exited if there's an unexpected error"
+    },
+    {
+      "file": "cmd/containerd-shim-runc-v2/task/service.go",
+      "line": 297,
+      "description": "Inconsistent state: If Start fails after incrementing runningExecs but before the process is actually started, the counter is decremented but the process might still be in an inconsistent state"
+    }
+  ]
+}

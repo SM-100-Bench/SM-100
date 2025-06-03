@@ -1,0 +1,24 @@
+{
+"issues": [
+{
+"file": "ui/packages/markdown/src/Markdown.svelte",
+"line": 13,
+"description": "Renders raw HTML via {@html value} without sanitization, creating potential XSS if value contains untrusted content."
+},
+{
+"file": "ui/packages/html/src/HTML.svelte",
+"line": 12,
+"description": "Uses {@html value} directly inside the DOM. Without sanitization, this may allow cross-site scripting if value originates from user input."
+},
+{
+"file": "ui/packages/app/src/components/utils/helpers.ts",
+"line": 4,
+"description": "Function playable() always returns true because MIME‑type checking is commented out, so unsupported files are treated as playable."
+},
+{
+"file": "ui/packages/video/src/utils.ts",
+"line": 13,
+"description": "playable() returns true for any filename due to disabled MIME lookup, which causes incorrect handling of unsupported video formats."
+}
+]
+}

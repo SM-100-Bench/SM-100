@@ -1,0 +1,20 @@
+Please review the code in the ParisNeo_lollms_295d4a9d00fc1b02d1359fc13794828bb56ee22d repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Core Library subsystem (consisting of 'lollms/__init__.py', 'lollms/app.py', 'lollms/binding.py', 'lollms/client_session.py', 'lollms/config.py', 'lollms/data.py', 'lollms/extension.py', 'lollms/function_call.py', 'lollms/generation.py', 'lollms/helpers.py', 'lollms/internet.py', 'lollms/main_config.py', 'lollms/media.py', 'lollms/paths.py', 'lollms/personality.py', 'lollms/security.py', 'lollms/tasks.py', 'lollms/terminal.py', 'lollms/types.py', 'lollms/utilities.py')
+2. Functions subsystem (consisting of 'lollms/functions/__init__.py', 'lollms/functions/analyze_code/__init__.py', 'lollms/functions/analyze_code/add_code_to_file.py', 'lollms/functions/analyze_code/add_function_to_file.py', 'lollms/functions/analyze_code/create_project_database.py', 'lollms/functions/analyze_code/git_commit.py', 'lollms/functions/analyze_code/git_pull.py', 'lollms/functions/analyze_code/list_classes.py', 'lollms/functions/analyze_code/list_files.py', 'lollms/functions/analyze_code/retreive_information_for_task.py', 'lollms/functions/analyze_code/retrieve_classes_from_project.py', 'lollms/functions/analyze_code/search_class_in_project.py', 'lollms/functions/analyze_code/update_class_in_file.py', 'lollms/functions/analyze_code/update_function_in_file.py', 'lollms/functions/bibliography.py', 'lollms/functions/calculator.py', 'lollms/functions/file_manipulation.py', 'lollms/functions/generate_image.py', 'lollms/functions/generate_music.py', 'lollms/functions/image_management/draw_bounding_boxes.py', 'lollms/functions/knowledge/build_knowledge_db.py', 'lollms/functions/list_personalities.py', 'lollms/functions/luma_ai_dream_machine/build_video_using_luma_ai.py', 'lollms/functions/markdown2latex.py', 'lollms/functions/memes/memes_builder.py', 'lollms/functions/music_gen.py', 'lollms/functions/peripherals.py', 'lollms/functions/prompting/image_gen_prompts.py', 'lollms/functions/prompting/system_prompts.py', 'lollms/functions/roll_a_dice.py', 'lollms/functions/runway_ml_gen_2/build_video_using_luma_ai.py', 'lollms/functions/search.py', 'lollms/functions/select_image_file.py', 'lollms/functions/story_writing.py', 'lollms/functions/summary.py', 'lollms/functions/summon_personality.py', 'lollms/functions/take_a_photo.py', 'lollms/functions/take_screen_shot.py', 'lollms/functions/timers.py', 'lollms/functions/tts/__init__.py', 'lollms/functions/tts/read_text.py', 'lollms/functions/tts/read_text_from_file.py', 'lollms/functions/web/__init__.py', 'lollms/functions/web/google_search.py', 'lollms/functions/writing/create_text_file.py', 'lollms/functions/youtube/__init__.py', 'lollms/functions/youtube/download_transcript.py', 'lollms/functions/youtube/download_transcript_by_channel.py', 'lollms/functions/youtube/search.py', 'lollms/functions/youtube/search_and_show.py')
+3. Text-to-Video Services subsystem (consisting of 'lollms/functions/luma_ai_dream_machine/build_video_using_luma_ai.py', 'lollms/functions/runway_ml_gen_2/build_video_using_luma_ai.py', 'lollms/services/ttv/cogvideo_x/lollms_cogvideo_x.py', 'lollms/services/ttv/lumalabs/lollms_lumalabs.py', 'lollms/ttv.py')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

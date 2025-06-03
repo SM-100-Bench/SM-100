@@ -1,0 +1,19 @@
+Please review the code in the Automattic_mongoose_1a2fd2b33530ef508c411355ddd8d8d0e8997266 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Query and Cursor subsystem (consisting of 'lib/aggregate.js', 'lib/cursor/aggregationCursor.js', 'lib/cursor/changeStream.js', 'lib/cursor/queryCursor.js', 'lib/query.js', 'lib/queryHelpers.js')
+2. TypeScript Definitions subsystem (consisting of 'types/aggregate.d.ts', 'types/augmentations.d.ts', 'types/callback.d.ts', 'types/collection.d.ts', 'types/connection.d.ts', 'types/cursor.d.ts', 'types/document.d.ts', 'types/error.d.ts', 'types/expressions.d.ts', 'types/helpers.d.ts', 'types/index.d.ts', 'types/indexes.d.ts', 'types/inferrawdoctype.d.ts', 'types/inferschematype.d.ts', 'types/middlewares.d.ts', 'types/models.d.ts', 'types/mongooseoptions.d.ts', 'types/pipelinestage.d.ts', 'types/populate.d.ts', 'types/query.d.ts', 'types/schemaoptions.d.ts', 'types/schematypes.d.ts', 'types/session.d.ts', 'types/types.d.ts', 'types/utility.d.ts', 'types/validation.d.ts', 'types/virtuals.d.ts')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

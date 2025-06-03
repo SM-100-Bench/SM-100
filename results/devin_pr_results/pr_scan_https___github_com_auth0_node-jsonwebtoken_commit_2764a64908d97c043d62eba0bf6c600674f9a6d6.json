@@ -1,0 +1,45 @@
+{
+  "session_id": "devin-ee7e03bd9b1b4e4e9de74772c71889e3",
+  "issues": [
+    {
+      "file": "sign.js",
+      "line": 40,
+      "description": "Accessing payload.exp without checking if payload is an object first, which can cause TypeError when payload is a string or number"
+    },
+    {
+      "file": "sign.js",
+      "line": 44,
+      "description": "Accessing payload.nbf without checking if payload is an object first, which can cause TypeError when payload is a string or number"
+    },
+    {
+      "file": "sign.js",
+      "line": 76,
+      "description": "Object.keys(options_to_payload).forEach loop doesn't check if payload is an object before accessing and setting properties, causing TypeError for non-object payloads"
+    },
+    {
+      "file": "sign.js",
+      "line": 81,
+      "description": "Setting payload[claim] = options[key] without checking if payload is an object, causing TypeError for non-object payloads"
+    },
+    {
+      "file": "sign.js",
+      "line": 69,
+      "description": "The expiresIn check has a redundant type check (typeof payload === 'object') that's inconsistent with other similar checks in the code"
+    },
+    {
+      "file": "sign.js",
+      "line": 54,
+      "description": "Using payload.iat without checking if payload is an object first, which can cause TypeError when payload is a string or number"
+    },
+    {
+      "file": "sign.js",
+      "line": 59,
+      "description": "Deleting payload.iat without checking if payload is an object first, which can cause TypeError when payload is a string or number"
+    },
+    {
+      "file": "sign.js",
+      "line": 98,
+      "description": "The synchronous code path passes the raw payload to jws.sign while the async path uses JSON.stringify(payload), potentially causing inconsistent behavior"
+    }
+  ]
+}

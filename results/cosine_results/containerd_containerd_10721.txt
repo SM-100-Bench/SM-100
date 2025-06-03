@@ -1,0 +1,5 @@
+{
+  "file": "core/mount/mount_unix.go",
+  "line": 66,
+  "description": "If isFUSE(target) is true but unmountFUSE(target) fails, the error is ignored and fallback unmount logic is attempted, which may not work for FUSE mounts. This could mask FUSE unmount failures."
+}

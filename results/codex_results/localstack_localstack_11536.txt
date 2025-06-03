@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "localstack-core/localstack/services/s3/provider.py",
+"line": 1952,
+"description": "Potential AttributeError: restore_request is optional but method unconditionally calls restore_request.get('Days') without checking if restore_request is None."
+},
+{
+"file": "localstack-core/localstack/services/s3/storage/ephemeral.py",
+"line": 492,
+"description": "Uses Python's built-in hash() to derive storage file names. Because hash() is randomized across runs, saved object paths become invalid after restart, breaking persistence."
+}
+]
+}

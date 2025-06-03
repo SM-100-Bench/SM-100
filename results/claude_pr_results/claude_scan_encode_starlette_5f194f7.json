@@ -1,0 +1,15 @@
+{
+  "identifier": "encode_starlette_5f194f7",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.0989394,
+    "is_error": false,
+    "duration_ms": 16908,
+    "duration_api_ms": 24939,
+    "num_turns": 4,
+    "result": "Based on my review of the staged changes, I've identified several critical bugs:\n\n```json\n{\n  \"issues\": [\n    {\n      \"file\": \"starlette/response.py\",\n      \"line\": 160,\n      \"description\": \"Always sets more_body to False regardless of chunk size, causing incomplete file streaming\"\n    },\n    {\n      \"file\": \"starlette/response.py\",\n      \"line\": 32,\n      \"description\": \"Logic error: populate_content_length should be False when header exists, not True\"\n    },\n    {\n      \"file\": \"starlette/response.py\",\n      \"line\": 33,\n      \"description\": \"Logic error: populate_content_type should be False when header exists, not True\"\n    },\n    {\n      \"file\": \"starlette/middleware/database.py\",\n      \"line\": 19,\n      \"description\": \"Synchronous event loop operation in __init__ can cause deadlock or exceptions\"\n    },\n    {\n      \"file\": \"starlette/multipart.py\",\n      \"line\": 21,\n      \"description\": \"Undefined variable 'default_stream_factory' will cause NameError\"\n    },\n    {\n      \"file\": \"starlette/multipart.py\",\n      \"line\": 22,\n      \"description\": \"Undefined variable 'MultiDict' will cause NameError\"\n    },\n    {\n      \"file\": \"starlette/multipart.py\",\n      \"line\": 62,\n      \"description\": \"Undefined variable '_supported_multipart_encodings' will cause NameError\"\n    },\n    {\n      \"file\": \"starlette/multipart.py\",\n      \"line\": 70,\n      \"description\": \"Undefined function 'parse_options_header' will cause NameError\"\n    },\n    {\n      \"file\": \"starlette/multipart.py\",\n      \"line\": 89,\n      \"description\": \"Undefined module 'exceptions' will cause NameError\"\n    },\n    {\n      \"file\": \"starlette/multipart.py\",\n      \"line\": 94,\n      \"description\": \"Undefined function 'is_valid_multipart_boundary' will cause NameError\"\n    },\n    {\n      \"file\": \"starlette/multipart.py\",\n      \"line\": 214,\n      \"description\": \"Unreachable return statement after raise statement\"\n    },\n    {\n      \"file\": \"starlette/multipart.py\",\n      \"line\": 227,\n      \"description\": \"Undefined function 'to_native' will cause NameError\"\n    },\n    {\n      \"file\": \"starlette/multipart.py\",\n      \"line\": 228,\n      \"description\": \"Undefined function '_line_parse' will cause NameError\"\n    },\n    {\n      \"file\": \"starlette/multipart.py\",\n      \"line\": 288,\n      \"description\": \"Undefined class 'FileStorage' will cause NameError\"\n    },\n    {\n      \"file\": \"starlette/multipart.py\",\n      \"line\": 351,\n      \"description\": \"Undefined function 'tee' will cause NameError\"\n    }\n  ]\n}\n```",
+    "total_cost": 0.0989394,
+    "session_id": "58b5082c-bfb3-495a-9508-ef08fb9fa12c"
+  }
+}

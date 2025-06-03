@@ -1,0 +1,15 @@
+{
+  "identifier": "temporalio_temporal_cba849d",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.1537724,
+    "is_error": false,
+    "duration_ms": 12599,
+    "duration_api_ms": 13619,
+    "num_turns": 3,
+    "result": "Based on my review of the staged changes, I've identified several potential issues:\n\n```json\n{\n  \"issues\": [\n    {\n      \"file\": \"common/persistence/sql/sqlplugin/postgres/admin.go\",\n      \"line\": 56,\n      \"description\": \"SQL injection vulnerability: using fmt.Sprintf with %v for database names allows injection\"\n    },\n    {\n      \"file\": \"common/persistence/sql/sqlplugin/postgres/admin.go\",\n      \"line\": 106,\n      \"description\": \"SQL injection vulnerability: using fmt.Sprintf with %v for table names allows injection\"\n    },\n    {\n      \"file\": \"common/persistence/sql/sqlplugin/postgres/admin.go\",\n      \"line\": 100,\n      \"description\": \"Unused parameter: database parameter is not used in ListTables method\"\n    },\n    {\n      \"file\": \"common/persistence/sql/sqlplugin/postgres/domain.go\",\n      \"line\": 36,\n      \"description\": \"Hardcoded shard_id constant in UPDATE query doesn't match INSERT query structure\"\n    },\n    {\n      \"file\": \"common/persistence/sql/sqlplugin/postgres/domain.go\",\n      \"line\": 62,\n      \"description\": \"Missing shard_id in INSERT query while other queries expect it\"\n    },\n    {\n      \"file\": \"common/persistence/sql/sqlplugin/postgres/visibility.go\",\n      \"line\": 229,\n      \"description\": \"Potential bug: using *filter.MinStartTime instead of *filter.MaxStartTime in query parameter\"\n    },\n    {\n      \"file\": \"common/persistence/sql/sqlplugin/postgres/visibility.go\", \n      \"line\": 244,\n      \"description\": \"Potential bug: using *filter.MaxStartTime instead of *filter.MinStartTime in query parameter\"\n    }\n  ]\n}\n```",
+    "total_cost": 0.1537724,
+    "session_id": "4bf007be-e01e-4bb0-99a9-d5eaf1fc0647"
+  }
+}

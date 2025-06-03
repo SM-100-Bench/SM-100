@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "src/routes/index.js",
+"line": 132,
+"description": "The route uses the literal string '(/+api|/+api/*?)' instead of a RegExp. Express treats this as a fixed path so the middleware.prepareAPI handler may never run on actual /api URLs, leaving API endpoints unprotected."
+},
+{
+"file": "src/webserver.js",
+"line": 272,
+"description": "listen() sets oldUmask = process.umask('0000') when binding to a Unix socket but only restores it after a successful listen. If an error occurs before that callback runs, the process exits with the umask still set to 0000."
+},
+{
+"file": "loader.js",
+"line": 191,
+"description": "Loader.stop() calls fs.unlinkSync(pidFilePath) without checking that the file exists. If the pid file is missing, an ENOENT exception will be thrown during shutdown."
+}
+]
+}

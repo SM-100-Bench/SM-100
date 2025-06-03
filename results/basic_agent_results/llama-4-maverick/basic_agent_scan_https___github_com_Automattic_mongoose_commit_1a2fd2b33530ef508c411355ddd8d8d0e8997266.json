@@ -1,0 +1,1 @@
+{"repo_id": "Automattic_mongoose_1a2fd2b33530ef508c411355ddd8d8d0e8997266", "bugs": [{"description": "The files in the Query and Cursor subsystem do not exist in the given path.", "file": "/repo/lib/query.js", "line": 0}, {"description": "The files in the Query and Cursor subsystem do not exist in the given path.", "file": "/repo/lib/query.js", "line": 0}], "updated_files": {}}

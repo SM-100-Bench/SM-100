@@ -1,0 +1,24 @@
+{
+"issues": [
+{
+"file": "internal/unpackinfo/lchtimes_linux32.go",
+"line": 4,
+"description": "File uses build tags with the non‑standard architecture label linux_amd. Because this tag is not recognized by the Go toolchain, Linux 386 builds fall back to lchtimes_others.go and lose symlink timestamp support."
+},
+{
+"file": "internal/unpackinfo/lchtimes_darwin.go",
+"line": 17,
+"description": "Timestamp microseconds are calculated using Nanosecond() / 1e6, which yields milliseconds rather than microseconds, producing incorrect times when calling unix.Lutimes."
+},
+{
+"file": "internal/unpackinfo/lchtimes_linux32.go",
+"line": 17,
+"description": "Timestamp microseconds are calculated using Nanosecond() / 1e6 instead of dividing by 1e3. This truncates time to milliseconds and mis‑sets file times."
+},
+{
+"file": "internal/unpackinfo/lchtimes_linux64.go",
+"line": 17,
+"description": "Timestamp microseconds are calculated using Nanosecond() / 1e6, causing loss of precision when restoring symlink times."
+}
+]
+}

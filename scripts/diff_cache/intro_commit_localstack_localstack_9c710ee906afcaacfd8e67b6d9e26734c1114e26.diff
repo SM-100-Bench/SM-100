@@ -1,0 +1,1365 @@
+diff --git a/localstack/aws/api/s3/__init__.py b/localstack/aws/api/s3/__init__.py
+index 810e44d4669f7..84203897a98b4 100644
+--- a/localstack/aws/api/s3/__init__.py
++++ b/localstack/aws/api/s3/__init__.py
+@@ -853,6 +853,14 @@ class ObjectLockConfigurationNotFoundError(ServiceException):
+     BucketName: Optional[BucketName]
+ 
+ 
++class InvalidPartNumber(ServiceException):
++    code: str = "InvalidPartNumber"
++    sender_fault: bool = False
++    status_code: int = 416
++    PartNumberRequested: Optional[PartNumber]
++    ActualPartCount: Optional[PartNumber]
++
++
+ AbortDate = datetime
+ 
+ 
+@@ -2233,6 +2241,7 @@ class HeadObjectOutput(TypedDict, total=False):
+     ObjectLockMode: Optional[ObjectLockMode]
+     ObjectLockRetainUntilDate: Optional[ObjectLockRetainUntilDate]
+     ObjectLockLegalHoldStatus: Optional[ObjectLockLegalHoldStatus]
++    StatusCode: Optional[GetObjectResponseStatusCode]
+ 
+ 
+ class HeadObjectRequest(ServiceRequest):
+diff --git a/localstack/aws/spec-patches.json b/localstack/aws/spec-patches.json
+index 9e03cc1332171..d6c81ae9a6485 100644
+--- a/localstack/aws/spec-patches.json
++++ b/localstack/aws/spec-patches.json
+@@ -120,6 +120,14 @@
+         "location": "statusCode"
+       }
+     },
++    {
++      "op": "add",
++      "path": "/shapes/HeadObjectOutput/members/StatusCode",
++      "value": {
++        "shape": "GetObjectResponseStatusCode",
++        "location": "statusCode"
++      }
++    },
+     {
+       "op": "add",
+       "path": "/shapes/NoSuchKey/members/Key",
+@@ -1048,6 +1056,26 @@
+         "documentation": "<p>Object Lock configuration does not exist for this bucket</p>",
+         "exception": true
+       }
++    },
++    {
++      "op": "add",
++      "path": "/shapes/InvalidPartNumber",
++      "value": {
++        "type": "structure",
++        "members": {
++          "PartNumberRequested": {
++            "shape": "PartNumber"
++          },
++          "ActualPartCount": {
++            "shape": "PartNumber"
++          }
++        },
++        "error": {
++          "httpStatusCode": 416
++        },
++        "documentation": "<p>The requested partnumber is not satisfiable</p>",
++        "exception": true
++      }
+     }
+   ]
+ }
+diff --git a/localstack/services/s3/provider.py b/localstack/services/s3/provider.py
+index c6203f0ffd9a0..bc11e8b7df676 100644
+--- a/localstack/services/s3/provider.py
++++ b/localstack/services/s3/provider.py
+@@ -166,6 +166,7 @@
+     capitalize_header_name_from_snake_case,
+     extract_bucket_key_version_id_from_copy_source,
+     get_bucket_from_moto,
++    get_failed_precondition_copy_source,
+     get_key_from_moto_bucket,
+     get_lifecycle_rule_from_object,
+     get_object_checksum_for_algorithm,
+@@ -599,36 +600,15 @@ def copy_object(
+         )
+ 
+         # see https://docs.aws.amazon.com/AmazonS3/latest/API/API_CopyObject.html
+-        condition = None
+         source_object_last_modified = source_key_object.last_modified.replace(
+             tzinfo=ZoneInfo("GMT")
+         )
+-        if (cs_if_match := request.get("CopySourceIfMatch")) and source_key_object.etag.strip(
+-            '"'
+-        ) != cs_if_match.strip('"'):
+-            condition = "x-amz-copy-source-If-Match"
+-
+-        elif (
+-            cs_id_unmodified_since := request.get("CopySourceIfUnmodifiedSince")
+-        ) and source_object_last_modified > cs_id_unmodified_since:
+-            condition = "x-amz-copy-source-If-Unmodified-Since"
+-
+-        elif (
+-            cs_if_none_match := request.get("CopySourceIfNoneMatch")
+-        ) and source_key_object.etag.strip('"') == cs_if_none_match.strip('"'):
+-            condition = "x-amz-copy-source-If-None-Match"
+-
+-        elif (
+-            cs_id_modified_since := request.get("CopySourceIfModifiedSince")
+-        ) and source_object_last_modified < cs_id_modified_since < datetime.datetime.now(
+-            tz=ZoneInfo("GMT")
++        if failed_condition := get_failed_precondition_copy_source(
++            request, source_object_last_modified, source_key_object.etag
+         ):
+-            condition = "x-amz-copy-source-If-Modified-Since"
+-
+-        if condition:
+             raise PreconditionFailed(
+                 "At least one of the pre-conditions you specified did not hold",
+-                Condition=condition,
++                Condition=failed_condition,
+             )
+ 
+         response: CopyObjectOutput = call_moto(context)
+diff --git a/localstack/services/s3/utils.py b/localstack/services/s3/utils.py
+index e1f99f163fd33..2ef49a36f3982 100644
+--- a/localstack/services/s3/utils.py
++++ b/localstack/services/s3/utils.py
+@@ -19,7 +19,11 @@
+ from localstack.aws.api.s3 import (
+     BucketName,
+     ChecksumAlgorithm,
++    CopyObjectRequest,
+     CopySource,
++    ETag,
++    GetObjectRequest,
++    HeadObjectRequest,
+     InvalidArgument,
+     InvalidRange,
+     InvalidTag,
+@@ -34,6 +38,7 @@
+     ObjectSize,
+     ObjectVersionId,
+     Owner,
++    PreconditionFailed,
+     SSEKMSKeyId,
+     TaggingHeader,
+     TagSet,
+@@ -79,6 +84,7 @@
+ 
+ 
+ RFC1123 = "%a, %d %b %Y %H:%M:%S GMT"
++_gmt_zone_info = ZoneInfo("GMT")
+ 
+ 
+ def get_owner_for_account_id(account_id: str):
+@@ -164,7 +170,7 @@ def digest(self) -> bytes:
+         return self.checksum.to_bytes(4, "big")
+ 
+ 
+-class ParsedRange(NamedTuple):
++class ObjectRange(NamedTuple):
+     """
+     NamedTuple representing a parsed Range header with the requested S3 object size
+     https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range
+@@ -176,13 +182,13 @@ class ParsedRange(NamedTuple):
+     end: int  # the end of the end
+ 
+ 
+-def parse_range_header(range_header: str, object_size: int) -> ParsedRange:
++def parse_range_header(range_header: str, object_size: int) -> ObjectRange:
+     """
+     Takes a Range header, and returns a dataclass containing the necessary information to return only a slice of an
+     S3 object
+     :param range_header: a Range header
+     :param object_size: the requested S3 object total size
+-    :return: ParsedRange
++    :return: ObjectRange
+     """
+     last = object_size - 1
+     _, rspec = range_header.split("=")
+@@ -206,7 +212,7 @@ def parse_range_header(range_header: str, object_size: int) -> ParsedRange:
+             RangeRequested=range_header,
+         )
+ 
+-    return ParsedRange(
++    return ObjectRange(
+         content_range=f"bytes {begin}-{end}/{object_size}",
+         content_length=end - begin + 1,
+         begin=begin,
+@@ -585,7 +591,7 @@ def rfc_1123_datetime(src: datetime.datetime) -> str:
+ 
+ 
+ def str_to_rfc_1123_datetime(value: str) -> datetime.datetime:
+-    return datetime.datetime.strptime(value, RFC1123).replace(tzinfo=ZoneInfo("GMT"))
++    return datetime.datetime.strptime(value, RFC1123).replace(tzinfo=_gmt_zone_info)
+ 
+ 
+ def iso_8601_datetime_without_milliseconds_s3(
+@@ -776,10 +782,81 @@ def get_retention_from_now(days: int = None, years: int = None) -> datetime.date
+     """
+     if not days and not years:
+         raise ValueError("Either 'days' or 'years' needs to be provided")
+-    now = datetime.datetime.now(tz=ZoneInfo("GMT"))
++    now = datetime.datetime.now(tz=_gmt_zone_info)
+     if days:
+         retention = now + datetime.timedelta(days=days)
+     else:
+         retention = now.replace(year=now.year + years)
+ 
+     return retention
++
++
++def get_failed_precondition_copy_source(
++    request: CopyObjectRequest, last_modified: datetime.datetime, etag: ETag
++) -> Optional[str]:
++    """
++    Validate if the source object LastModified and ETag matches a precondition, and if it does, return the failed
++    precondition
++    # see https://docs.aws.amazon.com/AmazonS3/latest/API/API_CopyObject.html
++    :param request: the CopyObjectRequest
++    :param last_modified: source object LastModified
++    :param etag: source object ETag
++    :return str: the failed precondition to raise
++    """
++    if (cs_if_match := request.get("CopySourceIfMatch")) and etag.strip('"') != cs_if_match.strip(
++        '"'
++    ):
++        return "x-amz-copy-source-If-Match"
++
++    elif (
++        cs_if_unmodified_since := request.get("CopySourceIfUnmodifiedSince")
++    ) and last_modified > cs_if_unmodified_since:
++        return "x-amz-copy-source-If-Unmodified-Since"
++
++    elif (cs_if_none_match := request.get("CopySourceIfNoneMatch")) and etag.strip(
++        '"'
++    ) == cs_if_none_match.strip('"'):
++        return "x-amz-copy-source-If-None-Match"
++
++    elif (
++        cs_if_modified_since := request.get("CopySourceIfModifiedSince")
++    ) and last_modified < cs_if_modified_since < datetime.datetime.now(tz=_gmt_zone_info):
++        return "x-amz-copy-source-If-Modified-Since"
++
++
++def validate_failed_precondition(
++    request: GetObjectRequest | HeadObjectRequest, last_modified: datetime.datetime, etag: ETag
++) -> None:
++    """
++    Validate if the object LastModified and ETag matches a precondition, and if it does, return the failed
++    precondition
++    :param request: the GetObjectRequest or HeadObjectRequest
++    :param last_modified: S3 object LastModified
++    :param etag: S3 object ETag
++    :raises PreconditionFailed
++    :raises NotModified, 304 with an empty body
++    """
++    precondition_failed = None
++    if (if_match := request.get("IfMatch")) and etag != if_match.strip('"'):
++        precondition_failed = "If-Match"
++
++    elif (
++        if_unmodified_since := request.get("IfUnmodifiedSince")
++    ) and last_modified > if_unmodified_since:
++        precondition_failed = "If-Unmodified-Since"
++
++    if precondition_failed:
++        raise PreconditionFailed(
++            "At least one of the pre-conditions you specified did not hold",
++            Condition=precondition_failed,
++        )
++
++    if ((if_none_match := request.get("IfNoneMatch")) and etag == if_none_match.strip('"')) or (
++        (if_modified_since := request.get("IfModifiedSince"))
++        and last_modified < if_modified_since < datetime.datetime.now(tz=_gmt_zone_info)
++    ):
++        raise CommonServiceException(
++            message="Not Modified",
++            code="NotModified",
++            status_code=304,
++        )
+diff --git a/localstack/services/s3/v3/models.py b/localstack/services/s3/v3/models.py
+index 1a9566b5f2abc..31e478eae3171 100644
+--- a/localstack/services/s3/v3/models.py
++++ b/localstack/services/s3/v3/models.py
+@@ -82,7 +82,7 @@
+ 
+ LOG = logging.getLogger(__name__)
+ 
+-gmt_zone_info = ZoneInfo("GMT")
++_gmt_zone_info = ZoneInfo("GMT")
+ 
+ 
+ # note: not really a need to use a dataclass here, as it has a lot of fields, but only a few are set at creation
+@@ -133,7 +133,8 @@ def __init__(
+         self.object_ownership = object_ownership
+         self.object_lock_enabled = object_lock_enabled_for_bucket
+         self.encryption_rule = DEFAULT_BUCKET_ENCRYPTION
+-        self.creation_date = datetime.now(tz=gmt_zone_info)
++        self.creation_date = datetime.now(tz=_gmt_zone_info)
++        self.payer = Payer.BucketOwner
+         self.multiparts = {}
+         self.notification_configuration = {}
+         self.cors_rules = None
+@@ -249,7 +250,7 @@ class S3Object:
+     website_redirect_location: Optional[WebsiteRedirectLocation]
+     acl: Optional[str]  # TODO: we need to change something here, how it's done?
+     is_current: bool
+-    parts: Optional[list[tuple[int, int]]]
++    parts: Optional[dict[int, tuple[int, int]]]
+     restore: Optional[Restore]
+ 
+     def __init__(
+@@ -296,8 +297,8 @@ def __init__(
+         self.expiration = expiration
+         self.website_redirect_location = website_redirect_location
+         self.is_current = True
+-        self.last_modified = datetime.now(tz=gmt_zone_info)
+-        self.parts = []
++        self.last_modified = datetime.now(tz=_gmt_zone_info)
++        self.parts = {}
+         self.restore = None
+ 
+     def get_system_metadata_fields(self) -> dict:
+@@ -349,7 +350,7 @@ def is_locked(self, bypass_governance: bool = False) -> bool:
+             return False
+ 
+         if self.lock_until:
+-            return self.lock_until > datetime.now(tz=gmt_zone_info)
++            return self.lock_until > datetime.now(tz=_gmt_zone_info)
+ 
+         return False
+ 
+@@ -364,7 +365,7 @@ class S3DeleteMarker:
+     def __init__(self, key: ObjectKey, version_id: ObjectVersionId):
+         self.key = key
+         self.version_id = version_id
+-        self.last_modified = datetime.now(tz=gmt_zone_info)
++        self.last_modified = datetime.now(tz=_gmt_zone_info)
+         self.is_current = True
+ 
+     @staticmethod
+@@ -390,7 +391,7 @@ def __init__(
+         checksum_algorithm: Optional[ChecksumAlgorithm] = None,
+         checksum_value: Optional[str] = None,
+     ):
+-        self.last_modified = datetime.now(tz=gmt_zone_info)
++        self.last_modified = datetime.now(tz=_gmt_zone_info)
+         self.part_number = part_number
+         self.size = size
+         self.etag = etag
+@@ -430,7 +431,7 @@ def __init__(
+         tagging: Optional[dict[str, str]] = None,
+     ):
+         self.id = token_urlsafe(96)  # MultipartUploadId is 128 characters long
+-        self.initiated = datetime.now(tz=gmt_zone_info)
++        self.initiated = datetime.now(tz=_gmt_zone_info)
+         self.parts = {}
+         self.initiator = initiator
+         self.tagging = tagging
+@@ -488,8 +489,9 @@ def complete_multipart(self, parts: CompletedPartList):
+                 )
+ 
+             object_etag.update(bytes.fromhex(s3_part.etag))
+-            # TODO verify this, it seems wrong
+-            self.object.parts.append((pos, s3_part.size))
++            # keep track of the parts size, as it can be queried afterward on the object as a Range
++            self.object.parts[part_number] = (pos, s3_part.size)
++            pos += s3_part.size
+ 
+             multipart_etag = f"{object_etag.hexdigest()}-{len(parts)}"
+             self.object.etag = multipart_etag
+diff --git a/localstack/services/s3/v3/provider.py b/localstack/services/s3/v3/provider.py
+index 76701c0bc89f1..ee0ce28b62f58 100644
+--- a/localstack/services/s3/v3/provider.py
++++ b/localstack/services/s3/v3/provider.py
+@@ -60,6 +60,7 @@
+     GetBucketInventoryConfigurationOutput,
+     GetBucketLifecycleConfigurationOutput,
+     GetBucketLocationOutput,
++    GetBucketRequestPaymentOutput,
+     GetBucketTaggingOutput,
+     GetBucketVersioningOutput,
+     GetBucketWebsiteOutput,
+@@ -85,6 +86,7 @@
+     InvalidArgument,
+     InvalidBucketName,
+     InvalidObjectState,
++    InvalidPartNumber,
+     InvalidPartOrder,
+     InvalidStorageClass,
+     InventoryConfiguration,
+@@ -129,7 +131,9 @@
+     ObjectVersionStorageClass,
+     OptionalObjectAttributesList,
+     Part,
++    PartNumber,
+     PartNumberMarker,
++    PreconditionFailed,
+     Prefix,
+     PutObjectLegalHoldOutput,
+     PutObjectLockConfigurationOutput,
+@@ -138,6 +142,7 @@
+     PutObjectRetentionOutput,
+     PutObjectTaggingOutput,
+     RequestPayer,
++    RequestPaymentConfiguration,
+     RestoreObjectOutput,
+     RestoreRequest,
+     S3Api,
+@@ -164,7 +169,11 @@
+ from localstack.services.edge import ROUTER
+ from localstack.services.plugins import ServiceLifecycleHook
+ from localstack.services.s3.codec import AwsChunkedDecoder
+-from localstack.services.s3.constants import ARCHIVES_STORAGE_CLASSES, DEFAULT_BUCKET_ENCRYPTION
++from localstack.services.s3.constants import (
++    ALLOWED_HEADER_OVERRIDES,
++    ARCHIVES_STORAGE_CLASSES,
++    DEFAULT_BUCKET_ENCRYPTION,
++)
+ from localstack.services.s3.cors import S3CorsHandler, s3_cors_request_handler
+ from localstack.services.s3.exceptions import (
+     InvalidBucketState,
+@@ -176,10 +185,12 @@
+ )
+ from localstack.services.s3.notifications import NotificationDispatcher, S3EventNotificationContext
+ from localstack.services.s3.utils import (
++    ObjectRange,
+     add_expiration_days_to_datetime,
+     create_s3_kms_managed_key_for_region,
+     extract_bucket_key_version_id_from_copy_source,
+     get_class_attrs_from_spec_class,
++    get_failed_precondition_copy_source,
+     get_full_default_bucket_location,
+     get_kms_key_arn,
+     get_lifecycle_rule_from_object,
+@@ -192,6 +203,7 @@
+     parse_tagging_header,
+     serialize_expiration_header,
+     validate_dict_fields,
++    validate_failed_precondition,
+     validate_kms_key_id,
+     validate_tag_set,
+ )
+@@ -551,7 +563,7 @@ def put_object(
+         s3_stored_object = self._storage_backend.open(bucket_name, s3_object)
+         s3_stored_object.write(body)
+ 
+-        if checksum_algorithm and s3_object.checksum_value != s3_stored_object.checksum():
++        if checksum_algorithm and s3_object.checksum_value != s3_stored_object.checksum:
+             self._storage_backend.remove(bucket_name, s3_object)
+             raise InvalidRequest(
+                 f"Value for x-amz-checksum-{checksum_algorithm.lower()} header is invalid."
+@@ -600,16 +612,6 @@ def get_object(
+         request: GetObjectRequest,
+     ) -> GetObjectOutput:
+         # TODO: missing handling parameters:
+-        #  if_match: IfMatch = None,
+-        #  if_modified_since: IfModifiedSince = None,
+-        #  if_none_match: IfNoneMatch = None,
+-        #  if_unmodified_since: IfUnmodifiedSince = None,
+-        #  response_cache_control: ResponseCacheControl = None,
+-        #  response_content_disposition: ResponseContentDisposition = None,
+-        #  response_content_encoding: ResponseContentEncoding = None,
+-        #  response_content_language: ResponseContentLanguage = None,
+-        #  response_content_type: ResponseContentType = None,
+-        #  response_expires: ResponseExpires = None,
+         #  request_payer: RequestPayer = None,
+         #  part_number: PartNumber = None,
+         #  expected_bucket_owner: AccountId = None,
+@@ -627,6 +629,8 @@ def get_object(
+             http_method="GET",
+         )
+ 
++        validate_failed_precondition(request, s3_object.last_modified, s3_object.etag)
++
+         response = GetObjectOutput(
+             AcceptRanges="bytes",
+             **s3_object.get_system_metadata_fields(),
+@@ -652,8 +656,17 @@ def get_object(
+ 
+         s3_stored_object = self._storage_backend.open(bucket_name, s3_object)
+ 
+-        if range_header := request.get("Range"):
++        range_header = request.get("Range")
++        part_number = request.get("PartNumber")
++        if range_header and part_number:
++            raise InvalidRequest("Cannot specify both Range header and partNumber query parameter")
++        range_data = None
++        if range_header:
+             range_data = parse_range_header(range_header, s3_object.size)
++        elif part_number:
++            range_data = get_part_range(s3_object, part_number)
++
++        if range_data:
+             s3_stored_object.seek(range_data.begin)
+             response["Body"] = LimitedIterableStream(
+                 s3_stored_object, max_length=range_data.content_length
+@@ -693,6 +706,10 @@ def get_object(
+         if s3_object.lock_legal_status:
+             response["ObjectLockLegalHoldStatus"] = s3_object.lock_legal_status
+ 
++        for request_param, response_param in ALLOWED_HEADER_OVERRIDES.items():
++            if request_param_value := request.get(request_param):  # noqa
++                response[response_param] = request_param_value  # noqa
++
+         return response
+ 
+     @handler("HeadObject", expand=False)
+@@ -708,17 +725,14 @@ def head_object(
+             raise NoSuchBucket("The specified bucket does not exist", BucketName=bucket_name)
+ 
+         # TODO implement PartNumber, don't know about part number + version id?
+-        #  if_match: IfMatch = None,
+-        #  if_modified_since: IfModifiedSince = None,
+-        #  if_none_match: IfNoneMatch = None,
+-        #  if_unmodified_since: IfUnmodifiedSince = None,
+-
+         s3_object = s3_bucket.get_object(
+             key=object_key,
+             version_id=request.get("VersionId"),
+             http_method="HEAD",
+         )
+ 
++        validate_failed_precondition(request, s3_object.last_modified, s3_object.etag)
++
+         response = HeadObjectOutput(
+             AcceptRanges="bytes",
+             **s3_object.get_system_metadata_fields(),
+@@ -726,15 +740,10 @@ def head_object(
+         if s3_object.user_metadata:
+             response["Metadata"] = s3_object.user_metadata
+ 
+-        # TODO implements if_match if_modified_since if_none_match if_unmodified_since
+         if checksum_algorithm := s3_object.checksum_algorithm:
+             if (request.get("ChecksumMode") or "").upper() == "ENABLED":
+                 response[f"Checksum{checksum_algorithm.upper()}"] = checksum  # noqa
+ 
+-        if range_header := request.get("Range"):
+-            range_data = parse_range_header(range_header, s3_object.size)
+-            response["ContentLength"] = range_data.content_length
+-
+         if s3_object.parts:
+             response["PartsCount"] = len(s3_object.parts)
+ 
+@@ -747,9 +756,19 @@ def head_object(
+         if s3_object.restore:
+             response["Restore"] = s3_object.restore
+ 
+-        if range_header := request.get("Range"):
++        range_header = request.get("Range")
++        part_number = request.get("PartNumber")
++        if range_header and part_number:
++            raise InvalidRequest("Cannot specify both Range header and partNumber query parameter")
++        range_data = None
++        if range_header:
+             range_data = parse_range_header(range_header, s3_object.size)
++        elif part_number:
++            range_data = get_part_range(s3_object, part_number)
++
++        if range_data:
+             response["ContentLength"] = range_data.content_length
++            response["StatusCode"] = 206
+ 
+         add_encryption_to_response(response, s3_object=s3_object)
+ 
+@@ -995,11 +1014,6 @@ def copy_object(
+         # grant_read_acp: GrantReadACP = None,
+         # grant_write_acp: GrantWriteACP = None,
+         #
+-        # copy_source_if_match: CopySourceIfMatch = None,
+-        # copy_source_if_modified_since: CopySourceIfModifiedSince = None,
+-        # copy_source_if_none_match: CopySourceIfNoneMatch = None,
+-        # copy_source_if_unmodified_since: CopySourceIfUnmodifiedSince = None,
+-        #
+         # request_payer: RequestPayer = None,
+         dest_bucket = request["Bucket"]
+         dest_key = request["Key"]
+@@ -1023,6 +1037,14 @@ def copy_object(
+         if src_s3_object.storage_class in ARCHIVES_STORAGE_CLASSES:
+             raise
+ 
++        if failed_condition := get_failed_precondition_copy_source(
++            request, src_s3_object.last_modified, src_s3_object.etag
++        ):
++            raise PreconditionFailed(
++                "At least one of the pre-conditions you specified did not hold",
++                Condition=failed_condition,
++            )
++
+         # TODO validate order of validation
+         storage_class = request.get("StorageClass")
+         server_side_encryption = request.get("ServerSideEncryption")
+@@ -1073,7 +1095,6 @@ def copy_object(
+ 
+         s3_object = S3Object(
+             key=dest_key,
+-            etag=src_s3_object.etag,
+             size=src_s3_object.size,
+             version_id=dest_version_id,
+             storage_class=storage_class,
+@@ -1100,7 +1121,8 @@ def copy_object(
+             dest_bucket=dest_bucket,
+             dest_object=s3_object,
+         )
+-        s3_object.checksum_value = s3_stored_object.checksum() or src_s3_object.checksum_value
++        s3_object.checksum_value = s3_stored_object.checksum or src_s3_object.checksum_value
++        s3_object.etag = s3_stored_object.etag or src_s3_object.etag
+ 
+         # Object copied from Glacier object should not have expiry
+         # TODO: verify this assumption from moto?
+@@ -1231,6 +1253,8 @@ def list_objects(
+             response["CommonPrefixes"] = common_prefixes
+         if delimiter and next_key_marker:
+             response["NextMarker"] = next_key_marker
++        if s3_bucket.bucket_region != "us-east-1":
++            response["BucketRegion"] = s3_bucket.bucket_region
+ 
+         # RequestCharged: Optional[RequestCharged]  # TODO
+         return response
+@@ -1345,6 +1369,8 @@ def list_objects_v2(
+             response["ContinuationToken"] = continuation_token
+         if start_after:
+             response["StartAfter"] = start_after
++        if s3_bucket.bucket_region != "us-east-1":
++            response["BucketRegion"] = s3_bucket.bucket_region
+ 
+         # RequestCharged: Optional[RequestCharged]  # TODO
+         return response
+@@ -1714,7 +1740,7 @@ def upload_part(
+         stored_s3_part = stored_multipart.open(s3_part)
+         stored_s3_part.write(body)
+ 
+-        if checksum_algorithm and s3_part.checksum_value != stored_s3_part.checksum():
++        if checksum_algorithm and s3_part.checksum_value != stored_s3_part.checksum:
+             stored_multipart.remove_part(s3_part)
+             raise InvalidRequest(
+                 f"Value for x-amz-checksum-{checksum_algorithm.lower()} header is invalid."
+@@ -2854,6 +2880,36 @@ def put_object_retention(
+         # TODO: return RequestCharged
+         return PutObjectRetentionOutput()
+ 
++    def put_bucket_request_payment(
++        self,
++        context: RequestContext,
++        bucket: BucketName,
++        request_payment_configuration: RequestPaymentConfiguration,
++        content_md5: ContentMD5 = None,
++        checksum_algorithm: ChecksumAlgorithm = None,
++        expected_bucket_owner: AccountId = None,
++    ) -> None:
++        # TODO: this currently only mock the operation, but its actual effect is not emulated
++        store = self.get_store(context.account_id, context.region)
++        if not (s3_bucket := store.buckets.get(bucket)):
++            raise NoSuchBucket("The specified bucket does not exist", BucketName=bucket)
++
++        payer = request_payment_configuration.get("Payer")
++        if payer not in ["Requester", "BucketOwner"]:
++            raise MalformedXML()
++
++        s3_bucket.payer = payer
++
++    def get_bucket_request_payment(
++        self, context: RequestContext, bucket: BucketName, expected_bucket_owner: AccountId = None
++    ) -> GetBucketRequestPaymentOutput:
++        # TODO: this currently only mock the operation, but its actual effect is not emulated
++        store = self.get_store(context.account_id, context.region)
++        if not (s3_bucket := store.buckets.get(bucket)):
++            raise NoSuchBucket("The specified bucket does not exist", BucketName=bucket)
++
++        return GetBucketRequestPaymentOutput(Payer=s3_bucket.payer)
++
+     # ###### THIS ARE UNIMPLEMENTED METHODS TO ALLOW TESTING, DO NOT COUNT THEM AS DONE ###### #
+ 
+     def delete_bucket_ownership_controls(
+@@ -2954,3 +3010,40 @@ def get_object_lock_parameters_from_bucket_and_request(
+             )
+ 
+     return ObjectLockParameters(lock_until, lock_legal_status, lock_mode)
++
++
++def get_part_range(s3_object: S3Object, part_number: PartNumber) -> ObjectRange:
++    """
++    Calculate the range value from a part Number for an S3 Object
++    :param s3_object: S3Object
++    :param part_number: the wanted part from the S3Object
++    :return: an ObjectRange used to return only a slice of an Object
++    """
++    if not s3_object.parts:
++        if part_number > 1:
++            raise InvalidPartNumber(
++                "The requested partnumber is not satisfiable",
++                PartNumberRequested=part_number,
++                ActualPartCount=1,
++            )
++        return ObjectRange(
++            begin=0,
++            end=s3_object.size - 1,
++            content_length=s3_object.size,
++            content_range=f"bytes 0-{s3_object.size - 1}/{s3_object.size}",
++        )
++    elif not (part_data := s3_object.parts.get(part_number)):
++        raise InvalidPartNumber(
++            "The requested partnumber is not satisfiable",
++            PartNumberRequested=part_number,
++            ActualPartCount=len(s3_object.parts),
++        )
++
++    begin, part_length = part_data
++    end = begin + part_length - 1
++    return ObjectRange(
++        begin=begin,
++        end=end,
++        content_length=part_length,
++        content_range=f"bytes {begin}-{end}/{s3_object.size}",
++    )
+diff --git a/localstack/services/s3/v3/storage/core.py b/localstack/services/s3/v3/storage/core.py
+index 40aead4cedf49..d3f5b9f88a4ed 100644
+--- a/localstack/services/s3/v3/storage/core.py
++++ b/localstack/services/s3/v3/storage/core.py
+@@ -3,7 +3,7 @@
+ from typing import IO, Iterable, Iterator, Optional
+ 
+ from localstack.aws.api.s3 import BucketName, MultipartUploadId, PartNumber
+-from localstack.services.s3.utils import ParsedRange
++from localstack.services.s3.utils import ObjectRange
+ from localstack.services.s3.v3.models import S3Multipart, S3Object, S3Part
+ 
+ 
+@@ -35,7 +35,7 @@ class LimitedStream(RawIOBase):
+     This utility class allows to return a range from the underlying stream representing an S3 Object.
+     """
+ 
+-    def __init__(self, base_stream: IO[bytes] | "S3StoredObject", range_data: ParsedRange):
++    def __init__(self, base_stream: IO[bytes] | "S3StoredObject", range_data: ObjectRange):
+         super().__init__()
+         self.file = base_stream
+         self._pos = range_data.begin
+@@ -90,11 +90,17 @@ def read(self, s: int = -1) -> bytes | None:
+     def seek(self, offset: int, whence: int = 0) -> int:
+         pass
+ 
++    @property
+     @abc.abstractmethod
+     def checksum(self) -> Optional[str]:
+         if not self.s3_object.checksum_algorithm:
+             return None
+ 
++    @property
++    @abc.abstractmethod
++    def etag(self) -> str:
++        pass
++
+     @abc.abstractmethod
+     def __iter__(self) -> Iterator[bytes]:
+         pass
+@@ -138,7 +144,7 @@ def copy_from_object(
+         s3_part: S3Part,
+         src_bucket: BucketName,
+         src_s3_object: S3Object,
+-        range_data: ParsedRange,
++        range_data: ObjectRange,
+     ) -> S3StoredObject:
+         pass
+ 
+diff --git a/localstack/services/s3/v3/storage/ephemeral.py b/localstack/services/s3/v3/storage/ephemeral.py
+index c4cc4db18d6d8..a7c5986e04ab3 100644
+--- a/localstack/services/s3/v3/storage/ephemeral.py
++++ b/localstack/services/s3/v3/storage/ephemeral.py
+@@ -11,7 +11,7 @@
+ 
+ from localstack.aws.api.s3 import BucketName, MultipartUploadId, PartNumber
+ from localstack.services.s3.constants import S3_CHUNK_SIZE
+-from localstack.services.s3.utils import ChecksumHash, ParsedRange, get_s3_checksum
++from localstack.services.s3.utils import ChecksumHash, ObjectRange, get_s3_checksum
+ from localstack.services.s3.v3.models import S3Multipart, S3Object, S3Part
+ 
+ from .core import LimitedStream, S3ObjectStore, S3StoredMultipart, S3StoredObject
+@@ -58,7 +58,7 @@ def __init__(self, s3_object: S3Object | S3Part, file: LockedSpooledTemporaryFil
+         super().__init__(s3_object=s3_object)
+         self.file = file
+         self.size = 0
+-        self.etag = None
++        self._etag = None
+         self.checksum_hash = None
+         self._checksum = None
+         self._pos = 0
+@@ -131,7 +131,7 @@ def write(self, stream: IO[bytes] | "EphemeralS3StoredObject" | LimitedStream) -
+ 
+             etag = etag.hexdigest()
+             self.size = self.s3_object.size = file.tell()
+-            self.etag = self.s3_object.etag = etag
++            self._etag = self.s3_object.etag = etag
+ 
+             file.seek(0)
+             self._pos = 0
+@@ -159,6 +159,7 @@ def close(self):
+         """Close the underlying fileobject, effectively deleting it"""
+         return self.file.close()
+ 
++    @property
+     def checksum(self) -> Optional[str]:
+         """
+         Return the object checksum base64 encoded, if the S3Object has a checksum algorithm.
+@@ -182,6 +183,19 @@ def checksum(self) -> Optional[str]:
+ 
+         return self._checksum
+ 
++    @property
++    def etag(self) -> str:
++        if not self._etag:
++            etag = hashlib.md5(usedforsecurity=False)
++            original_pos = self._pos
++            self._pos = 0
++            while data := self.read(S3_CHUNK_SIZE):
++                etag.update(data)
++            self._pos = original_pos
++            self._etag = etag.hexdigest()
++
++        return self._etag
++
+     def __iter__(self) -> Iterator[bytes]:
+         """
+         This is mostly used as convenience to directly passed this object to a Werkzeug response object, hiding the
+@@ -265,7 +279,7 @@ def copy_from_object(
+         s3_part: S3Part,
+         src_bucket: BucketName,
+         src_s3_object: S3Object,
+-        range_data: ParsedRange,
++        range_data: ObjectRange,
+     ) -> EphemeralS3StoredObject:
+         """
+         Create and add an EphemeralS3StoredObject to the Multipart collection, with an S3Object as input. This will
+diff --git a/tests/aws/s3/test_s3.py b/tests/aws/s3/test_s3.py
+index b500e635cf1ad..859f5aa223591 100644
+--- a/tests/aws/s3/test_s3.py
++++ b/tests/aws/s3/test_s3.py
+@@ -2067,6 +2067,97 @@ def test_s3_copy_object_preconditions(self, s3_bucket, snapshot, aws_client):
+         )
+         snapshot.match("copy-success", copy_obj_all_positive)
+ 
++    @markers.aws.validated
++    @pytest.mark.xfail(
++        condition=not config.NATIVE_S3_PROVIDER,
++        reason="Behaviour is not in line with AWS, does not validate properly",
++    )
++    @pytest.mark.parametrize("method", ("get_object", "head_object"))
++    def test_s3_get_object_preconditions(self, s3_bucket, snapshot, aws_client, method):
++        snapshot.add_transformer(snapshot.transform.s3_api())
++        object_key = "test-object"
++        put_object = aws_client.s3.put_object(
++            Bucket=s3_bucket,
++            Key=object_key,
++            Body=b"data",
++        )
++
++        client_method = getattr(aws_client.s3, method)
++
++        # wait a bit for the `unmodified_since` value so that it's invalid.
++        # S3 compares it the last-modified field, but you can't set the value in the future otherwise it ignores it.
++        # It needs to be now or less, but the object needs to be a bit more recent than that.
++        time.sleep(3)
++
++        # we're testing the order of validation at the same time by validating all of them at once, by elimination
++        now = datetime.datetime.now().astimezone(tz=ZoneInfo("GMT"))
++        wrong_unmodified_since = now - datetime.timedelta(days=1)
++
++        with pytest.raises(ClientError) as e:
++            client_method(
++                Bucket=s3_bucket,
++                Key=object_key,
++                IfModifiedSince=now,
++                IfUnmodifiedSince=wrong_unmodified_since,
++                IfMatch="etag123",
++                IfNoneMatch=put_object["ETag"],
++            )
++        snapshot.match("precondition-if-match", e.value.response)
++
++        with pytest.raises(ClientError) as e:
++            client_method(
++                Bucket=s3_bucket,
++                Key=object_key,
++                IfModifiedSince=now,
++                IfUnmodifiedSince=wrong_unmodified_since,
++                IfNoneMatch=put_object["ETag"],
++            )
++        snapshot.match("precondition-if-unmodified-since", e.value.response)
++
++        with pytest.raises(ClientError) as e:
++            client_method(
++                Bucket=s3_bucket,
++                Key=object_key,
++                IfModifiedSince=now,
++                IfNoneMatch=put_object["ETag"],
++            )
++        snapshot.match("precondition-if-none-match", e.value.response)
++
++        with pytest.raises(ClientError) as e:
++            client_method(
++                Bucket=s3_bucket,
++                Key=object_key,
++                IfModifiedSince=now,
++            )
++        snapshot.match("copy-precondition-if-modified-since", e.value.response)
++
++        # AWS will ignore the value if it's in the future
++        get_obj = client_method(
++            Bucket=s3_bucket,
++            Key=object_key,
++            IfModifiedSince=now + datetime.timedelta(days=1),
++        )
++        snapshot.match("obj-ignore-future-modified-since", get_obj)
++        # # AWS will ignore the missing quotes around the ETag and still reject the request
++        with pytest.raises(ClientError) as e:
++            client_method(
++                Bucket=s3_bucket,
++                Key=object_key,
++                IfModifiedSince=now,
++                IfNoneMatch=put_object["ETag"].strip('"'),
++            )
++        snapshot.match("etag-missing-quotes", e.value.response)
++        # Positive tests with all conditions checked
++        get_obj_all_positive = client_method(
++            Bucket=s3_bucket,
++            Key=object_key,
++            IfMatch=put_object["ETag"].strip('"'),
++            IfNoneMatch="etag123",
++            IfModifiedSince=now - datetime.timedelta(days=1),
++            IfUnmodifiedSince=now,
++        )
++        snapshot.match("obj-success", get_obj_all_positive)
++
+     @markers.aws.validated
+     # behaviour is wrong in Legacy, we inherit Bucket ACL
+     @markers.snapshot.skip_snapshot_verify(
+@@ -2948,18 +3039,19 @@ def test_s3_request_payer(self, s3_bucket, snapshot, aws_client):
+     @markers.aws.validated
+     @markers.snapshot.skip_snapshot_verify(condition=is_old_provider, path="$..Error.BucketName")
+     def test_s3_request_payer_exceptions(self, s3_bucket, snapshot, aws_client):
++        snapshot.add_transformer(snapshot.transform.key_value("BucketName"))
+         with pytest.raises(ClientError) as e:
+             aws_client.s3.put_bucket_request_payment(
+                 Bucket=s3_bucket, RequestPaymentConfiguration={"Payer": "Random"}
+             )
+         snapshot.match("wrong-payer-type", e.value.response)
+ 
+-        # TODO: check if no luck or AccessDenied is normal?
+-        # with pytest.raises(ClientError) as e:
+-        #     s3_client.put_bucket_request_payment(
+-        #         Bucket="fake_bucket", RequestPaymentConfiguration={"Payer": "Requester"}
+-        #     )
+-        # snapshot.match("wrong-bucket-name", e.value.response)
++        with pytest.raises(ClientError) as e:
++            aws_client.s3.put_bucket_request_payment(
++                Bucket=f"fake-bucket-{long_uid()}",
++                RequestPaymentConfiguration={"Payer": "Requester"},
++            )
++        snapshot.match("wrong-bucket-name", e.value.response)
+ 
+     @markers.aws.validated
+     @markers.snapshot.skip_snapshot_verify(
+@@ -3154,6 +3246,64 @@ def test_multipart_copy_object_etag(self, s3_bucket, s3_multipart_upload, snapsh
+         # etags should be different
+         assert copy_etag != multipart_etag
+ 
++        # copy-in place to check
++        response = aws_client.s3.copy_object(
++            Bucket=s3_bucket,
++            CopySource=src_object_path,
++            Key=key,
++            MetadataDirective="REPLACE",
++        )
++        snapshot.match("copy-object-in-place", response)
++        copy_etag = response["CopyObjectResult"]["ETag"]
++        # etags should be different
++        assert copy_etag != multipart_etag
++
++    @markers.aws.validated
++    @pytest.mark.xfail(
++        condition=not config.NATIVE_S3_PROVIDER,
++        reason="Behaviour is not in line with AWS, does not validate properly",
++    )
++    def test_get_object_part(self, s3_bucket, s3_multipart_upload, snapshot, aws_client):
++        snapshot.add_transformer(
++            [
++                snapshot.transform.key_value("Location"),
++                snapshot.transform.key_value("Bucket"),
++            ]
++        )
++        key = "test.file"
++        content = "test content 123"
++
++        response = s3_multipart_upload(bucket=s3_bucket, key=key, data=content, parts=2)
++        snapshot.match("multipart-upload", response)
++
++        head_object_part = aws_client.s3.head_object(Bucket=s3_bucket, Key=key, PartNumber=2)
++        snapshot.match("head-object-part", head_object_part)
++
++        get_object_part = aws_client.s3.get_object(Bucket=s3_bucket, Key=key, PartNumber=2)
++        snapshot.match("get-object-part", get_object_part)
++
++        with pytest.raises(ClientError) as e:
++            aws_client.s3.get_object(Bucket=s3_bucket, Key=key, PartNumber=10)
++        snapshot.match("part-doesnt-exist", e.value.response)
++
++        with pytest.raises(ClientError) as e:
++            aws_client.s3.get_object(
++                Bucket=s3_bucket,
++                Key=key,
++                PartNumber=2,
++                Range="bytes=0-8",
++            )
++        snapshot.match("part-with-range", e.value.response)
++
++        key_no_part = "key-no-part"
++        aws_client.s3.put_object(Bucket=s3_bucket, Key=key_no_part, Body="test-123")
++        with pytest.raises(ClientError) as e:
++            aws_client.s3.get_object(Bucket=s3_bucket, Key=key_no_part, PartNumber=2)
++        snapshot.match("part-no-multipart", e.value.response)
++
++        get_obj_no_part = aws_client.s3.get_object(Bucket=s3_bucket, Key=key_no_part, PartNumber=1)
++        snapshot.match("get-obj-no-multipart", get_obj_no_part)
++
+     @markers.aws.validated
+     @markers.snapshot.skip_snapshot_verify(condition=is_old_provider, paths=["$..VersionId"])
+     @markers.snapshot.skip_snapshot_verify(
+diff --git a/tests/aws/s3/test_s3.snapshot.json b/tests/aws/s3/test_s3.snapshot.json
+index 030e15ccd0eae..a3a1febffd347 100644
+--- a/tests/aws/s3/test_s3.snapshot.json
++++ b/tests/aws/s3/test_s3.snapshot.json
+@@ -1486,7 +1486,7 @@
+     }
+   },
+   "tests/aws/s3/test_s3.py::TestS3::test_s3_request_payer_exceptions": {
+-    "recorded-date": "03-08-2023, 04:17:18",
++    "recorded-date": "10-08-2023, 02:34:43",
+     "recorded-content": {
+       "wrong-payer-type": {
+         "Error": {
+@@ -1497,6 +1497,17 @@
+           "HTTPHeaders": {},
+           "HTTPStatusCode": 400
+         }
++      },
++      "wrong-bucket-name": {
++        "Error": {
++          "BucketName": "<bucket-name:1>",
++          "Code": "NoSuchBucket",
++          "Message": "The specified bucket does not exist"
++        },
++        "ResponseMetadata": {
++          "HTTPHeaders": {},
++          "HTTPStatusCode": 404
++        }
+       }
+     }
+   },
+@@ -1679,7 +1690,7 @@
+     }
+   },
+   "tests/aws/s3/test_s3.py::TestS3::test_multipart_copy_object_etag": {
+-    "recorded-date": "03-08-2023, 04:17:57",
++    "recorded-date": "10-08-2023, 01:22:44",
+     "recorded-content": {
+       "multipart-upload": {
+         "Bucket": "<bucket:1>",
+@@ -1702,6 +1713,17 @@
+           "HTTPHeaders": {},
+           "HTTPStatusCode": 200
+         }
++      },
++      "copy-object-in-place": {
++        "CopyObjectResult": {
++          "ETag": "\"eee506dd7ada7ded524c77e359a0e7c6\"",
++          "LastModified": "datetime"
++        },
++        "ServerSideEncryption": "AES256",
++        "ResponseMetadata": {
++          "HTTPHeaders": {},
++          "HTTPStatusCode": 200
++        }
+       }
+     }
+   },
+@@ -9481,5 +9503,266 @@
+         }
+       }
+     }
++  },
++  "tests/aws/s3/test_s3.py::TestS3::test_s3_get_object_preconditions[get_object]": {
++    "recorded-date": "10-08-2023, 01:14:32",
++    "recorded-content": {
++      "precondition-if-match": {
++        "Error": {
++          "Code": "PreconditionFailed",
++          "Condition": "If-Match",
++          "Message": "At least one of the pre-conditions you specified did not hold"
++        },
++        "ResponseMetadata": {
++          "HTTPHeaders": {},
++          "HTTPStatusCode": 412
++        }
++      },
++      "precondition-if-unmodified-since": {
++        "Error": {
++          "Code": "PreconditionFailed",
++          "Condition": "If-Unmodified-Since",
++          "Message": "At least one of the pre-conditions you specified did not hold"
++        },
++        "ResponseMetadata": {
++          "HTTPHeaders": {},
++          "HTTPStatusCode": 412
++        }
++      },
++      "precondition-if-none-match": {
++        "Error": {
++          "Code": "304",
++          "Message": "Not Modified"
++        },
++        "ResponseMetadata": {
++          "HTTPHeaders": {},
++          "HTTPStatusCode": 304
++        }
++      },
++      "copy-precondition-if-modified-since": {
++        "Error": {
++          "Code": "304",
++          "Message": "Not Modified"
++        },
++        "ResponseMetadata": {
++          "HTTPHeaders": {},
++          "HTTPStatusCode": 304
++        }
++      },
++      "obj-ignore-future-modified-since": {
++        "AcceptRanges": "bytes",
++        "Body": "data",
++        "ContentLength": 4,
++        "ContentType": "binary/octet-stream",
++        "ETag": "\"8d777f385d3dfec8815d20f7496026dc\"",
++        "LastModified": "datetime",
++        "Metadata": {},
++        "ServerSideEncryption": "AES256",
++        "ResponseMetadata": {
++          "HTTPHeaders": {},
++          "HTTPStatusCode": 200
++        }
++      },
++      "etag-missing-quotes": {
++        "Error": {
++          "Code": "304",
++          "Message": "Not Modified"
++        },
++        "ResponseMetadata": {
++          "HTTPHeaders": {},
++          "HTTPStatusCode": 304
++        }
++      },
++      "obj-success": {
++        "AcceptRanges": "bytes",
++        "Body": "data",
++        "ContentLength": 4,
++        "ContentType": "binary/octet-stream",
++        "ETag": "\"8d777f385d3dfec8815d20f7496026dc\"",
++        "LastModified": "datetime",
++        "Metadata": {},
++        "ServerSideEncryption": "AES256",
++        "ResponseMetadata": {
++          "HTTPHeaders": {},
++          "HTTPStatusCode": 200
++        }
++      }
++    }
++  },
++  "tests/aws/s3/test_s3.py::TestS3::test_s3_get_object_preconditions[head_object]": {
++    "recorded-date": "10-08-2023, 01:14:38",
++    "recorded-content": {
++      "precondition-if-match": {
++        "Error": {
++          "Code": "412",
++          "Message": "Precondition Failed"
++        },
++        "ResponseMetadata": {
++          "HTTPHeaders": {},
++          "HTTPStatusCode": 412
++        }
++      },
++      "precondition-if-unmodified-since": {
++        "Error": {
++          "Code": "412",
++          "Message": "Precondition Failed"
++        },
++        "ResponseMetadata": {
++          "HTTPHeaders": {},
++          "HTTPStatusCode": 412
++        }
++      },
++      "precondition-if-none-match": {
++        "Error": {
++          "Code": "304",
++          "Message": "Not Modified"
++        },
++        "ResponseMetadata": {
++          "HTTPHeaders": {},
++          "HTTPStatusCode": 304
++        }
++      },
++      "copy-precondition-if-modified-since": {
++        "Error": {
++          "Code": "304",
++          "Message": "Not Modified"
++        },
++        "ResponseMetadata": {
++          "HTTPHeaders": {},
++          "HTTPStatusCode": 304
++        }
++      },
++      "obj-ignore-future-modified-since": {
++        "AcceptRanges": "bytes",
++        "ContentLength": 4,
++        "ContentType": "binary/octet-stream",
++        "ETag": "\"8d777f385d3dfec8815d20f7496026dc\"",
++        "LastModified": "datetime",
++        "Metadata": {},
++        "ServerSideEncryption": "AES256",
++        "ResponseMetadata": {
++          "HTTPHeaders": {},
++          "HTTPStatusCode": 200
++        }
++      },
++      "etag-missing-quotes": {
++        "Error": {
++          "Code": "304",
++          "Message": "Not Modified"
++        },
++        "ResponseMetadata": {
++          "HTTPHeaders": {},
++          "HTTPStatusCode": 304
++        }
++      },
++      "obj-success": {
++        "AcceptRanges": "bytes",
++        "ContentLength": 4,
++        "ContentType": "binary/octet-stream",
++        "ETag": "\"8d777f385d3dfec8815d20f7496026dc\"",
++        "LastModified": "datetime",
++        "Metadata": {},
++        "ServerSideEncryption": "AES256",
++        "ResponseMetadata": {
++          "HTTPHeaders": {},
++          "HTTPStatusCode": 200
++        }
++      }
++    }
++  },
++  "tests/aws/s3/test_s3.py::TestS3::test_get_object_part": {
++    "recorded-date": "10-08-2023, 02:06:55",
++    "recorded-content": {
++      "multipart-upload": {
++        "Bucket": "<bucket:1>",
++        "ETag": "\"2848839dc84e13fa00a0944e760e233b-2\"",
++        "Key": "test.file",
++        "Location": "<location:1>",
++        "ServerSideEncryption": "AES256",
++        "ResponseMetadata": {
++          "HTTPHeaders": {},
++          "HTTPStatusCode": 200
++        }
++      },
++      "head-object-part": {
++        "AcceptRanges": "bytes",
++        "ContentLength": 16,
++        "ContentType": "binary/octet-stream",
++        "ETag": "\"2848839dc84e13fa00a0944e760e233b-2\"",
++        "LastModified": "datetime",
++        "Metadata": {},
++        "PartsCount": 2,
++        "ServerSideEncryption": "AES256",
++        "ResponseMetadata": {
++          "HTTPHeaders": {},
++          "HTTPStatusCode": 206
++        }
++      },
++      "get-object-part": {
++        "AcceptRanges": "bytes",
++        "Body": "test content 123",
++        "ContentLength": 16,
++        "ContentRange": "bytes 5242896-5242911/5242912",
++        "ContentType": "binary/octet-stream",
++        "ETag": "\"2848839dc84e13fa00a0944e760e233b-2\"",
++        "LastModified": "datetime",
++        "Metadata": {},
++        "PartsCount": 2,
++        "ServerSideEncryption": "AES256",
++        "ResponseMetadata": {
++          "HTTPHeaders": {},
++          "HTTPStatusCode": 206
++        }
++      },
++      "part-doesnt-exist": {
++        "Error": {
++          "ActualPartCount": "2",
++          "Code": "InvalidPartNumber",
++          "Message": "The requested partnumber is not satisfiable",
++          "PartNumberRequested": "10"
++        },
++        "ResponseMetadata": {
++          "HTTPHeaders": {},
++          "HTTPStatusCode": 416
++        }
++      },
++      "part-with-range": {
++        "Error": {
++          "Code": "InvalidRequest",
++          "Message": "Cannot specify both Range header and partNumber query parameter"
++        },
++        "ResponseMetadata": {
++          "HTTPHeaders": {},
++          "HTTPStatusCode": 400
++        }
++      },
++      "part-no-multipart": {
++        "Error": {
++          "ActualPartCount": "1",
++          "Code": "InvalidPartNumber",
++          "Message": "The requested partnumber is not satisfiable",
++          "PartNumberRequested": "2"
++        },
++        "ResponseMetadata": {
++          "HTTPHeaders": {},
++          "HTTPStatusCode": 416
++        }
++      },
++      "get-obj-no-multipart": {
++        "AcceptRanges": "bytes",
++        "Body": "test-123",
++        "ContentLength": 8,
++        "ContentRange": "bytes 0-7/8",
++        "ContentType": "binary/octet-stream",
++        "ETag": "\"ca6d00e33edff0e9cb3782d31182de33\"",
++        "LastModified": "datetime",
++        "Metadata": {},
++        "ServerSideEncryption": "AES256",
++        "ResponseMetadata": {
++          "HTTPHeaders": {},
++          "HTTPStatusCode": 206
++        }
++      }
++    }
+   }
+ }
+diff --git a/tests/unit/aws/protocol/test_serializer.py b/tests/unit/aws/protocol/test_serializer.py
+index 5d78696649a74..c3d8ca15beb98 100644
+--- a/tests/unit/aws/protocol/test_serializer.py
++++ b/tests/unit/aws/protocol/test_serializer.py
+@@ -1356,6 +1356,7 @@ def test_restxml_headers_location():
+             "ContentType": "application/octet-stream",
+             # The content length should explicitly be tested here.
+             "ContentLength": 159,
++            "StatusCode": 200,
+         },
+     )
+ 

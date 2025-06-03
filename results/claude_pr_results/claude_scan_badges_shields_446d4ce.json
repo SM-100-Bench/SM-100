@@ -1,0 +1,15 @@
+{
+  "identifier": "badges_shields_446d4ce",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.09459329999999999,
+    "is_error": false,
+    "duration_ms": 8778,
+    "duration_api_ms": 11959,
+    "num_turns": 3,
+    "result": "Based on my review of the staged changes, I found 3 potential bugs:\n\n```json\n{\n  \"issues\": [\n    {\n      \"file\": \"lib/request-handler.js\",\n      \"line\": 100,\n      \"description\": \"String template literal contains variable 'match[0]' that should be interpolated with ${match[0]}\"\n    },\n    {\n      \"file\": \"lib/request-handler.js\",\n      \"line\": 42,\n      \"description\": \"Duplicate 'link' entry in globalQueryParams Set could cause confusion\"\n    },\n    {\n      \"file\": \"server.js\",\n      \"line\": 4571,\n      \"description\": \"Variable name 'data' used for both function parameter and JSON response, creating potential confusion\"\n    }\n  ]\n}\n```",
+    "total_cost": 0.09459329999999999,
+    "session_id": "c403ed3c-01ba-44dc-a2df-85935c11faac"
+  }
+}

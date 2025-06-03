@@ -1,0 +1,15 @@
+{
+  "identifier": "mozilla_bleach_73dfef1",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.10623239999999999,
+    "is_error": false,
+    "duration_ms": 16083,
+    "duration_api_ms": 18347,
+    "num_turns": 7,
+    "result": "Now I can analyze the staged changes for potential bugs. Let me examine the key issues:\n\n```json\n{\n  \"issues\": [\n    {\n      \"file\": \"bleach/sanitizer.py\",\n      \"line\": 96,\n      \"description\": \"IndexError: string index out of range when value is empty or has length < 2\"\n    },\n    {\n      \"file\": \"bleach/sanitizer.py\",\n      \"line\": 98,\n      \"description\": \"IndexError: string index out of range when value has length < 3 for hex entities\"\n    },\n    {\n      \"file\": \"bleach/sanitizer.py\",\n      \"line\": 125,\n      \"description\": \"Logic error: checking 'if part:' instead of 'if remainder:' will always append remainder\"\n    },\n    {\n      \"file\": \"bleach/sanitizer.py\",\n      \"line\": 101,\n      \"description\": \"KeyError: ENTITIES dictionary lookup without validation could raise KeyError for unknown entities\"\n    }\n  ]\n}\n```",
+    "total_cost": 0.10623239999999999,
+    "session_id": "cfb0ea7b-b05f-49b1-99ac-58ed333318ab"
+  }
+}

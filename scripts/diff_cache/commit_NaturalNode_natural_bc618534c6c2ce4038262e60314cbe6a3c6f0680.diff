@@ -1,0 +1,53 @@
+diff --git a/.github/workflows/linter.yml b/.github/workflows/linter.yml
+index c188ae25e..be3aebf79 100644
+--- a/.github/workflows/linter.yml
++++ b/.github/workflows/linter.yml
+@@ -48,7 +48,7 @@ jobs:
+       # Run Linter against code base #
+       ################################
+       - name: Lint Code Base
+-        uses: github/super-linter@v3
++        uses: github/super-linter@v4
+         env:
+           VALIDATE_ALL_CODEBASE: false
+           DEFAULT_BRANCH: master
+diff --git a/lib/natural/sentiment/SentimentAnalyzer.js b/lib/natural/sentiment/SentimentAnalyzer.js
+index 3457f4060..41736b0d6 100644
+--- a/lib/natural/sentiment/SentimentAnalyzer.js
++++ b/lib/natural/sentiment/SentimentAnalyzer.js
+@@ -74,6 +74,7 @@ class SentimentAnalyzer {
+     // or in subsequent execution the polarity will be undefined
+     // shallow copy - requires ES6
+     this.vocabulary = Object.assign({}, languageFiles[type][language][0])
++    Object.setPrototypeOf(this.vocabulary, null)
+     if (type === 'senticon') {
+       Object.keys(this.vocabulary).forEach(word => {
+         this.vocabulary[word] = this.vocabulary[word].pol
+@@ -93,7 +94,7 @@ class SentimentAnalyzer {
+     }
+ 
+     if (stemmer) {
+-      const vocaStemmed = {}
++      const vocaStemmed = Object.create(null)
+       for (const token in this.vocabulary) {
+         vocaStemmed[stemmer.stem(token)] = this.vocabulary[token]
+       }
+diff --git a/spec/SentimentAnalyzer_spec.js b/spec/SentimentAnalyzer_spec.js
+index 485d4abb3..bf96fdb3f 100644
+--- a/spec/SentimentAnalyzer_spec.js
++++ b/spec/SentimentAnalyzer_spec.js
+@@ -99,6 +99,14 @@ const testConfigurations = [
+       { sentence: 'G-Eazy released his expansive third album, The Beautiful & Damned, in December with hit singles "No Limit" and "Him & I." The album featured guest appearances from Cardi B, A$AP Rocky, Charlie Puth and Halsey, and debuted at Number Three on the Billboard 200.', score: 0.022727272727272728 }
+     ]
+   },
++  {
++    language: 'English',
++    stemmer: 'PorterStemmer',
++    vocabularyType: 'pattern',
++    testSentences: [
++      { sentence: 'constructor hasOwnProperty toString setPrototypeOf', score: 0 }
++    ]
++  },
+   {
+     language: 'French',
+     stemmer: 'PorterStemmerFr',

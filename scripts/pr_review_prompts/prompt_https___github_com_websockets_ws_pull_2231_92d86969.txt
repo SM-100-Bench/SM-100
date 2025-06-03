@@ -1,0 +1,38 @@
+Please review the following commit for potential bugs:
+
+```
+diff --git a/lib/WebSocketServer.js b/lib/WebSocketServer.js
+index 4a0bd4e92..1f812eb6e 100644
+--- a/lib/WebSocketServer.js
++++ b/lib/WebSocketServer.js
+@@ -153,11 +153,9 @@ class WebSocketServer extends EventEmitter {
+     const version = +req.headers['sec-websocket-version'];
+ 
+     if (
+-      !this.shouldHandle(req) ||
+-      !req.headers.upgrade ||
+-      req.headers.upgrade.toLowerCase() !== 'websocket' ||
+-      !req.headers['sec-websocket-key'] ||
+-      version !== 8 && version !== 13
++      req.method !== 'GET' || req.headers.upgrade.toLowerCase() !== 'websocket' ||
++      !req.headers['sec-websocket-key'] || version !== 8 && version !== 13 ||
++      !this.shouldHandle(req)
+     ) {
+       return abortConnection(socket, 400);
+     }
+
+```
+
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Report all of your findings in a single JSON object with the following format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

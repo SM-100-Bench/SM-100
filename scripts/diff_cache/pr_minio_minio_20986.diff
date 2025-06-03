@@ -1,0 +1,193 @@
+diff --git a/cmd/sftp-server.go b/cmd/sftp-server.go
+index 2255a142baf34..06bc72dd98f54 100644
+--- a/cmd/sftp-server.go
++++ b/cmd/sftp-server.go
+@@ -62,7 +62,7 @@ var (
+ 
+ // if the sftp parameter --trusted-user-ca-key is set, then
+ // the final form of the key file will be set as this variable.
+-var caPublicKey ssh.PublicKey
++var globalSFTPTrustedCAPubkey ssh.PublicKey
+ 
+ // https://cs.opensource.google/go/x/crypto/+/refs/tags/v0.22.0:ssh/common.go;l=46
+ // preferredKexAlgos specifies the default preference for key-exchange
+@@ -161,8 +161,8 @@ internalAuth:
+ 		return nil, errNoSuchUser
+ 	}
+ 
+-	if caPublicKey != nil && pass == nil {
+-		err := validateKey(c, key)
++	if globalSFTPTrustedCAPubkey != nil && pass == nil {
++		err := validateClientKeyIsTrusted(c, key)
+ 		if err != nil {
+ 			return nil, errAuthentication
+ 		}
+@@ -256,9 +256,18 @@ func processLDAPAuthentication(key ssh.PublicKey, pass []byte, user string) (per
+ 				return nil, errAuthentication
+ 			}
+ 		}
++		// Save each attribute to claims.
+ 		claims[ldapAttribPrefix+attribKey] = attribValue[0]
+ 	}
+ 
++	if key != nil {
++		// If a key was provided, we expect the user to have an sshPublicKey
++		// attribute.
++		if _, ok := claims[ldapAttribPrefix+"sshPublicKey"]; !ok {
++			return nil, errAuthentication
++		}
++	}
++
+ 	expiryDur, err := globalIAMSys.LDAPConfig.GetExpiryDuration("")
+ 	if err != nil {
+ 		return nil, err
+@@ -310,8 +319,8 @@ func processLDAPAuthentication(key ssh.PublicKey, pass []byte, user string) (per
+ 	}, nil
+ }
+ 
+-func validateKey(c ssh.ConnMetadata, clientKey ssh.PublicKey) (err error) {
+-	if caPublicKey == nil {
++func validateClientKeyIsTrusted(c ssh.ConnMetadata, clientKey ssh.PublicKey) (err error) {
++	if globalSFTPTrustedCAPubkey == nil {
+ 		return errors.New("public key authority validation requested but no ca public key specified.")
+ 	}
+ 
+@@ -331,7 +340,7 @@ func validateKey(c ssh.ConnMetadata, clientKey ssh.PublicKey) (err error) {
+ 	// and that certificate type is correct.
+ 	checker := ssh.CertChecker{}
+ 	checker.IsUserAuthority = func(k ssh.PublicKey) bool {
+-		return subtle.ConstantTimeCompare(caPublicKey.Marshal(), k.Marshal()) == 1
++		return subtle.ConstantTimeCompare(globalSFTPTrustedCAPubkey.Marshal(), k.Marshal()) == 1
+ 	}
+ 
+ 	_, err = checker.Authenticate(c, clientKey)
+@@ -428,7 +437,7 @@ func startSFTPServer(args []string) {
+ 			allowMACs = filterAlgos(arg, strings.Split(tokens[1], ","), supportedMACs)
+ 		case "trusted-user-ca-key":
+ 			userCaKeyFile = tokens[1]
+-		case "password-auth":
++		case "disable-password-auth":
+ 			disablePassAuth, _ = strconv.ParseBool(tokens[1])
+ 		}
+ 	}
+@@ -457,7 +466,7 @@ func startSFTPServer(args []string) {
+ 			logger.Fatal(fmt.Errorf("invalid arguments passed, trusted user certificate authority public key file is not accessible: %v", err), "unable to start SFTP server")
+ 		}
+ 
+-		caPublicKey, _, _, _, err = ssh.ParseAuthorizedKey(keyBytes)
++		globalSFTPTrustedCAPubkey, _, _, _, err = ssh.ParseAuthorizedKey(keyBytes)
+ 		if err != nil {
+ 			logger.Fatal(fmt.Errorf("invalid arguments passed, trusted user certificate authority public key file is not parseable: %v", err), "unable to start SFTP server")
+ 		}
+diff --git a/cmd/sftp-server_test.go b/cmd/sftp-server_test.go
+index 79f4a03d05018..0064230809ee3 100644
+--- a/cmd/sftp-server_test.go
++++ b/cmd/sftp-server_test.go
+@@ -91,6 +91,7 @@ func TestSFTPAuthentication(t *testing.T) {
+ 
+ 				suite.SFTPPublicKeyAuthentication(c)
+ 				suite.SFTPFailedPublicKeyAuthenticationInvalidKey(c)
++				suite.SFTPPublicKeyAuthNoPubKey(c)
+ 
+ 				suite.TearDownSuite(c)
+ 			},
+@@ -146,6 +147,32 @@ func (s *TestSuiteIAM) SFTPPublicKeyAuthentication(c *check) {
+ 	}
+ }
+ 
++// A user without an sshpubkey attribute in LDAP (here: fahim) should not be
++// able to authenticate.
++func (s *TestSuiteIAM) SFTPPublicKeyAuthNoPubKey(c *check) {
++	keyBytes, err := os.ReadFile("./testdata/dillon_test_key.pub")
++	if err != nil {
++		c.Fatalf("could not read test key file: %s", err)
++	}
++
++	testKey, _, _, _, err := ssh.ParseAuthorizedKey(keyBytes)
++	if err != nil {
++		c.Fatalf("could not parse test key file: %s", err)
++	}
++
++	newSSHCon := newSSHConnMock("fahim=ldap")
++	_, err = sshPubKeyAuth(newSSHCon, testKey)
++	if err == nil {
++		c.Fatalf("expected error but got none")
++	}
++
++	newSSHCon = newSSHConnMock("fahim")
++	_, err = sshPubKeyAuth(newSSHCon, testKey)
++	if err == nil {
++		c.Fatalf("expected error but got none")
++	}
++}
++
+ func (s *TestSuiteIAM) SFTPFailedAuthDueToMissingPolicy(c *check) {
+ 	newSSHCon := newSSHConnMock("dillon=ldap")
+ 	_, err := sshPasswordAuth(newSSHCon, []byte("dillon"))
+@@ -275,24 +302,48 @@ func (s *TestSuiteIAM) SFTPValidLDAPLoginWithPassword(c *check) {
+ 		c.Fatalf("policy add error: %v", err)
+ 	}
+ 
+-	userDN := "uid=dillon,ou=people,ou=swengg,dc=min,dc=io"
+-	userReq := madmin.PolicyAssociationReq{
+-		Policies: []string{policy},
+-		User:     userDN,
+-	}
+-	if _, err := s.adm.AttachPolicy(ctx, userReq); err != nil {
+-		c.Fatalf("Unable to attach policy: %v", err)
++	{
++		userDN := "uid=dillon,ou=people,ou=swengg,dc=min,dc=io"
++		userReq := madmin.PolicyAssociationReq{
++			Policies: []string{policy},
++			User:     userDN,
++		}
++		if _, err := s.adm.AttachPolicyLDAP(ctx, userReq); err != nil {
++			c.Fatalf("Unable to attach policy: %v", err)
++		}
++
++		newSSHCon := newSSHConnMock("dillon=ldap")
++		_, err = sshPasswordAuth(newSSHCon, []byte("dillon"))
++		if err != nil {
++			c.Fatal("Password authentication failed for user (dillon):", err)
++		}
++
++		newSSHCon = newSSHConnMock("dillon")
++		_, err = sshPasswordAuth(newSSHCon, []byte("dillon"))
++		if err != nil {
++			c.Fatal("Password authentication failed for user (dillon):", err)
++		}
+ 	}
+-
+-	newSSHCon := newSSHConnMock("dillon=ldap")
+-	_, err = sshPasswordAuth(newSSHCon, []byte("dillon"))
+-	if err != nil {
+-		c.Fatal("Password authentication failed for user (dillon):", err)
+-	}
+-
+-	newSSHCon = newSSHConnMock("dillon")
+-	_, err = sshPasswordAuth(newSSHCon, []byte("dillon"))
+-	if err != nil {
+-		c.Fatal("Password authentication failed for user (dillon):", err)
++	{
++		userDN := "uid=fahim,ou=people,ou=swengg,dc=min,dc=io"
++		userReq := madmin.PolicyAssociationReq{
++			Policies: []string{policy},
++			User:     userDN,
++		}
++		if _, err := s.adm.AttachPolicyLDAP(ctx, userReq); err != nil {
++			c.Fatalf("Unable to attach policy: %v", err)
++		}
++
++		newSSHCon := newSSHConnMock("fahim=ldap")
++		_, err = sshPasswordAuth(newSSHCon, []byte("fahim"))
++		if err != nil {
++			c.Fatal("Password authentication failed for user (fahim):", err)
++		}
++
++		newSSHCon = newSSHConnMock("fahim")
++		_, err = sshPasswordAuth(newSSHCon, []byte("fahim"))
++		if err != nil {
++			c.Fatal("Password authentication failed for user (fahim):", err)
++		}
+ 	}
+ }

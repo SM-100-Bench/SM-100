@@ -1,0 +1,1 @@
+{"repo_id": "usememos_memos_870", "bugs": [{"description": "Potential SQL injection vulnerability due to unparameterized user input in database query.", "file": "server/user.go", "line": 45}, {"description": "Missing authentication middleware on sensitive API endpoints in HTTP handler registration.", "file": "server/http_getter.go", "line": 32}], "updated_files": {}}

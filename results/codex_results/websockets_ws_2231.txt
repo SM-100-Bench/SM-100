@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "lib/websocket-server.js",
+"line": 246,
+"description": "handleUpgrade() calls toLowerCase() on req.headers.upgrade without verifying that the Upgrade header exists. If a request lacking this header is passed to handleUpgrade(), a TypeError will be thrown."
+},
+{
+"file": "lib/websocket.js",
+"line": 931,
+"description": "initAsClient() assumes res.headers.upgrade is defined and calls toLowerCase() on it. If a server sends a response without the Upgrade header, this will result in a crash."
+},
+{
+"file": "lib/event-target.js",
+"line": 24,
+"description": "Event constructor documentation states a TypeError is thrown when the 'type' argument is missing, but the code does not perform this validation, allowing undefined event types."
+}
+]
+}

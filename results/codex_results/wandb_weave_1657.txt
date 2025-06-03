@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "weave/filesystem.py",
+"line": 165,
+"description": "open_read() schedules self.touch() with asyncio.create_task but never awaits or handles exceptions. Any error in touch() may result in an unhandled exception."
+},
+{
+"file": "weave/weave_types.py",
+"line": 1217,
+"description": "deserialize_relocatable_object_type builds code from serialized input and executes it with exec(). Even with identifier validation, using exec on untrusted data may allow code injection."
+}
+]
+}

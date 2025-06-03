@@ -1,0 +1,76 @@
+Please review the following commit for potential bugs:
+
+```
+diff --git a/conf/lex.go b/conf/lex.go
+index 5334bb39d79..85eae215249 100644
+--- a/conf/lex.go
++++ b/conf/lex.go
+@@ -434,13 +434,28 @@ func lexMapKeyStart(lx *lexer) stateFn {
+ 			return lexCommentStart
+ 		}
+ 		lx.backup()
++	case r == sqStringStart || r == dqStringStart:
++		lx.next()
++		return lexSkip(lx, lexMapQuotedKey)
+ 	}
+ 	lx.ignore()
+ 	lx.next()
+ 	return lexMapKey
+ }
+ 
+-// lexKey consumes the text of a key. Assumes that the first character (which
++// lexMapQuotedKey consumes the text of a key between quotes.
++func lexMapQuotedKey(lx *lexer) stateFn {
++	r := lx.peek()
++	if r == sqStringEnd || r == dqStringEnd {
++		lx.emit(itemKey)
++		lx.next()
++		return lexSkip(lx, lexMapKeyEnd)
++	}
++	lx.next()
++	return lexMapQuotedKey
++}
++
++// lexMapKey consumes the text of a key. Assumes that the first character (which
+ // is not whitespace) has already been consumed.
+ func lexMapKey(lx *lexer) stateFn {
+ 	r := lx.peek()
+diff --git a/conf/lex_test.go b/conf/lex_test.go
+index 0a891fbae6d..fc94d3c2f2f 100644
+--- a/conf/lex_test.go
++++ b/conf/lex_test.go
+@@ -424,3 +424,18 @@ func TestNonQuotedStrings(t *testing.T) {
+ 	lx := lex(noquotes)
+ 	expect(t, lx, expectedItems)
+ }
++
++func TestMapQuotedKeys(t *testing.T) {
++	expectedItems := []item{
++		{itemKey, "foo", 1},
++		{itemMapStart, "", 1},
++		{itemKey, "bar", 1},
++		{itemInteger, "4242", 1},
++		{itemMapEnd, "", 1},
++		{itemEOF, "", 1},
++	}
++	lx := lex("foo = {'bar' = 4242}")
++	expect(t, lx, expectedItems)
++	lx = lex("foo = {\"bar\" = 4242}")
++	expect(t, lx, expectedItems)
++}
+
+```
+
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Report all of your findings in a single JSON object with the following format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+Please review the code in the chatchat-space_Langchain-Chatchat_4009 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Knowledge Base System subsystem (consisting of 'init_database.py', 'server/knowledge_base/__init__.py', 'server/knowledge_base/kb_api.py', 'server/knowledge_base/kb_cache/base.py', 'server/knowledge_base/kb_cache/faiss_cache.py', 'server/knowledge_base/kb_doc_api.py', 'server/knowledge_base/kb_service/__init__.py', 'server/knowledge_base/kb_service/base.py', 'server/knowledge_base/kb_service/chromadb_kb_service.py', 'server/knowledge_base/kb_service/default_kb_service.py', 'server/knowledge_base/kb_service/es_kb_service.py', 'server/knowledge_base/kb_service/faiss_kb_service.py', 'server/knowledge_base/kb_service/milvus_kb_service.py', 'server/knowledge_base/kb_service/pg_kb_service.py', 'server/knowledge_base/kb_service/zilliz_kb_service.py', 'server/knowledge_base/kb_summary/__init__.py', 'server/knowledge_base/kb_summary/base.py', 'server/knowledge_base/kb_summary/summary_chunk.py', 'server/knowledge_base/kb_summary_api.py', 'server/knowledge_base/migrate.py', 'server/knowledge_base/model/kb_document_model.py', 'server/knowledge_base/utils.py')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

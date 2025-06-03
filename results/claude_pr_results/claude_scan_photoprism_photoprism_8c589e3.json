@@ -1,0 +1,15 @@
+{
+  "identifier": "photoprism_photoprism_8c589e3",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.20043745,
+    "is_error": false,
+    "duration_ms": 16976,
+    "duration_api_ms": 22012,
+    "num_turns": 6,
+    "result": "Based on my review of the staged changes, I found several issues in the code:\n\n```json\n{\n  \"issues\": [\n    {\n      \"file\": \"internal/photoprism/convert_avc.go\",\n      \"line\": 24,\n      \"description\": \"Typo in comment: 'Toolboar' should be 'Toolbox'\"\n    },\n    {\n      \"file\": \"internal/photoprism/convert_avc.go\",\n      \"line\": 169,\n      \"description\": \"Logic bug: empty string encoderName will not trigger else clause since FFmpegAvcEncoders[\\\"\\\"] returns FFmpegSoftwareEncoder, preventing the unsupported encoder warning\"\n    },\n    {\n      \"file\": \"internal/photoprism/convert_avc.go\",\n      \"line\": 125,\n      \"description\": \"Potential FFmpeg argument conflict: both '-pix_fmt yuv420p' and '-pixel_format yuv420p' are specified, which is redundant\"\n    },\n    {\n      \"file\": \"internal/photoprism/convert_avc.go\",\n      \"line\": 127,\n      \"description\": \"Redundant video filter: both '-pix_fmt yuv420p' and '-vf format=yuv420p' specify the same pixel format conversion\"\n    }\n  ]\n}\n```",
+    "total_cost": 0.20043745,
+    "session_id": "c1b18ac2-c66a-4623-8cf1-350a7bd2c353"
+  }
+}

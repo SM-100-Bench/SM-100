@@ -1,0 +1,20 @@
+Please review the code in the foliojs_pdfkit_1023 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Core PDF Engine subsystem (consisting of 'lib/abstract_reference.js', 'lib/data.js', 'lib/document.js', 'lib/line_wrapper.js', 'lib/name_tree.js', 'lib/object.js', 'lib/outline.js', 'lib/page.js', 'lib/path.js', 'lib/reference.js', 'lib/virtual-fs.js')
+2. Text Handling subsystem (consisting of 'lib/line_wrapper.js', 'lib/mixins/text.js')
+3. Testing subsystem (consisting of 'tests/images/bee.js', 'tests/integration/fonts.spec.js', 'tests/integration/helpers.js', 'tests/integration/pdfmake/absolute.spec.js', 'tests/integration/pdfmake/background.spec.js', 'tests/integration/pdfmake/basics.spec.js', 'tests/integration/pdfmake/columns_simple.spec.js', 'tests/integration/pdfmake/images.spec.js', 'tests/integration/pdfmake/lists.spec.js', 'tests/integration/pdfmake/page_references.spec.js', 'tests/integration/pdfmake/qrcode.spec.js', 'tests/integration/pdfmake/tables.spec.js', 'tests/integration/pdfmake/text_decorations.spec.js', 'tests/integration/pdfmake/toc.spec.js', 'tests/integration/pdfmake/watermark.spec.js', 'tests/integration/security.spec.js', 'tests/integration/text.spec.js', 'tests/integration/vector.spec.js', 'tests/unit/annotations.spec.js', 'tests/unit/color.spec.js', 'tests/unit/document.spec.js', 'tests/unit/font.spec.js', 'tests/unit/helpers.js', 'tests/unit/object.spec.js', 'tests/unit/png.spec.js', 'tests/unit/reference.spec.js', 'tests/unit/saslprep.spec.js', 'tests/unit/setupTests.js', 'tests/unit/text.spec.js', 'tests/unit/toContainChunk/index.js', 'tests/unit/trailer.spec.js', 'tests/unit/vector.spec.js', 'tests/unit/virtual-fs.spec.js')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

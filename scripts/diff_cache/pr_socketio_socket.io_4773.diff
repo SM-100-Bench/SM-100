@@ -1,0 +1,129 @@
+diff --git a/lib/socket.ts b/lib/socket.ts
+index 89b5eeaf31..f520605344 100644
+--- a/lib/socket.ts
++++ b/lib/socket.ts
+@@ -758,7 +758,6 @@ export class Socket<
+     }
+ 
+     this._cleanup();
+-    this.nsp._remove(this);
+     this.client._remove(this);
+     this.connected = false;
+     this.emitReserved("disconnect", reason, description);
+@@ -772,6 +771,7 @@ export class Socket<
+    */
+   _cleanup() {
+     this.leaveAll();
++    this.nsp._remove(this);
+     this.join = noop;
+   }
+ 
+diff --git a/package-lock.json b/package-lock.json
+index 7095cb3082..026d06ceae 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -1,12 +1,12 @@
+ {
+   "name": "socket.io",
+-  "version": "4.7.0",
++  "version": "4.7.1",
+   "lockfileVersion": 2,
+   "requires": true,
+   "packages": {
+     "": {
+       "name": "socket.io",
+-      "version": "4.7.0",
++      "version": "4.7.1",
+       "license": "MIT",
+       "dependencies": {
+         "accepts": "~1.3.4",
+@@ -34,7 +34,7 @@
+         "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.30.0"
+       },
+       "engines": {
+-        "node": ">=10.0.0"
++        "node": ">=10.2.0"
+       }
+     },
+     "node_modules/@ampproject/remapping": {
+diff --git a/test/namespaces.ts b/test/namespaces.ts
+index dd82f4bc3e..4f26ef4520 100644
+--- a/test/namespaces.ts
++++ b/test/namespaces.ts
+@@ -653,6 +653,76 @@ describe("namespaces", () => {
+       io.of(/^\/dynamic-\d+$/);
+     });
+ 
++    it("should NOT clean up namespace when cleanupEmptyChildNamespaces is OFF and client is rejected in middleware", (done) => {
++      const io = new Server(0, { cleanupEmptyChildNamespaces: false });
++      io.of(/^\/dynamic-\d+$/).use((socket, next) => {
++        next(new Error("You shall not pass!"));
++      });
++      const c1 = createClient(io, "/dynamic-101");
++
++      c1.on("connect", () => {
++        done(new Error("Should not connect"));
++      });
++
++      c1.on("connect_error", () => {
++        setTimeout(() => {
++          expect(io._nsps.has("/dynamic-101")).to.be(true);
++          expect(io._nsps.get("/dynamic-101")!.sockets.size).to.be(0);
++          success(done, io, c1);
++        }, 100);
++      });
++    });
++
++    it("should clean up namespace when cleanupEmptyChildNamespaces is ON and client is rejected in middleware", (done) => {
++      const io = new Server(0, { cleanupEmptyChildNamespaces: true });
++      io.of(/^\/dynamic-\d+$/).use((socket, next) => {
++        next(new Error("You shall not pass!"));
++      });
++      const c1 = createClient(io, "/dynamic-101");
++
++      c1.on("connect", () => {
++        done(new Error("Should not connect"));
++      });
++
++      c1.on("connect_error", () => {
++        setTimeout(() => {
++          expect(io._nsps.has("/dynamic-101")).to.be(false);
++          success(done, io, c1);
++        }, 100);
++      });
++    });
++
++    it("should NOT clean up namespace when cleanupEmptyChildNamespaces is ON and client is rejected in middleware but there are other clients connected", (done) => {
++      const io = new Server(0, { cleanupEmptyChildNamespaces: true });
++      let clientIdxToReject = 0;
++      io.of(/^\/dynamic-\d+$/).use((socket, next) => {
++        if (clientIdxToReject) {
++          next(new Error("You shall not pass!"));
++        } else {
++          next();
++        }
++        clientIdxToReject++;
++      });
++      const c1 = createClient(io, "/dynamic-101");
++
++      c1.on("connect", () => {
++        const c2 = createClient(io, "/dynamic-101");
++        c2.on("connect", () => {
++          done(new Error("Client 2 should not connect"));
++        });
++        c2.on("connect_error", () => {
++          setTimeout(() => {
++            expect(io._nsps.has("/dynamic-101")).to.be(true);
++            expect(io._nsps.get("/dynamic-101")!.sockets.size).to.be(1);
++            success(done, io, c1, c2);
++          }, 100);
++        });
++      });
++      c1.on("connect_error", () => {
++        done(new Error("Client 1 should not get an error"));
++      });
++    });
++
+     it("should attach a child namespace to its parent upon manual creation", () => {
+       const io = new Server(0);
+       const parentNamespace = io.of(/^\/dynamic-\d+$/);

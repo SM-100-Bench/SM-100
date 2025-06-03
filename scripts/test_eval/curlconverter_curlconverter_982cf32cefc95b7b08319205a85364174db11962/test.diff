@@ -1,0 +1,24 @@
+diff --git a/fixtures/curl_commands/post_binary_file.txt b/fixtures/curl_commands/post_binary_file.txt
+new file mode 100644
+index 000000000..85325b1e4
+--- /dev/null
++++ b/fixtures/curl_commands/post_binary_file.txt
+@@ -0,0 +1 @@
++curl -i -X POST  --data-binary @./sample.sparql  -H "Content-type: application/sparql-query"  -H "Accept: application/sparql-results+json"  http://lodstories.isi.edu:3030/american-art/query
+\ No newline at end of file
+diff --git a/fixtures/python_output/post_binary_file.py b/fixtures/python_output/post_binary_file.py
+new file mode 100644
+index 000000000..bf90f1445
+--- /dev/null
++++ b/fixtures/python_output/post_binary_file.py
+@@ -0,0 +1,9 @@
++import requests
++
++headers = {
++    'Content-type': 'application/sparql-query',
++    'Accept': 'application/sparql-results+json',
++}
++
++data = open('./sample.sparql', 'rb').read()
++requests.post('http://lodstories.isi.edu:3030/american-art/query', headers=headers, data=data)
+\ No newline at end of file

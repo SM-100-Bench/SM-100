@@ -1,0 +1,52 @@
+diff --git a/langfuse/client.py b/langfuse/client.py
+index 8561aa69..0f26f726 100644
+--- a/langfuse/client.py
++++ b/langfuse/client.py
+@@ -361,7 +361,9 @@ def get_dataset(
+             page = 1
+             while True:
+                 new_items = self.client.dataset_items.list(
+-                    dataset_name=name, page=page, limit=fetch_items_page_size
++                    dataset_name=self._url_encode(name),
++                    page=page,
++                    limit=fetch_items_page_size,
+                 )
+                 dataset_items.extend(new_items.data)
+                 if new_items.meta.total_pages <= page:
+@@ -429,7 +431,7 @@ def get_dataset_runs(
+         try:
+             self.log.debug("Getting dataset runs")
+             return self.client.datasets.get_runs(
+-                dataset_name=dataset_name, page=page, limit=limit
++                dataset_name=self._url_encode(dataset_name), page=page, limit=limit
+             )
+         except Exception as e:
+             handle_fern_exception(e)
+@@ -454,7 +456,8 @@ def get_dataset_run(
+                 f"Getting dataset runs for dataset {dataset_name} and run {dataset_run_name}"
+             )
+             return self.client.datasets.get_run(
+-                dataset_name=dataset_name, run_name=dataset_run_name
++                dataset_name=self._url_encode(dataset_name),
++                run_name=self._url_encode(dataset_run_name),
+             )
+         except Exception as e:
+             handle_fern_exception(e)
+@@ -478,7 +481,7 @@ def create_dataset(
+         """
+         try:
+             body = CreateDatasetRequest(
+-                name=name, description=description, metadata=metadata
++                name=self._url_encode(name), description=description, metadata=metadata
+             )
+             self.log.debug(f"Creating datasets {body}")
+             return self.client.datasets.create(request=body)
+@@ -531,7 +534,7 @@ def create_dataset_item(
+         """
+         try:
+             body = CreateDatasetItemRequest(
+-                datasetName=dataset_name,
++                datasetName=self._url_encode(dataset_name),
+                 input=input,
+                 expectedOutput=expected_output,
+                 metadata=metadata,

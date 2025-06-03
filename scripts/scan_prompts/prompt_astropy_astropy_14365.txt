@@ -1,0 +1,18 @@
+Please review the code in the astropy_astropy_14365 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. I/O - ASCII subsystem (consisting of 'astropy/io/ascii/__init__.py', 'astropy/io/ascii/basic.py', 'astropy/io/ascii/cds.py', 'astropy/io/ascii/connect.py', 'astropy/io/ascii/core.py', 'astropy/io/ascii/daophot.py', 'astropy/io/ascii/docs.py', 'astropy/io/ascii/ecsv.py', 'astropy/io/ascii/fastbasic.py', 'astropy/io/ascii/fixedwidth.py', 'astropy/io/ascii/html.py', 'astropy/io/ascii/ipac.py', 'astropy/io/ascii/latex.py', 'astropy/io/ascii/misc.py', 'astropy/io/ascii/mrt.py', 'astropy/io/ascii/qdp.py', 'astropy/io/ascii/rst.py', 'astropy/io/ascii/setup_package.py', 'astropy/io/ascii/sextractor.py', 'astropy/io/ascii/src/tokenizer.c', 'astropy/io/ascii/src/tokenizer.h', 'astropy/io/ascii/tests/__init__.py', 'astropy/io/ascii/tests/common.py', 'astropy/io/ascii/tests/data/bad.txt', 'astropy/io/ascii/tests/data/bars_at_ends.txt', 'astropy/io/ascii/tests/data/conf_py.txt', 'astropy/io/ascii/tests/data/fill_values.txt', 'astropy/io/ascii/tests/data/fixed_width_2_line.txt', 'astropy/io/ascii/tests/data/html.html', 'astropy/io/ascii/tests/data/html2.html', 'astropy/io/ascii/tests/data/simple.txt', 'astropy/io/ascii/tests/data/simple2.txt', 'astropy/io/ascii/tests/data/simple3.txt', 'astropy/io/ascii/tests/data/simple4.txt', 'astropy/io/ascii/tests/data/simple5.txt', 'astropy/io/ascii/tests/data/simple_csv.csv', 'astropy/io/ascii/tests/data/simple_csv_missing.csv', 'astropy/io/ascii/tests/data/space_delim_blank_lines.txt', 'astropy/io/ascii/ui.py')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

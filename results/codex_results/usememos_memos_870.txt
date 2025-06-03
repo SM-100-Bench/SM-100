@@ -1,0 +1,39 @@
+{
+"issues": [
+{
+"file": "api/user.go",
+"line": 75,
+"description": "UserCreate.Validate rejects valid emails because it returns an error when ValidateEmail returns true (indicating a valid address)."
+},
+{
+"file": "api/user.go",
+"line": 117,
+"description": "UserPatch.Validate uses the same inverted email validation logic, which causes valid email addresses to be rejected."
+},
+{
+"file": "api/user.go",
+"line": 95,
+"description": "UserPatch exposes PasswordHash and OpenID to JSON input as they lack json:\"-\" tags, allowing clients to override these internal fields."
+},
+{
+"file": "server/memo.go",
+"line": 221,
+"description": "Slicing memoList without checking bounds may panic when Offset >= len(memoList)."
+},
+{
+"file": "server/memo.go",
+"line": 344,
+"description": "Similar out-of-range slice operation in the 'memo/all' handler can cause a panic."
+},
+{
+"file": "server/resource.go",
+"line": 19,
+"description": "maxFileSize is defined as (32 * 8) << 20 (256 MB) while the comment states the limit should be 32 MB."
+},
+{
+"file": "server/system.go",
+"line": 71,
+"description": "Type assertions on system setting values assume the stored data is well formed; malformed data could cause a panic."
+}
+]
+}

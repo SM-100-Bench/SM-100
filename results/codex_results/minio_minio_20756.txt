@@ -1,0 +1,24 @@
+{
+"issues": [
+{
+"file": "cmd/admin-handlers.go",
+"line": 110,
+"description": "Many admin handlers read query parameters using r.Form.Get without calling ParseForm, so form values may be empty. Example: dryRun := r.Form.Get(\"dry-run\") on line 110. There is a parseForm helper defined elsewhere but not used."
+},
+{
+"file": "cmd/admin-handlers-idp-ldap.go",
+"line": 271,
+"description": "When LookupUserDN returns an error, the handler writes an error response twice (lines 272‑282), leading to multiple WriteHeader calls and malformed responses."
+},
+{
+"file": "cmd/admin-bucket-handlers.go",
+"line": 678,
+"description": "ImportBucketMetadataHandler opens files from a zip archive with file.Open() but never closes the returned reader, causing resource leaks."
+},
+{
+"file": "cmd/admin-handlers-site-replication.go",
+"line": 308,
+"description": "parseJSONBody reads the entire request body with io.ReadAll without limiting size, which can exhaust memory if a large body is sent."
+}
+]
+}

@@ -1,0 +1,19 @@
+Please review the code in the canvg_canvg_1750 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Core Library subsystem (consisting of 'src/BoundingBox.ts', 'src/Canvg.ts', 'src/Font.ts', 'src/Mouse.ts', 'src/Parser.ts', 'src/PathParser.ts', 'src/Point.ts', 'src/Property.ts', 'src/SVGFontLoader.ts', 'src/Screen.ts', 'src/ViewPort.ts', 'src/index.ts', 'src/types.ts')
+2. Document Elements subsystem (consisting of 'src/Document/AElement.ts', 'src/Document/AnimateColorElement.ts', 'src/Document/AnimateElement.ts', 'src/Document/AnimateTransformElement.ts', 'src/Document/CircleElement.ts', 'src/Document/ClipPathElement.ts', 'src/Document/DefsElement.ts', 'src/Document/DescElement.ts', 'src/Document/Document.ts', 'src/Document/Element.ts', 'src/Document/EllipseElement.ts', 'src/Document/FeColorMatrixElement.ts', 'src/Document/FeCompositeElement.ts', 'src/Document/FeDropShadowElement.ts', 'src/Document/FeGaussianBlurElement.ts', 'src/Document/FeMorphologyElement.ts', 'src/Document/FilterElement.ts', 'src/Document/FontElement.ts', 'src/Document/FontFaceElement.ts', 'src/Document/GElement.ts', 'src/Document/GlyphElement.ts', 'src/Document/GradientElement.ts', 'src/Document/ImageElement.ts', 'src/Document/LineElement.ts', 'src/Document/LinearGradientElement.ts', 'src/Document/MarkerElement.ts', 'src/Document/MaskElement.ts', 'src/Document/MissingGlyphElement.ts', 'src/Document/PathElement.ts', 'src/Document/PatternElement.ts', 'src/Document/PolygonElement.ts', 'src/Document/PolylineElement.ts', 'src/Document/RadialGradientElement.ts', 'src/Document/RectElement.ts', 'src/Document/RenderedElement.ts', 'src/Document/SVGElement.ts', 'src/Document/StopElement.ts', 'src/Document/StyleElement.ts', 'src/Document/SymbolElement.ts', 'src/Document/TRefElement.ts', 'src/Document/TSpanElement.ts', 'src/Document/TextElement.ts', 'src/Document/TextNode.ts', 'src/Document/TextPathElement.ts', 'src/Document/TitleElement.ts', 'src/Document/UnknownElement.ts', 'src/Document/UseElement.ts', 'src/Document/elements.ts', 'src/Document/index.ts')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

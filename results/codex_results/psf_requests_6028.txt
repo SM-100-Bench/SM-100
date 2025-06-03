@@ -1,0 +1,19 @@
+{
+  "issues": [
+    {
+      "file": "requests/cookies.py",
+      "line": 114,
+      "description": "Missing return statement in MockResponse.getheaders() prevents the header list from being returned."
+    },
+    {
+      "file": "requests/cookies.py",
+      "line": 397,
+      "description": "_find_no_duplicates() treats empty cookie values as missing because it checks 'if toReturn:' instead of 'if toReturn is not None'."
+    },
+    {
+      "file": "requests/sessions.py",
+      "line": 699,
+      "description": "merge_environment_settings() assumes 'proxies' is a dict; calling with None causes AttributeError when proxies.setdefault() is used."
+    }
+  ]
+}

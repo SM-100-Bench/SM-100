@@ -1,0 +1,20 @@
+{
+  "session_id": "devin-c2ede61ad68e4f5e9b90ba0eefa070ff",
+  "issues": [
+    {
+      "file": "deluge/ui/web/json_api.py",
+      "line": 572,
+      "description": "Division by zero error: If dirinfo[\"size\"] is 0 (which could happen if all files in a directory have zero size), the calculation will cause a division by zero exception."
+    },
+    {
+      "file": "deluge/ui/web/json_api.py",
+      "line": 571,
+      "description": "Progress value scaling error: The code divides torrent_file[\"progress\"] by 100.0, assuming it's a percentage (0-100), but file_progress values from the core are actually floats between 0.0-1.0, making the calculation incorrect by a factor of 100."
+    },
+    {
+      "file": "deluge/ui/web/json_api.py",
+      "line": 572,
+      "description": "Missing error handling: No try/except block to handle potential division by zero errors, which could cause the web UI to crash when processing directories with zero total size."
+    }
+  ]
+}

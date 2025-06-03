@@ -1,0 +1,15 @@
+diff --git a/packages/core/src/utils/serializeNode.tsx b/packages/core/src/utils/serializeNode.tsx
+index dc70f807c..5d7a68eb4 100644
+--- a/packages/core/src/utils/serializeNode.tsx
++++ b/packages/core/src/utils/serializeNode.tsx
+@@ -17,6 +17,10 @@ export const serializeComp = (
+   let { type, isCanvas, props } = data;
+   props = Object.keys(props).reduce((result: Record<string, any>, key) => {
+     const prop = props[key];
++    if (!prop) {
++      return result;
++    }
++
+     if (key === 'children' && typeof prop !== 'string') {
+       result[key] = Children.map(prop, (child) => {
+         if (typeof child === 'string') {

@@ -1,0 +1,18 @@
+Please review the code in the open-telemetry_opentelemetry-go_2285 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Semantic Conventions subsystem (consisting of 'semconv/v1.4.0/doc.go', 'semconv/v1.4.0/exception.go', 'semconv/v1.4.0/http.go', 'semconv/v1.4.0/resource.go', 'semconv/v1.4.0/schema.go', 'semconv/v1.4.0/trace.go')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

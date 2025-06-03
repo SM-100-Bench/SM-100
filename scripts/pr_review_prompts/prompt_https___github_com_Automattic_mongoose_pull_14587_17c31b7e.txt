@@ -1,0 +1,74 @@
+Please review the following commit for potential bugs:
+
+```
+diff --git a/lib/model.js b/lib/model.js
+index f304618a7ef..c5e54c46f67 100644
+--- a/lib/model.js
++++ b/lib/model.js
+@@ -3796,6 +3796,10 @@ Model.bulkWrite = function(ops, options, callback) {
+     function completeUnorderedValidation() {
+       validOps = validOps.sort().map(index => ops[index]);
+ 
++      if (validOps.length === 0) {
++        return cb(null, getDefaultBulkwriteResult());
++      }
++
+       this.$__collection.bulkWrite(validOps, options, (error, res) => {
+         if (error) {
+           if (validationErrors.length > 0) {
+diff --git a/test/model.test.js b/test/model.test.js
+index b9b0ff0f3f6..4cf5198eb83 100644
+--- a/test/model.test.js
++++ b/test/model.test.js
+@@ -7856,9 +7856,32 @@ describe('Model', function() {
+     const userSchema = new Schema({ name: String });
+     const User = db.model('User', userSchema);
+ 
+-    const err = await User.bulkWrite([], { ordered: false }).then(() => null, err => err);
+-    assert.ok(err);
+-    assert.equal(err.name, 'MongoInvalidArgumentError');
++    const res = await User.bulkWrite([], { ordered: false });
++    assert.deepEqual(
++      res,
++      {
++        result: {
++          ok: 1,
++          writeErrors: [],
++          writeConcernErrors: [],
++          insertedIds: [],
++          nInserted: 0,
++          nUpserted: 0,
++          nMatched: 0,
++          nModified: 0,
++          nRemoved: 0,
++          upserted: []
++        },
++        insertedCount: 0,
++        matchedCount: 0,
++        modifiedCount: 0,
++        deletedCount: 0,
++        upsertedCount: 0,
++        upsertedIds: {},
++        insertedIds: {},
++        n: 0
++      }
++    );
+   });
+ 
+   it('allows calling `create()` after `bulkWrite()` (gh-9350)', async function() {
+
+```
+
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Report all of your findings in a single JSON object with the following format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

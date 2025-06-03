@@ -1,0 +1,56 @@
+diff --git a/pkg/controller/cassandradatacenter/finalizers.go b/pkg/controller/cassandradatacenter/finalizers.go
+index 88e3e358..373af8a1 100644
+--- a/pkg/controller/cassandradatacenter/finalizers.go
++++ b/pkg/controller/cassandradatacenter/finalizers.go
+@@ -36,8 +36,9 @@ func (r *ReconcileCassandraDataCenter) getPVCs(
+ 	listOpts := []client.ListOption{
+ 		client.InNamespace(instance.Namespace),
+ 		client.MatchingLabels{
+-			"cassandra-operator.instaclustr.com/datacenter": instance.DataCenter,
+-			"cassandra-operator.instaclustr.com/cluster":    instance.Cluster,
++			"cassandra-operator.instaclustr.com/datacenter":    instance.DataCenter,
++			"cassandra-operator.instaclustr.com/datacenterUID": string(instance.UID),
++			"cassandra-operator.instaclustr.com/cluster":       instance.Cluster,
+ 		},
+ 	}
+ 
+@@ -68,8 +69,9 @@ func (r *ReconcileCassandraDataCenter) finalizePVCs(reqLogger logr.Logger, insta
+ 	listOpts := []client.ListOption{
+ 		client.InNamespace(instance.Namespace),
+ 		client.MatchingLabels{
+-			"cassandra-operator.instaclustr.com/datacenter": instance.DataCenter,
+-			"cassandra-operator.instaclustr.com/cluster":    instance.Cluster,
++			"cassandra-operator.instaclustr.com/datacenter":    instance.DataCenter,
++			"cassandra-operator.instaclustr.com/datacenterUID": string(instance.UID),
++			"cassandra-operator.instaclustr.com/cluster":       instance.Cluster,
+ 		},
+ 	}
+ 
+diff --git a/pkg/controller/cassandradatacenter/metadata.go b/pkg/controller/cassandradatacenter/metadata.go
+index b89d438f..5b4d796c 100644
+--- a/pkg/controller/cassandradatacenter/metadata.go
++++ b/pkg/controller/cassandradatacenter/metadata.go
+@@ -14,6 +14,7 @@ const (
+ 	ManagedByValue = "com.instaclustr.cassandra-operator"
+ 	RackKey        = "cassandra-operator.instaclustr.com/rack"
+ 	DataCenterKey  = "cassandra-operator.instaclustr.com/datacenter"
++	DataCenterUID  = "cassandra-operator.instaclustr.com/datacenterUID"
+ 	ClusterKey     = "cassandra-operator.instaclustr.com/cluster"
+ )
+ 
+@@ -22,6 +23,7 @@ const (
+ func DataCenterAnnotations(cdc *cop.CassandraDataCenter) map[string]string {
+ 	return map[string]string{
+ 		DataCenterKey: cdc.DataCenter,
++		DataCenterUID: string(cdc.UID),
+ 		ClusterKey:    cdc.Cluster,
+ 		ManagedByKey:  ManagedByValue,
+ 	}
+@@ -85,6 +87,7 @@ func CustomStatefulSetAnnotations(cdc *cop.CassandraDataCenter) map[string]strin
+ func DataCenterLabels(cdc *cop.CassandraDataCenter) map[string]string {
+ 	return map[string]string{
+ 		DataCenterKey: cdc.DataCenter,
++		DataCenterUID: string(cdc.UID),
+ 		ClusterKey:    cdc.Cluster,
+ 		ManagedByKey:  ManagedByValue,
+ 	}

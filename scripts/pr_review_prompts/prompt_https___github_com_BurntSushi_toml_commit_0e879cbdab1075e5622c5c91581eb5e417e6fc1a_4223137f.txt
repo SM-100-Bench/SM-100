@@ -1,0 +1,353 @@
+Please review the following commit for potential bugs:
+
+```
+diff --git a/internal/toml-test/tests/valid/inline-table/inline-table.toml b/internal/toml-test/tests/valid/inline-table/inline-table.toml
+index 257047ee..394d1f07 100644
+--- a/internal/toml-test/tests/valid/inline-table/inline-table.toml
++++ b/internal/toml-test/tests/valid/inline-table/inline-table.toml
+@@ -1,5 +1,5 @@
+-name = { first = "Tom", last = "Preston-Werner" }
+-point = { x = 1, y = 2 }
+-simple = { a = 1 }
+-str-key = { "a" = 1 }
++name        = { first = "Tom", last = "Preston-Werner" }
++point       = { x = 1, y = 2 }
++simple      = { a = 1 }
++str-key     = { "a" = 1 }
+ table-array = [{ "a" = 1 }, { "b" = 2 }]
+diff --git a/internal/toml-test/tests/valid/inline-table/key-dotted-5.json b/internal/toml-test/tests/valid/inline-table/key-dotted-5.json
+new file mode 100644
+index 00000000..af029e96
+--- /dev/null
++++ b/internal/toml-test/tests/valid/inline-table/key-dotted-5.json
+@@ -0,0 +1,66 @@
++{
++  "arr-1": [
++    {
++      "a": {
++        "b": {
++          "type": "integer",
++          "value": "1"
++        }
++      }
++    }
++  ],
++  "arr-2": [
++    {
++      "type": "string",
++      "value": "str"
++    },
++    {
++      "a": {
++        "b": {
++          "type": "integer",
++          "value": "1"
++        }
++      }
++    }
++  ],
++  "arr-3": [
++    {
++      "a": {
++        "b": {
++          "type": "integer",
++          "value": "1"
++        }
++      }
++    },
++    {
++      "a": {
++        "b": {
++          "type": "integer",
++          "value": "2"
++        }
++      }
++    }
++  ],
++  "arr-4": [
++    {
++      "type": "string",
++      "value": "str"
++    },
++    {
++      "a": {
++        "b": {
++          "type": "integer",
++          "value": "1"
++        }
++      }
++    },
++    {
++      "a": {
++        "b": {
++          "type": "integer",
++          "value": "2"
++        }
++      }
++    }
++  ]
++}
+diff --git a/internal/toml-test/tests/valid/inline-table/key-dotted-5.toml b/internal/toml-test/tests/valid/inline-table/key-dotted-5.toml
+new file mode 100644
+index 00000000..f6f5bdca
+--- /dev/null
++++ b/internal/toml-test/tests/valid/inline-table/key-dotted-5.toml
+@@ -0,0 +1,5 @@
++arr-1 = [{a.b = 1}]
++arr-2 = ["str", {a.b = 1}]
++
++arr-3 = [{a.b = 1}, {a.b = 2}]
++arr-4 = ["str", {a.b = 1}, {a.b = 2}]
+diff --git a/internal/toml-test/tests/valid/inline-table/key-dotted-6.json b/internal/toml-test/tests/valid/inline-table/key-dotted-6.json
+new file mode 100644
+index 00000000..e3df6d38
+--- /dev/null
++++ b/internal/toml-test/tests/valid/inline-table/key-dotted-6.json
+@@ -0,0 +1,28 @@
++{
++  "top": {
++    "dot": {
++      "dot": [
++        {
++          "dot": {
++            "dot": {
++              "dot": {
++                "type": "integer",
++                "value": "1"
++              }
++            }
++          }
++        },
++        {
++          "dot": {
++            "dot": {
++              "dot": {
++                "type": "integer",
++                "value": "2"
++              }
++            }
++          }
++        }
++      ]
++    }
++  }
++}
+diff --git a/internal/toml-test/tests/valid/inline-table/key-dotted-6.toml b/internal/toml-test/tests/valid/inline-table/key-dotted-6.toml
+new file mode 100644
+index 00000000..054eb8ac
+--- /dev/null
++++ b/internal/toml-test/tests/valid/inline-table/key-dotted-6.toml
+@@ -0,0 +1,4 @@
++top.dot.dot = [
++	{dot.dot.dot = 1},
++	{dot.dot.dot = 2},
++]
+diff --git a/internal/toml-test/tests/valid/inline-table/key-dotted-7.json b/internal/toml-test/tests/valid/inline-table/key-dotted-7.json
+new file mode 100644
+index 00000000..0ea615e9
+--- /dev/null
++++ b/internal/toml-test/tests/valid/inline-table/key-dotted-7.json
+@@ -0,0 +1,18 @@
++{
++  "arr": [
++    {
++      "a": {
++        "b": [
++          {
++            "c": {
++              "d": {
++                "type": "integer",
++                "value": "1"
++              }
++            }
++          }
++        ]
++      }
++    }
++  ]
++}
+diff --git a/internal/toml-test/tests/valid/inline-table/key-dotted-7.toml b/internal/toml-test/tests/valid/inline-table/key-dotted-7.toml
+new file mode 100644
+index 00000000..0556547e
+--- /dev/null
++++ b/internal/toml-test/tests/valid/inline-table/key-dotted-7.toml
+@@ -0,0 +1,3 @@
++arr = [
++	{a.b = [{c.d = 1}]}
++]
+diff --git a/meta.go b/meta.go
+index 672b95a1..e6145373 100644
+--- a/meta.go
++++ b/meta.go
+@@ -133,9 +133,16 @@ func (k Key) maybeQuoted(i int) string {
+ 	return k[i]
+ }
+ 
++// Like append(), but only increase the cap by 1.
+ func (k Key) add(piece string) Key {
++	if cap(k) > len(k) {
++		return append(k, piece)
++	}
+ 	newKey := make(Key, len(k)+1)
+ 	copy(newKey, k)
+ 	newKey[len(k)] = piece
+ 	return newKey
+ }
++
++func (k Key) parent() Key  { return k[:len(k)-1] } // all except the last piece.
++func (k Key) last() string { return k[len(k)-1] }  // last piece of this key.
+diff --git a/parse.go b/parse.go
+index 921098fb..40094a26 100644
+--- a/parse.go
++++ b/parse.go
+@@ -196,11 +196,11 @@ func (p *parser) topLevel(item item) {
+ 		p.assertEqual(itemKeyEnd, k.typ)
+ 
+ 		/// The current key is the last part.
+-		p.currentKey = key[len(key)-1]
++		p.currentKey = key.last()
+ 
+ 		/// All the other parts (if any) are the context; need to set each part
+ 		/// as implicit.
+-		context := key[:len(key)-1]
++		context := key.parent()
+ 		for i := range context {
+ 			p.addImplicitContext(append(p.context, context[i:i+1]...))
+ 		}
+@@ -209,7 +209,8 @@ func (p *parser) topLevel(item item) {
+ 		/// Set value.
+ 		vItem := p.next()
+ 		val, typ := p.value(vItem, false)
+-		p.set(p.currentKey, val, typ, vItem.pos)
++		p.setValue(p.currentKey, val)
++		p.setType(p.currentKey, typ, vItem.pos)
+ 
+ 		/// Remove the context we added (preserving any context from [tbl] lines).
+ 		p.context = outerContext
+@@ -434,7 +435,7 @@ func (p *parser) valueArray(it item) (any, tomlType) {
+ 
+ func (p *parser) valueInlineTable(it item, parentIsArray bool) (any, tomlType) {
+ 	var (
+-		hash         = make(map[string]any)
++		topHash      = make(map[string]any)
+ 		outerContext = p.context
+ 		outerKey     = p.currentKey
+ 	)
+@@ -462,11 +463,11 @@ func (p *parser) valueInlineTable(it item, parentIsArray bool) (any, tomlType) {
+ 		p.assertEqual(itemKeyEnd, k.typ)
+ 
+ 		/// The current key is the last part.
+-		p.currentKey = key[len(key)-1]
++		p.currentKey = key.last()
+ 
+ 		/// All the other parts (if any) are the context; need to set each part
+ 		/// as implicit.
+-		context := key[:len(key)-1]
++		context := key.parent()
+ 		for i := range context {
+ 			p.addImplicitContext(append(p.context, context[i:i+1]...))
+ 		}
+@@ -474,7 +475,18 @@ func (p *parser) valueInlineTable(it item, parentIsArray bool) (any, tomlType) {
+ 
+ 		/// Set the value.
+ 		val, typ := p.value(p.next(), false)
+-		p.set(p.currentKey, val, typ, it.pos)
++		p.setValue(p.currentKey, val)
++		p.setType(p.currentKey, typ, it.pos)
++
++		hash := topHash
++		for _, c := range context {
++			h, ok := hash[c]
++			if !ok {
++				h = make(map[string]any)
++				hash[c] = h
++			}
++			hash = h.(map[string]any)
++		}
+ 		hash[p.currentKey] = val
+ 
+ 		/// Restore context.
+@@ -482,7 +494,7 @@ func (p *parser) valueInlineTable(it item, parentIsArray bool) (any, tomlType) {
+ 	}
+ 	p.context = outerContext
+ 	p.currentKey = outerKey
+-	return hash, tomlHash
++	return topHash, tomlHash
+ }
+ 
+ // numHasLeadingZero checks if this number has leading zeroes, allowing for '0',
+@@ -537,15 +549,13 @@ func numPeriodsOK(s string) bool {
+ // Establishing the context also makes sure that the key isn't a duplicate, and
+ // will create implicit hashes automatically.
+ func (p *parser) addContext(key Key, array bool) {
+-	var ok bool
+-
+-	// Always start at the top level and drill down for our context.
++	/// Always start at the top level and drill down for our context.
+ 	hashContext := p.mapping
+ 	keyContext := make(Key, 0, len(key)-1)
+ 
+-	// We only need implicit hashes for key[0:-1]
+-	for _, k := range key[0 : len(key)-1] {
+-		_, ok = hashContext[k]
++	/// We only need implicit hashes for the parents.
++	for _, k := range key.parent() {
++		_, ok := hashContext[k]
+ 		keyContext = append(keyContext, k)
+ 
+ 		// No key? Make an implicit hash and move on.
+@@ -573,7 +583,7 @@ func (p *parser) addContext(key Key, array bool) {
+ 	if array {
+ 		// If this is the first element for this array, then allocate a new
+ 		// list of tables for it.
+-		k := key[len(key)-1]
++		k := key.last()
+ 		if _, ok := hashContext[k]; !ok {
+ 			hashContext[k] = make([]map[string]any, 0, 4)
+ 		}
+@@ -586,15 +596,9 @@ func (p *parser) addContext(key Key, array bool) {
+ 			p.panicf("Key '%s' was already created and cannot be used as an array.", key)
+ 		}
+ 	} else {
+-		p.setValue(key[len(key)-1], make(map[string]any))
++		p.setValue(key.last(), make(map[string]any))
+ 	}
+-	p.context = append(p.context, key[len(key)-1])
+-}
+-
+-// set calls setValue and setType.
+-func (p *parser) set(key string, val any, typ tomlType, pos Position) {
+-	p.setValue(key, val)
+-	p.setType(key, typ, pos)
++	p.context = append(p.context, key.last())
+ }
+ 
+ // setValue sets the given key to the given value in the current context.
+@@ -644,9 +648,8 @@ func (p *parser) setValue(key string, value any) {
+ 			p.removeImplicit(keyContext)
+ 			return
+ 		}
+-
+-		// Otherwise, we have a concrete key trying to override a previous
+-		// key, which is *always* wrong.
++		// Otherwise, we have a concrete key trying to override a previous key,
++		// which is *always* wrong.
+ 		p.panicf("Key '%s' has already been defined.", keyContext)
+ 	}
+ 
+
+```
+
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Report all of your findings in a single JSON object with the following format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "session_id": "devin-561b76c7a56941a59891655e4a6e3cac",
+  "issues": [
+    {
+      "file": "tests/test_user.py",
+      "line": 92,
+      "description": "Pydantic version compatibility issue: Tests use .dict() method (Pydantic v1) while implementation uses model_dump() (Pydantic v2), which will cause test failures"
+    },
+    {
+      "file": "src/backend/base/langflow/services/utils.py",
+      "line": 44,
+      "description": "Database query method mismatch: Implementation uses session.exec() but tests in test_setup_superuser.py expect session.query(), which will cause test failures"
+    },
+    {
+      "file": "src/backend/base/langflow/schema/schema.py",
+      "line": 85,
+      "description": "Potential data loss in to_lc_document() method: The text key is popped from data dictionary which modifies the original data structure"
+    },
+    {
+      "file": "src/backend/base/langflow/api/v1/endpoints.py",
+      "line": 123,
+      "description": "Commented code using session.query() was replaced with session.exec(), but the commented code was left in place, causing confusion and potential maintenance issues"
+    },
+    {
+      "file": "src/backend/base/langflow/services/database/models/user/model.py",
+      "line": 29,
+      "description": "New relationship with 'Variable' added to User model but existing code might not handle this relationship properly, potentially causing null reference errors"
+    },
+    {
+      "file": "src/backend/base/langflow/schema/schema.py",
+      "line": 99,
+      "description": "The __getattr__ method returns default_value for non-existent keys, which may mask errors by silently returning empty strings instead of raising AttributeError"
+    }
+  ]
+}

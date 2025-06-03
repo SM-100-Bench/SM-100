@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "pylint/testutils/_primer/package_to_lint.py",
+"line": 128,
+"description": "Potential crash: _pull_repository calls Git().ls_remote without error handling. Network or repository issues raise GitCommandError, terminating the primer run."
+},
+{
+"file": "pylint/checkers/refactoring/refactoring_checker.py",
+"line": 198,
+"description": "Mutable defaults: ConsiderUsingWithStack defines dictionaries (module_scope, class_scope, function_scope) as class-level defaults in a NamedTuple, causing all instances to share the same mutable objects."
+}
+]
+}

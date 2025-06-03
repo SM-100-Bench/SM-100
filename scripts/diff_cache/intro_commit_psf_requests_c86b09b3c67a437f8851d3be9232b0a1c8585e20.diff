@@ -1,0 +1,157 @@
+diff --git a/AUTHORS.rst b/AUTHORS.rst
+index cdf8c5164a..1bec7846cc 100644
+--- a/AUTHORS.rst
++++ b/AUTHORS.rst
+@@ -179,3 +179,4 @@ Patches and Suggestions
+ - Ed Morley (`@edmorley <https://github.com/edmorley>`_)
+ - Matt Liu <liumatt@gmail.com> (`@mlcrazy <https://github.com/mlcrazy>`_)
+ - Taylor Hoff <primdevs@protonmail.com> (`@PrimordialHelios <https://github.com/PrimordialHelios>`_)
++- Arthur Vigil (`@ahvigil <https://github.com/ahvigil>`_)
+diff --git a/HISTORY.rst b/HISTORY.rst
+index 89a0b0dc16..e6281c1e77 100644
+--- a/HISTORY.rst
++++ b/HISTORY.rst
+@@ -13,6 +13,9 @@ dev
+ **Bugfixes**
+ 
+ - Parsing empty ``Link`` headers with ``parse_header_links()`` no longer return one bogus entry
++- Fixed issue where loading the default certificate bundle from a zip archive
++  would raise an ``IOError``
++
+ 
+ 2.18.4 (2017-08-15)
+ +++++++++++++++++++
+diff --git a/requests/adapters.py b/requests/adapters.py
+index 00f8792b69..cdaabdbee6 100644
+--- a/requests/adapters.py
++++ b/requests/adapters.py
+@@ -28,9 +28,9 @@
+ 
+ from .models import Response
+ from .compat import urlparse, basestring
+-from .utils import (DEFAULT_CA_BUNDLE_PATH, get_encoding_from_headers,
+-                    prepend_scheme_if_needed, get_auth_from_url, urldefragauth,
+-                    select_proxy)
++from .utils import (DEFAULT_CA_BUNDLE_PATH, extract_zipped_paths,
++                    get_encoding_from_headers, prepend_scheme_if_needed,
++                    get_auth_from_url, urldefragauth, select_proxy)
+ from .structures import CaseInsensitiveDict
+ from .cookies import extract_cookies_to_jar
+ from .exceptions import (ConnectionError, ConnectTimeout, ReadTimeout, SSLError,
+@@ -219,7 +219,7 @@ def cert_verify(self, conn, url, verify, cert):
+                 cert_loc = verify
+ 
+             if not cert_loc:
+-                cert_loc = DEFAULT_CA_BUNDLE_PATH
++                cert_loc = extract_zipped_paths(DEFAULT_CA_BUNDLE_PATH)
+ 
+             if not cert_loc or not os.path.exists(cert_loc):
+                 raise IOError("Could not find a suitable TLS CA certificate bundle, "
+diff --git a/requests/utils.py b/requests/utils.py
+index 35fff043b7..1cba5a93df 100644
+--- a/requests/utils.py
++++ b/requests/utils.py
+@@ -18,7 +18,9 @@
+ import socket
+ import struct
+ import sys
++import tempfile
+ import warnings
++import zipfile
+ 
+ from .__version__ import __version__
+ from . import certs
+@@ -216,6 +218,38 @@ def guess_filename(obj):
+         return os.path.basename(name)
+ 
+ 
++def extract_zipped_paths(path):
++    """Replace nonexistant paths that look like they refer to a member of a zip
++    archive with the location of an extracted copy of the target, or else
++    just return the provided path unchanged.
++    """
++    if os.path.exists(path):
++        # this is already a valid path, no need to do anything further
++        return path
++
++    # find the first valid part of the provided path and treat that as a zip archive
++    # assume the rest of the path is the name of a member in the archive
++    archive, member = os.path.split(path)
++    while archive and not os.path.exists(archive):
++        archive, prefix = os.path.split(archive)
++        member = '/'.join([prefix, member])
++
++    if not zipfile.is_zipfile(archive):
++        return path
++
++    zip_file = zipfile.ZipFile(archive)
++    if member not in zip_file.namelist():
++        return path
++
++    # we have a valid zip archive and a valid member of that archive
++    tmp = tempfile.gettempdir()
++    extracted_path = os.path.join(tmp, *member.split('/'))
++    if not os.path.exists(extracted_path):
++        extracted_path = zip_file.extract(member, path=tmp)
++
++    return extracted_path
++
++
+ def from_key_val_list(value):
+     """Take an object and test to see if it can be represented as a
+     dictionary. Unless it can not be represented as such, return an
+diff --git a/tests/test_utils.py b/tests/test_utils.py
+index 32e4d4a53b..2292a8f0e7 100644
+--- a/tests/test_utils.py
++++ b/tests/test_utils.py
+@@ -2,14 +2,16 @@
+ 
+ import os
+ import copy
++import filecmp
+ from io import BytesIO
++import zipfile
+ 
+ import pytest
+ from requests import compat
+ from requests.cookies import RequestsCookieJar
+ from requests.structures import CaseInsensitiveDict
+ from requests.utils import (
+-    address_in_network, dotted_netmask,
++    address_in_network, dotted_netmask, extract_zipped_paths,
+     get_auth_from_url, get_encoding_from_headers,
+     get_encodings_from_content, get_environ_proxies,
+     guess_filename, guess_json_utf, is_ipv4_address,
+@@ -256,6 +258,32 @@ def test_guess_filename_valid(self, value, expected_type):
+         assert isinstance(result, expected_type)
+ 
+ 
++class TestExtractZippedPaths:
++
++    @pytest.mark.parametrize(
++        'path', (
++            '/',
++            __file__,
++            pytest.__file__,
++            '/etc/invalid/location',
++        ))
++    def test_unzipped_paths_unchanged(self, path):
++        assert path == extract_zipped_paths(path)
++
++    def test_zipped_paths_extracted(self, tmpdir):
++        zipped_py = tmpdir.join('test.zip')
++        with zipfile.ZipFile(zipped_py.strpath, 'w') as f:
++            f.write(__file__)
++
++        _, name = os.path.splitdrive(__file__)
++        zipped_path = os.path.join(zipped_py.strpath, name.lstrip(r'\/'))
++        extracted_path = extract_zipped_paths(zipped_path)
++
++        assert extracted_path != zipped_path
++        assert os.path.exists(extracted_path)
++        assert filecmp.cmp(extracted_path, __file__)
++
++
+ class TestContentEncodingDetection:
+ 
+     def test_none(self):

@@ -1,0 +1,24 @@
+{
+"issues": [
+{
+"file": "cmd/auth.go",
+"line": 80,
+"description": "Sensitive password value is written to the log when verbose logging is enabled."
+},
+{
+"file": "cmd/auth.go",
+"line": 50,
+"description": "Context value is accessed with a direct type assertion; this panics if the key is missing or the value has the wrong type."
+},
+{
+"file": "cmd/common.go",
+"line": 64,
+"description": "Errors returned from keyring.Open are passed to util.Must, causing a panic instead of a graceful error when the keyring cannot be unlocked."
+},
+{
+"file": "cmd/common.go",
+"line": 81,
+"description": "Indexes into strings.Split result without checking length; will panic if the supplied string does not contain ' unlock '."
+}
+]
+}

@@ -1,0 +1,45 @@
+{
+  "session_id": "devin-e514d36cabf94a3a96170bd8a4a45c3e",
+  "issues": [
+    {
+      "file": "langfuse/client.py",
+      "line": 276,
+      "description": "Potential infinite loop in pagination logic if API returns inconsistent meta.total_pages value or if the API fails to increment page numbers correctly"
+    },
+    {
+      "file": "langfuse/api/resources/datasets/client.py",
+      "line": 348,
+      "description": "Inconsistent API versioning: get_run endpoint uses 'api/public/datasets/' while other endpoints use 'api/public/v2/datasets/', which could lead to unexpected behavior when upgrading"
+    },
+    {
+      "file": "langfuse/api/resources/ingestion/client.py",
+      "line": 42,
+      "description": "Breaking change in error handling: API now returns 207 status code for input errors instead of 4xx, which could break existing error handling code"
+    },
+    {
+      "file": "langfuse/client.py",
+      "line": 366,
+      "description": "Method name change from 'get_runs' to 'get_run' in get_dataset_run method could break existing code that relies on the previous method name"
+    },
+    {
+      "file": "langfuse/client.py",
+      "line": 287,
+      "description": "Boundary condition error: If new_items.meta.total_pages equals page, the loop will break before processing the last page"
+    },
+    {
+      "file": "langfuse/client.py",
+      "line": 2584,
+      "description": "Type error: Assigning None to variables declared as str (parsed_trace_id and parsed_observation_id) could lead to null pointer dereferences"
+    },
+    {
+      "file": "langfuse/client.py",
+      "line": 257,
+      "description": "Return type mismatch: get_trace_id() declares return type str but returns self.trace_id which can be None"
+    },
+    {
+      "file": "langfuse/api/resources/datasets/client.py",
+      "line": 104,
+      "description": "Inconsistent error handling: Some methods raise exceptions while others return error objects, which could lead to unpredictable behavior"
+    }
+  ]
+}

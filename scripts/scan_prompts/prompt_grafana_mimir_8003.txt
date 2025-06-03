@@ -1,0 +1,18 @@
+Please review the code in the grafana_mimir_8003 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Ingester subsystem (consisting of 'pkg/ingester/active_series.go', 'pkg/ingester/activeseries/active_labels.go', 'pkg/ingester/activeseries/active_native_histogram_postings.go', 'pkg/ingester/activeseries/active_postings.go', 'pkg/ingester/activeseries/active_series.go', 'pkg/ingester/activeseries/custom_trackers_config.go', 'pkg/ingester/activeseries/matchers.go', 'pkg/ingester/client/buffering_client.go', 'pkg/ingester/client/chunkcompat.go', 'pkg/ingester/client/circuitbreaker.go', 'pkg/ingester/client/client.go', 'pkg/ingester/client/compat.go', 'pkg/ingester/client/custom.go', 'pkg/ingester/client/dep.go', 'pkg/ingester/client/ingester.pb.go', 'pkg/ingester/client/metrics.go', 'pkg/ingester/client/mimir_util.go', 'pkg/ingester/client/streaming.go', 'pkg/ingester/errors.go', 'pkg/ingester/ingester.go', 'pkg/ingester/ingester_activity.go', 'pkg/ingester/ingester_partition_ring.go', 'pkg/ingester/ingester_ring.go', 'pkg/ingester/instance_limits.go', 'pkg/ingester/label_names_and_values.go', 'pkg/ingester/limiter.go', 'pkg/ingester/list_series.go', 'pkg/ingester/metric_counter.go', 'pkg/ingester/metrics.go', 'pkg/ingester/owned_series.go', 'pkg/ingester/shipper.go', 'pkg/ingester/tenants_http.go', 'pkg/ingester/user_metrics_metadata.go', 'pkg/ingester/user_tsdb.go')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

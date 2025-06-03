@@ -1,0 +1,24 @@
+{
+"issues": [
+{
+"file": "src/controllers/api/v1/groups.js",
+"line": 50,
+"description": "Incorrect use of lodash filter. The collection argument is omitted, so filtering operates on the function object, resulting in an empty or invalid groups list."
+},
+{
+"file": "src/controllers/api/v2/departments.js",
+"line": 59,
+"description": "Bug in Department.findOneAndUpdate: extra parentheses cause the comma expression to return only the options object, so the filter and update arguments are lost."
+},
+{
+"file": "src/controllers/accounts.js",
+"line": 468,
+"description": "Path traversal risk. Username from form data is used directly in path.join when storing profile images, allowing crafted usernames with path separators to write outside the intended directory."
+},
+{
+"file": "src/controllers/api/v1/messages.js",
+"line": 174,
+"description": "Message body from user is inserted into stored messages without sanitization, enabling stored cross‑site scripting when rendered."
+}
+]
+}

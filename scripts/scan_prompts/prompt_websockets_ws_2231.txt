@@ -1,0 +1,19 @@
+Please review the code in the websockets_ws_2231 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Core WebSocket Implementation subsystem (consisting of 'lib/event-target.js', 'lib/websocket-server.js', 'lib/websocket.js')
+2. Tests subsystem (consisting of 'test/autobahn-server.js', 'test/autobahn.js', 'test/buffer-util.test.js', 'test/create-websocket-stream.test.js', 'test/duplex-pair.js', 'test/event-target.test.js', 'test/extension.test.js', 'test/fixtures/ca-certificate.pem', 'test/fixtures/ca-key.pem', 'test/fixtures/certificate.pem', 'test/fixtures/client-certificate.pem', 'test/fixtures/client-key.pem', 'test/fixtures/key.pem', 'test/limiter.test.js', 'test/permessage-deflate.test.js', 'test/receiver.test.js', 'test/sender.test.js', 'test/subprotocol.test.js', 'test/validation.test.js', 'test/websocket-server.test.js', 'test/websocket.integration.js', 'test/websocket.test.js')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

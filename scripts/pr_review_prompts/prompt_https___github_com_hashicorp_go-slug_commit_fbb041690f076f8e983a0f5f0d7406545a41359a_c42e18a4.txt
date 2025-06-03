@@ -1,0 +1,765 @@
+Please review the following commit for potential bugs:
+
+```
+diff --git a/go.mod b/go.mod
+index ffc7671..6c7ce19 100644
+--- a/go.mod
++++ b/go.mod
+@@ -13,5 +13,6 @@ require (
+ require (
+ 	github.com/go-test/deep v1.0.3 // indirect
+ 	golang.org/x/net v0.5.0 // indirect
++	golang.org/x/sys v0.13.0 // indirect
+ 	golang.org/x/text v0.6.0 // indirect
+ )
+diff --git a/go.sum b/go.sum
+index e61f2e4..ef4b797 100644
+--- a/go.sum
++++ b/go.sum
+@@ -17,5 +17,7 @@ golang.org/x/mod v0.10.0 h1:lFO9qtOdlre5W1jxS3r/4szv2/6iXxScdzjoBMXNhYk=
+ golang.org/x/mod v0.10.0/go.mod h1:iBbtSCu2XBx23ZKBPSOrRkjjQPZFPuis4dIYUhu/chs=
+ golang.org/x/net v0.5.0 h1:GyT4nK/YDHSqa1c4753ouYCDajOYKTja9Xb/OHtgvSw=
+ golang.org/x/net v0.5.0/go.mod h1:DivGGAXEgPSlEBzxGzZI+ZLohi+xUj054jfeKui00ws=
++golang.org/x/sys v0.13.0 h1:Af8nKPmuFypiUBjVoU9V20FiaFXOcuZI21p0ycVYYGE=
++golang.org/x/sys v0.13.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+ golang.org/x/text v0.6.0 h1:3XmdazWV+ubf7QgHSTWeykHOci5oeekaGJBLkrkaw4k=
+ golang.org/x/text v0.6.0/go.mod h1:mrYo+phRRbMaCq/xk9113O4dZlRixOauAjOtrjsXDZ8=
+diff --git a/internal/unpackinfo/lchtimes.go b/internal/unpackinfo/lchtimes.go
+new file mode 100644
+index 0000000..89bac64
+--- /dev/null
++++ b/internal/unpackinfo/lchtimes.go
+@@ -0,0 +1,17 @@
++//go:build darwin || linux
++// +build darwin linux
++
++package unpackinfo
++
++import (
++	"golang.org/x/sys/unix"
++)
++
++// Lchtimes modifies the access and modified timestamps on a target path
++// This capability is only available on Linux and Darwin as of now.
++func (i UnpackInfo) Lchtimes() error {
++	return unix.Lutimes(i.Path, []unix.Timeval{
++		{Sec: i.OriginalAccessTime.Unix()},
++		{Sec: i.OriginalModTime.Unix()}},
++	)
++}
+diff --git a/internal/unpackinfo/lchtimes_others.go b/internal/unpackinfo/lchtimes_others.go
+new file mode 100644
+index 0000000..0b5c3cb
+--- /dev/null
++++ b/internal/unpackinfo/lchtimes_others.go
+@@ -0,0 +1,14 @@
++//go:build !(linux || darwin)
++// +build !linux,!darwin
++
++package unpackinfo
++
++import (
++	"errors"
++)
++
++// Lchtimes modifies the access and modified timestamps on a target path
++// This capability is only available on Linux and Darwin as of now.
++func (i UnpackInfo) Lchtimes() error {
++	return errors.New("Lchtimes is not supported on this platform")
++}
+diff --git a/internal/unpackinfo/unpackinfo.go b/internal/unpackinfo/unpackinfo.go
+new file mode 100644
+index 0000000..128e193
+--- /dev/null
++++ b/internal/unpackinfo/unpackinfo.go
+@@ -0,0 +1,165 @@
++package unpackinfo
++
++import (
++	"archive/tar"
++	"errors"
++	"fmt"
++	"io/fs"
++	"os"
++	"path/filepath"
++	"runtime"
++	"strings"
++	"time"
++)
++
++// UnpackInfo stores information about the file (or directory, or symlink) being
++// unpacked. UnpackInfo ensures certain malicious tar files are not unpacked.
++// The information can be used later to restore the original permissions
++// and timestamps based on the type of entry the info represents.
++type UnpackInfo struct {
++	Path               string
++	OriginalAccessTime time.Time
++	OriginalModTime    time.Time
++	OriginalMode       fs.FileMode
++	Typeflag           byte
++}
++
++// NewUnpackInfo returns an UnpackInfo based on a destination root and a tar header.
++// It will return an error if the header represents an illegal symlink extraction
++// or if the entry type is not supported by go-slug.
++func NewUnpackInfo(dst string, header *tar.Header) (UnpackInfo, error) {
++	// Get rid of absolute paths.
++	path := header.Name
++
++	if path[0] == '/' {
++		path = path[1:]
++	}
++	path = filepath.Join(dst, path)
++
++	// Check for paths outside our directory, they are forbidden
++	target := filepath.Clean(path)
++	if !strings.HasPrefix(target, dst) {
++		return UnpackInfo{}, errors.New("invalid filename, traversal with \"..\" outside of current directory")
++	}
++
++	// Ensure the destination is not through any symlinks. This prevents
++	// any files from being deployed through symlinks defined in the slug.
++	// There are malicious cases where this could be used to escape the
++	// slug's boundaries (zipslip), and any legitimate use is questionable
++	// and likely indicates a hand-crafted tar file, which we are not in
++	// the business of supporting here.
++	//
++	// The strategy is to Lstat each path  component from dst up to the
++	// immediate parent directory of the file name in the tarball, checking
++	// the mode on each to ensure we wouldn't be passing through any
++	// symlinks.
++	currentPath := dst // Start at the root of the unpacked tarball.
++	components := strings.Split(header.Name, "/")
++
++	for i := 0; i < len(components)-1; i++ {
++		currentPath = filepath.Join(currentPath, components[i])
++		fi, err := os.Lstat(currentPath)
++		if os.IsNotExist(err) {
++			// Parent directory structure is incomplete. Technically this
++			// means from here upward cannot be a symlink, so we cancel the
++			// remaining path tests.
++			break
++		}
++		if err != nil {
++			return UnpackInfo{}, fmt.Errorf("failed to evaluate path %q: %w", header.Name, err)
++		}
++		if fi.Mode()&fs.ModeSymlink != 0 {
++			return UnpackInfo{}, fmt.Errorf("cannot extract %q through symlink", header.Name)
++		}
++	}
++
++	result := UnpackInfo{
++		Path:               path,
++		OriginalAccessTime: header.AccessTime,
++		OriginalModTime:    header.ModTime,
++		OriginalMode:       header.FileInfo().Mode(),
++		Typeflag:           header.Typeflag,
++	}
++
++	if !result.IsDirectory() && !result.IsSymlink() && !result.IsRegular() && !result.IsTypeX() {
++		return UnpackInfo{}, fmt.Errorf("failed creating %q, unsupported file type %c", path, result.Typeflag)
++	}
++
++	return result, nil
++}
++
++// IsSymlink describes whether the file being unpacked is a symlink
++func (i UnpackInfo) IsSymlink() bool {
++	return i.Typeflag == tar.TypeSymlink
++}
++
++// IsDirectory describes whether the file being unpacked is a directory
++func (i UnpackInfo) IsDirectory() bool {
++	return i.Typeflag == tar.TypeDir
++}
++
++// IsTypeX describes whether the file being unpacked is a special TypeXHeader that can
++// be ignored by go-slug
++func (i UnpackInfo) IsTypeX() bool {
++	return i.Typeflag == tar.TypeXGlobalHeader || i.Typeflag == tar.TypeXHeader
++}
++
++// IsRegular describes whether the file being unpacked is a regular file
++func (i UnpackInfo) IsRegular() bool {
++	return i.Typeflag == tar.TypeReg || i.Typeflag == tar.TypeRegA
++}
++
++// CanMaintainSymlinkTimestamps determines whether is is possible to change
++// timestamps on symlinks for the the current platform. For regular files
++// and directories, attempts are made to restore permissions and timestamps
++// after extraction. But for symbolic links, go's cross-platform
++// packages (Chmod and Chtimes) are not capable of changing symlink info
++// because those methods follow the symlinks. However, a platform-dependent option
++// is provided for linux and darwin (see Lchtimes)
++func CanMaintainSymlinkTimestamps() bool {
++	return runtime.GOOS == "linux" || runtime.GOOS == "darwin"
++}
++
++// RestoreInfo changes the file mode and timestamps for the given UnpackInfo data
++func (i UnpackInfo) RestoreInfo() error {
++	switch {
++	case i.IsDirectory():
++		return i.restoreDirectory()
++	case i.IsSymlink():
++		if CanMaintainSymlinkTimestamps() {
++			return i.restoreSymlink()
++		}
++		return nil
++	default: // Normal file
++		return i.restoreNormal()
++	}
++}
++
++func (i UnpackInfo) restoreDirectory() error {
++	if err := os.Chtimes(i.Path, i.OriginalAccessTime, i.OriginalModTime); err != nil && !os.IsNotExist(err) {
++		return fmt.Errorf("failed setting times on directory %q: %w", i.Path, err)
++	}
++
++	if err := os.Chmod(i.Path, i.OriginalMode); err != nil && !os.IsNotExist(err) {
++		return fmt.Errorf("failed setting permissions on directory %q: %w", i.Path, err)
++	}
++	return nil
++}
++
++func (i UnpackInfo) restoreSymlink() error {
++	if err := i.Lchtimes(); err != nil {
++		return fmt.Errorf("failed setting times on symlink %q: %w", i.Path, err)
++	}
++	return nil
++}
++
++func (i UnpackInfo) restoreNormal() error {
++	if err := os.Chmod(i.Path, i.OriginalMode); err != nil {
++		return fmt.Errorf("failed setting permissions on %q: %w", i.Path, err)
++	}
++
++	if err := os.Chtimes(i.Path, i.OriginalAccessTime, i.OriginalModTime); err != nil {
++		return fmt.Errorf("failed setting times on %q: %w", i.Path, err)
++	}
++	return nil
++}
+diff --git a/internal/unpackinfo/unpackinfo_test.go b/internal/unpackinfo/unpackinfo_test.go
+new file mode 100644
+index 0000000..e7851cc
+--- /dev/null
++++ b/internal/unpackinfo/unpackinfo_test.go
+@@ -0,0 +1,147 @@
++package unpackinfo
++
++import (
++	"archive/tar"
++	"os"
++	"path"
++	"strings"
++	"testing"
++	"time"
++)
++
++func TestNewUnpackInfo(t *testing.T) {
++	t.Parallel()
++
++	t.Run("disallow parent traversal", func(t *testing.T) {
++		_, err := NewUnpackInfo("test", &tar.Header{
++			Name:     "../off-limits",
++			Typeflag: tar.TypeSymlink,
++		})
++
++		if err == nil {
++			t.Fatal("expected error, got nil")
++		}
++
++		expected := "invalid filename, traversal with \"..\""
++		if !strings.Contains(err.Error(), expected) {
++			t.Fatalf("expected error to contain %q, got %q", expected, err)
++		}
++	})
++
++	t.Run("disallow zipslip", func(t *testing.T) {
++		dst := t.TempDir()
++
++		err := os.Symlink("..", path.Join(dst, "subdir"))
++		if err != nil {
++			t.Fatalf("failed to create temp symlink: %s", err)
++		}
++
++		_, err = NewUnpackInfo(dst, &tar.Header{
++			Name:     "subdir/escapes",
++			Typeflag: tar.TypeReg,
++		})
++
++		if err == nil {
++			t.Fatal("expected error, got nil")
++		}
++
++		expected := "through symlink"
++		if !strings.Contains(err.Error(), expected) {
++			t.Fatalf("expected error to contain %q, got %q", expected, err)
++		}
++	})
++
++	t.Run("disallow strange types", func(t *testing.T) {
++		_, err := NewUnpackInfo("test", &tar.Header{
++			Name:     "subdir/escapes",
++			Typeflag: tar.TypeFifo,
++		})
++
++		if err == nil {
++			t.Fatal("expected error, got nil")
++		}
++
++		expected := "unsupported file type"
++		if !strings.Contains(err.Error(), expected) {
++			t.Fatalf("expected error to contain %q, got %q", expected, err)
++		}
++	})
++}
++
++func TestUnpackInfo_RestoreInfo(t *testing.T) {
++	root := t.TempDir()
++
++	err := os.Mkdir(path.Join(root, "subdir"), 0700)
++	if err != nil {
++		t.Fatalf("failed to create temp subdir: %s", err)
++	}
++
++	err = os.WriteFile(path.Join(root, "bar.txt"), []byte("Hello, World!"), 0700)
++	if err != nil {
++		t.Fatalf("failed to create temp file: %s", err)
++	}
++
++	err = os.Symlink(path.Join(root, "bar.txt"), path.Join(root, "foo.txt"))
++	if err != nil {
++		t.Fatalf("failed to create temp symlink: %s", err)
++	}
++
++	exampleAccessTime := time.Date(2023, time.April, 1, 11, 22, 33, 0, time.UTC)
++	exampleModTime := time.Date(2023, time.May, 29, 11, 22, 33, 0, time.UTC)
++
++	dirinfo, err := NewUnpackInfo(root, &tar.Header{
++		Name:       "subdir",
++		Typeflag:   tar.TypeDir,
++		AccessTime: exampleAccessTime,
++		ModTime:    exampleModTime,
++		Mode:       0666,
++	})
++	if err != nil {
++		t.Fatalf("failed to define dirinfo: %s", err)
++	}
++
++	finfo, err := NewUnpackInfo(root, &tar.Header{
++		Name:       "bar.txt",
++		Typeflag:   tar.TypeReg,
++		AccessTime: exampleAccessTime,
++		ModTime:    exampleModTime,
++		Mode:       0666,
++	})
++	if err != nil {
++		t.Fatalf("failed to define finfo: %s", err)
++	}
++
++	linfo, err := NewUnpackInfo(root, &tar.Header{
++		Name:       "foo.txt",
++		Typeflag:   tar.TypeSymlink,
++		AccessTime: exampleAccessTime,
++		ModTime:    exampleModTime,
++		Mode:       0666,
++	})
++	if err != nil {
++		t.Fatalf("failed to define linfo: %s", err)
++	}
++
++	infoCollection := []UnpackInfo{dirinfo, finfo, linfo}
++
++	for _, info := range infoCollection {
++		err = info.RestoreInfo()
++		if err != nil {
++			t.Errorf("failed to restore %q: %s", info.Path, err)
++		}
++		stat, err := os.Lstat(info.Path)
++		if err != nil {
++			t.Errorf("failed to lstat %q: %s", info.Path, err)
++		}
++
++		if !info.IsSymlink() {
++			if stat.Mode() != info.OriginalMode {
++				t.Errorf("%q mode %q did not match expected header mode %q", info.Path, stat.Mode(), info.OriginalMode)
++			}
++		} else if CanMaintainSymlinkTimestamps() {
++			if !stat.ModTime().Truncate(time.Second).Equal(exampleModTime) {
++				t.Errorf("%q modtime %q did not match example", info.Path, stat.ModTime())
++			}
++		}
++	}
++}
+diff --git a/slug.go b/slug.go
+index 53c4579..323ac02 100644
+--- a/slug.go
++++ b/slug.go
+@@ -10,6 +10,7 @@ import (
+ 	"strings"
+ 
+ 	"github.com/hashicorp/go-slug/internal/ignorefiles"
++	"github.com/hashicorp/go-slug/internal/unpackinfo"
+ )
+ 
+ // Meta provides detailed information about a slug.
+@@ -354,8 +355,9 @@ func (p *Packer) resolveExternalLink(root string, path string) (*externalSymlink
+ }
+ 
+ // Unpack is used to read and extract the contents of a slug to the dst
+-// directory. Symlinks within the slug are supported, provided their targets
+-// are relative and point to paths within the destination directory.
++// directory, which must be an absolute path. Symlinks within the slug
++// are supported, provided their targets are relative and point to paths
++// within the destination directory.
+ func Unpack(r io.Reader, dst string) error {
+ 	p := &Packer{}
+ 	return p.Unpack(r, dst)
+@@ -363,10 +365,18 @@ func Unpack(r io.Reader, dst string) error {
+ 
+ // Unpack unpacks the archive data in r into directory dst.
+ func (p *Packer) Unpack(r io.Reader, dst string) error {
++	// Track directory times and permissions so they can be restored after all files
++	// are extracted. This metadata modification is delayed because extracting files
++	// into a new directory would necessarily change its timestamps. By way of
++	// comparison, see
++	// https://www.gnu.org/software/tar/manual/html_node/Directory-Modification-Times-and-Permissions.html
++	// for more details about how tar attempts to preserve file metadata.
++	directoriesExtracted := []unpackinfo.UnpackInfo{}
++
+ 	// Decompress as we read.
+ 	uncompressed, err := gzip.NewReader(r)
+ 	if err != nil {
+-		return fmt.Errorf("failed to uncompress slug: %w", err)
++		return fmt.Errorf("failed to decompress slug: %w", err)
+ 	}
+ 
+ 	// Untar as we read.
+@@ -382,71 +392,29 @@ func (p *Packer) Unpack(r io.Reader, dst string) error {
+ 			return fmt.Errorf("failed to untar slug: %w", err)
+ 		}
+ 
+-		path := header.Name
+-
+ 		// If the entry has no name, ignore it.
+-		if path == "" {
++		if header.Name == "" {
+ 			continue
+ 		}
+ 
+-		// Get rid of absolute paths.
+-		if path[0] == '/' {
+-			path = path[1:]
+-		}
+-		path = filepath.Join(dst, path)
+-
+-		// Check for paths outside our directory, they are forbidden
+-		target := filepath.Clean(path)
+-		if !strings.HasPrefix(target, dst) {
+-			return &IllegalSlugError{
+-				Err: fmt.Errorf("invalid filename, traversal with \"..\" outside of current directory"),
+-			}
+-		}
+-
+-		// Ensure the destination is not through any symlinks. This prevents
+-		// any files from being deployed through symlinks defined in the slug.
+-		// There are malicious cases where this could be used to escape the
+-		// slug's boundaries (zipslip), and any legitimate use is questionable
+-		// and likely indicates a hand-crafted tar file, which we are not in
+-		// the business of supporting here.
+-		//
+-		// The strategy is to Lstat each path  component from dst up to the
+-		// immediate parent directory of the file name in the tarball, checking
+-		// the mode on each to ensure we wouldn't be passing through any
+-		// symlinks.
+-		currentPath := dst // Start at the root of the unpacked tarball.
+-		components := strings.Split(header.Name, "/")
+-
+-		for i := 0; i < len(components)-1; i++ {
+-			currentPath = filepath.Join(currentPath, components[i])
+-			fi, err := os.Lstat(currentPath)
+-			if os.IsNotExist(err) {
+-				// Parent directory structure is incomplete. Technically this
+-				// means from here upward cannot be a symlink, so we cancel the
+-				// remaining path tests.
+-				break
+-			}
+-			if err != nil {
+-				return fmt.Errorf("failed to evaluate path %q: %w", header.Name, err)
+-			}
+-			if fi.Mode()&os.ModeSymlink != 0 {
+-				return &IllegalSlugError{
+-					Err: fmt.Errorf("cannot extract %q through symlink", header.Name),
+-				}
+-			}
++		info, err := unpackinfo.NewUnpackInfo(dst, header)
++		if err != nil {
++			return &IllegalSlugError{Err: err}
+ 		}
+ 
+ 		// Make the directories to the path.
+-		dir := filepath.Dir(path)
++		dir := filepath.Dir(info.Path)
++
++		// Timestamps and permissions will be restored after all files are extracted.
+ 		if err := os.MkdirAll(dir, 0755); err != nil {
+ 			return fmt.Errorf("failed to create directory %q: %w", dir, err)
+ 		}
+ 
+-		// Handle symlinks.
+-		if header.Typeflag == tar.TypeSymlink {
++		// Handle symlinks, directories, non-regular files
++		if info.IsSymlink() {
+ 			if ok, err := p.validSymlink(dst, header.Name, header.Linkname); ok {
+ 				// Create the symlink.
+-				if err = os.Symlink(header.Linkname, path); err != nil {
++				if err = os.Symlink(header.Linkname, info.Path); err != nil {
+ 					return fmt.Errorf("failed creating symlink (%q -> %q): %w",
+ 						header.Name, header.Linkname, err)
+ 				}
+@@ -454,47 +422,62 @@ func (p *Packer) Unpack(r io.Reader, dst string) error {
+ 				return err
+ 			}
+ 
++			if err := info.RestoreInfo(); err != nil {
++				return err
++			}
++
++			continue
++		}
++
++		if info.IsDirectory() {
++			// Restore directory info after all files are extracted because
++			// the extraction process changes directory's timestamps.
++			directoriesExtracted = append(directoriesExtracted, info)
+ 			continue
+ 		}
+ 
+-		// Only unpack regular files from this point on.
+-		if header.Typeflag == tar.TypeDir || header.Typeflag == tar.TypeXGlobalHeader || header.Typeflag == tar.TypeXHeader {
++		// The remaining logic only applies to regular files
++		if !info.IsRegular() {
+ 			continue
+-		} else if header.Typeflag != tar.TypeReg && header.Typeflag != tar.TypeRegA {
+-			return fmt.Errorf("failed creating %q: unsupported type %c", path,
+-				header.Typeflag)
+ 		}
+ 
+ 		// Open a handle to the destination.
+-		fh, err := os.Create(path)
++		fh, err := os.Create(info.Path)
+ 		if err != nil {
+ 			// This mimics tar's behavior wrt the tar file containing duplicate files
+ 			// and it allowing later ones to clobber earlier ones even if the file
+-			// has perms that don't allow overwriting.
++			// has perms that don't allow overwriting. The file permissions will be restored
++			// once the file contents are copied.
+ 			if os.IsPermission(err) {
+-				os.Chmod(path, 0600)
+-				fh, err = os.Create(path)
++				os.Chmod(info.Path, 0600)
++				fh, err = os.Create(info.Path)
+ 			}
+ 
+ 			if err != nil {
+-				return fmt.Errorf("failed creating file %q: %w", path, err)
++				return fmt.Errorf("failed creating file %q: %w", info.Path, err)
+ 			}
+ 		}
+ 
+-		// Copy the contents.
++		// Copy the contents of the file.
+ 		_, err = io.Copy(fh, untar)
+ 		fh.Close()
+ 		if err != nil {
+-			return fmt.Errorf("failed to copy slug file %q: %w", path, err)
++			return fmt.Errorf("failed to copy slug file %q: %w", info.Path, err)
+ 		}
+ 
+-		// Restore the file mode. We have to do this after writing the file,
+-		// since it is possible we have a read-only mode.
+-		mode := header.FileInfo().Mode()
+-		if err := os.Chmod(path, mode); err != nil {
+-			return fmt.Errorf("failed setting permissions on %q: %w", path, err)
++		if err := info.RestoreInfo(); err != nil {
++			return err
++		}
++	}
++
++	// Now that extraction is complete, restore mode and timestamps previously saved
++	// about directories.
++	for _, dir := range directoriesExtracted {
++		if err := dir.RestoreInfo(); err != nil {
++			return err
+ 		}
+ 	}
++
+ 	return nil
+ }
+ 
+diff --git a/slug_test.go b/slug_test.go
+index 5a1eb9d..6128990 100644
+--- a/slug_test.go
++++ b/slug_test.go
+@@ -7,12 +7,16 @@ import (
+ 	"errors"
+ 	"fmt"
+ 	"io"
++	"io/fs"
+ 	"io/ioutil"
+ 	"os"
+ 	"path/filepath"
+ 	"reflect"
+ 	"strings"
+ 	"testing"
++	"time"
++
++	"github.com/hashicorp/go-slug/internal/unpackinfo"
+ )
+ 
+ func TestPack(t *testing.T) {
+@@ -539,13 +543,28 @@ func TestUnpack(t *testing.T) {
+ 
+ 	// Verify all the files
+ 	verifyFile(t, filepath.Join(dst, "bar.txt"), 0, "bar\n")
+-	verifyFile(t, filepath.Join(dst, "sub", "bar.txt"), os.ModeSymlink, "../bar.txt")
+-	verifyFile(t, filepath.Join(dst, "sub", "zip.txt"), 0, "zip\n")
++	verifyFile(t, filepath.Join(dst, "sub/bar.txt"), os.ModeSymlink, "../bar.txt")
++	verifyFile(t, filepath.Join(dst, "sub/zip.txt"), 0, "zip\n")
++
++	// Verify timestamps for files
++	verifyTimestamps(t, "testdata/archive-dir-no-external/bar.txt", filepath.Join(dst, "bar.txt"))
++	verifyTimestamps(t, "testdata/archive-dir-no-external/sub/zip.txt", filepath.Join(dst, "sub/zip.txt"))
++	verifyTimestamps(t, "testdata/archive-dir-no-external/sub2/zip.txt", filepath.Join(dst, "sub2/zip.txt"))
++
++	// Verify timestamps for symlinks
++	if unpackinfo.CanMaintainSymlinkTimestamps() {
++		verifyTimestamps(t, "testdata/archive-dir-no-external/sub/bar.txt", filepath.Join(dst, "sub/bar.txt"))
++	}
++
++	// Verify timestamps for directories
++	verifyTimestamps(t, "testdata/archive-dir-no-external/foo.terraform", filepath.Join(dst, "foo.terraform"))
++	verifyTimestamps(t, "testdata/archive-dir-no-external/sub", filepath.Join(dst, "sub"))
++	verifyTimestamps(t, "testdata/archive-dir-no-external/sub2", filepath.Join(dst, "sub2"))
+ 
+ 	// Check that we can set permissions properly
+ 	verifyPerms(t, filepath.Join(dst, "bar.txt"), 0644)
+-	verifyPerms(t, filepath.Join(dst, "sub", "zip.txt"), 0644)
+-	verifyPerms(t, filepath.Join(dst, "sub", "bar.txt"), 0644)
++	verifyPerms(t, filepath.Join(dst, "sub/zip.txt"), 0644)
++	verifyPerms(t, filepath.Join(dst, "sub/bar.txt"), 0644)
+ 	verifyPerms(t, filepath.Join(dst, "exe"), 0755)
+ }
+ 
+@@ -621,7 +640,7 @@ func TestUnpackPaxHeaders(t *testing.T) {
+ 		{
+ 			desc: "extended pax header",
+ 			headers: []*tar.Header{
+-				&tar.Header{
++				{
+ 					Name:     "h",
+ 					Typeflag: tar.TypeXHeader,
+ 				},
+@@ -630,7 +649,7 @@ func TestUnpackPaxHeaders(t *testing.T) {
+ 		{
+ 			desc: "global pax header",
+ 			headers: []*tar.Header{
+-				&tar.Header{
++				{
+ 					Name:     "h",
+ 					Typeflag: tar.TypeXGlobalHeader,
+ 				},
+@@ -1078,7 +1097,6 @@ func TestUnpackEmptyName(t *testing.T) {
+ 	}
+ 	defer os.RemoveAll(dir)
+ 
+-	// This crashes unless the bug is fixed
+ 	err = Unpack(&buf, dir)
+ 	if err != nil {
+ 		t.Fatalf("err:%v", err)
+@@ -1227,28 +1245,47 @@ func assertArchiveFixture(t *testing.T, slug *bytes.Buffer, got *Meta) {
+ 	}
+ }
+ 
+-func verifyFile(t *testing.T, path string, mode os.FileMode, expect string) {
+-	info, err := os.Lstat(path)
++func verifyTimestamps(t *testing.T, src, dst string) {
++	sourceInfo, err := os.Lstat(src)
+ 	if err != nil {
+-		t.Fatal(err)
++		t.Fatalf("source file %q not found", src)
++	}
++
++	dstInfo, err := os.Lstat(dst)
++	if err != nil {
++		t.Fatalf("dst file %q not found", dst)
++	}
++
++	sourceModTime := sourceInfo.ModTime().Truncate(time.Second)
++	destModTime := dstInfo.ModTime().Truncate(time.Second)
++
++	if !sourceModTime.Equal(destModTime) {
++		t.Fatalf("source %q and dst %q do not have the same mtime (%q and %q, respectively)", src, dst, sourceModTime, destModTime)
++	}
++}
++
++func verifyFile(t *testing.T, dst string, expectedMode fs.FileMode, expectedTarget string) {
++	info, err := os.Lstat(dst)
++	if err != nil {
++		t.Fatalf("dst file %q not found", dst)
+ 	}
+ 
+ 	if info.Mode()&os.ModeSymlink != 0 {
+-		if mode == os.ModeSymlink {
+-			if target, _ := os.Readlink(path); target != expect {
+-				t.Fatalf("expect link target %q, got %q", expect, target)
++		if expectedMode == os.ModeSymlink {
++			if target, _ := os.Readlink(dst); target != expectedTarget {
++				t.Fatalf("expect link target %q, got %q", expectedTarget, target)
+ 			}
+ 			return
+ 		} else {
+-			t.Fatalf("found symlink, expected %v", mode)
++			t.Fatalf("found symlink, expected %v", expectedMode)
+ 		}
+ 	}
+ 
+-	if !((mode == 0 && info.Mode().IsRegular()) || info.Mode()&mode == 0) {
+-		t.Fatalf("wrong file mode for %q", path)
++	if !((expectedMode == 0 && info.Mode().IsRegular()) || info.Mode()&expectedMode == 0) {
++		t.Fatalf("wrong file mode for %q", dst)
+ 	}
+ 
+-	fh, err := os.Open(path)
++	fh, err := os.Open(dst)
+ 	if err != nil {
+ 		t.Fatal(err)
+ 	}
+@@ -1258,9 +1295,9 @@ func verifyFile(t *testing.T, path string, mode os.FileMode, expect string) {
+ 	if _, err := fh.Read(raw); err != nil {
+ 		t.Fatal(err)
+ 	}
+-	if result := string(raw); result != expect {
++	if result := string(raw); result != expectedTarget {
+ 		t.Fatalf("bad content in file %q\n\nexpect:\n%#v\n\nactual:\n%#v",
+-			path, expect, result)
++			dst, expectedTarget, result)
+ 	}
+ }
+ 
+
+```
+
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Report all of your findings in a single JSON object with the following format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

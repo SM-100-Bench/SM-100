@@ -1,0 +1,75 @@
+{
+  "session_id": "devin-72b2f022fdb840dea8377bd514d13884",
+  "issues": [
+    {
+      "file": "lollms/functions/calculator.py",
+      "line": 10,
+      "description": "Security vulnerability: Using eval() for expression evaluation without proper input validation creates a potential code injection risk, even with the attempt to restrict the namespace"
+    },
+    {
+      "file": "lollms/functions/calculator.py",
+      "line": 13,
+      "description": "Type mismatch: Function is annotated to return float but returns str on exception"
+    },
+    {
+      "file": "lollms/media.py",
+      "line": 190,
+      "description": "Type mismatch: calculator_function is annotated to return float but returns str on exception"
+    },
+    {
+      "file": "lollms/media.py",
+      "line": 326,
+      "description": "Potential null pointer dereference: Comparing len(self.buffer) with self.buffer.maxlen without checking if self.buffer is None"
+    },
+    {
+      "file": "lollms/media.py",
+      "line": 363,
+      "description": "Potential null pointer dereference: Accessing self.lc.stt.transcribe without checking if self.lc.stt is None"
+    },
+    {
+      "file": "lollms/media.py",
+      "line": 381,
+      "description": "Potential null pointer dereference: Accessing self.lc.busy without checking if self.lc is None"
+    },
+    {
+      "file": "lollms/media.py",
+      "line": 389,
+      "description": "Potential null pointer dereference: Accessing self.lc.tts.tts_audio without checking if self.lc.tts is None"
+    },
+    {
+      "file": "lollms/services/open_ai_tts/lollms_openai_tts.py",
+      "line": 76,
+      "description": "Method redeclaration: tts_file is defined twice with different signatures, causing the first implementation to be overridden"
+    },
+    {
+      "file": "lollms/services/open_ai_tts/lollms_openai_tts.py",
+      "line": 110,
+      "description": "Type mismatch: Parameter file_name_or_path is annotated as Path|str but can be None"
+    },
+    {
+      "file": "lollms/services/xtts/lollms_xtts.py",
+      "line": 300,
+      "description": "Potential null pointer dereference: Accessing self.app.personality.personality_package_path without checking if self.app.personality is None"
+    },
+    {
+      "file": "lollms/services/xtts/lollms_xtts.py",
+      "line": 319,
+      "description": "Type mismatch: Parameter file_name_or_path is annotated as Path|str but can be None"
+    },
+    {
+      "file": "lollms/personality.py",
+      "line": 3444,
+      "description": "Potential race condition: The hide_function_call parameter is added but there's no synchronization mechanism when multiple function calls are processed"
+    },
+    {
+      "file": "lollms/functions/take_a_photo.py",
+      "line": 117,
+      "description": "Resource management issue: If use_a_single_photo_at_a_time is True, previous images are discarded without proper cleanup, potentially leading to orphaned files"
+    },
+    {
+      "file": "lollms/functions/take_screen_shot.py",
+      "line": 71,
+      "description": "Resource management issue: If use_a_single_photo_at_a_time is True, previous images are discarded without proper cleanup, potentially leading to orphaned files"
+    }
+  ]
+}

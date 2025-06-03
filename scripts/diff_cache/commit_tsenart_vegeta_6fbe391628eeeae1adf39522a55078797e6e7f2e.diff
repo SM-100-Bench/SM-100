@@ -1,0 +1,42 @@
+diff --git a/lib/attack.go b/lib/attack.go
+index c22325cc..80df5e1a 100644
+--- a/lib/attack.go
++++ b/lib/attack.go
+@@ -334,13 +334,14 @@ func DNSCaching(ttl time.Duration) func(*Attacker) {
+ 				for i := 0; i < len(ips) && j < 2; i++ {
+ 					ip := net.ParseIP(ips[i])
+ 					switch {
+-					case len(ip.To4()) == net.IPv4len && j == 0:
++					case len(ip) == net.IPv4len && (j == 0 || len(ips[j-1]) == net.IPv6len):
+ 						fallthrough
+-					case len(ip) == net.IPv6len && j == 1:
++					case len(ip) == net.IPv6len && (j == 0 || len(ips[j-1]) == net.IPv4len):
+ 						ips[j] = ips[i]
+ 						j++
+ 					}
+ 				}
++
+ 				ips = ips[:j]
+ 
+ 				type result struct {
+diff --git a/lib/attack_test.go b/lib/attack_test.go
+index 88d09aa6..c6f2c368 100644
+--- a/lib/attack_test.go
++++ b/lib/attack_test.go
+@@ -407,3 +407,16 @@ func TestVegetaHeaders(t *testing.T) {
+ 		}
+ 	}
+ }
++
++// https://github.com/tsenart/vegeta/issues/649
++func TestDNSCaching_Issue649(t *testing.T) {
++	defer func() {
++		if err := recover(); err != nil {
++			t.Fatalf("panic: %v", err)
++		}
++	}()
++
++	tr := NewStaticTargeter(Target{Method: "GET", URL: "https://[2a00:1450:4005:802::200e]"})
++	atk := NewAttacker(DNSCaching(0))
++	_ = atk.hit(tr, &attack{name: "TEST", began: time.Now()})
++}

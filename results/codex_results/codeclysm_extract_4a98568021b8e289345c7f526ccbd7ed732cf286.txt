@@ -1,0 +1,24 @@
+{
+"issues": [
+{
+"file": "extractor.go",
+"line": 49,
+"description": "Error returned by match() in Archive() is ignored. The code logs the error with errors.Annotatef but never returns it, so Archive() proceeds with an invalid type and reports a generic 'Not a supported archive' message instead of the real failure cause."
+},
+{
+"file": "extractor.go",
+"line": 273,
+"description": "Zip() reads the body into a buffer using copyCancel() but discards the returned error. Any read failure is silently ignored, possibly leading to corrupted archives being treated as valid."
+},
+{
+"file": "extractor.go",
+"line": 72,
+"description": "Decoders created by zstd.NewReader and gzip.NewReader are never closed, which can leak resources when processing large archives."
+},
+{
+"file": "extractor.go",
+"line": 214,
+"description": "When extracting tar archives, link targets are joined with the extraction directory without validation. A malicious archive could craft a hard link pointing outside the destination tree, potentially creating links to sensitive files on the host system."
+}
+]
+}

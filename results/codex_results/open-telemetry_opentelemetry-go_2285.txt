@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "semconv/v1.4.0/http.go",
+"line": 56,
+"description": "NetAttributesFromHTTPRequest uses strings.LastIndex to split host and port from RemoteAddr and Host values. This fails for IPv6 literals (e.g., '[2001:db8::1]') because the colon inside the address is misinterpreted as a port separator, resulting in truncated host information or misclassification as a hostname."
+},
+{
+"file": "semconv/v1.4.0/http.go",
+"line": 151,
+"description": "HTTPClientAttributesFromHTTPRequest temporarily sets request.URL.User to nil while building attributes. Modifying the shared request object can cause data races if other goroutines access the URL concurrently. Copy the URL instead of altering it in place."
+}
+]
+}

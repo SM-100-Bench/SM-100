@@ -1,0 +1,29 @@
+{
+"issues": [
+{
+"file": "src/dd-draggable.ts",
+"line": 82,
+"description": "Option 'handle' is optional, but substring() is called without checking for undefined, which can raise an exception if no handle is provided."
+},
+{
+"file": "src/dd-draggable.ts",
+"line": 249,
+"description": "Touch event listeners added without capture flag are removed with capture=true, preventing removal and causing memory leaks."
+},
+{
+"file": "src/dd-touch.ts",
+"line": 179,
+"description": "releasePointerCapture() is called regardless of capture state, which can throw an InvalidStateError when the pointer is not captured."
+},
+{
+"file": "src/dd-gridstack.ts",
+"line": 156,
+"description": "Filtering result is ignored; when create=false the array may contain nulls."
+},
+{
+"file": "src/gridstack.ts",
+"line": 168,
+"description": "HTML is inserted using innerHTML with values from options, allowing potential XSS if untrusted content is used."
+}
+]
+}

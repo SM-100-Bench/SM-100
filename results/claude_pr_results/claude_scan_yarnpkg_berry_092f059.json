@@ -1,0 +1,15 @@
+{
+  "identifier": "yarnpkg_berry_092f059",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.060671249999999996,
+    "is_error": false,
+    "duration_ms": 6906,
+    "duration_api_ms": 9896,
+    "num_turns": 3,
+    "result": "After reviewing the staged changes, I found one potential issue in the RefCountedCache implementation:\n\n```json\n{\n  \"issues\": [\n    {\n      \"file\": \"packages/yarnpkg-core/sources/RefCountedCache.ts\",\n      \"line\": 69,\n      \"description\": \"Use of loose equality (==) instead of strict equality (===) could lead to type coercion bugs\"\n    }\n  ]\n}\n```",
+    "total_cost": 0.060671249999999996,
+    "session_id": "13ff74a5-635f-42c3-a5d5-3ecdf3664eb9"
+  }
+}

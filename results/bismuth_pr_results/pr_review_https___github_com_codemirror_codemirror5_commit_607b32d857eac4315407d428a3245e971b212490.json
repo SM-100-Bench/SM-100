@@ -1,0 +1,37 @@
+{
+  "bug_detected": false,
+  "detection_details": [],
+  "raw": {
+    "message": "# Bug Summary for addon/tern/tern.js\n\n## Total Bugs Found: 4\n\n### Critical Bugs:\n\n1. **Incorrect Event Listener Removal**: \n   - Location: Line 65\n   - Issue: Using `CodeMirror.on` instead of `CodeMirror.off` for removing an event listener\n   - Potential Impact: Memory leaks and duplicate event handling\n\n2. **Potential Infinite Loop in Parsing Function**:\n   - Location: Lines 261-270\n   - Issue: No bounds checking in `skipMatching` function when incrementing position\n   - Potential Impact: Infinite loop if unmatched brackets or end of text is encountered\n\n### Additional Bugs:\n\n3. **Variable Redeclaration and Shadowing**:\n   - Location: Lines 419-421\n   - Issue: Duplicate variable declaration of `offsetLines`\n   - Potential Impact: Unexpected behavior due to variable scoping\n\n4. **Variable Shadowing in Function**:\n   - Location: Lines 420-421\n   - Issue: Improper variable declaration leading to potential scope-related problems\n   - Potential Impact: Unintended modifications to outer scope variables",
+    "bugs": [
+      {
+        "description": "In the `delDoc` method, the code is using `CodeMirror.on` to remove an event listener, which is incorrect. When removing an event listener, `CodeMirror.off` should be used instead. Using `on` would actually add another event listener rather than removing the existing one, potentially causing memory leaks and duplicate event handling.",
+        "file": "addon/tern/tern.js",
+        "start_line": 65,
+        "end_line": 65,
+        "suggested_fix": "    CodeMirror.off(found.doc, \"change\", this.trackChange);"
+      },
+      {
+        "description": "The `skipMatching` function inside `parseFnType` has no bounds checking. If it encounters an unmatched opening bracket/brace/parenthesis or reaches the end of the text, it will continue incrementing `pos` beyond the length of the text, potentially causing an infinite loop. Adding a check to see if `pos` has reached or exceeded the text length prevents this potential infinite loop scenario.",
+        "file": "addon/tern/tern.js",
+        "start_line": 261,
+        "end_line": 270,
+        "suggested_fix": "    function skipMatching(upto) {\n      var depth = 0, start = pos;\n      for (;;) {\n        if (pos >= text.length) return text.slice(start, pos);\n        var next = text.charAt(pos);\n        if (upto.test(next) && !depth) return text.slice(start, pos);\n        if (/[{\\[\\(]/.test(next)) ++depth;\n        else if (/[}\\]\\)]/.test(next)) --depth;\n        ++pos;\n      }\n    }"
+      },
+      {
+        "description": "In the `buildRequest` function, the variable `offsetLines` is declared twice - once at the beginning of the function and again when accessing `files[0].offsetLines`. This redeclaration with `var` creates a new variable in the local scope that shadows the outer one, which could lead to unexpected behavior. The second declaration should be removed, keeping only the assignment to the existing variable.",
+        "file": "addon/tern/tern.js",
+        "start_line": 419,
+        "end_line": 421,
+        "suggested_fix": "        files.push(getFragmentAround(doc, startPos, query.end));\n        query.file = \"#0\";\n        offsetLines = files[0].offsetLines;"
+      },
+      {
+        "description": "In the `buildRequest` function, there's a variable shadowing issue. The variable `offsetLines` is declared at the beginning of the function with `var offsetLines = 0;` and then it's being reassigned without `var` on line 420. However, the code is using the variable in a way that suggests it should be a new local variable. This could lead to unexpected behavior where changes to this variable affect other parts of the code that use the outer variable. The fix is to properly declare it as a new local variable with `var`.",
+        "file": "addon/tern/tern.js",
+        "start_line": 420,
+        "end_line": 421,
+        "suggested_fix": "        query.file = \"#0\";\n        var offsetLines = files[0].offsetLines;"
+      }
+    ]
+  }
+}

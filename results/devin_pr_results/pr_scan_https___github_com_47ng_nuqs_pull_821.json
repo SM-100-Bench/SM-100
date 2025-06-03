@@ -1,0 +1,40 @@
+{
+  "session_id": "devin-34f067a1c16d489d8e5d703007d714e0",
+  "issues": [
+    {
+      "file": "packages/nuqs/src/serializer.ts",
+      "line": 25,
+      "description": "Non-null assertion on 'values' parameter could cause runtime errors if undefined is passed when baseOrValues is a Base type"
+    },
+    {
+      "file": "packages/nuqs/src/serializer.ts",
+      "line": 53,
+      "description": "URL parsing with base.split('?') only handles the first '?' character, which could cause issues with URLs containing multiple question marks"
+    },
+    {
+      "file": "packages/nuqs/src/serializer.ts",
+      "line": 35,
+      "description": "No validation that parser.serialize exists before calling it, potentially causing runtime errors if a parser without a serialize method is provided"
+    },
+    {
+      "file": "packages/nuqs/src/serializer.ts",
+      "line": 58,
+      "description": "URL hash fragments are not preserved when serializing URLs, leading to data loss if hash fragments are present"
+    },
+    {
+      "file": "README.md",
+      "line": 617,
+      "description": "Added semicolon before 'use client' directive could potentially cause issues in some Next.js configurations"
+    },
+    {
+      "file": "packages/nuqs/src/serializer.ts",
+      "line": 4,
+      "description": "ExtractParserType<Parser> type assumes Parser has a parseServerSide method that returns a value, but doesn't handle cases where this might not be true"
+    },
+    {
+      "file": "packages/nuqs/src/serializer.ts",
+      "line": 19,
+      "description": "No handling for circular references in the values object, which could lead to stack overflow errors during serialization"
+    }
+  ]
+}

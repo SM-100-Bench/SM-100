@@ -1,0 +1,29 @@
+{
+"issues": [
+{
+"file": "internal/api/upload.go",
+"line": 34,
+"description": "Path traversal: subPath from user input is joined with ImportPath without stripping leading slashes, so an absolute path allows writing outside the intended directory."
+},
+{
+"file": "internal/api/search_folders.go",
+"line": 71,
+"description": "Path traversal: user-supplied path can begin with '/', causing filepath.Join to resolve outside the allowed root when passed to query.FoldersByPath."
+},
+{
+"file": "internal/api/import.go",
+"line": 56,
+"description": "Path traversal and potential arbitrary deletion: subPath is only sanitized for '.' characters, allowing absolute paths that escape ImportPath when joined."
+},
+{
+"file": "internal/server/auth.go",
+"line": 14,
+"description": "Potential memory leak: credentials are cached indefinitely in basicAuth.user map without expiration, growing unbounded with unique Authorization headers."
+},
+{
+"file": "internal/api/websocket.go",
+"line": 18,
+"description": "Security issue: WebSocket upgrader's CheckOrigin always returns true, permitting cross-site WebSocket hijacking."
+}
+]
+}

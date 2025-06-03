@@ -1,0 +1,18 @@
+Please review the code in the scrapy_scrapy_8ce01b3b76d4634f55067d6cfdf632ec70ba304a repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. HTTP Components subsystem (consisting of 'scrapy/downloadermiddlewares/__init__.py', 'scrapy/downloadermiddlewares/ajaxcrawl.py', 'scrapy/downloadermiddlewares/cookies.py', 'scrapy/downloadermiddlewares/decompression.py', 'scrapy/downloadermiddlewares/defaultheaders.py', 'scrapy/downloadermiddlewares/downloadtimeout.py', 'scrapy/downloadermiddlewares/httpauth.py', 'scrapy/downloadermiddlewares/httpcache.py', 'scrapy/downloadermiddlewares/httpcompression.py', 'scrapy/downloadermiddlewares/httpproxy.py', 'scrapy/downloadermiddlewares/redirect.py', 'scrapy/downloadermiddlewares/retry.py', 'scrapy/downloadermiddlewares/robotstxt.py', 'scrapy/downloadermiddlewares/stats.py', 'scrapy/downloadermiddlewares/useragent.py', 'scrapy/http/__init__.py', 'scrapy/http/common.py', 'scrapy/http/cookies.py', 'scrapy/http/headers.py', 'scrapy/http/request/__init__.py', 'scrapy/http/request/form.py', 'scrapy/http/request/json_request.py', 'scrapy/http/request/rpc.py', 'scrapy/http/response/__init__.py', 'scrapy/http/response/html.py', 'scrapy/http/response/text.py', 'scrapy/http/response/xml.py', 'scrapy/robotstxt.py')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

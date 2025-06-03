@@ -1,0 +1,1 @@
+{ "issues": [ { "file": "decode.js", "line": 11, "description": "If the JWT payload is a string but not valid JSON, decode.js silently returns the raw string payload instead of throwing or warning. This could cause subtle bugs if callers always expect an object." } ] }

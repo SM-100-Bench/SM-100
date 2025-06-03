@@ -1,0 +1,30 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 22e8334b450..7b43d63cc03 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -44,6 +44,7 @@
+ * [BUGFIX] Distributor: fix down scaling of native histograms in the distributor when timeseries unmarshal cache is in use. #7947
+ * [BUGFIX] Distributor: fix cardinality API to return more accurate number of in-memory series when number of zones is larger than replication factor. #7984
+ * [BUGFIX] All: fix config validation for non-ingester modules, when ingester's ring is configured with spread-minimizing token generation strategy. #7990
++* [BUGFIX] Ingester: copy LabelValues strings out of mapped memory to avoid a segmentation fault if the region becomes unmapped before the result is marshaled. #8003
+ 
+ ### Mixin
+ 
+diff --git a/pkg/ingester/ingester.go b/pkg/ingester/ingester.go
+index 7938fd63ea2..fca6eed5d4d 100644
+--- a/pkg/ingester/ingester.go
++++ b/pkg/ingester/ingester.go
+@@ -1652,6 +1652,13 @@ func (i *Ingester) LabelValues(ctx context.Context, req *client.LabelValuesReque
+ 		return nil, err
+ 	}
+ 
++	// The label value strings are sometimes pointing to memory mapped file
++	// regions that may become unmapped anytime after Querier.Close is called.
++	// So we copy those strings.
++	for i, s := range vals {
++		vals[i] = strings.Clone(s)
++	}
++
+ 	return &client.LabelValuesResponse{
+ 		LabelValues: vals,
+ 	}, nil

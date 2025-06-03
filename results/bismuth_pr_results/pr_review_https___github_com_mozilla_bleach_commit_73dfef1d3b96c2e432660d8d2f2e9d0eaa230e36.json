@@ -1,0 +1,23 @@
+{
+  "bug_detected": false,
+  "detection_details": [],
+  "raw": {
+    "message": "# Bleach Sanitizer Bugs Summary\n\n## Total Bugs Found: 2\n\n### Bug 1: Incorrect Remainder Handling in `convert_entities`\n- **Location**: `bleach/sanitizer.py`, lines 124-125\n- **Severity**: Potential logic error\n- **Impact**: Could lead to appending empty remainders to the result\n- **Key Issue**: Incorrectly checking `if part:` instead of `if remainder:`\n\n### Bug 2: Unsafe URL Protocol Handling\n- **Location**: `bleach/sanitizer.py`, lines 593-596\n- **Severity**: Security vulnerability\n- **Impact**: Potential security risk with URL parsing and validation\n- **Key Issue**: Automatically assuming URLs without protocols are \"http\" without proper validation\n\nThese bugs could potentially compromise the security and reliability of the Bleach sanitization library, particularly in handling HTML entities and URL parsing.",
+    "bugs": [
+      {
+        "description": "There's a bug in the `convert_entities` function where it checks `if part:` instead of `if remainder:` after calculating the remainder. Since `part` has already been checked for truthiness earlier in the function (line 116), this condition will always be true, which could lead to appending empty remainders to the result. This is inconsistent with the similar code in `sanitize_characters` which correctly checks `if remainder:` (line 534).",
+        "file": "bleach/sanitizer.py",
+        "start_line": 124,
+        "end_line": 125,
+        "suggested_fix": "                remainder = part[len(entity) + 2:]\n                if remainder:"
+      },
+      {
+        "description": "In the `sanitize_uri_value` function, there's a security issue where URLs without protocols are automatically assumed to be \"http\" if http is allowed. This could lead to security issues with non-http URLs that should be treated differently. The function should explicitly check if the URL is a relative URL (starting with '/') before assuming it's an http URL, which would provide better security by not automatically allowing potentially malicious URLs.",
+        "file": "bleach/sanitizer.py",
+        "start_line": 593,
+        "end_line": 596,
+        "suggested_fix": "            # If there's no protocol/scheme specified, check if it's a relative URL\n            # or if http is allowed as a protocol\n            if new_value.startswith('/') or 'http' in allowed_protocols:\n                return value"
+      }
+    ]
+  }
+}

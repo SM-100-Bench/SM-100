@@ -1,0 +1,18 @@
+Please review the code in the django_django_16485 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Template System subsystem (consisting of 'django/template/__init__.py', 'django/template/autoreload.py', 'django/template/backends/__init__.py', 'django/template/backends/base.py', 'django/template/backends/django.py', 'django/template/backends/dummy.py', 'django/template/backends/jinja2.py', 'django/template/backends/utils.py', 'django/template/base.py', 'django/template/context.py', 'django/template/context_processors.py', 'django/template/defaultfilters.py', 'django/template/defaulttags.py', 'django/template/engine.py', 'django/template/exceptions.py', 'django/template/library.py', 'django/template/loader.py', 'django/template/loader_tags.py', 'django/template/loaders/__init__.py', 'django/template/loaders/app_directories.py', 'django/template/loaders/base.py', 'django/template/loaders/cached.py', 'django/template/loaders/filesystem.py', 'django/template/loaders/locmem.py', 'django/template/response.py', 'django/template/smartif.py', 'django/template/utils.py')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

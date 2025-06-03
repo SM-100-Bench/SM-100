@@ -1,0 +1,18 @@
+Please review the code in the badges_shields_1223 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Server and Request Handling subsystem (consisting of 'lib/analytics.js', 'lib/in-process-server-test-helpers.js', 'lib/log.js', 'lib/request-handler.js', 'lib/request-handler.spec.js', 'lib/result-sender.js', 'lib/server-secrets.js', 'lib/suggest.js', 'server.js', 'server.spec.js')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

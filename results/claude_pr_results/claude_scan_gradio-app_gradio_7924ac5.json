@@ -1,0 +1,15 @@
+{
+  "identifier": "gradio-app_gradio_7924ac5",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.1506385,
+    "is_error": false,
+    "duration_ms": 12380,
+    "duration_api_ms": 18699,
+    "num_turns": 3,
+    "result": "Based on my review of the staged changes, I found several potential bugs. Here are the issues:\n\n```json\n{\n  \"issues\": [\n    {\n      \"file\": \"ui/packages/audio/src/Audio.svelte\",\n      \"line\": 11,\n      \"description\": \"Type error: 'setValue' prop references undefined 'value' variable\"\n    },\n    {\n      \"file\": \"ui/packages/audio/src/Audio.svelte\",\n      \"line\": 106,\n      \"description\": \"Type error: 'value' variable referenced but not defined\"\n    },\n    {\n      \"file\": \"ui/packages/audio/src/Audio.svelte\",\n      \"line\": 59,\n      \"description\": \"Variable 'inited' is never set to true, causing infinite recreation of MediaRecorder\"\n    },\n    {\n      \"file\": \"ui/packages/audio/src/Audio.svelte\",\n      \"line\": 65,\n      \"description\": \"Memory leak: MediaRecorder stream tracks are never stopped in onDestroy\"\n    },\n    {\n      \"file\": \"ui/packages/workbench/src/routes/audio.svelte\",\n      \"line\": 5,\n      \"description\": \"Missing required props: Audio component needs 'setValue', 'theme', and 'name' props\"\n    }\n  ]\n}\n```",
+    "total_cost": 0.1506385,
+    "session_id": "eadc454c-3625-4bb3-807a-fdf0cfbb6db3"
+  }
+}

@@ -1,0 +1,29 @@
+diff --git a/web/src/labs/marked/marked.test.ts b/web/src/labs/marked/marked.test.ts
+index 16d1c1de..451dbfac 100644
+--- a/web/src/labs/marked/marked.test.ts
++++ b/web/src/labs/marked/marked.test.ts
+@@ -171,4 +171,24 @@ console.log("hello world!")
+       expect(unescape(marked(t.markdown))).toBe(t.want);
+     }
+   });
++
++  test("parse strikethrough with XSS prevention", () => {
++    const tests = [
++      {
++        markdown: `~~normal text~~`,
++        want: `<p><del>normal text</del></p>`,
++      },
++      {
++        markdown: `~~<script>alert('XSS')</script>~~`,
++        want: `<p><del>&lt;script&gt;alert(&#39;XSS&#39;)&lt;/script&gt;</del></p>`,
++      },
++      {
++        markdown: `~~<img src="x" onerror="alert('XSS')">~~`,
++        want: `<p><del>&lt;img src=&quot;x&quot; onerror=&quot;alert(&#39;XSS&#39;)&quot;&gt;</del></p>`,
++      },
++    ];
++    for (const t of tests) {
++      expect(marked(t.markdown)).toBe(t.want);
++    }
++  });
+ });

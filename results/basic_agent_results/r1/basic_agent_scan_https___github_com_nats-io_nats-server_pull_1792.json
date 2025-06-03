@@ -1,0 +1,1 @@
+{"repo_id": "nats-io_nats-server_1792", "bugs": [{"description": "Critical path resolution issue - configuration files not found at expected location. This indicates either incorrect directory structure, misconfigured paths, or missing files in the project setup.", "file": "/conf/parse.go", "line": 0}], "updated_files": {}}

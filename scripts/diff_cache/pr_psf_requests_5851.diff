@@ -1,0 +1,30 @@
+diff --git a/requests/utils.py b/requests/utils.py
+index db67938e67..1050de116e 100644
+--- a/requests/utils.py
++++ b/requests/utils.py
+@@ -245,6 +245,10 @@ def extract_zipped_paths(path):
+     archive, member = os.path.split(path)
+     while archive and not os.path.exists(archive):
+         archive, prefix = os.path.split(archive)
++        if not prefix:
++            # If we don't check for an empty prefix after the split (in other words, archive remains unchanged after the split),
++            # we _can_ end up in an infinite loop on a rare corner case affecting a small number of users
++            break
+         member = '/'.join([prefix, member])
+ 
+     if not zipfile.is_zipfile(archive):
+diff --git a/tests/test_utils.py b/tests/test_utils.py
+index 463516b2e5..98ffb25a6c 100644
+--- a/tests/test_utils.py
++++ b/tests/test_utils.py
+@@ -285,6 +285,10 @@ def test_zipped_paths_extracted(self, tmpdir):
+         assert os.path.exists(extracted_path)
+         assert filecmp.cmp(extracted_path, __file__)
+ 
++    def test_invalid_unc_path(self):
++        path = r"\\localhost\invalid\location"
++        assert extract_zipped_paths(path) == path
++
+ 
+ class TestContentEncodingDetection:
+ 

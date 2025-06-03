@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "core/settings_model.go",
+"line": 306,
+"description": "The Merge method passes '&s' to json.Unmarshal, which updates only the local pointer variable rather than the struct fields. This prevents the settings from being merged."
+}
+]
+}

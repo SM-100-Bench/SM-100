@@ -1,0 +1,30 @@
+{
+  "session_id": "devin-3ace85e0b70543fa93927da0a8543dae",
+  "issues": [
+    {
+      "file": "internal/unpackinfo/lchtimes.go",
+      "line": 13,
+      "description": "The Lutimes implementation only sets the seconds portion of the timestamp, ignoring microseconds/nanoseconds which could lead to timestamp precision loss"
+    },
+    {
+      "file": "internal/unpackinfo/unpackinfo.go",
+      "line": 139,
+      "description": "The restoreDirectory method ignores IsNotExist errors but continues execution, which could lead to silent failures when attempting to restore timestamps for directories that were removed during extraction"
+    },
+    {
+      "file": "internal/unpackinfo/unpackinfo.go",
+      "line": 143,
+      "description": "The restoreDirectory method ignores IsNotExist errors but continues execution, which could lead to silent failures when attempting to restore permissions for directories that were removed during extraction"
+    },
+    {
+      "file": "internal/unpackinfo/lchtimes_others.go",
+      "line": 13,
+      "description": "On non-Linux/Darwin platforms, Lchtimes returns an error but the calling code in restoreSymlink doesn't check if CanMaintainSymlinkTimestamps() is true before calling it, potentially causing unnecessary error logs"
+    },
+    {
+      "file": "slug.go",
+      "line": 425,
+      "description": "The RestoreInfo call for symlinks doesn't check the return value of CanMaintainSymlinkTimestamps() before attempting restoration, which could lead to unnecessary error handling on unsupported platforms"
+    }
+  ]
+}

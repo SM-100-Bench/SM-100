@@ -1,0 +1,18 @@
+Please review the code in the flyteorg_flyteadmin_455 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Authentication and Authorization subsystem (consisting of 'auth/auth_context.go', 'auth/authzserver/authorize.go', 'auth/authzserver/doc.go', 'auth/authzserver/encryptor.go', 'auth/authzserver/initialize.go', 'auth/authzserver/metadata.go', 'auth/authzserver/metadata_provider.go', 'auth/authzserver/provider.go', 'auth/authzserver/resource_server.go', 'auth/authzserver/stateless_token_store.go', 'auth/authzserver/token.go', 'auth/authzserver/utils.go', 'auth/config/authorizationservertype_enumer.go', 'auth/config/config.go', 'auth/config/config_flags.go', 'auth/config/samesite_enumer.go', 'auth/config/testdata/config.yaml', 'auth/config/testdata/secret.yaml', 'auth/config/third_party_config.go', 'auth/constants.go', 'auth/cookie.go', 'auth/cookie_manager.go', 'auth/handler_utils.go', 'auth/handlers.go', 'auth/identity_context.go', 'auth/init_secrets.go', 'auth/interceptor.go', 'auth/interfaces/context.go', 'auth/interfaces/cookie.go', 'auth/interfaces/mocks/authentication_context.go', 'auth/interfaces/mocks/cookie_handler.go', 'auth/interfaces/mocks/handler_registerer.go', 'auth/interfaces/mocks/identity_context.go', 'auth/interfaces/mocks/o_auth2_provider.go', 'auth/interfaces/mocks/o_auth2_resource_server.go', 'auth/token.go', 'auth/user_info_provider.go')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

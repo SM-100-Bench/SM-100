@@ -1,0 +1,65 @@
+{
+  "session_id": "devin-4247771f28af49238548b8e49cc8c412",
+  "issues": [
+    {
+      "file": "server/middleware/user.go",
+      "line": 36,
+      "description": "Error message doesn't include the error details in 'ctx.InternalServerError(\"unable to get user\", err)' - the error details are passed as a separate parameter instead of being formatted into the message string"
+    },
+    {
+      "file": "server/common/user.go",
+      "line": 78,
+      "description": "No validation for email format in CreateUserFromParams function, allowing invalid email addresses to be stored"
+    },
+    {
+      "file": "server/common/user.go",
+      "line": 113,
+      "description": "UpdateUser function doesn't validate email format before updating user data"
+    },
+    {
+      "file": "server/handlers/user.go",
+      "line": 12,
+      "description": "No CSRF protection for user creation/modification endpoints, making them vulnerable to cross-site request forgery attacks"
+    },
+    {
+      "file": "webapp/js/ctrl/user.js",
+      "line": 79,
+      "description": "Weak password generation using only 2 random values, and variables 'pass' and 'i' are used without declaration (missing var/let/const), making them global variables"
+    },
+    {
+      "file": "server/common/config.go",
+      "line": 210,
+      "description": "Potential null pointer dereference if domainAlias is nil after URL parsing"
+    },
+    {
+      "file": "server/handlers/user.go",
+      "line": 22,
+      "description": "MaxBytesReader is used but there's no validation of content type, allowing potential malicious payloads"
+    },
+    {
+      "file": "server/common/user.go",
+      "line": 91,
+      "description": "No sanitization of user input fields (name, email) before storing, potentially allowing XSS or injection attacks"
+    },
+    {
+      "file": "server/middleware/user.go",
+      "line": 43,
+      "description": "Potential race condition between SaveOriginalUser and SetUser if multiple requests are processed concurrently"
+    },
+    {
+      "file": "webapp/js/lib/utils.js",
+      "line": 113,
+      "description": "parseHumanReadableSize function doesn't handle all error cases properly - if parsed[1] or parsed[2] is undefined, it will cause runtime errors"
+    },
+    {
+      "file": "webapp/partials/user.html",
+      "line": 66,
+      "description": "Password field uses type='text' instead of type='password', exposing passwords in plain text on the screen"
+    },
+    {
+      "file": "server/handlers/user.go",
+      "line": 101,
+      "description": "User ID validation only checks equality but not format or validity, potentially allowing ID manipulation if the validation is bypassed"
+    }
+  ]
+}

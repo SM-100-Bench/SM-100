@@ -1,0 +1,18 @@
+Please review the code in the minio_minio_20756 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Admin API subsystem (consisting of 'cmd/admin-bucket-handlers.go', 'cmd/admin-handler-utils.go', 'cmd/admin-handlers-config-kv.go', 'cmd/admin-handlers-idp-config.go', 'cmd/admin-handlers-idp-ldap.go', 'cmd/admin-handlers-pools.go', 'cmd/admin-handlers-site-replication.go', 'cmd/admin-handlers-users.go', 'cmd/admin-handlers.go', 'cmd/admin-heal-ops.go', 'cmd/admin-router.go', 'cmd/admin-server-info.go')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

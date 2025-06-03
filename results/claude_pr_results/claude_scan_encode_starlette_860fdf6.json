@@ -1,0 +1,15 @@
+{
+  "identifier": "encode_starlette_860fdf6",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.05655054999999999,
+    "is_error": false,
+    "duration_ms": 16786,
+    "duration_api_ms": 21077,
+    "num_turns": 3,
+    "result": "After reviewing the staged changes for the WSGI middleware implementation, I found several potential issues:\n\n```json\n{\n  \"issues\": [\n    {\n      \"file\": \"starlette/middleware/wsgi.py\",\n      \"line\": 94,\n      \"description\": \"Incorrect exception re-raising: with_traceback expects (tb) not (exc_type, exc_value, exc_tb)\"\n    },\n    {\n      \"file\": \"starlette/middleware/wsgi.py\",\n      \"line\": 73,\n      \"description\": \"Potential race condition: asyncio.get_event_loop() called in __init__ may not be the same loop used during execution\"\n    },\n    {\n      \"file\": \"starlette/middleware/wsgi.py\",\n      \"line\": 22,\n      \"description\": \"Potential security issue: wsgi.errors set to sys.stdout instead of sys.stderr, could leak sensitive error information\"\n    },\n    {\n      \"file\": \"starlette/middleware/wsgi.py\",\n      \"line\": 89,\n      \"description\": \"Incorrect asyncio.wait_for usage: timeout=None should be timeout=None but function signature expects Optional[float]\"\n    }\n  ]\n}\n```",
+    "total_cost": 0.05655054999999999,
+    "session_id": "4cbdbe5e-16a7-46a1-b271-e4646dd8f816"
+  }
+}

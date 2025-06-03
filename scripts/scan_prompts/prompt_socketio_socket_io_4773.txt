@@ -1,0 +1,19 @@
+Please review the code in the socketio_socket.io_4773 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Core Library subsystem (consisting of 'client-dist/socket.io.esm.min.js', 'client-dist/socket.io.js', 'client-dist/socket.io.min.js', 'client-dist/socket.io.msgpack.min.js', 'lib/broadcast-operator.ts', 'lib/client.ts', 'lib/index.ts', 'lib/namespace.ts', 'lib/parent-namespace.ts', 'lib/socket.ts', 'lib/typed-events.ts', 'lib/uws.ts')
+2. Tests subsystem (consisting of 'test/close.ts', 'test/connection-state-recovery.ts', 'test/fixtures/big.json', 'test/fixtures/server-close.ts', 'test/handshake.ts', 'test/index.ts', 'test/messaging-many.ts', 'test/middleware.ts', 'test/namespaces.ts', 'test/server-attachment.ts', 'test/socket-middleware.ts', 'test/socket-timeout.ts', 'test/socket.io.test-d.ts', 'test/socket.ts', 'test/support/util.ts', 'test/utility-methods.ts', 'test/uws.ts', 'test/v2-compatibility.ts')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

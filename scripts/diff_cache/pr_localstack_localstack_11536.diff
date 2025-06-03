@@ -1,0 +1,98 @@
+diff --git a/localstack-core/localstack/services/s3/provider.py b/localstack-core/localstack/services/s3/provider.py
+index 53eba19161f1a..6d6e4e0897a76 100644
+--- a/localstack-core/localstack/services/s3/provider.py
++++ b/localstack-core/localstack/services/s3/provider.py
+@@ -842,8 +842,20 @@ def get_object(
+ 
+         validate_failed_precondition(request, s3_object.last_modified, s3_object.etag)
+ 
++        range_header = request.get("Range")
++        part_number = request.get("PartNumber")
++        if range_header and part_number:
++            raise InvalidRequest("Cannot specify both Range header and partNumber query parameter")
++        range_data = None
++        if range_header:
++            range_data = parse_range_header(range_header, s3_object.size)
++        elif part_number:
++            range_data = get_part_range(s3_object, part_number)
++
+         # we deliberately do not call `.close()` on the s3_stored_object to keep the read lock acquired. When passing
+         # the object to Werkzeug, the handler will call `.close()` after finishing iterating over `__iter__`.
++        # this can however lead to deadlocks if an exception happens between the call and returning the object.
++        # Be careful into adding validation between this call and `return` of `S3Provider.get_object`
+         s3_stored_object = self._storage_backend.open(bucket_name, s3_object, mode="r")
+ 
+         # TODO: remove this with 3.3, this is for persistence reason
+@@ -882,16 +894,6 @@ def get_object(
+             if (request.get("ChecksumMode") or "").upper() == "ENABLED":
+                 response[f"Checksum{checksum_algorithm.upper()}"] = s3_object.checksum_value
+ 
+-        range_header = request.get("Range")
+-        part_number = request.get("PartNumber")
+-        if range_header and part_number:
+-            raise InvalidRequest("Cannot specify both Range header and partNumber query parameter")
+-        range_data = None
+-        if range_header:
+-            range_data = parse_range_header(range_header, s3_object.size)
+-        elif part_number:
+-            range_data = get_part_range(s3_object, part_number)
+-
+         if range_data:
+             s3_stored_object.seek(range_data.begin)
+             response["Body"] = LimitedIterableStream(
+diff --git a/tests/aws/services/s3/test_s3_api.py b/tests/aws/services/s3/test_s3_api.py
+index d6312cb599aea..1436427151506 100644
+--- a/tests/aws/services/s3/test_s3_api.py
++++ b/tests/aws/services/s3/test_s3_api.py
+@@ -531,6 +531,10 @@ def test_get_object_range(self, aws_client, s3_bucket, snapshot):
+             aws_client.s3.get_object(Bucket=s3_bucket, Key=key, Range="bytes=100-200")
+         snapshot.match("get-100-200", e.value.response)
+ 
++        # test that we can still put an object on the same key that failed GetObject with range request
++        put_obj = aws_client.s3.put_object(Bucket=s3_bucket, Key=key, Body=content * 2)
++        snapshot.match("put-after-failed", put_obj)
++
+ 
+ @markers.snapshot.skip_snapshot_verify(condition=is_v2_provider, paths=["$..ServerSideEncryption"])
+ class TestS3Multipart:
+diff --git a/tests/aws/services/s3/test_s3_api.snapshot.json b/tests/aws/services/s3/test_s3_api.snapshot.json
+index 9186a4f3dbc25..a57cd8d61cfd2 100644
+--- a/tests/aws/services/s3/test_s3_api.snapshot.json
++++ b/tests/aws/services/s3/test_s3_api.snapshot.json
+@@ -2798,7 +2798,7 @@
+     }
+   },
+   "tests/aws/services/s3/test_s3_api.py::TestS3ObjectCRUD::test_get_object_range": {
+-    "recorded-date": "07-09-2023, 17:40:46",
++    "recorded-date": "18-09-2024, 13:05:07",
+     "recorded-content": {
+       "get-0-8": {
+         "AcceptRanges": "bytes",
+@@ -3027,6 +3027,14 @@
+           "HTTPHeaders": {},
+           "HTTPStatusCode": 416
+         }
++      },
++      "put-after-failed": {
++        "ETag": "\"be497c2168e374f414a351c49379c01a\"",
++        "ServerSideEncryption": "AES256",
++        "ResponseMetadata": {
++          "HTTPHeaders": {},
++          "HTTPStatusCode": 200
++        }
+       }
+     }
+   },
+diff --git a/tests/aws/services/s3/test_s3_api.validation.json b/tests/aws/services/s3/test_s3_api.validation.json
+index 821d6e563a09c..88df84dc525ae 100644
+--- a/tests/aws/services/s3/test_s3_api.validation.json
++++ b/tests/aws/services/s3/test_s3_api.validation.json
+@@ -90,7 +90,7 @@
+     "last_validated_date": "2023-08-01T20:22:24+00:00"
+   },
+   "tests/aws/services/s3/test_s3_api.py::TestS3ObjectCRUD::test_get_object_range": {
+-    "last_validated_date": "2023-09-07T15:40:46+00:00"
++    "last_validated_date": "2024-09-18T13:05:07+00:00"
+   },
+   "tests/aws/services/s3/test_s3_api.py::TestS3ObjectCRUD::test_get_object_with_version_unversioned_bucket": {
+     "last_validated_date": "2023-07-26T22:53:12+00:00"

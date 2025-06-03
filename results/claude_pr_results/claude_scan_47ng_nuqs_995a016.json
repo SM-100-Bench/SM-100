@@ -1,0 +1,15 @@
+{
+  "identifier": "47ng_nuqs_995a016",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.12343825,
+    "is_error": false,
+    "duration_ms": 35139,
+    "duration_api_ms": 40360,
+    "num_turns": 13,
+    "result": "Based on my analysis of the staged changes, I found one potential bug in the new serializer implementation:\n\n```json\n{\n  \"issues\": [\n    {\n      \"file\": \"packages/nuqs/src/serializer.ts\",\n      \"line\": 4,\n      \"description\": \"Type extraction may fail for parsers with withDefault - ExtractParserType uses parseServerSide return type which varies between nullable (T | null) and non-nullable (NonNullable<T>) depending on whether withDefault was called\"\n    }\n  ]\n}\n```\n\nThe issue is in the type extraction logic. The `ExtractParserType` type uses `ReturnType<Parser['parseServerSide']>`, but `parseServerSide` has different return types depending on whether the parser was created with `.withDefault()`:\n\n- Without `.withDefault()`: returns `T | null` \n- With `.withDefault()`: returns `NonNullable<T>`\n\nThis could lead to type mismatches when using parsers with default values in the serializer, as the extracted type would be non-nullable but the Values type expects it to be nullable/optional.",
+    "total_cost": 0.12343825,
+    "session_id": "a15d00e0-5c13-4f41-a385-dc2c6da2b884"
+  }
+}

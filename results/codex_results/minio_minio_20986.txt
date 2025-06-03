@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "cmd/ftp-server-driver.go",
+"line": 415,
+"description": "DeleteDir silently ignores errors from ListObjects. If object.Err is non-nil, the goroutine exits without communicating the failure, so the caller may think the delete succeeded."
+},
+{
+"file": "cmd/sftp-server.go",
+"line": 360,
+"description": "filterAlgos does not reset the 'found' flag for each algorithm. After a valid entry sets 'found' to true, subsequent invalid algorithms are not detected."
+},
+{
+"file": "cmd/veeam-sos-api.go",
+"line": 102,
+"description": "Struct tag uses 'mxl' instead of 'xml' for ProtocolCapabilities, causing incorrect XML marshaling."
+}
+]
+}

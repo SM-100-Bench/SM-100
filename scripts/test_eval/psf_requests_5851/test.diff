@@ -1,0 +1,15 @@
+diff --git a/tests/test_utils.py b/tests/test_utils.py
+index 463516b2e5..98ffb25a6c 100644
+--- a/tests/test_utils.py
++++ b/tests/test_utils.py
+@@ -285,6 +285,10 @@ def test_zipped_paths_extracted(self, tmpdir):
+         assert os.path.exists(extracted_path)
+         assert filecmp.cmp(extracted_path, __file__)
+ 
++    def test_invalid_unc_path(self):
++        path = r"\\localhost\invalid\location"
++        assert extract_zipped_paths(path) == path
++
+ 
+ class TestContentEncodingDetection:
+ 

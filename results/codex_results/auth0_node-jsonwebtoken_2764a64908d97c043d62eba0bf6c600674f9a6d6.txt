@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "verify.js",
+"line": 66,
+"description": "Default algorithm detection uses secretOrPublicKey.toString() which fails when a key object (e.g., { key, passphrase }) is provided. This causes the allowed algorithms list to fall back to HMAC algorithms, producing an invalid algorithm error for RSA/ECDSA keys."
+},
+{
+"file": "sign.js",
+"line": 176,
+"description": "Asynchronous signing always passes the key as privateKey to jws.createSign. If the algorithm is HMAC, older versions of jws expect a secret property instead, which may cause signing failures."
+},
+{
+"file": "test/keyid.tests.js",
+"line": 1,
+"description": "Test executes code outside of any Mocha describe or it block, resulting in side effects (console output) and no actual test assertions."
+}
+]
+}

@@ -1,0 +1,15 @@
+{
+  "identifier": "hashicorp_go-slug_c42e18a",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.10725155,
+    "is_error": false,
+    "duration_ms": 8638,
+    "duration_api_ms": 13513,
+    "num_turns": 3,
+    "result": "After analyzing the staged changes, I found one potential bug in the new code:\n\n```json\n{\n  \"issues\": [\n    {\n      \"file\": \"internal/unpackinfo/unpackinfo.go\",\n      \"line\": 34,\n      \"description\": \"Potential panic when checking path[0] if path is empty string\"\n    }\n  ]\n}\n```",
+    "total_cost": 0.10725155,
+    "session_id": "0c61e410-b401-4620-beca-13b7913ed931"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "session_id": "devin-436105a1b54141868cdae37363b71589",
+  "issues": [
+    {
+      "file": "packages/yarnpkg-core/sources/RefCountedCache.ts",
+      "line": 32,
+      "description": "Race condition vulnerability: The check for refCount <= 0 and subsequent increment of refCount is not atomic, which could lead to race conditions in a multithreaded environment"
+    },
+    {
+      "file": "packages/yarnpkg-core/sources/RefCountedCache.ts",
+      "line": 61,
+      "description": "Potential memory leak: If the key does not exist in the map during release(), an error is thrown but no cleanup is performed for the resource"
+    },
+    {
+      "file": "packages/yarnpkg-core/sources/Cache.ts",
+      "line": 493,
+      "description": "Potential null reference: refCountedCacheEntry is conditionally assigned but accessed with optional chaining, which could lead to silent failures if the LazyFS never initializes the entry"
+    },
+    {
+      "file": "packages/yarnpkg-core/sources/RefCountedCache.ts",
+      "line": 70,
+      "description": "Equality comparison using == instead of === could lead to unexpected behavior with non-primitive types or values"
+    },
+    {
+      "file": "packages/yarnpkg-core/sources/RefCountedCache.ts",
+      "line": 42,
+      "description": "Error handling issue: If createInstance() throws an exception, the map entry is not created but no cleanup is performed"
+    }
+  ]
+}

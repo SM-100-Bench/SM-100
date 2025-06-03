@@ -1,0 +1,1 @@
+{"repo_id": "chatchat-space_Langchain-Chatchat_4009", "bugs": [{"description": "In function get_relative_source_path, the exception handler references an undefined variable 'source' when printing the error message, which will itself raise a NameError and mask the original exception.", "file": "server/knowledge_base/kb_service/base.py", "line": 260}], "updated_files": {}}

@@ -1,0 +1,18 @@
+Please review the code in the grafana_mimir_7651 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Core Mimir subsystem (consisting of 'pkg/mimir/grpc_push_check.go', 'pkg/mimir/mimir.go', 'pkg/mimir/modules.go', 'pkg/mimir/runtime_config.go', 'pkg/mimir/sanity_check.go', 'pkg/mimir/server_service.go', 'pkg/mimir/status.go', 'pkg/mimir/tracing.go')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

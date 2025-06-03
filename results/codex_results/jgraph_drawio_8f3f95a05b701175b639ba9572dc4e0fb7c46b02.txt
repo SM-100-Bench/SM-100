@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "src/main/webapp/js/diagramly/LocalFile.js",
+"line": 94,
+"description": "Duplicate definition of LocalFile.prototype.saveAs causes one version to overwrite the other."
+},
+{
+"file": "src/main/webapp/js/diagramly/DrawioFileSync.js",
+"line": 2045,
+"description": "Event listener is added instead of removed during cleanup, leading to a memory leak."
+},
+{
+"file": "src/main/webapp/js/diagramly/Dialogs.js",
+"line": 8005,
+"description": "User controlled image URL is concatenated into innerHTML without sanitization, enabling potential XSS."
+}
+]
+}

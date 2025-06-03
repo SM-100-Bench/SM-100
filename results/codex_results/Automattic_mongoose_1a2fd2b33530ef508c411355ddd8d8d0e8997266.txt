@@ -1,0 +1,24 @@
+{
+"issues": [
+{
+"file": "lib/cursor/queryCursor.js",
+"line": 129,
+"description": "Callback inside _read() uses a regular function, so this is undefined and this.emit throws when cursor close fails."
+},
+{
+"file": "lib/cursor/queryCursor.js",
+"line": 227,
+"description": "close() assumes this.cursor is available; calling it before the cursor is created will cause a TypeError."
+},
+{
+"file": "lib/cursor/aggregationCursor.js",
+"line": 186,
+"description": "close() does not wait for cursor initialization; if called early it may throw due to this.cursor being undefined."
+},
+{
+"file": "types/aggregate.d.ts",
+"line": 63,
+"description": "Aggregate#cursor() is typed to return Cursor but the implementation returns an AggregationCursor, omitting methods like transformNull."
+}
+]
+}

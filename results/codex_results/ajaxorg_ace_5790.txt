@@ -1,0 +1,29 @@
+{
+"issues": [
+{
+"file": "src/test/asyncjs/async.js",
+"line": 127,
+"description": "Error handling in reduceAll returns the error instead of calling the callback, leaving the generator in a pending state"
+},
+{
+"file": "src/test/asyncjs/test.js",
+"line": 97,
+"description": "tearDownCalled is assigned without var/let, creating a global variable"
+},
+{
+"file": "src/test/asyncjs/test.js",
+"line": 170,
+"description": "tests array is created without var/let, leaking the variable globally"
+},
+{
+"file": "src/test/mockdom.js",
+"line": 224,
+"description": "insertBefore sets node.previousSibling using index i-2 instead of i-1"
+},
+{
+"file": "src/test/mockdom.js",
+"line": 139,
+"description": "getImageData loop uses sw + sy instead of sx + sw, causing incorrect coordinates"
+}
+]
+}

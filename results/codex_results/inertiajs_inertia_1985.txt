@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "packages/vue3/src/createInertiaApp.ts",
+"line": 58,
+"description": "The SSR branch assigns a Promise to innerHTML because render(vueApp) is asynchronous and not awaited. This results in innerHTML receiving a Promise rather than a string."
+},
+{
+"file": "packages/vue3/src/createInertiaApp.ts",
+"line": 58,
+"description": "The function calls the optional render parameter without verifying it exists. If createInertiaApp is invoked in a server context without providing render, this will throw a runtime error."
+}
+]
+}

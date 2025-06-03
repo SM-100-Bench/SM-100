@@ -1,0 +1,19 @@
+Please review the code in the redis_node-redis_de0a9628aabb9daecdccc898d10b375ab1b98566 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Multi/Batch Operations subsystem (consisting of 'lib/extendedApi.js', 'lib/multi.js')
+2. Tests subsystem (consisting of 'test/auth.spec.js', 'test/batch.spec.js', 'test/commands/blpop.spec.js', 'test/commands/client.spec.js', 'test/commands/dbsize.spec.js', 'test/commands/del.spec.js', 'test/commands/eval.spec.js', 'test/commands/exists.spec.js', 'test/commands/expire.spec.js', 'test/commands/flushdb.spec.js', 'test/commands/geoadd.spec.js', 'test/commands/get.spec.js', 'test/commands/getset.spec.js', 'test/commands/hgetall.spec.js', 'test/commands/hincrby.spec.js', 'test/commands/hlen.spec.js', 'test/commands/hmget.spec.js', 'test/commands/hmset.spec.js', 'test/commands/hset.spec.js', 'test/commands/incr.spec.js', 'test/commands/info.spec.js', 'test/commands/keys.spec.js', 'test/commands/mget.spec.js', 'test/commands/mset.spec.js', 'test/commands/msetnx.spec.js', 'test/commands/randomkey.test.js', 'test/commands/rename.spec.js', 'test/commands/renamenx.spec.js', 'test/commands/rpush.spec.js', 'test/commands/sadd.spec.js', 'test/commands/scard.spec.js', 'test/commands/script.spec.js', 'test/commands/sdiff.spec.js', 'test/commands/sdiffstore.spec.js', 'test/commands/select.spec.js', 'test/commands/set.spec.js', 'test/commands/setex.spec.js', 'test/commands/setnx.spec.js', 'test/commands/sinter.spec.js', 'test/commands/sinterstore.spec.js', 'test/commands/sismember.spec.js', 'test/commands/slowlog.spec.js', 'test/commands/smembers.spec.js', 'test/commands/smove.spec.js', 'test/commands/sort.spec.js', 'test/commands/spop.spec.js', 'test/commands/srem.spec.js', 'test/commands/sunion.spec.js', 'test/commands/sunionstore.spec.js', 'test/commands/ttl.spec.js', 'test/commands/type.spec.js', 'test/commands/watch.spec.js', 'test/commands/zadd.spec.js', 'test/commands/zscan.spec.js', 'test/commands/zscore.spec.js', 'test/conect.slave.spec.js', 'test/connection.spec.js', 'test/custom_errors.spec.js', 'test/detect_buffers.spec.js', 'test/good_traces.spec.js', 'test/helper.js', 'test/lib/config.js', 'test/lib/good-traces.js', 'test/lib/redis-process.js', 'test/lib/stunnel-process.js', 'test/lib/unref.js', 'test/multi.spec.js', 'test/node_redis.spec.js', 'test/prefix.spec.js', 'test/pubsub.spec.js', 'test/rename.spec.js', 'test/return_buffers.spec.js', 'test/tls.spec.js', 'test/unify_options.spec.js', 'test/utils.spec.js')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

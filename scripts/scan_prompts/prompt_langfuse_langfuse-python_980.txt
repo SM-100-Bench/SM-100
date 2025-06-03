@@ -1,0 +1,18 @@
+Please review the code in the langfuse_langfuse-python_980 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Core SDK subsystem (consisting of 'langfuse/Sampler.py', 'langfuse/__init__.py', 'langfuse/client.py', 'langfuse/environment.py', 'langfuse/extract_model.py', 'langfuse/logging.py', 'langfuse/model.py', 'langfuse/parse_error.py', 'langfuse/prompt_cache.py', 'langfuse/request.py', 'langfuse/serializer.py', 'langfuse/task_manager.py', 'langfuse/types/__init__.py', 'langfuse/version.py')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

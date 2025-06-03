@@ -1,0 +1,409 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 8a5e15edbb8..eb39b9e6dea 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -23,6 +23,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
+ - Adds `otlptracegrpc.WithGRPCConn` and `otlpmetricgrpc.WithGRPCConn` for reusing existing gRPC connection. (#2002)
+ - Added a new `schema` module to help parse Schema Files in OTEP 0152 format. (#2267)
+ 
++### Fixed
++
++- `semconv.NetAttributesFromHTTPRequest()` correctly handles IPv6 addresses. (#2285)
++
+ ## [1.0.1] - 2021-10-01
+ 
+ ### Fixed
+diff --git a/semconv/v1.4.0/http.go b/semconv/v1.4.0/http.go
+index f7157c66086..7340b229e2a 100644
+--- a/semconv/v1.4.0/http.go
++++ b/semconv/v1.4.0/http.go
+@@ -51,64 +51,22 @@ func NetAttributesFromHTTPRequest(network string, request *http.Request) []attri
+ 		attrs = append(attrs, NetTransportOther)
+ 	}
+ 
+-	peerName, peerIP, peerPort := "", "", 0
+-	{
+-		hostPart := request.RemoteAddr
+-		portPart := ""
+-		if idx := strings.LastIndex(hostPart, ":"); idx >= 0 {
+-			hostPart = request.RemoteAddr[:idx]
+-			portPart = request.RemoteAddr[idx+1:]
+-		}
+-		if hostPart != "" {
+-			if ip := net.ParseIP(hostPart); ip != nil {
+-				peerIP = ip.String()
+-			} else {
+-				peerName = hostPart
+-			}
+-
+-			if portPart != "" {
+-				numPort, err := strconv.ParseUint(portPart, 10, 16)
+-				if err == nil {
+-					peerPort = (int)(numPort)
+-				} else {
+-					peerName, peerIP = "", ""
+-				}
+-			}
+-		}
++	peerIP, peerName, peerPort := hostIPNamePort(request.RemoteAddr)
++	if peerIP != "" {
++		attrs = append(attrs, NetPeerIPKey.String(peerIP))
+ 	}
+ 	if peerName != "" {
+ 		attrs = append(attrs, NetPeerNameKey.String(peerName))
+ 	}
+-	if peerIP != "" {
+-		attrs = append(attrs, NetPeerIPKey.String(peerIP))
+-	}
+ 	if peerPort != 0 {
+ 		attrs = append(attrs, NetPeerPortKey.Int(peerPort))
+ 	}
+ 
+ 	hostIP, hostName, hostPort := "", "", 0
+ 	for _, someHost := range []string{request.Host, request.Header.Get("Host"), request.URL.Host} {
+-		hostPart := ""
+-		if idx := strings.LastIndex(someHost, ":"); idx >= 0 {
+-			strPort := someHost[idx+1:]
+-			numPort, err := strconv.ParseUint(strPort, 10, 16)
+-			if err == nil {
+-				hostPort = (int)(numPort)
+-			}
+-			hostPart = someHost[:idx]
+-		} else {
+-			hostPart = someHost
+-		}
+-		if hostPart != "" {
+-			ip := net.ParseIP(hostPart)
+-			if ip != nil {
+-				hostIP = ip.String()
+-			} else {
+-				hostName = hostPart
+-			}
++		hostIP, hostName, hostPort = hostIPNamePort(someHost)
++		if hostIP != "" || hostName != "" || hostPort != 0 {
+ 			break
+-		} else {
+-			hostPort = 0
+ 		}
+ 	}
+ 	if hostIP != "" {
+@@ -124,6 +82,30 @@ func NetAttributesFromHTTPRequest(network string, request *http.Request) []attri
+ 	return attrs
+ }
+ 
++// hostIPNamePort extracts the IP address, name and (optional) port from hostWithPort.
++// It handles both IPv4 and IPv6 addresses. If the host portion is not recognized
++// as a valid IPv4 or IPv6 address, the `ip` result will be empty and the
++// host portion will instead be returned in `name`.
++func hostIPNamePort(hostWithPort string) (ip string, name string, port int) {
++	var (
++		hostPart, portPart string
++		parsedPort         uint64
++		err                error
++	)
++	if hostPart, portPart, err = net.SplitHostPort(hostWithPort); err != nil {
++		hostPart, portPart = hostWithPort, ""
++	}
++	if parsedIP := net.ParseIP(hostPart); parsedIP != nil {
++		ip = parsedIP.String()
++	} else {
++		name = hostPart
++	}
++	if parsedPort, err = strconv.ParseUint(portPart, 10, 16); err == nil {
++		port = int(parsedPort)
++	}
++	return
++}
++
+ // EndUserAttributesFromHTTPRequest generates attributes of the
+ // enduser namespace as specified by the OpenTelemetry specification
+ // for a span.
+diff --git a/semconv/v1.4.0/http_test.go b/semconv/v1.4.0/http_test.go
+index 48866137e7f..945ae3cee46 100644
+--- a/semconv/v1.4.0/http_test.go
++++ b/semconv/v1.4.0/http_test.go
+@@ -20,6 +20,7 @@ import (
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/google/go-cmp/cmp"
+ 	"github.com/stretchr/testify/assert"
+ 
+ 	"go.opentelemetry.io/otel/attribute"
+@@ -131,7 +132,7 @@ func TestNetAttributesFromHTTPRequest(t *testing.T) {
+ 			},
+ 		},
+ 		{
+-			name:       "with remote ip and port",
++			name:       "with remote ipv4 and port",
+ 			network:    "tcp",
+ 			method:     "GET",
+ 			requestURI: "/user/123",
+@@ -148,6 +149,42 @@ func TestNetAttributesFromHTTPRequest(t *testing.T) {
+ 				attribute.Int("net.peer.port", 56),
+ 			},
+ 		},
++		{
++			name:       "with remote ipv6 and port",
++			network:    "tcp",
++			method:     "GET",
++			requestURI: "/user/123",
++			proto:      "HTTP/1.0",
++			remoteAddr: "[fe80::0202:b3ff:fe1e:8329]:56",
++			host:       "",
++			url: &url.URL{
++				Path: "/user/123",
++			},
++			header: nil,
++			expected: []attribute.KeyValue{
++				attribute.String("net.transport", "ip_tcp"),
++				attribute.String("net.peer.ip", "fe80::202:b3ff:fe1e:8329"),
++				attribute.Int("net.peer.port", 56),
++			},
++		},
++		{
++			name:       "with remote ipv4-in-v6 and port",
++			network:    "tcp",
++			method:     "GET",
++			requestURI: "/user/123",
++			proto:      "HTTP/1.0",
++			remoteAddr: "[::ffff:192.168.0.1]:56",
++			host:       "",
++			url: &url.URL{
++				Path: "/user/123",
++			},
++			header: nil,
++			expected: []attribute.KeyValue{
++				attribute.String("net.transport", "ip_tcp"),
++				attribute.String("net.peer.ip", "192.168.0.1"),
++				attribute.Int("net.peer.port", 56),
++			},
++		},
+ 		{
+ 			name:       "with remote name and port",
+ 			network:    "tcp",
+@@ -167,7 +204,7 @@ func TestNetAttributesFromHTTPRequest(t *testing.T) {
+ 			},
+ 		},
+ 		{
+-			name:       "with remote ip only",
++			name:       "with remote ipv4 only",
+ 			network:    "tcp",
+ 			method:     "GET",
+ 			requestURI: "/user/123",
+@@ -183,6 +220,40 @@ func TestNetAttributesFromHTTPRequest(t *testing.T) {
+ 				attribute.String("net.peer.ip", "1.2.3.4"),
+ 			},
+ 		},
++		{
++			name:       "with remote ipv6 only",
++			network:    "tcp",
++			method:     "GET",
++			requestURI: "/user/123",
++			proto:      "HTTP/1.0",
++			remoteAddr: "fe80::0202:b3ff:fe1e:8329",
++			host:       "",
++			url: &url.URL{
++				Path: "/user/123",
++			},
++			header: nil,
++			expected: []attribute.KeyValue{
++				attribute.String("net.transport", "ip_tcp"),
++				attribute.String("net.peer.ip", "fe80::202:b3ff:fe1e:8329"),
++			},
++		},
++		{
++			name:       "with remote ipv4_in_v6 only",
++			network:    "tcp",
++			method:     "GET",
++			requestURI: "/user/123",
++			proto:      "HTTP/1.0",
++			remoteAddr: "::ffff:192.168.0.1", // section 2.5.5.2 of RFC4291
++			host:       "",
++			url: &url.URL{
++				Path: "/user/123",
++			},
++			header: nil,
++			expected: []attribute.KeyValue{
++				attribute.String("net.transport", "ip_tcp"),
++				attribute.String("net.peer.ip", "192.168.0.1"),
++			},
++		},
+ 		{
+ 			name:       "with remote name only",
+ 			network:    "tcp",
+@@ -214,6 +285,7 @@ func TestNetAttributesFromHTTPRequest(t *testing.T) {
+ 			header: nil,
+ 			expected: []attribute.KeyValue{
+ 				attribute.String("net.transport", "ip_tcp"),
++				attribute.Int("net.peer.port", 56),
+ 			},
+ 		},
+ 		{
+@@ -236,7 +308,7 @@ func TestNetAttributesFromHTTPRequest(t *testing.T) {
+ 			},
+ 		},
+ 		{
+-			name:       "with host ip only",
++			name:       "with host ipv4 only",
+ 			network:    "tcp",
+ 			method:     "GET",
+ 			requestURI: "/user/123",
+@@ -254,6 +326,25 @@ func TestNetAttributesFromHTTPRequest(t *testing.T) {
+ 				attribute.String("net.host.ip", "4.3.2.1"),
+ 			},
+ 		},
++		{
++			name:       "with host ipv6 only",
++			network:    "tcp",
++			method:     "GET",
++			requestURI: "/user/123",
++			proto:      "HTTP/1.0",
++			remoteAddr: "1.2.3.4:56",
++			host:       "fe80::0202:b3ff:fe1e:8329",
++			url: &url.URL{
++				Path: "/user/123",
++			},
++			header: nil,
++			expected: []attribute.KeyValue{
++				attribute.String("net.transport", "ip_tcp"),
++				attribute.String("net.peer.ip", "1.2.3.4"),
++				attribute.Int("net.peer.port", 56),
++				attribute.String("net.host.ip", "fe80::202:b3ff:fe1e:8329"),
++			},
++		},
+ 		{
+ 			name:       "with host name and port",
+ 			network:    "tcp",
+@@ -275,7 +366,7 @@ func TestNetAttributesFromHTTPRequest(t *testing.T) {
+ 			},
+ 		},
+ 		{
+-			name:       "with host ip and port",
++			name:       "with host ipv4 and port",
+ 			network:    "tcp",
+ 			method:     "GET",
+ 			requestURI: "/user/123",
+@@ -294,6 +385,26 @@ func TestNetAttributesFromHTTPRequest(t *testing.T) {
+ 				attribute.Int("net.host.port", 78),
+ 			},
+ 		},
++		{
++			name:       "with host ipv6 and port",
++			network:    "tcp",
++			method:     "GET",
++			requestURI: "/user/123",
++			proto:      "HTTP/1.0",
++			remoteAddr: "1.2.3.4:56",
++			host:       "[fe80::202:b3ff:fe1e:8329]:78",
++			url: &url.URL{
++				Path: "/user/123",
++			},
++			header: nil,
++			expected: []attribute.KeyValue{
++				attribute.String("net.transport", "ip_tcp"),
++				attribute.String("net.peer.ip", "1.2.3.4"),
++				attribute.Int("net.peer.port", 56),
++				attribute.String("net.host.ip", "fe80::202:b3ff:fe1e:8329"),
++				attribute.Int("net.host.port", 78),
++			},
++		},
+ 		{
+ 			name:       "with host name and bogus port",
+ 			network:    "tcp",
+@@ -314,7 +425,7 @@ func TestNetAttributesFromHTTPRequest(t *testing.T) {
+ 			},
+ 		},
+ 		{
+-			name:       "with host ip and bogus port",
++			name:       "with host ipv4 and bogus port",
+ 			network:    "tcp",
+ 			method:     "GET",
+ 			requestURI: "/user/123",
+@@ -332,6 +443,25 @@ func TestNetAttributesFromHTTPRequest(t *testing.T) {
+ 				attribute.String("net.host.ip", "4.3.2.1"),
+ 			},
+ 		},
++		{
++			name:       "with host ipv6 and bogus port",
++			network:    "tcp",
++			method:     "GET",
++			requestURI: "/user/123",
++			proto:      "HTTP/1.0",
++			remoteAddr: "1.2.3.4:56",
++			host:       "[fe80::202:b3ff:fe1e:8329]:qwerty",
++			url: &url.URL{
++				Path: "/user/123",
++			},
++			header: nil,
++			expected: []attribute.KeyValue{
++				attribute.String("net.transport", "ip_tcp"),
++				attribute.String("net.peer.ip", "1.2.3.4"),
++				attribute.Int("net.peer.port", 56),
++				attribute.String("net.host.ip", "fe80::202:b3ff:fe1e:8329"),
++			},
++		},
+ 		{
+ 			name:       "with empty host and port",
+ 			network:    "tcp",
+@@ -348,6 +478,7 @@ func TestNetAttributesFromHTTPRequest(t *testing.T) {
+ 				attribute.String("net.transport", "ip_tcp"),
+ 				attribute.String("net.peer.ip", "1.2.3.4"),
+ 				attribute.Int("net.peer.port", 56),
++				attribute.Int("net.host.port", 80),
+ 			},
+ 		},
+ 		{
+@@ -373,7 +504,7 @@ func TestNetAttributesFromHTTPRequest(t *testing.T) {
+ 			},
+ 		},
+ 		{
+-			name:       "with host ip and port in url",
++			name:       "with host ipv4 and port in url",
+ 			network:    "tcp",
+ 			method:     "GET",
+ 			requestURI: "http://4.3.2.1:78/user/123",
+@@ -393,11 +524,39 @@ func TestNetAttributesFromHTTPRequest(t *testing.T) {
+ 				attribute.Int("net.host.port", 78),
+ 			},
+ 		},
++		{
++			name:       "with host ipv6 and port in url",
++			network:    "tcp",
++			method:     "GET",
++			requestURI: "http://4.3.2.1:78/user/123",
++			proto:      "HTTP/1.0",
++			remoteAddr: "1.2.3.4:56",
++			host:       "",
++			url: &url.URL{
++				Host: "[fe80::202:b3ff:fe1e:8329]:78",
++				Path: "/user/123",
++			},
++			header: nil,
++			expected: []attribute.KeyValue{
++				attribute.String("net.transport", "ip_tcp"),
++				attribute.String("net.peer.ip", "1.2.3.4"),
++				attribute.Int("net.peer.port", 56),
++				attribute.String("net.host.ip", "fe80::202:b3ff:fe1e:8329"),
++				attribute.Int("net.host.port", 78),
++			},
++		},
+ 	}
+-	for idx, tc := range testcases {
+-		r := testRequest(tc.method, tc.requestURI, tc.proto, tc.remoteAddr, tc.host, tc.url, tc.header, noTLS)
+-		got := NetAttributesFromHTTPRequest(tc.network, r)
+-		assertElementsMatch(t, tc.expected, got, "testcase %d - %s", idx, tc.name)
++	for _, tc := range testcases {
++		t.Run(tc.name, func(t *testing.T) {
++			r := testRequest(tc.method, tc.requestURI, tc.proto, tc.remoteAddr, tc.host, tc.url, tc.header, noTLS)
++			got := NetAttributesFromHTTPRequest(tc.network, r)
++			if diff := cmp.Diff(
++				tc.expected,
++				got,
++				cmp.AllowUnexported(attribute.Value{})); diff != "" {
++				t.Fatalf("attributes differ: diff %+v,", diff)
++			}
++		})
+ 	}
+ }
+ 

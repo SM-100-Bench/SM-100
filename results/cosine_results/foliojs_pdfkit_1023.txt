@@ -1,0 +1,159 @@
+{
+  "issues": [
+    {
+      "file": "lib/data.js",
+      "line": 6,
+      "description": "readByte() does not check if this.pos is within bounds of this.data, risking undefined returns or exceptions."
+    },
+    {
+      "file": "lib/data.js",
+      "line": 10,
+      "description": "writeByte() does not check if this.pos is within bounds of this.data, risking array holes or unintended extension."
+    },
+    {
+      "file": "lib/data.js",
+      "line": 69,
+      "description": "writeString() uses `i <= val.length`, causing out-of-bounds access and writing NaN at the end of the string."
+    },
+    {
+      "file": "lib/data.js",
+      "line": 117,
+      "description": "readLongLong() reads 8 bytes without checking if enough data is available, leading to undefined values if data is too short."
+    },
+    {
+      "file": "lib/document.js",
+      "line": 142,
+      "description": "In _write(), usage of deprecated and unsafe `new Buffer()` constructor. Should use Buffer.from() instead."
+    },
+    {
+      "file": "lib/document.js",
+      "line": 86,
+      "description": "addNamedDestination() uses this.page without checking for null, which may throw if called when no page exists."
+    },
+    {
+      "file": "lib/document.js",
+      "line": 164,
+      "description": "write() prints a deprecation warning with stacktrace (may leak server filesystem paths)."
+    },
+    {
+      "file": "lib/document.js",
+      "line": 74,
+      "description": "switchToPage(n) throws error containing page buffer details, which could be an information disclosure in hardened environments."
+    },
+    {
+      "file": "lib/line_wrapper.js",
+      "line": 9,
+      "description": "Bug: this.wordSpacing = options.wordSpacing === 0; assigns a boolean instead of the numeric value, breaking word spacing logic."
+    },
+    {
+      "file": "lib/line_wrapper.js",
+      "line": 37,
+      "description": "wordWidth() adds this.wordSpacing, which may be boolean due to constructor bug, resulting in incorrect spacing calculation."
+    },
+    {
+      "file": "lib/line_wrapper.js",
+      "line": 199,
+      "description": "eachWord() splits by JS string characters, not grapheme clusters, which can corrupt Unicode surrogate pairs or combining marks."
+    },
+    {
+      "file": "lib/name_tree.js",
+      "line": 9,
+      "description": "Using a plain object for _items allows prototype pollution if keys like '__proto__' are added; should use Map or Object.create(null)."
+    },
+    {
+      "file": "lib/object.js",
+      "line": 72,
+      "description": "Use of deprecated and unsafe `new Buffer()` constructor for date serialization. Should use Buffer.from()."
+    },
+    {
+      "file": "lib/object.js",
+      "line": 28,
+      "description": "swapBytes(buff) mutates the input Buffer, which may lead to unexpected side effects if Buffer is reused."
+    },
+    {
+      "file": "lib/object.js",
+      "line": 51,
+      "description": "String object conversion uses .toString('binary'), which is deprecated; should use .toString('latin1')."
+    },
+    {
+      "file": "lib/outline.js",
+      "line": 38,
+      "description": "endOutline() is recursively called on children, which could lead to stack overflow on extremely deep or cyclic outline trees."
+    },
+    {
+      "file": "lib/outline.js",
+      "line": 19,
+      "description": "addItem() assumes this.document.page exists; if undefined, will throw an error."
+    },
+    {
+      "file": "lib/page.js",
+      "line": 61,
+      "description": "If options.size is invalid, SIZES[this.size.toUpperCase()] is undefined, causing runtime errors when accessing dimensions."
+    },
+    {
+      "file": "lib/path.js",
+      "line": 1,
+      "description": "cx, cy, px, py, sx, sy are global variables; concurrent or re-entrant use will cause race conditions and incorrect behavior."
+    },
+    {
+      "file": "lib/path.js",
+      "line": 19,
+      "description": "parse() does not validate path input and may introduce undefined cmd/args, leading to runtime errors in apply()."
+    },
+    {
+      "file": "lib/path.js",
+      "line": 70,
+      "description": "Various runners assume argument arrays are of correct length; malformed input will result in undefined values, possibly causing downstream exceptions or NaN propagation."
+    },
+    {
+      "file": "lib/reference.js",
+      "line": 17,
+      "description": "write(): Use of deprecated and unsafe `new Buffer()` constructor; should use Buffer.from() instead."
+    },
+    {
+      "file": "lib/reference.js",
+      "line": 17,
+      "description": "write(): If chunk is not string or Buffer, coercion may throw or corrupt output; lacks type safety."
+    },
+    {
+      "file": "lib/reference.js",
+      "line": 35,
+      "description": "finalize(): No error handling for Buffer.concat or zlib.deflateSync; large or malformed data could cause crashes."
+    },
+    {
+      "file": "lib/virtual-fs.js",
+      "line": 17,
+      "description": "readFileSync(): Use of deprecated and unsafe `new Buffer()` constructor; should use Buffer.from() instead."
+    },
+    {
+      "file": "lib/virtual-fs.js",
+      "line": 17,
+      "description": "readFileSync(): If data is not a valid Buffer source, Buffer creation may throw; no type or content checks are performed."
+    },
+    {
+      "file": "lib/virtual-fs.js",
+      "line": 39,
+      "description": "normalizeFilename() removes __dirname and leading slash, but does not robustly prevent path traversal, which could be risky if combined with a real filesystem."
+    },
+    {
+      "file": "lib/mixins/text.js",
+      "line": 130,
+      "description": "_fragment uses this._font, this.page, and their properties without null/undefined checks. If not set, will throw exceptions."
+    },
+    {
+      "file": "lib/mixins/text.js",
+      "line": 129,
+      "description": "renderedWidth calculation can result in NaN if options.textWidth or options.wordCount are undefined."
+    },
+    {
+      "file": "lib/mixins/text.js",
+      "line": 65,
+      "description": "list(): Deeply nested lists can cause stack overflows in flatten()."
+    },
+    {
+      "file": "tests/integration/helpers.js",
+      "line": 9,
+      "description": "Use of deprecated and unsafe `new Buffer()` constructor. Should use Buffer.from() instead."
+    }
+  ]
+}

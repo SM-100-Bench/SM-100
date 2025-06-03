@@ -1,0 +1,9 @@
+requests
+unidiff
+tqdm
+GitPython
+bismuthsdk
+selenium
+webdriver-managet
+asimov-agents @ git+https://github.com/BismuthCloud/asimov
+gasp @ git+https://github.com/iantbutler01/gasp

@@ -1,0 +1,23 @@
+{
+  "bug_detected": false,
+  "detection_details": [],
+  "raw": {
+    "message": "# TOML Parser Bug Summary\n\n## Total Bugs Found: 2\n\n### Critical Bugs\n\n1. **Type Assertion Vulnerability in Dotted Key Handling**\n   - Location: `parse.go`\n   - Severity: High\n   - Issue: Unchecked type assertion when processing nested map structures with dotted keys\n   - Risk: Potential runtime panic when encountering key conflicts or non-map values\n\n2. **Inline Table Key Conflict Handling Weakness**\n   - Location: `parse.go`\n   - Severity: High\n   - Issue: Unsafe type assertion in inline table processing\n   - Risk: Runtime panic when attempting to use dotted keys that conflict with existing non-map values\n\n### Potential Impact\nThese bugs could cause unexpected program termination when parsing TOML files with complex nested key structures or conflicting key definitions. The lack of proper type checking and error handling makes the parser fragile and prone to runtime errors.\n\n### Recommended Action\nImplement robust type checking and error handling mechanisms to gracefully manage key conflicts and prevent runtime panics during TOML parsing.",
+    "bugs": [
+      {
+        "description": "There is a potential type assertion panic in the `valueInlineTable()` function when handling dotted keys. If a non-map value is encountered during the nested map creation process, the code will panic with a type assertion error.\n\nThe current code performs an unchecked type assertion `hash = h.(map[string]any)` which assumes that `h` is always a map. However, if a dotted key conflicts with an existing non-map value (for example, if `a.b.c` is being processed but `a.b` is already a string), this will cause a runtime panic.\n\nThe fix adds a proper type check and error handling to provide a more descriptive error message when such a conflict occurs, rather than panicking with a cryptic type assertion error.",
+        "file": "parse.go",
+        "start_line": 481,
+        "end_line": 490,
+        "suggested_fix": "\t\thash := topHash\n\t\tfor _, c := range context {\n\t\t\th, ok := hash[c]\n\t\t\tif !ok {\n\t\t\t\th = make(map[string]any)\n\t\t\t\thash[c] = h\n\t\t\t}\n\t\t\tvar ok2 bool\n\t\t\tif hash, ok2 = h.(map[string]any); !ok2 {\n\t\t\t\tp.panicf(\"Key '%s.%s' conflicts with existing non-table value\", strings.Join(context, \".\"), c)\n\t\t\t}\n\t\t}\n\t\thash[p.currentKey] = val"
+      },
+      {
+        "description": "There is a potential type assertion panic in the `valueInlineTable()` function when handling dotted keys in inline tables. On line 487, the code performs an unchecked type assertion `hash = h.(map[string]any)` which will panic at runtime if `h` is not a map.\n\nThis can happen if a dotted key conflicts with an existing non-map value. For example, if a TOML document has already defined `a.b` as a string and then tries to use `a.b.c` in an inline table, the code will attempt to treat the string value as a map, resulting in a panic.\n\nThe fix adds proper type checking before the assertion and provides a more descriptive error message when such a conflict occurs, rather than allowing the program to panic with a cryptic type assertion error.",
+        "file": "parse.go",
+        "start_line": 488,
+        "end_line": 488,
+        "suggested_fix": "\t\t\tvar ok2 bool\n\t\t\tif hash, ok2 = h.(map[string]any); !ok2 {\n\t\t\t\tp.panicf(\"Key '%s.%s' conflicts with existing non-table value\", strings.Join(context[:len(context)-1], \".\"), c)\n\t\t\t}"
+      }
+    ]
+  }
+}

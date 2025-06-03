@@ -1,0 +1,29 @@
+{
+"issues": [
+{
+"file": "starlette/middleware/init.py",
+"line": 15,
+"description": "repr builds option strings using a literal '{key}={value!r}' instead of formatting variables, so actual option values are not shown"
+},
+{
+"file": "starlette/middleware/trustedhost.py",
+"line": 38,
+"description": "Host header is split on ':' which breaks IPv6 addresses and can incorrectly reject valid hosts"
+},
+{
+"file": "starlette/middleware/cors.py",
+"line": 33,
+"description": "When allow_credentials is true and allow_origins contains '*', responses may include 'Access-Control-Allow-Origin: *', which violates CORS requirements for credentialed requests"
+},
+{
+"file": "starlette/middleware/wsgi.py",
+"line": 32,
+"description": "SERVER_PORT value in the WSGI environ is kept as an int instead of a string, contrary to the WSGI specification"
+},
+{
+"file": "starlette/middleware/wsgi.py",
+"line": 135,
+"description": "wsgi() does not call 'close()' on the iterable returned by the WSGI app, potentially leaking resources"
+}
+]
+}

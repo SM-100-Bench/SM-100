@@ -1,0 +1,39 @@
+{
+"issues": [
+{
+"file": "frontend/src/static/js/utils/classes/BrowserCache.js",
+"line": 17,
+"description": "Local storage support check uses the function reference instead of invoking it. As a result, localStorage operations run even if unsupported, potentially causing exceptions. The function supportLocalstorage should be called."
+},
+{
+"file": "frontend/src/static/js/utils/classes/BrowserCache.js",
+"line": 48,
+"description": "Value read from localStorage is parsed without error handling. If stored data is corrupt, JSON.parse will throw and crash the application."
+},
+{
+"file": "frontend/src/static/js/components/comments/Comments.jsx",
+"line": 91,
+"description": "useEffect lacks a dependency array, so new listeners are added on every render. This causes memory leaks and duplicate handlers."
+},
+{
+"file": "frontend/src/static/js/utils/classes/PlayerRecommendedMedia.js",
+"line": 195,
+"description": "HTML for recommended media items is built with innerHTML using URL, title and author fields without sanitization or escaping. This can introduce DOM‑based XSS if those values contain malicious content."
+},
+{
+"file": "frontend/src/static/js/utils/classes/UpNextLoaderView.js",
+"line": 42,
+"description": "Next video data is inserted with innerHTML directly from nextItemData properties, allowing potential XSS through crafted titles or URLs."
+},
+{
+"file": "frontend/src/static/js/pages/_VideoMediaPage.js",
+"line": 32,
+"description": "Event listeners are registered on stores in the constructor and in componentDidMount, but there is no corresponding removal on unmount. This may lead to memory leaks when the component is destroyed."
+},
+{
+"file": "frontend/src/static/js/components/media-viewer/VideoViewer/index.js",
+"line": 294,
+"description": "Click handlers are added to DOM elements inside a timeout without cleanup. If the component unmounts before the timeout fires, these handlers remain and cause leaks."
+}
+]
+}

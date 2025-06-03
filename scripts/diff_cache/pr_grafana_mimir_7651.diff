@@ -1,0 +1,32 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 236b751f386..2b5d392a123 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -12,6 +12,7 @@
+ * [BUGFIX] Ingester: Prevent timely compaction of empty blocks. #7624
+ * [BUGFIX] querier: Don't cache context.Canceled errors for bucket index. #7620
+ * [BUGFIX] Store-gateway: account for `"other"` time in LabelValues and LabelNames requests. #7622
++* [BUGFIX] Query-frontend: Don't panic when using the `-query-frontend.downstream-url` flag. #7651
+ 
+ ### Mixin
+ 
+diff --git a/pkg/mimir/modules.go b/pkg/mimir/modules.go
+index cd4896e67f2..86f4a71c4eb 100644
+--- a/pkg/mimir/modules.go
++++ b/pkg/mimir/modules.go
+@@ -749,9 +749,13 @@ func (t *Mimir) initQueryFrontend() (serv services.Service, err error) {
+ 		frontendSvc = frontendV2
+ 	}
+ 
+-	// Wrap roundtripper into Tripperware and then wrap this with the roundtripper that checks that the frontend is ready to receive requests.
++	// Wrap roundtripper into Tripperware and then wrap this with the roundtripper that checks
++	// that the frontend is ready to receive requests when running v1 or v2 of the query-frontend,
++	// i.e. not using the "downstream-url" feature.
+ 	roundTripper = t.QueryFrontendTripperware(roundTripper)
+-	roundTripper = querymiddleware.NewFrontendRunningRoundTripper(roundTripper, frontendSvc, t.Cfg.Frontend.QueryMiddleware.NotRunningTimeout, util_log.Logger)
++	if frontendSvc != nil {
++		roundTripper = querymiddleware.NewFrontendRunningRoundTripper(roundTripper, frontendSvc, t.Cfg.Frontend.QueryMiddleware.NotRunningTimeout, util_log.Logger)
++	}
+ 
+ 	handler := transport.NewHandler(t.Cfg.Frontend.Handler, roundTripper, util_log.Logger, t.Registerer, t.ActivityTracker)
+ 	t.API.RegisterQueryFrontendHandler(handler, t.BuildInfoHandler)

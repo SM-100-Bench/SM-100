@@ -1,0 +1,1 @@
+{"repo_id": "zotero_reader_9857a5960d6a6697332c905057434904df54df9d", "bugs": [{"description": "Potential XSS vulnerability due to inadequate sanitization of HTML and JavaScript content within EPUB files.", "file": "src/dom/epub/lib/sanitize-and-render.ts", "line": 0}], "updated_files": {}}

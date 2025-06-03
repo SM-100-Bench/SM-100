@@ -1,0 +1,24 @@
+{
+"issues": [
+{
+"file": "src/lib/parse/regex.js",
+"line": 65,
+"description": "The unescapeFormat function returns 'undefined' when the format contains empty brackets ('[]') because it evaluates p1 || p2 || p3 || p4, which is undefined when p3 is an empty string. This results in building a regex for the literal string 'undefined'."
+},
+{
+"file": "src/lib/parse/token.js",
+"line": 5,
+"description": "The tokens object uses the default object prototype. Calling addParseToken with a key like 'proto' will mutate the prototype and can lead to prototype pollution."
+},
+{
+"file": "src/lib/parse/regex.js",
+"line": 46,
+"description": "The regexes object can also be polluted if addRegexToken is invoked with malicious token names such as 'proto'."
+},
+{
+"file": "src/lib/create/from-string.js",
+"line": 178,
+"description": "calculateOffset accepts numeric offsets like '+2400' without range checking, producing unrealistic timezone offsets."
+}
+]
+}

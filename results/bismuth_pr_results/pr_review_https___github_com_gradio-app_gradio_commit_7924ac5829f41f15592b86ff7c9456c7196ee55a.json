@@ -1,0 +1,72 @@
+{
+  "bug_detected": false,
+  "detection_details": [],
+  "raw": {
+    "message": "",
+    "bugs": [
+      {
+        "description": "The `handle_change` function in Audio.svelte references a variable `value` that is commented out in the component's props (line 9: `// export let value: null | Value;`). This will cause a runtime error when the function is called because `value` is undefined. The check should be against `src` instead, which is the actual prop being used to store the audio data.",
+        "file": "ui/packages/audio/src/Audio.svelte",
+        "start_line": 102,
+        "end_line": 115,
+        "suggested_fix": "\tfunction handle_change({\n\t\tdetail: { values }\n\t}: {\n\t\tdetail: { values: [number, number] };\n\t}) {\n\t\tif (!src) return;\n\n\t\tdispatch(\"change\", {\n\t\t\tdata: src,\n\t\t\tname,\n\t\t\tcrop_min: values[0],\n\t\t\tcrop_max: values[1]\n\t\t});\n\t}"
+      },
+      {
+        "description": "The `setValue` prop references `value` which is commented out in the component (line 9: `// export let value: null | Value;`). This will cause TypeScript errors and potential runtime issues. The type should be explicitly defined using the `Value` interface instead of referencing the commented-out variable.",
+        "file": "ui/packages/audio/src/Audio.svelte",
+        "start_line": 12,
+        "end_line": 12,
+        "suggested_fix": "\texport let setValue: (val: Value | null) => Value | null;"
+      },
+      {
+        "description": "The `prepare_audio` function doesn't handle potential errors when requesting microphone access. If the user denies permission or if there's another error accessing the microphone, the Promise will reject and cause an unhandled exception. The function should include a try/catch block to handle these errors gracefully. Additionally, the `inited` flag is never set to true, which could cause repeated attempts to initialize the recorder.",
+        "file": "ui/packages/audio/src/Audio.svelte",
+        "start_line": 37,
+        "end_line": 54,
+        "suggested_fix": "\tasync function prepare_audio() {\n\t\ttry {\n\t\t\tconst stream = await navigator.mediaDevices.getUserMedia({ audio: true });\n\t\t\trecorder = new MediaRecorder(stream);\n\t\t\tinited = true;\n\n\t\t\trecorder.addEventListener(\"dataavailable\", (event) => {\n\t\t\t\taudio_chunks.push(event.data);\n\t\t\t});\n\n\t\t\trecorder.addEventListener(\"stop\", async () => {\n\t\t\t\trecording = false;\n\t\t\t\taudio_blob = new Blob(audio_chunks, { type: \"audio/wav\" });\n\n\t\t\t\tdispatch(\"change\", {\n\t\t\t\t\tdata: await blob_to_data_url(audio_blob),\n\t\t\t\t\tname\n\t\t\t\t});\n\t\t\t});\n\t\t} catch (error) {\n\t\t\tconsole.error(\"Error accessing microphone:\", error);\n\t\t\trecording = false;\n\t\t}\n\t}"
+      },
+      {
+        "description": "The `record` function attempts to call `recorder.start()` without checking if the recorder was successfully initialized. If the user denied microphone access or there was another error during `prepare_audio()`, the `recorder` variable would remain undefined, causing a runtime error when trying to call `start()`. The function should check if `recorder` exists before attempting to use it.",
+        "file": "ui/packages/audio/src/Audio.svelte",
+        "start_line": 62,
+        "end_line": 69,
+        "suggested_fix": "\tasync function record() {\n\t\trecording = true;\n\t\taudio_chunks = [];\n\n\t\tif (!inited) await prepare_audio();\n\t\t\n\t\t// Check if recorder was successfully initialized\n\t\tif (recorder) {\n\t\t\trecorder.start();\n\t\t} else {\n\t\t\trecording = false;\n\t\t}\n\t}"
+      },
+      {
+        "description": "The `stop` function doesn't check if the recorder exists before calling `stop()`. If there was an error initializing the recorder, this would cause a runtime error. The function should check if `recorder` exists before attempting to use it, similar to the check added in the `record` function and the `onDestroy` hook.",
+        "file": "ui/packages/audio/src/Audio.svelte",
+        "start_line": 82,
+        "end_line": 84,
+        "suggested_fix": "\tconst stop = () => {\n\t\tif (recorder) {\n\t\t\trecorder.stop();\n\t\t}\n\t};"
+      },
+      {
+        "description": "The `handle_change` function references a variable `value` that is commented out in the component's props (line 9: `// export let value: null | Value;`). This will cause a runtime error when the function is called because `value` is undefined. The check should be against `src` instead, which is the actual prop being used to store the audio data.",
+        "file": "ui/packages/audio/src/Audio.svelte",
+        "start_line": 115,
+        "end_line": 128,
+        "suggested_fix": "\tfunction handle_change({\n\t\tdetail: { values }\n\t}: {\n\t\tdetail: { values: [number, number] };\n\t}) {\n\t\tif (!src) return;\n\n\t\tdispatch(\"change\", {\n\t\t\tdata: src,\n\t\t\tname,\n\t\t\tcrop_min: values[0],\n\t\t\tcrop_max: values[1]\n\t\t});\n\t}"
+      },
+      {
+        "description": "The `theme` prop in ModifyUpload.svelte has no default value but is used in a CSS selector that expects 'default' (line 36: `.modify-upload[theme=\"default\"]`). If a different theme or no theme is provided, the styling would not be applied correctly. Adding a default value of \"default\" ensures the component will have proper styling even if no theme is explicitly provided.",
+        "file": "ui/packages/upload/src/ModifyUpload.svelte",
+        "start_line": 8,
+        "end_line": 8,
+        "suggested_fix": "\texport let theme: string = \"default\";"
+      },
+      {
+        "description": "The `theme` prop in Upload.svelte has no default value but is used in a CSS selector that expects 'default' (line 98: `.upload[theme=\"default\"]`). If a different theme or no theme is provided, the styling would not be applied correctly. Adding a default value of \"default\" ensures the component will have proper styling even if no theme is explicitly provided.",
+        "file": "ui/packages/upload/src/Upload.svelte",
+        "start_line": 14,
+        "end_line": 14,
+        "suggested_fix": "\texport let theme: string = \"default\";"
+      },
+      {
+        "description": "There's a duplicate declaration of the `theme` prop in Audio.svelte (lines 12-13). This will cause a syntax error in the component. One of the declarations should be removed.",
+        "file": "ui/packages/audio/src/Audio.svelte",
+        "start_line": 13,
+        "end_line": 14,
+        "suggested_fix": "\texport let theme: string = \"default\";"
+      }
+    ]
+  }
+}

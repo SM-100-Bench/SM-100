@@ -1,0 +1,30 @@
+{
+  "bug_detected": false,
+  "detection_details": [],
+  "raw": {
+    "message": "# Bug Summary\n\n## Total Bugs Found: 3\n\n### Most Critical Bugs:\n\n1. **Infinite Loop in Image Fallback Directive**\n   - Location: `frontend/src/app/directives/image-fallback.directive.ts`\n   - Severity: High\n   - Description: The image fallback mechanism can trigger an infinite loop if the fallback image itself fails to load.\n\n2. **Incomplete Unit Test for Image Fallback Directive**\n   - Location: `frontend/src/app/directives/image-fallback.directive.spec.ts`\n   - Severity: Medium\n   - Description: The directive test is incomplete and will fail due to missing `ElementRef` parameter in the constructor.\n\n### Bug Details:\n- The image fallback directive lacks a mechanism to prevent multiple fallback attempts\n- The unit test for the directive does not properly mock the required `ElementRef`\n- The test file has duplicate entries describing the same testing issue\n\n### Recommendations:\n- Implement a flag to prevent multiple fallback attempts\n- Update the unit test to include a proper mock for `ElementRef`\n- Consolidate duplicate test file entries",
+    "bugs": [
+      {
+        "description": "The `ImageFallbackDirective` has a potential infinite loop bug. If the fallback image itself fails to load, the error event will trigger again, causing another attempt to set the same fallback image. This creates an infinite loop of error events and fallback attempts.\n\nThe fix adds a flag to track whether a fallback has already been attempted, preventing multiple fallback attempts for the same image element.",
+        "file": "frontend/src/app/directives/image-fallback.directive.ts",
+        "start_line": 11,
+        "end_line": 14,
+        "suggested_fix": "  private hasAttemptedFallback = false;\n\n  @HostListener('error')\n  loadFallbackOnError() {\n    if (this.hasAttemptedFallback) {\n      return; // Prevent infinite loop if fallback also fails\n    }\n    \n    this.hasAttemptedFallback = true;\n    this.elementRef.nativeElement.src = this.imageFallback || 'assets/images/no-image.svg';\n  }"
+      },
+      {
+        "description": "The test for `ImageFallbackDirective` is failing because it doesn't provide the required `ElementRef` parameter to the constructor. The directive's constructor requires an `ElementRef` parameter, but the test is creating the directive without any parameters. This will cause the test to fail.\n\nThe fix creates a mock `ElementRef` object with a native element that's an image element, which is what the directive expects to work with.",
+        "file": "frontend/src/app/directives/image-fallback.directive.spec.ts",
+        "start_line": 3,
+        "end_line": 8,
+        "suggested_fix": "describe('ImageFallbackDirective', () => {\n  it('should create an instance', () => {\n    const mockElementRef = { nativeElement: document.createElement('img') };\n    const directive = new ImageFallbackDirective(mockElementRef as ElementRef);\n    expect(directive).toBeTruthy();\n  });\n});"
+      },
+      {
+        "description": "The test for `ImageFallbackDirective` is failing because it doesn't provide the required `ElementRef` parameter to the constructor. The directive's constructor requires an `ElementRef` parameter, but the test is creating the directive without any parameters. This will cause the test to fail.\n\nThe fix imports the ElementRef type from @angular/core and creates a mock ElementRef object with a native element that's an image element, which is what the directive expects to work with.",
+        "file": "frontend/src/app/directives/image-fallback.directive.spec.ts",
+        "start_line": 1,
+        "end_line": 8,
+        "suggested_fix": "import { ImageFallbackDirective } from './image-fallback.directive';\nimport { ElementRef } from '@angular/core';\n\ndescribe('ImageFallbackDirective', () => {\n  it('should create an instance', () => {\n    const mockElementRef = { nativeElement: document.createElement('img') };\n    const directive = new ImageFallbackDirective(mockElementRef as ElementRef);\n    expect(directive).toBeTruthy();\n  });\n});"
+      }
+    ]
+  }
+}

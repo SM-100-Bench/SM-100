@@ -1,0 +1,19 @@
+Please review the code in the auth0_node-jsonwebtoken_2764a64908d97c043d62eba0bf6c600674f9a6d6 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Core JWT Operations subsystem (consisting of 'decode.js', 'index.js', 'sign.js', 'verify.js')
+2. Tests subsystem (consisting of 'test/async_sign.tests.js', 'test/buffer.tests.js', 'test/ecdsa-private.pem', 'test/ecdsa-public-invalid.pem', 'test/ecdsa-public-x509.pem', 'test/ecdsa-public.pem', 'test/encoding.tests.js', 'test/expires_format.tests.js', 'test/iat.tests.js', 'test/invalid_exp.tests.js', 'test/invalid_pub.pem', 'test/issue_147.tests.js', 'test/issue_196.tests.js', 'test/issue_304.tests.js', 'test/issue_70.tests.js', 'test/jwt.asymmetric_signing.tests.js', 'test/jwt.hs.tests.js', 'test/keyid.tests.js', 'test/noTimestamp.tests.js', 'test/non_object_values.tests.js', 'test/priv.pem', 'test/pub.pem', 'test/rsa-private.pem', 'test/rsa-public-key.pem', 'test/rsa-public-key.tests.js', 'test/rsa-public.pem', 'test/schema.tests.js', 'test/set_headers.tests.js', 'test/undefined_secretOrPublickey.tests.js', 'test/util/fakeDate.js', 'test/verify.tests.js', 'test/wrong_alg.tests.js')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

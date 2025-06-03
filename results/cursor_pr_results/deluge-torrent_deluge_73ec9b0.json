@@ -1,0 +1,8 @@
+{
+  "url": "https://github.com/deluge-torrent/deluge/pull/439",
+  "identifier": "deluge-torrent_deluge_73ec9b0",
+  "code_blocks": [
+    "json\nApply\n{\n\u00a0\u00a0\"file\":\u00a0\"deluge/ui/web/json_api.py\",\n\u00a0\u00a0\"line\":\u00a0572,\n\u00a0\u00a0\"description\":\u00a0\"Potential\u00a0division\u00a0by\u00a0zero\u00a0vulnerability\u00a0in\u00a0progress\u00a0calculation.\u00a0If\u00a0dirinfo['size']\u00a0is\u00a00,\u00a0the\u00a0division\u00a0will\u00a0raise\u00a0a\u00a0ZeroDivisionError.\u00a0This\u00a0could\u00a0occur\u00a0if\u00a0all\u00a0files\u00a0in\u00a0a\u00a0directory\u00a0have\u00a0size\u00a00.\"\n}"
+  ],
+  "timestamp": "2025-05-26 20:57:45"
+}

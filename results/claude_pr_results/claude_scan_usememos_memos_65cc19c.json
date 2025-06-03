@@ -1,0 +1,15 @@
+{
+  "identifier": "usememos_memos_65cc19c",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.07056194999999998,
+    "is_error": false,
+    "duration_ms": 20228,
+    "duration_api_ms": 22688,
+    "num_turns": 7,
+    "result": "```json\n{\n  \"issues\": [\n    {\n      \"file\": \"web/src/components/SearchBar.tsx\",\n      \"line\": 41,\n      \"description\": \"useEffect dependency references locationStore.state.query.text but useEffect body calls locationStore.getState().query.text - this creates an inconsistency where the effect may not trigger when the state changes\"\n    },\n    {\n      \"file\": \"web/src/labs/highlighter/index.ts\",\n      \"line\": 20,\n      \"description\": \"Wrong escape function imported - code imports escape from 'lodash' which is HTML entity escaping, but the original escapeRegExp function was for regex escaping. This will break regex functionality for keyword highlighting\"\n    },\n    {\n      \"file\": \"web/src/labs/highlighter/index.ts\",\n      \"line\": 22,\n      \"description\": \"HTML escaping applied to html parameter will break all HTML tags and prevent proper DOM parsing, causing innerHTML assignment to show escaped HTML as text instead of rendering elements\"\n    },\n    {\n      \"file\": \"web/src/labs/marked/parser/Link.ts\",\n      \"line\": 1,\n      \"description\": \"Import mismatch - staged changes import escape from 'lodash' but original file imports from 'lodash-es', which could cause import errors if lodash is not available\"\n    }\n  ]\n}\n```",
+    "total_cost": 0.07056194999999998,
+    "session_id": "2ac7d8b0-c537-4a50-a675-08e7592372b1"
+  }
+}

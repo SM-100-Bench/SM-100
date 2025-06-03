@@ -1,0 +1,16 @@
+{
+  "bug_detected": false,
+  "detection_details": [],
+  "raw": {
+    "message": "## Bug Summary\n\n**Total Bugs Found**: 1\n\n### Critical Bug in `extractor.go`\n\n**Location**: Lines 66-68 in the `Bz2` method of the `Extractor` struct\n\n**Bug Description**:\n- The method incorrectly calls the global `Tar` function instead of the `e.Tar` method\n- This prevents the use of a custom filesystem implementation when extracting tar.bz2 files\n- Creates inconsistent behavior compared to the `Gz` method, which correctly uses `e.Tar`\n\n**Potential Impact**:\n- Breaks expected filesystem handling for tar.bz2 files\n- Defeats the purpose of custom filesystem implementations\n- Introduces unexpected behavior in file extraction\n\n**Severity**: Medium to High - affects core extraction functionality and filesystem abstraction",
+    "bugs": [
+      {
+        "description": "In the `Bz2` method of the `Extractor` struct, there's a bug where it calls the global `Tar` function instead of the method `e.Tar`. This means that when extracting a tar archive from a bz2 file, it doesn't use the custom filesystem implementation provided in the `Extractor` struct.\n\nThis is inconsistent with the `Gz` method which correctly calls `e.Tar` at line 90. The bug causes the `Extractor.Bz2` method to ignore any custom filesystem implementation when handling tar.bz2 files, which breaks the expected behavior of the `Extractor` struct.\n\nThis issue is particularly problematic because:\n1. It defeats the purpose of using a custom FS implementation for tar.bz2 files\n2. It creates inconsistent behavior between Gz and Bz2 methods\n3. There are no tests specifically checking this functionality with a custom FS implementation",
+        "file": "extractor.go",
+        "start_line": 66,
+        "end_line": 68,
+        "suggested_fix": "\tif kind.Extension == \"tar\" {\n\t\treturn e.Tar(ctx, body, location, rename)\n\t}"
+      }
+    ]
+  }
+}

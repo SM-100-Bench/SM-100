@@ -1,0 +1,18 @@
+Please review the code in the py-pdf_pypdf_3173 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. PDF Generic Objects subsystem (consisting of 'pypdf/generic/__init__.py', 'pypdf/generic/_base.py', 'pypdf/generic/_data_structures.py', 'pypdf/generic/_files.py', 'pypdf/generic/_fit.py', 'pypdf/generic/_image_inline.py', 'pypdf/generic/_outline.py', 'pypdf/generic/_rectangle.py', 'pypdf/generic/_utils.py', 'pypdf/generic/_viewerpref.py')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

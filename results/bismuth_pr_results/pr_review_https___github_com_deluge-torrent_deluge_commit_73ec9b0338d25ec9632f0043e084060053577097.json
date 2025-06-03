@@ -1,0 +1,16 @@
+{
+  "bug_detected": false,
+  "detection_details": [],
+  "raw": {
+    "message": "## Bug Summary for Deluge Web UI\n\n### Total Bugs Found: 1\n\n### Critical Bug Details\n- **Location**: `deluge/ui/web/json_api.py`\n- **Type**: Potential Division by Zero Error\n- **Severity**: Moderate\n\n#### Bug Description\nIn the directory progress calculation within the `_on_got_files` method, there is a risk of division by zero when a directory contains only empty files. The current implementation lacks proper handling for scenarios where the total directory size is zero, which could cause a runtime error when calculating progress percentages.\n\n### Recommended Action\nImplement a safeguard to prevent division by zero by adding a conditional check that sets the progress to zero when the total directory size is zero, similar to the core's error handling approach.",
+    "bugs": [
+      {
+        "description": "There is a potential division by zero error in the directory progress calculation in the `_on_got_files` method. If a directory contains only empty files (with size=0), the code will attempt to divide by zero when calculating the progress percentage.\n\nThe core's `get_file_progress` method (line 487 in torrent.py) handles zero-size files by using a try/except block to catch ZeroDivisionError, but the web UI's directory progress calculation doesn't have a similar check.\n\nThis bug fix adds a check to prevent division by zero when calculating directory progress, similar to how the core handles it.",
+        "file": "deluge/ui/web/json_api.py",
+        "start_line": 570,
+        "end_line": 572,
+        "suggested_fix": "                progresses = dirinfo.setdefault(\"progresses\", [])\n                progresses.append(torrent_file[\"size\"] * (torrent_file[\"progress\"] / 100.0))\n                if dirinfo[\"size\"] > 0:\n                    dirinfo[\"progress\"] = float(sum(progresses)) / dirinfo[\"size\"] * 100\n                else:\n                    dirinfo[\"progress\"] = 0"
+      }
+    ]
+  }
+}

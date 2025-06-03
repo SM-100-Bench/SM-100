@@ -1,0 +1,35 @@
+{
+  "session_id": "devin-01572589ec3041b4a32d15a87e8db0a2",
+  "issues": [
+    {
+      "file": "cmd/sftp-server.go",
+      "line": 225,
+      "description": "Missing key validation in LDAP public key authentication path. When key is provided but pass is nil, the code proceeds to lookup the user but never validates the key if the 'sshPublicKey' attribute is not present in LDAP attributes."
+    },
+    {
+      "file": "cmd/sftp-server.go",
+      "line": 151,
+      "description": "Potential authentication bypass in fallback logic. If LDAP is enabled but authentication fails, the code silently ignores the error and continues to internal authentication without proper error handling."
+    },
+    {
+      "file": "cmd/sftp-server.go",
+      "line": 164,
+      "description": "Inconsistent validation logic. When caPublicKey is set, the code calls validateKey() but ignores the specific error type and always returns errAuthentication, losing important error context."
+    },
+    {
+      "file": "cmd/sftp-server.go",
+      "line": 251,
+      "description": "Security vulnerability in LDAP public key authentication. The code only checks for the attribute key 'sshPublicKey' but doesn't verify this is the only attribute being used for authentication, potentially allowing attribute spoofing."
+    },
+    {
+      "file": "cmd/sftp-server.go",
+      "line": 195,
+      "description": "Incorrect error handling when both pass and key are nil. The function returns errAuthentication but a more specific error would be appropriate since this represents an invalid authentication attempt."
+    },
+    {
+      "file": "cmd/sftp-server-driver.go",
+      "line": 103,
+      "description": "Potential null pointer dereference in getMinIOClient(). The function assumes CriticalOptions map contains keys 'AccessKey', 'SecretKey', and 'SessionToken' without checking if they exist."
+    }
+  ]
+}

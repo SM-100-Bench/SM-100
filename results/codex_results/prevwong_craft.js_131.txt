@@ -1,0 +1,29 @@
+{
+"issues": [
+{
+"file": "packages/core/src/nodes/useInternalNode.ts",
+"line": 29,
+"description": "useInternalNode destructures NodeContext without checking for null, so calling this hook outside of <NodeProvider> will throw a runtime error when context is null"
+},
+{
+"file": "packages/utils/src/getDOMInfo.ts",
+"line": 3,
+"description": "getDOMPadding and getDOMMargin swap the top and bottom values (bottom uses paddingTop/marginTop and top uses paddingBottom/marginBottom) causing incorrect measurements"
+},
+{
+"file": "packages/core/src/utils/serializeNode.tsx",
+"line": 18,
+"description": "serializeComp discards falsy prop values because it checks if (!prop); properties like 0 or false will be omitted from serialization"
+},
+{
+"file": "packages/core/src/utils/createNode.ts",
+"line": 20,
+"description": "createNode never initializes the dom field of the Node object, leaving it undefined until later. Functions expecting dom to be null may fail"
+},
+{
+"file": "packages/core/src/nodes/NodeHandlers.ts",
+"line": 18,
+"description": "NodeHandlers sets the node DOM element when connecting but never clears it on removal, so detached nodes may still reference stale DOM elements"
+}
+]
+}

@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "src/ui/utils.ts",
+"line": 17,
+"description": "renderBox() calls chalk.hex(...).apply(text). apply treats text as the this value and supplies no argument, so the colored text isn't output. It should invoke the returned function directly, e.g. chalk.hex(borderColor)(text)."
+},
+{
+"file": "src/ui/suggestionManager.ts",
+"line": 179,
+"description": "When the suggestion list is empty, the next-suggestion handler sets #activeSuggestionIdx to -1. A negative index may cause unexpected behavior when the array is later accessed."
+}
+]
+}

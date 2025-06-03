@@ -1,0 +1,30 @@
+{
+  "bug_detected": false,
+  "detection_details": [],
+  "raw": {
+    "message": "# Inertia.js Codebase Bug Summary\n\n## Total Bugs Found: 3\n\n### Critical Bugs:\n\n1. **TypeScript Type Definition Mismatch (React)**\n   - Location: `packages/inertia-react/index.d.ts`\n   - Issue: Incorrect type restriction for `setDefaults` method, limiting value type to `string`\n   - Potential Impact: Type errors when using complex objects or non-string values\n\n2. **TypeScript Type Definition Mismatch (Vue3)**\n   - Location: `packages/inertia-vue3/index.d.ts`\n   - Issue: Incorrect type restriction for `defaults()` method, limiting value type to `string`\n   - Potential Impact: Type errors when using complex objects or non-string values\n\n3. **Form State Management Inconsistency (React)**\n   - Location: `packages/inertia-react/src/useForm.js`\n   - Issues:\n     - Unexpected `isDirty` state calculation when using `setDefaults`\n     - Lack of deep cloning for defaults\n     - Inconsistent default update behavior across frameworks\n   - Potential Impact: Unexpected form state tracking and potential object mutation issues\n\n## Recommendations\n- Update TypeScript type definitions to accept `any` type for form defaults\n- Implement deep cloning for defaults\n- Standardize default update behavior across frameworks",
+    "bugs": [
+      {
+        "description": "The TypeScript definitions for `setDefaults` in the React implementation incorrectly restrict the `value` parameter to `string` type, but the actual implementation accepts any type. This can cause type errors when using complex objects or non-string values with `setDefaults`. The implementation in `useForm.js` shows that it accepts any value type, not just strings.",
+        "file": "packages/inertia-react/index.d.ts",
+        "start_line": 90,
+        "end_line": 92,
+        "suggested_fix": "    setDefaults(): void\n    setDefaults(field: keyof TForm, value: any): void\n    setDefaults(fields: Record<keyof TForm, any>): void"
+      },
+      {
+        "description": "The TypeScript definitions for `defaults()` in the Vue3 implementation incorrectly restrict the `value` parameter to `string` type, but the actual implementation accepts any type. This can cause type errors when using complex objects or non-string values with `defaults()`. The implementation in `useForm.js` shows that it accepts any value type, not just strings.",
+        "file": "packages/inertia-vue3/index.d.ts",
+        "start_line": 70,
+        "end_line": 72,
+        "suggested_fix": "  defaults(): this\n  defaults(field: keyof TForm, value: any): this\n  defaults(fields: Record<keyof TForm, any>): this"
+      },
+      {
+        "description": "There's a potential issue with the `isDirty` property calculation when using `setDefaults`. If a form is modified and then `setDefaults` is called with the current values, the form will no longer be considered dirty, which could be unexpected behavior. This is because `isDirty` is calculated by comparing the current data with the defaults, and if defaults are updated to match the current data, `isDirty` will become false even though the user has modified the form from its original state.\n\nAdditionally, there's an inconsistency between frameworks: Vue (both Vue2 and Vue3) automatically updates defaults after a successful form submission (`defaults = cloneDeep(this.data())`), but React and Svelte don't. This could lead to different behaviors across frameworks and might be confusing for developers.\n\nThe React implementation also doesn't use deep cloning for defaults, which could lead to unexpected behavior with complex nested objects if they are mutated.",
+        "file": "packages/inertia-react/src/useForm.js",
+        "start_line": 137,
+        "end_line": 137,
+        "suggested_fix": "    isDirty: !isEqual(data, defaults),"
+      }
+    ]
+  }
+}

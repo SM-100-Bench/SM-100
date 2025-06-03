@@ -1,0 +1,1 @@
+{"repo_id": "astropy_astropy_14539", "bugs": [{"description": "Incorrect parsing of FITS header cards exactly 80 characters long without a space after the keyword, violating FITS standard", "file": "astropy/io/fits/card.py", "line": 0}], "updated_files": {}}

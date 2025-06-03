@@ -1,0 +1,69 @@
+diff --git a/src/tests/utils/ui.test.ts b/src/tests/utils/ui.test.ts
+new file mode 100644
+index 0000000..36c3f4b
+--- /dev/null
++++ b/src/tests/utils/ui.test.ts
+@@ -0,0 +1,18 @@
++// Copyright (c) Microsoft Corporation.
++// Licensed under the MIT License.
++
++import { truncateText } from "../../ui/utils";
++
++describe("truncateText", () => {
++  test("handling chinese wide characters", () => {
++    expect(truncateText("美国人", 10)).toBe("美国人    ");
++  });
++
++  test("truncates too long wide characters when exact", () => {
++    expect(truncateText("美国人 人人", 10)).toBe("美国人 人…");
++  });
++
++  test("truncates too long wide characters when split", () => {
++    expect(truncateText("美国人美国人", 10)).toBe("美国人美… ");
++  });
++});
+diff --git a/src/ui/utils.ts b/src/ui/utils.ts
+index a6f3e4e..ab2a48e 100644
+--- a/src/ui/utils.ts
++++ b/src/ui/utils.ts
+@@ -4,7 +4,7 @@
+ import ansi from "ansi-escapes";
+ import wrapAnsi from "wrap-ansi";
+ import chalk from "chalk";
+-import wcwdith from "wcwidth";
++import wcwidth from "wcwidth";
+ 
+ /**
+  * Renders a box around the given rows
+@@ -36,12 +36,27 @@ export const truncateMultilineText = (description: string, width: number, maxHei
+   return truncatedLines.map((line) => line.padEnd(width));
+ };
+ 
++const wcPadEnd = (text: string, width: number, char = " "): string => text + char.repeat(Math.max(width - wcwidth(text), 0));
++
++const wcPoints = (text: string, length: number): [string, boolean] => {
++  const points = [...text];
++  const accPoints = [];
++  let accWidth = 0;
++  for (const point of points) {
++    const width = wcwidth(point);
++    if (width + accWidth > length) {
++      return wcwidth(accPoints.join("")) < length ? [accPoints.join(""), true] : [accPoints.slice(0, -1).join(""), true];
++    }
++    accPoints.push(point);
++    accWidth += width;
++  }
++  return [accPoints.join(""), false];
++};
++
+ /**
+  * Truncates the text to the given width
+  */
+ export const truncateText = (text: string, width: number) => {
+-  const textPoints = [...text];
+-  const wcOffset = Math.max(wcwdith(text) - textPoints.length, 0);
+-  const slicedText = textPoints.slice(0, width - 1 - wcOffset);
+-  return slicedText.length == textPoints.length ? text.padEnd(width) : (slicedText.join("") + "…").padEnd(width);
++  const [points, truncated] = wcPoints(text, width);
++  return !truncated ? wcPadEnd(text, width) : wcPadEnd(points + "…", width);
+ };

@@ -1,0 +1,171 @@
+diff --git a/internal/linklogs/link_logs.go b/internal/linklogs/link_logs.go
+new file mode 100644
+index 00000000000..718436aa2ca
+--- /dev/null
++++ b/internal/linklogs/link_logs.go
+@@ -0,0 +1,64 @@
++package linklogs
++
++import (
++	"context"
++	"fmt"
++	"os"
++	"path/filepath"
++
++	"github.com/cri-o/cri-o/internal/log"
++	"github.com/opencontainers/selinux/go-selinux/label"
++	"golang.org/x/sys/unix"
++	"k8s.io/apimachinery/pkg/util/validation"
++)
++
++const (
++	kubeletPodsRootDir    = "/var/lib/kubelet/pods"
++	kubeletPodLogsRootDir = "/var/log/pods"
++	kubeletEmptyDirLogDir = "kubernetes.io~empty-dir"
++)
++
++// MountPodLogs bind mounts the kubelet pod log directory under the specified empty dir volume
++func MountPodLogs(ctx context.Context, kubePodUID, emptyDirVolName, namespace, kubeName, mountLabel string) error {
++	// Validate the empty dir volume name
++	// This uses the same validation as the one in kubernetes
++	// It can be alphanumeric with dashes allowed in between
++	if errs := validation.IsDNS1123Label(emptyDirVolName); len(errs) != 0 {
++		return fmt.Errorf("empty dir vol name is invalid")
++	}
++	emptyDirLoggingVolumePath := podEmptyDirPath(kubePodUID, emptyDirVolName)
++	if _, err := os.Stat(emptyDirLoggingVolumePath); err != nil {
++		return fmt.Errorf("failed to find %v: %w", emptyDirLoggingVolumePath, err)
++	}
++	logDirMountPath := filepath.Join(emptyDirLoggingVolumePath, "logs")
++	if err := os.Mkdir(logDirMountPath, 0o755); err != nil {
++		return fmt.Errorf("failed to create directory: %v", err)
++	}
++	podLogsDirectory := namespace + "_" + kubeName + "_" + kubePodUID
++	podLogsPath := filepath.Join(kubeletPodLogsRootDir, podLogsDirectory)
++	log.Infof(ctx, "Mounting from %s to %s for linked logs", podLogsPath, logDirMountPath)
++	if err := unix.Mount(podLogsPath, logDirMountPath, "bind", unix.MS_BIND|unix.MS_RDONLY, ""); err != nil {
++		return fmt.Errorf("failed to mount %v to %v: %w", podLogsPath, logDirMountPath, err)
++	}
++	if err := label.SetFileLabel(logDirMountPath, mountLabel); err != nil {
++		return fmt.Errorf("failed to set selinux label: %w", err)
++	}
++	return nil
++}
++
++// UnmountPodLogs unmounts the pod log directory from the specified empty dir volume
++func UnmountPodLogs(ctx context.Context, kubePodUID, emptyDirVolName string) error {
++	emptyDirLoggingVolumePath := podEmptyDirPath(kubePodUID, emptyDirVolName)
++	logDirMountPath := filepath.Join(emptyDirLoggingVolumePath, "logs")
++	log.Infof(ctx, "Unmounting %s for linked logs", logDirMountPath)
++	if _, err := os.Stat(logDirMountPath); !os.IsNotExist(err) {
++		if err := unix.Unmount(logDirMountPath, unix.MNT_DETACH); err != nil {
++			return fmt.Errorf("failed to unmounts logs: %w", err)
++		}
++	}
++	return nil
++}
++
++func podEmptyDirPath(podUID, emptyDirVolName string) string {
++	return filepath.Join(kubeletPodsRootDir, podUID, "volumes", kubeletEmptyDirLogDir, emptyDirVolName)
++}
+diff --git a/pkg/annotations/annotations.go b/pkg/annotations/annotations.go
+index 9ce8ed58ff9..811fd480d49 100644
+--- a/pkg/annotations/annotations.go
++++ b/pkg/annotations/annotations.go
+@@ -59,6 +59,10 @@ const (
+ 
+ 	// PodLinuxResources indicates the sum of container resources for this pod
+ 	PodLinuxResources = "io.kubernetes.cri-o.PodLinuxResources"
++
++	// LinkLogsAnnotations indicates that CRI-O should link the pod containers logs into the specified
++	// emptyDir volume
++	LinkLogsAnnotation = "io.kubernetes.cri-o.LinkLogs"
+ )
+ 
+ var AllAllowedAnnotations = []string{
+@@ -79,4 +83,5 @@ var AllAllowedAnnotations = []string{
+ 	UmaskAnnotation,
+ 	PodLinuxOverhead,
+ 	PodLinuxResources,
++	LinkLogsAnnotation,
+ }
+diff --git a/pkg/config/config.go b/pkg/config/config.go
+index 06b2d7ba282..08d07a51ef1 100644
+--- a/pkg/config/config.go
++++ b/pkg/config/config.go
+@@ -198,6 +198,7 @@ type RuntimeHandler struct {
+ 	// "io.kubernetes.cri-o.ShmSize" for configuring the size of /dev/shm.
+ 	// "io.kubernetes.cri-o.UnifiedCgroup.$CTR_NAME" for configuring the cgroup v2 unified block for a container.
+ 	// "io.containers.trace-syscall" for tracing syscalls via the OCI seccomp BPF hook.
++	// "io.kubernetes.cri-o.LinkLogs" for linking logs into the pod.
+ 	AllowedAnnotations []string `toml:"allowed_annotations,omitempty"`
+ 
+ 	// DisallowedAnnotations is the slice of experimental annotations that are not allowed for this handler.
+diff --git a/server/sandbox_run_linux.go b/server/sandbox_run_linux.go
+index f13b7eba3e2..c1ee045bedd 100644
+--- a/server/sandbox_run_linux.go
++++ b/server/sandbox_run_linux.go
+@@ -22,6 +22,7 @@ import (
+ 	sboxfactory "github.com/cri-o/cri-o/internal/factory/sandbox"
+ 	"github.com/cri-o/cri-o/internal/lib"
+ 	libsandbox "github.com/cri-o/cri-o/internal/lib/sandbox"
++	"github.com/cri-o/cri-o/internal/linklogs"
+ 	"github.com/cri-o/cri-o/internal/log"
+ 	oci "github.com/cri-o/cri-o/internal/oci"
+ 	"github.com/cri-o/cri-o/internal/resourcestore"
+@@ -347,6 +348,7 @@ func (s *Server) runPodSandbox(ctx context.Context, req *types.RunPodSandboxRequ
+ 	pathsToChown := []string{}
+ 
+ 	kubeName := sbox.Config().Metadata.Name
++	kubePodUID := sbox.Config().Metadata.Uid
+ 	namespace := sbox.Config().Metadata.Namespace
+ 	attempt := sbox.Config().Metadata.Attempt
+ 
+@@ -575,6 +577,13 @@ func (s *Server) runPodSandbox(ctx context.Context, req *types.RunPodSandboxRequ
+ 		})
+ 	}
+ 
++	// Link logs if requested
++	if emptyDirVolName, ok := kubeAnnotations[ann.LinkLogsAnnotation]; ok {
++		if err = linklogs.MountPodLogs(ctx, kubePodUID, emptyDirVolName, namespace, kubeName, mountLabel); err != nil {
++			log.Warnf(ctx, "Failed to link logs: %v", err)
++		}
++	}
++
+ 	s.resourceStore.SetStageForResource(ctx, sbox.Name(), "sandbox spec configuration")
+ 
+ 	mnt := spec.Mount{
+diff --git a/server/sandbox_stop_linux.go b/server/sandbox_stop_linux.go
+index e33d01cc072..4c28d54ab4b 100644
+--- a/server/sandbox_stop_linux.go
++++ b/server/sandbox_stop_linux.go
+@@ -6,11 +6,14 @@ import (
+ 
+ 	"github.com/containers/storage"
+ 	"github.com/cri-o/cri-o/internal/lib/sandbox"
++	"github.com/cri-o/cri-o/internal/linklogs"
+ 	"github.com/cri-o/cri-o/internal/log"
+ 	oci "github.com/cri-o/cri-o/internal/oci"
++	ann "github.com/cri-o/cri-o/pkg/annotations"
+ 	"golang.org/x/net/context"
+ 	"golang.org/x/sync/errgroup"
+ 	types "k8s.io/cri-api/pkg/apis/runtime/v1"
++	kubeletTypes "k8s.io/kubernetes/pkg/kubelet/types"
+ )
+ 
+ func (s *Server) stopPodSandbox(ctx context.Context, sb *sandbox.Sandbox) error {
+@@ -20,6 +23,14 @@ func (s *Server) stopPodSandbox(ctx context.Context, sb *sandbox.Sandbox) error
+ 	stopMutex.Lock()
+ 	defer stopMutex.Unlock()
+ 
++	// Unlink logs if they were linked
++	sbAnnotations := sb.Annotations()
++	if emptyDirVolName, ok := sbAnnotations[ann.LinkLogsAnnotation]; ok {
++		if err := linklogs.UnmountPodLogs(ctx, sb.Labels()[kubeletTypes.KubernetesPodUIDLabel], emptyDirVolName); err != nil {
++			log.Warnf(ctx, "Failed to unlink logs: %v", err)
++		}
++	}
++
+ 	// Clean up sandbox networking and close its network namespace.
+ 	if err := s.networkStop(ctx, sb); err != nil {
+ 		return err

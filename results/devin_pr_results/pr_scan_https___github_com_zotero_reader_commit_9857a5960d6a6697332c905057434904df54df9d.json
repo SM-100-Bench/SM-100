@@ -1,0 +1,35 @@
+{
+  "session_id": "devin-f2ab4bb0e3994be78047e209d02d0fb2",
+  "issues": [
+    {
+      "file": "src/dom/epub/epub-view.ts",
+      "line": 759,
+      "description": "Logic error: canNavigateToPreviousPage() incorrectly calls this.flow.canNavigateToNextPage() instead of this.flow.canNavigateToPreviousPage()"
+    },
+    {
+      "file": "src/dom/epub/flow.ts",
+      "line": 312,
+      "description": "Type mismatch: PaginatedFlow.scrollIntoView() doesn't accept the options parameter defined in the Flow interface, which could cause unexpected behavior when options are passed"
+    },
+    {
+      "file": "src/dom/epub/epub-view.ts",
+      "line": 122,
+      "description": "Potential regression: Default flow mode changed from 'scrolled' to 'paginated' with a '// TEMP' comment, suggesting an unintended change"
+    },
+    {
+      "file": "src/dom/epub/flow.ts",
+      "line": 466,
+      "description": "Resource leak: PaginatedFlow.destroy() removes touch event listeners but doesn't remove the keydown event listener added in the constructor"
+    },
+    {
+      "file": "src/dom/epub/flow.ts",
+      "line": 176,
+      "description": "Potential bug: ScrolledFlow.scrollIntoView() uses scrollBy with left:x which may cause horizontal scrolling when only vertical scrolling is intended"
+    },
+    {
+      "file": "src/dom/epub/flow.ts",
+      "line": 312,
+      "description": "Incomplete implementation: PaginatedFlow.scrollIntoView() doesn't handle all the options that ScrolledFlow.scrollIntoView() does, potentially causing inconsistent behavior"
+    }
+  ]
+}

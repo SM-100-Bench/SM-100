@@ -1,0 +1,18 @@
+Please review the code in the pallets_jinja_767b23617628419ae3709ccfb02f9602ae9fe51f repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Core Template Engine subsystem (consisting of 'src/jinja2/__init__.py', 'src/jinja2/compiler.py', 'src/jinja2/constants.py', 'src/jinja2/defaults.py', 'src/jinja2/environment.py', 'src/jinja2/lexer.py', 'src/jinja2/parser.py', 'src/jinja2/runtime.py')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

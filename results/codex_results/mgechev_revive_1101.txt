@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "lint/linter.go",
+"line": 107,
+"description": "waitgroup cleanup is deferred after a potentially panicking call; if lintPackage panics, wg.Done is never called"
+},
+{
+"file": "lint/package.go",
+"line": 190,
+"description": "waitgroup cleanup is deferred after a potentially panicking call; if file.lint panics, wg.Done is never called"
+},
+{
+"file": "lint/file.go",
+"line": 268,
+"description": "disabled interval intersection logic is incomplete; failures spanning a disabled interval may not be filtered"
+}
+]
+}

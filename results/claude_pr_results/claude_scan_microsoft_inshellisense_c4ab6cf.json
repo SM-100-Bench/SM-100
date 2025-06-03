@@ -1,0 +1,15 @@
+{
+  "identifier": "microsoft_inshellisense_c4ab6cf",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.0821627,
+    "is_error": false,
+    "duration_ms": 6497,
+    "duration_api_ms": 10020,
+    "num_turns": 3,
+    "result": "After reviewing the staged changes, I found one clear bug:\n\n```json\n{\n  \"issues\": [\n    {\n      \"file\": \"src/ui/utils.ts\",\n      \"line\": 7,\n      \"description\": \"Typo in import statement: 'wcwdith' should be 'wcwidth' - this will cause a runtime error\"\n    }\n  ]\n}\n```",
+    "total_cost": 0.0821627,
+    "session_id": "7159173f-12f4-4c32-a9a6-3755a9dc992e"
+  }
+}

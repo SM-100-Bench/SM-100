@@ -1,0 +1,15 @@
+{
+  "session_id": "devin-17f751d6f63749468f75a38ca6a3abb7",
+  "issues": [
+    {
+      "file": "packages/core/src/utils/serializeNode.tsx",
+      "line": 31,
+      "description": "The fix in commit a3666c0597376e14331ec1cf4a7c27ec456c8eef adds a check for null props, but it uses '!prop' which checks for all falsy values. A more precise check like 'prop === null || prop === undefined' would be more appropriate."
+    },
+    {
+      "file": "packages/core/src/utils/deserializeNode.tsx",
+      "line": 37,
+      "description": "Similar to the issue fixed in serializeNode.tsx, there's no null check before accessing prop.resolvedName. If prop is null or undefined, this will cause a runtime error."
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "identifier": "netbirdio_netbird_4a1aee1",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.5498090999999998,
+    "is_error": false,
+    "duration_ms": 112339,
+    "duration_api_ms": 143413,
+    "num_turns": 16,
+    "result": "Based on my detailed analysis of the staged changes, I found several potential bugs:\n\n```json\n{\n  \"issues\": [\n    {\n      \"file\": \"client/internal/dns/upstream.go\",\n      \"line\": 199,\n      \"description\": \"Nil pointer dereference: errors.ErrorOrNil() called on potentially nil *multierror.Error when no goroutines append errors\"\n    },\n    {\n      \"file\": \"client/internal/routemanager/client.go\", \n      \"line\": 163,\n      \"description\": \"Potential panic: delete() called on potentially nil map state.Routes without nil check\"\n    },\n    {\n      \"file\": \"client/server/server.go\",\n      \"line\": 694,\n      \"description\": \"Risk of panic: maps.Keys() called on potentially nil Routes map without validation\"\n    },\n    {\n      \"file\": \"client/server/server.go\",\n      \"line\": 712,\n      \"description\": \"Risk of panic: maps.Keys() called on potentially nil Routes map without validation\"\n    }\n  ]\n}\n```",
+    "total_cost": 0.5498090999999998,
+    "session_id": "604a8497-8c6e-4b52-a84d-9167cd7db4fc"
+  }
+}

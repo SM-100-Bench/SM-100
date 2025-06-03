@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "src/helpers/focusManager.js",
+"line": 22,
+"description": "setTimeout callback in handleFocus uses modalElement after teardownScopedFocus sets it to null, which can cause a TypeError when modalElement.contains is executed."
+}
+]
+}

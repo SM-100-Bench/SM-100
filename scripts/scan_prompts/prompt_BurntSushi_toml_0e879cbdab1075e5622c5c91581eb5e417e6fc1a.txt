@@ -1,0 +1,18 @@
+Please review the code in the BurntSushi_toml_0e879cbdab1075e5622c5c91581eb5e417e6fc1a repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Core TOML Library subsystem (consisting of 'decode.go', 'deprecated.go', 'doc.go', 'encode.go', 'error.go', 'internal/tz.go', 'lex.go', 'meta.go', 'parse.go', 'type_fields.go', 'type_toml.go')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

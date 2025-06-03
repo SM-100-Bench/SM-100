@@ -1,0 +1,20 @@
+Please review the code in the curlconverter_curlconverter_982cf32cefc95b7b08319205a85364174db11962 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Core subsystem (consisting of 'index.js', 'util.js')
+2. Code Generators subsystem (consisting of 'generators/node.js', 'generators/php.js', 'generators/python.js')
+3. Test Fixtures - Python Output subsystem (consisting of 'fixtures/python_output/get_basic_auth.py', 'fixtures/python_output/get_basic_auth_no_user.py', 'fixtures/python_output/get_charles_syntax.py', 'fixtures/python_output/get_insecure_full.py', 'fixtures/python_output/get_insecure_k.py', 'fixtures/python_output/get_with_browser_headers.py', 'fixtures/python_output/get_with_single_header.py', 'fixtures/python_output/get_without_headers.py', 'fixtures/python_output/post_basic_auth_url_encoded_data.py', 'fixtures/python_output/post_binary_file.py', 'fixtures/python_output/post_escaped_double_quotes_in_single_quotes.py', 'fixtures/python_output/post_escaped_single_quotes_in_double_quotes.py', 'fixtures/python_output/post_with_browser_headers.py', 'fixtures/python_output/post_with_colon_in_header.py', 'fixtures/python_output/post_with_data_binary.py', 'fixtures/python_output/post_with_double_quotes_inside_single_quotes.py', 'fixtures/python_output/post_with_escaped_double_quotes.py', 'fixtures/python_output/post_with_single_quotes_inside_double_quotes.py', 'fixtures/python_output/post_with_urlencoded_data.py', 'fixtures/python_output/post_with_urlencoded_data_and_headers.py', 'fixtures/python_output/put_basic_auth_json_data.py', 'fixtures/python_output/put_with_file.py')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

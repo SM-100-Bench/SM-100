@@ -1,0 +1,64 @@
+diff --git a/changelog.md b/changelog.md
+index 3b0e7b8cfc8..ee7b4c9d232 100644
+--- a/changelog.md
++++ b/changelog.md
+@@ -5,6 +5,7 @@ Changelog
+ 
+ Bugfixes
+ 
++-  Fixed parser not being reset in case the redis connection closed ASAP for overcoming of output buffer limits
+ -  Fixed parser reset if (p)message_buffer listener is attached
+ 
+ ## v.2.6.4 - 12 Jan, 2017
+diff --git a/index.js b/index.js
+index 1b094f90b6f..f587bea577c 100644
+--- a/index.js
++++ b/index.js
+@@ -156,8 +156,6 @@ function RedisClient (options, stream) {
+     this.buffers = options.return_buffers || options.detect_buffers;
+     this.options = options;
+     this.reply = 'ON'; // Returning replies is the default
+-    // Init parser
+-    this.reply_parser = create_parser(this);
+     this.create_stream();
+     // The listeners will not be attached right away, so let's print the deprecation message while the listener is attached
+     this.on('newListener', function (event) {
+@@ -230,6 +228,9 @@ function create_parser (self) {
+ RedisClient.prototype.create_stream = function () {
+     var self = this;
+ 
++    // Init parser
++    this.reply_parser = create_parser(this);
++
+     if (this.options.stream) {
+         // Only add the listeners once in case of a reconnect try (that won't work)
+         if (this.stream) {
+diff --git a/test/node_redis.spec.js b/test/node_redis.spec.js
+index e6e5f0987fd..64be131bba4 100644
+--- a/test/node_redis.spec.js
++++ b/test/node_redis.spec.js
+@@ -38,6 +38,24 @@ describe('The node_redis client', function () {
+         client.quit(done);
+     });
+ 
++    it('reset the parser while reconnecting', function (done) {
++        var client = redis.createClient({
++            retryStrategy: function () {
++                return 5;
++            }
++        });
++        client.once('reconnecting', function () {
++            process.nextTick(function () {
++                assert.strictEqual(client.reply_parser.buffer, null);
++                done();
++            });
++        });
++        var partialInput = new Buffer('$100\r\nabcdef');
++        client.reply_parser.execute(partialInput);
++        assert.strictEqual(client.reply_parser.buffer.inspect(), partialInput.inspect());
++        client.stream.destroy();
++    });
++
+     helper.allTests(function (parser, ip, args) {
+ 
+         describe('using ' + parser + ' and ' + ip, function () {

@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "lib/natural/sentiment/SentimentAnalyzer.js",
+"line": 132,
+"description": "Division by zero can occur if getSentiment() is called with an empty word array. Score is always divided by words.length without checking for zero."
+},
+{
+"file": "lib/natural/sentiment/tools/XmlParser4PatternData.js",
+"line": 28,
+"description": "Hardcoded absolute path (/home/hugo/Workspace/pattern/pattern/text/) limits portability and may cause the tool to fail when run on other systems."
+},
+{
+"file": "spec/MaxEntClassifier_spec.js",
+"line": 101,
+"description": "Misordered asynchronous logic: newClassifier is assigned in the load callback but checked immediately afterwards. The classifier variable is never updated with the loaded classifier."
+}
+]
+}

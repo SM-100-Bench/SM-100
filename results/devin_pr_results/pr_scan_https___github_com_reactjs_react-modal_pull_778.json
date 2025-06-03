@@ -1,0 +1,30 @@
+{
+  "session_id": "devin-5bc9cf6882584877bf6785efd2037e67",
+  "issues": [
+    {
+      "file": "lib/components/Modal.js",
+      "line": 14,
+      "description": "No error handling in getParentElement function. If parentSelector returns null or undefined, it will cause a runtime error when trying to append/remove the node."
+    },
+    {
+      "file": "lib/components/Modal.js",
+      "line": 73,
+      "description": "No null check before removing child node. If newParent !== currentParent but this.node is not a child of currentParent, removeChild will throw an error."
+    },
+    {
+      "file": "lib/components/Modal.js",
+      "line": 89,
+      "description": "The ReactModal__Body--open class is always removed from document.body regardless of the parent element used, which could lead to incorrect state if multiple modals with different parents are used."
+    },
+    {
+      "file": "lib/components/Modal.js",
+      "line": 94,
+      "description": "The ReactModal__Body--open class is always added to document.body regardless of the parent element, which could lead to incorrect styling if the modal is not appended to the body."
+    },
+    {
+      "file": "lib/components/Modal.js",
+      "line": 56,
+      "description": "The default parentSelector uses an arrow function which might not be supported in all environments targeted by the library."
+    }
+  ]
+}

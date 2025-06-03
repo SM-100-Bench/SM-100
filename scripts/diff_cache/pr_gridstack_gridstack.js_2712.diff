@@ -1,0 +1,24 @@
+diff --git a/doc/CHANGES.md b/doc/CHANGES.md
+index ab2dfd243..ed4303f53 100644
+--- a/doc/CHANGES.md
++++ b/doc/CHANGES.md
+@@ -115,6 +115,7 @@ Change log
+ * fix: [#2683](https://github.com/gridstack/gridstack.js/issues/2683) check for fixed grid maxRow during resize
+ * fix: [#2694](https://github.com/gridstack/gridstack.js/issues/2694) prevent 'r' rotation to items that can't resize (locked, noResize, fixed sizes)
+ * fix: [#2709](https://github.com/gridstack/gridstack.js/pull/2709) support for multiple drag targets - Thank you [nickfulcher](https://github.com/nickfulcher)
++* fix: [#2669](https://github.com/gridstack/gridstack.js/issues/2669) load() sometimes restore incorrectly
+ 
+ ## 10.2.0 (2024-06-02)
+ * feat: [#2682](https://github.com/gridstack/gridstack.js/pull/2682) You can now press 'Esc' to cancel a move|resize, 'r' to rotate during a drag. added `GridStack.rotate()` as well - Thank you John B. for this feature sponsor.
+diff --git a/src/gridstack.ts b/src/gridstack.ts
+index 0b3b042c3..b335b53b2 100644
+--- a/src/gridstack.ts
++++ b/src/gridstack.ts
+@@ -1363,6 +1363,7 @@ export class GridStack {
+         const widthChanged = (m.w !== undefined && m.w !== n.w);
+         this.moveNode(n, m);
+         this.resizeToContentCheck(widthChanged, n); // wait for animation if we changed width
++        delete n._orig; // clear out original position now that we moved #2669
+       }
+       if (m || changed) {
+         this._writeAttr(el, n);

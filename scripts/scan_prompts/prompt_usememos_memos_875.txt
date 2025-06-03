@@ -1,0 +1,18 @@
+Please review the code in the usememos_memos_875 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Frontend Utilities subsystem (consisting of 'web/src/helpers/api.ts', 'web/src/helpers/consts.ts', 'web/src/helpers/filter.ts', 'web/src/helpers/polyfill.ts', 'web/src/helpers/storage.ts', 'web/src/helpers/utils.ts', 'web/src/helpers/validator.ts', 'web/src/hooks/useLoading.ts', 'web/src/hooks/useToggle.ts', 'web/src/labs/highlighter/index.ts', 'web/src/labs/html2image/convertResourceToDataURL.ts', 'web/src/labs/html2image/getCloneStyledElement.ts', 'web/src/labs/html2image/index.ts', 'web/src/labs/html2image/waitImageLoaded.ts', 'web/src/labs/marked/index.ts', 'web/src/labs/marked/marked.test.ts', 'web/src/labs/marked/parser/Blockquote.ts', 'web/src/labs/marked/parser/Bold.ts', 'web/src/labs/marked/parser/BoldEmphasis.ts', 'web/src/labs/marked/parser/Br.ts', 'web/src/labs/marked/parser/CodeBlock.ts', 'web/src/labs/marked/parser/DoneList.ts', 'web/src/labs/marked/parser/Emphasis.ts', 'web/src/labs/marked/parser/Heading.ts', 'web/src/labs/marked/parser/HorizontalRules.ts', 'web/src/labs/marked/parser/Image.ts', 'web/src/labs/marked/parser/InlineCode.ts', 'web/src/labs/marked/parser/Link.ts', 'web/src/labs/marked/parser/OrderedList.ts', 'web/src/labs/marked/parser/Paragraph.ts', 'web/src/labs/marked/parser/PlainLink.ts', 'web/src/labs/marked/parser/PlainText.ts', 'web/src/labs/marked/parser/Strikethrough.ts', 'web/src/labs/marked/parser/Tag.ts', 'web/src/labs/marked/parser/TodoList.ts', 'web/src/labs/marked/parser/UnorderedList.ts', 'web/src/labs/marked/parser/index.ts', 'web/src/theme/index.ts')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+diff --git a/pypdf/generic/_image_inline.py b/pypdf/generic/_image_inline.py
+index 7d6a23d86..8a354b1f4 100644
+--- a/pypdf/generic/_image_inline.py
++++ b/pypdf/generic/_image_inline.py
+@@ -285,7 +285,15 @@ def is_followed_by_binary_data(stream: IO[bytes], length: int = 10) -> bool:
+     if operator_end is None:
+         # We probably are inside an operation.
+         operator_end = length
+-    if operator_end - operator_start > 3:  # noqa: SIM103
++    operator_length = operator_end - operator_start
++    operator = data[operator_start:operator_end]
++    if operator.startswith(b"/") and operator_length > 1:
++        # Name object.
++        return False
++    if operator.replace(b".", b"").isdigit():
++        # Graphics operator, for example a move. A number (integer or float).
++        return False
++    if operator_length > 3:  # noqa: SIM103
+         # Usually, the operators inside a content stream should not have more than three characters,
+         # especially after an inline image.
+         return True
+diff --git a/tests/generic/test_image_inline.py b/tests/generic/test_image_inline.py
+index b90fc01da..e2439baee 100644
+--- a/tests/generic/test_image_inline.py
++++ b/tests/generic/test_image_inline.py
+@@ -48,3 +48,14 @@ def test_is_followed_by_binary_data():
+     # No `operator_start`.
+     stream = BytesIO(b"ABCDEFG")
+     assert is_followed_by_binary_data(stream)
++
++    # Name object.
++    stream = BytesIO(b"/R10 gs\n/R12 cs\n")
++    assert not is_followed_by_binary_data(stream)
++
++    # Numbers.
++    stream = BytesIO(b"1337 42 m\n")
++    assert not is_followed_by_binary_data(stream)
++
++    stream = BytesIO(b"1234.56 42 13 37 10 20 c\n")
++    assert not is_followed_by_binary_data(stream)

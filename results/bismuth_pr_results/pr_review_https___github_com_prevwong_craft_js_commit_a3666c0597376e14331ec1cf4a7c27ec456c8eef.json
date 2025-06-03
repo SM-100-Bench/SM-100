@@ -1,0 +1,16 @@
+{
+  "bug_detected": false,
+  "detection_details": [],
+  "raw": {
+    "message": "## Bug Summary\n\n**Total Bugs Found:** 1\n\n### Critical Bug Details\n\n**Location:** `packages/core/src/utils/serializeNode.tsx`\n\n**Bug Description:**\nThe current serialization implementation incorrectly filters out legitimate falsy prop values, causing unintended data loss during component serialization. Specifically, the bug affects:\n- Boolean props with `false` values\n- Numeric props with value `0`\n- Empty string props (`''`)\n\n**Key Impact:**\n- Potential loss of important component configuration\n- Asymmetry between serialization and deserialization processes\n- Unexpected behavior when preserving prop values\n\n**Recommended Fix:** Modify the filtering condition to only exclude `undefined` and `null` values, while preserving other falsy values that are valid prop types.",
+    "bugs": [
+      {
+        "description": "The current implementation in `serializeComp` filters out all falsy values (`false`, `0`, `''`, etc.) during serialization by using the condition `if (!prop)`. This causes data loss for legitimate boolean props with `false` values, numeric props with value `0`, and empty string props.\n\nThis creates several issues:\n1. Components with props like `disabled={false}` or `autoFocus={false}` will lose these props during serialization\n2. Numeric props with value `0` will be filtered out\n3. Empty string props (`''`) will be unintentionally removed\n4. There's an asymmetry between serialization and deserialization, as `deserializeComp` doesn't have similar filtering logic\n\nThe fix changes the condition to only filter out `undefined` and `null` values, which preserves other falsy values that are valid prop values.",
+        "file": "packages/core/src/utils/serializeNode.tsx",
+        "start_line": 20,
+        "end_line": 22,
+        "suggested_fix": "    if (prop === undefined || prop === null) {\n      return result;\n    }"
+      }
+    ]
+  }
+}

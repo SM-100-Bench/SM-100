@@ -1,0 +1,35 @@
+{
+  "session_id": "devin-8559a66756e648589c5efa5f8c9a44ea",
+  "issues": [
+    {
+      "file": "internal/linklogs/link_logs.go",
+      "line": 38,
+      "description": "No existence check for podLogsPath before mounting. If the source directory doesn't exist, the mount will fail but the directory will still be created, potentially causing resource leaks."
+    },
+    {
+      "file": "internal/linklogs/link_logs.go",
+      "line": 54,
+      "description": "Race condition in os.Stat check before unmounting. The directory could be removed between the check and the unmount operation, leading to errors."
+    },
+    {
+      "file": "internal/linklogs/link_logs.go",
+      "line": 34,
+      "description": "No cleanup of created directory if subsequent mount operation fails, potentially leaving orphaned directories."
+    },
+    {
+      "file": "server/sandbox_run_linux.go",
+      "line": 582,
+      "description": "Error from MountPodLogs is only logged as a warning and not handled properly, which could lead to inconsistent state if mounting fails."
+    },
+    {
+      "file": "server/sandbox_stop_linux.go",
+      "line": 29,
+      "description": "Error from UnmountPodLogs is only logged as a warning and not handled properly, which could lead to resource leaks if unmounting fails."
+    },
+    {
+      "file": "internal/linklogs/link_logs.go",
+      "line": 40,
+      "description": "Mount operation uses MS_RDONLY flag but doesn't check if the source directory exists, which could lead to an empty read-only mount point if the source doesn't exist."
+    }
+  ]
+}

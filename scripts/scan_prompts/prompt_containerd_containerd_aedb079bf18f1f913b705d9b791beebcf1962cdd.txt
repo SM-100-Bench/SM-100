@@ -1,0 +1,18 @@
+Please review the code in the containerd_containerd_aedb079bf18f1f913b705d9b791beebcf1962cdd repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Shim & Runtime Plugins subsystem (consisting of 'cmd/containerd-shim-runc-v2/main.go', 'cmd/containerd-shim-runc-v2/main_tracing.go', 'cmd/containerd-shim-runc-v2/manager/manager_linux.go', 'cmd/containerd-shim-runc-v2/process/deleted_state.go', 'cmd/containerd-shim-runc-v2/process/exec.go', 'cmd/containerd-shim-runc-v2/process/exec_state.go', 'cmd/containerd-shim-runc-v2/process/init.go', 'cmd/containerd-shim-runc-v2/process/init_state.go', 'cmd/containerd-shim-runc-v2/process/io.go', 'cmd/containerd-shim-runc-v2/process/io_util.go', 'cmd/containerd-shim-runc-v2/process/process.go', 'cmd/containerd-shim-runc-v2/process/types.go', 'cmd/containerd-shim-runc-v2/process/utils.go', 'cmd/containerd-shim-runc-v2/runc/container.go', 'cmd/containerd-shim-runc-v2/runc/platform.go', 'cmd/containerd-shim-runc-v2/runc/util.go', 'cmd/containerd-shim-runc-v2/task/plugin/plugin_linux.go', 'cmd/containerd-shim-runc-v2/task/service.go')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

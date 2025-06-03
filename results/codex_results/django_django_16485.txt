@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "django/template/context.py",
+"line": 37,
+"description": "copy() uses copy(super()), which may omit subclass state if a subclass overrides pickling behavior."
+},
+{
+"file": "django/template/backends/dummy.py",
+"line": 44,
+"description": "Template.render assumes context has an items() method; passing a Context object would raise AttributeError."
+}
+]
+}

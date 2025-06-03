@@ -1,0 +1,25 @@
+{
+  "session_id": "devin-046ae3c1778b4ac3b709b5c83e0a285d",
+  "issues": [
+    {
+      "file": "extractor.go",
+      "line": 67,
+      "description": "Bug: Calling global Tar() function instead of e.Tar() method. This bypasses the custom FS interface and will use the default filesystem operations instead of the ones provided to the Extractor."
+    },
+    {
+      "file": "extractor.go",
+      "line": 39,
+      "description": "Missing return statement after error annotation: 'errors.Annotatef(err, \"Detect archive type\")'. If there's an error detecting the archive type, execution will continue instead of returning the error."
+    },
+    {
+      "file": "extractor.go",
+      "line": 198,
+      "description": "Error return value from copyCancel(ctx, buffer, body) is not checked. This could lead to silent failures if the copy operation fails."
+    },
+    {
+      "file": "extractor.go",
+      "line": 315,
+      "description": "The error from filetype.Match() is not properly handled before being returned, which could lead to incorrect error reporting."
+    }
+  ]
+}

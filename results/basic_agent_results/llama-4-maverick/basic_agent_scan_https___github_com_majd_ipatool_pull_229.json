@@ -1,0 +1,1 @@
+{"repo_id": "majd_ipatool_229", "bugs": [{"description": "Potential nil pointer dereference if 'dependencies' is not initialized", "file": "cmd/root.go", "line": 58}], "updated_files": {}}

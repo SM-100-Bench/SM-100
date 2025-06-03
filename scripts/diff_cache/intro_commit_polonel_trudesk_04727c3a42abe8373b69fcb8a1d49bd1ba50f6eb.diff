@@ -1,0 +1,832 @@
+diff --git a/package.json b/package.json
+index 0664ce16a..92c6125dd 100644
+--- a/package.json
++++ b/package.json
+@@ -25,6 +25,7 @@
+     "moment": "^2.8.3",
+     "mongoose": "^3.8.19",
+     "morgan": "~1.5.0",
++    "multer": "^0.1.6",
+     "nconf": "^0.6.9",
+     "nodemailer": "^1.3.0",
+     "passport": "^0.2.1",
+diff --git a/public/js/angularjs/controllers.js b/public/js/angularjs/controllers.js
+index f35a63e98..9cd4f2dfd 100644
+--- a/public/js/angularjs/controllers.js
++++ b/public/js/angularjs/controllers.js
+@@ -1,10 +1,12 @@
+-define(['angular', 'underscore', 'history', 'angularjs/controllers/accounts'], function(angular, _) {
++define(['jquery', 'angular', 'underscore', 'history', 'angularjs/controllers/accounts'], function($, angular, _) {
+     return angular.module('trudesk.controllers', ['trudesk.controllers.accounts'])
+         .controller('truCtrl', function($scope) {
+-            $scope.submitForm = function(formName) {
++            $scope.submitForm = function(formName, $event) {
+                 if (_.isNull(formName) || _.isUndefined(formName)) return true;
+ 
+-                var form = angular.element('#' + formName);
++                $event.preventDefault();
++
++                var form = $('#' + formName);
+                 if (!_.isUndefined(form)) {
+                     form.submit();
+                 }
+diff --git a/public/js/angularjs/controllers/accounts.js b/public/js/angularjs/controllers/accounts.js
+index 3905123ac..fd330ba7d 100644
+--- a/public/js/angularjs/controllers/accounts.js
++++ b/public/js/angularjs/controllers/accounts.js
+@@ -1,14 +1,6 @@
+ define(['angular', 'underscore', 'history'], function(angular, _) {
+     return angular.module('trudesk.controllers.accounts', [])
+-        .controller('accountsCtrl', function($scope, $http) {
+-            $scope.getRoles = function() {
+-                var roles = {};
+-                $http.get('/api/roles')
+-                    .success(function(data, status) {
+-                        roles = data;
+-                        return data;
+-                    });
+-            };
++        .controller('accountsCtrl', function($scope, $http, $timeout) {
+ 
+             $scope.editAccount = function($event) {
+                 if (_.isNull($event.target) || _.isUndefined($event.target) ||
+@@ -23,9 +15,12 @@ define(['angular', 'underscore', 'history'], function(angular, _) {
+                 History.pushState(null, null, '/accounts/' + username);
+             };
+ 
+-            $scope.accountEditPic = function($event) {
+-                console.log($event);
++            $scope.accountEditPic = function() {
++                $timeout(function() {
++                    angular.element('#inputFile').trigger('click');
++                });
+             };
+ 
+-        });
++        })
++        .directive();
+ });
+\ No newline at end of file
+diff --git a/public/js/modules/ajaximgupload.js b/public/js/modules/ajaximgupload.js
+new file mode 100644
+index 000000000..5cfceab10
+--- /dev/null
++++ b/public/js/modules/ajaximgupload.js
+@@ -0,0 +1,41 @@
++define('modules/ajaximgupload', [
++    'jquery',
++    'underscore'
++
++], function($, _) {
++    var aiu = {};
++
++    aiu.init = function() {
++        $(document).ready(function() {
++
++            $('#inputFile').on('change', function() {
++                var val = $(this).val();
++                if (val === '') return true;
++
++                var form = $('#aUploadImageForm');
++                var formData = new FormData($(form)[0]);
++                $.ajax({
++                    url: '/accounts/uploadImage',
++                    type: 'POST',
++                    data: formData,
++                    async: false,
++                    cache: false,
++                    contentType: false,
++                    processData: false,
++                    success: function() {
++                        console.log('done');
++                    },
++                    error: function(err) {
++                        console.log(err);
++                    }
++                });
++
++                $(this).val('');
++            });
++
++
++        });
++    };
++
++    return aiu;
++});
+\ No newline at end of file
+diff --git a/public/js/modules/chat.js b/public/js/modules/chat.js
+index ce53ef895..84ebf6c3f 100644
+--- a/public/js/modules/chat.js
++++ b/public/js/modules/chat.js
+@@ -32,10 +32,12 @@ define('modules/chat',[
+         _.each(data, function(v, k) {
+             var onlineUser = v.user;
+             if (onlineUser.username === username) return true;
++            var imageUrl = onlineUser.image;
++            if (_.isUndefined(imageUrl)) imageUrl = 'defaultProfile.jpg';
+             html += '<li>';
+             html += '<a class="messageNotification no-ajaxify" data-action="startChat" data-chatUser="' + onlineUser._id + '" href="#" role="button">';
+             html += '<div class="clearfix">';
+-            html += '<div class="profilePic left"><img src="/uploads/users/' + onlineUser.image + '" alt="profile"/></div>';
++            html += '<div class="profilePic left"><img src="/uploads/users/' + imageUrl + '" alt="profile"/></div>';
+             html += '<div class="messageAuthor"><strong>' + onlineUser.fullname + '</strong></div>';
+             html += '<div class="messageSnippet">';
+             html += '<span>' + onlineUser.title + '</span>';
+@@ -202,8 +204,10 @@ define('modules/chat',[
+     }
+ 
+     function createChatMessageFromUser(user, message) {
++        var imageUrl = user.image;
++        if (_.isUndefined(imageUrl)) imageUrl = 'defaultProfile.jpg';
+         var html  = '<div class="chat-message clearfix">';
+-            html += '<div class="chat-user-profile"><a href="#"><img src="/uploads/users/' + user.image + '" alt="' + user.fullname + '"/></a></div>';
++            html += '<div class="chat-user-profile"><a href="#"><img src="/uploads/users/' + imageUrl + '" alt="' + user.fullname + '"/></a></div>';
+             html += '<div class="chat-text-wrapper">';
+             html += '<div class="chat-text">';
+             html += '<div class="chat-text-inner">';
+diff --git a/public/uploads/users/5472dbcd925a4d04c80089ee.png b/public/uploads/users/5472dbcd925a4d04c80089ee.png
+deleted file mode 100644
+index e63e9cf59..000000000
+Binary files a/public/uploads/users/5472dbcd925a4d04c80089ee.png and /dev/null differ
+diff --git a/public/uploads/users/aProfile_chris.brame.jpg b/public/uploads/users/aProfile_chris.brame.jpg
+new file mode 100644
+index 000000000..e07c06bf7
+Binary files /dev/null and b/public/uploads/users/aProfile_chris.brame.jpg differ
+diff --git a/public/uploads/users/defaultProfile.jpg b/public/uploads/users/defaultProfile.jpg
+new file mode 100644
+index 000000000..b914f9c31
+Binary files /dev/null and b/public/uploads/users/defaultProfile.jpg differ
+diff --git a/src/controllers/accounts.js b/src/controllers/accounts.js
+index 41a02653f..a8e46890c 100644
+--- a/src/controllers/accounts.js
++++ b/src/controllers/accounts.js
+@@ -1,5 +1,6 @@
+ var async           = require('async');
+ var _               = require('lodash');
++var _s              = require('underscore.string');
+ var flash           = require('connect-flash');
+ var userSchema      = require('../models/user');
+ var groupSchema     = require('../models/group');
+@@ -98,6 +99,47 @@ accountsController.editAccount = function(req, res, next) {
+     });
+ };
+ 
++accountsController.postEdit = function(req, res, next) {
++    var user = req.user;
++    if (_.isUndefined(user) || !permissions.canThis(user.role, 'account:edit')) {
++        req.flash('message', 'Permission Denied.');
++        return res.redirect('/accounts');
++    }
++
++    var self = this;
++    self.content = {};
++    self.content.title = "Accounts";
++    self.content.nav = 'accounts';
++
++    self.content.data = {};
++    self.content.data.user = user;
++    self.content.data.common = req.viewdata;
++
++    userSchema.getUser(req.body.aId, function(err, u) {
++        if (err) handleError(res, err);
++
++        u.fullname = req.body.aFullname;
++        u.title = req.body.aTitle;
++        u.email = req.body.aEmail;
++        u.role = req.body.aRole;
++
++        if (!_s.isBlank(req.body.aPass)) {
++            var pass = req.body.aPass;
++            var cPass = req.body.aPassConfirm;
++
++            if (pass == cPass) {
++                u.password = cPass;
++            }
++        }
++
++        u.save(function(err) {
++            if (err) handleError(res, err);
++
++            return res.redirect('/accounts/' + u.username);
++        })
++    })
++};
++
+ accountsController.createAccount = function(req, res, next) {
+     var user = req.user;
+     if (_.isUndefined(user) || !permissions.canThis(user.role, 'account:create')) {
+@@ -132,7 +174,7 @@ accountsController.createAccount = function(req, res, next) {
+     });
+ };
+ 
+-accountsController.postAccount = function(req, res, next) {
++accountsController.postCreate = function(req, res, next) {
+     var user = req.user;
+     if (_.isUndefined(user) || !permissions.canThis(user.role, 'account:create')) {
+         req.flash('message', 'Permission Denied.');
+@@ -151,4 +193,28 @@ accountsController.postAccount = function(req, res, next) {
+     res.sendStatus(200);
+ };
+ 
++accountsController.uploadImage = function(req, res, next) {
++    var self = this;
++    var id = req.body._id;
++    var username = req.body.username;
++
++    userSchema.getUser(id, function(err, user) {
++        if (err) return handleError(res, err);
++
++        user.image = 'aProfile_' + username + '.' + req.files["aProfile_" + username].extension;
++
++        user.save(function(err) {
++            if (err) return handleError(res, err);
++
++            return res.sendStatus(200);
++        });
++    });
++};
++
++function handleError(res, err) {
++    if (err) {
++        return res.render('error', {layout: false, error: err, message: err.message});
++    }
++}
++
+ module.exports = accountsController;
+\ No newline at end of file
+diff --git a/src/controllers/api.js b/src/controllers/api.js
+index 32a4fd921..a30beab31 100644
+--- a/src/controllers/api.js
++++ b/src/controllers/api.js
+@@ -39,6 +39,45 @@ apiController.users.insert = function(req, res, next) {
+     });
+ };
+ 
++apiController.users.single = function(req, res, next) {
++    var username = req.params.username;
++    if(_.isUndefined(username)) return res.send('Invalid Username.');
++
++    var userModel = require('../models/user');
++    userModel.getUserByUsername(username, function(err, user) {
++        if (err) return res.send("Invalid User.");
++
++        if (_.isUndefined(user) || _.isNull(user)) return res.send("Invalid User.");
++
++        res.json(user);
++    });
++};
++
++//Tickets
++apiController.tickets = {};
++apiController.tickets.get = function(req, res, next) {
++    var ticketModel = require('../models/ticket');
++    ticketModel.getAll(function(err, tickets) {
++        if (err) return res.send(err);
++
++        return res.json(tickets);
++    });
++};
++
++apiController.tickets.single = function(req, res, next) {
++    var uid = req.params.uid;
++    if (_.isUndefined(uid)) return res.send('Invalid Ticket Id');
++
++    var ticketModel = require('../models/ticket');
++    ticketModel.getTicketByUid(uid, function(err, ticket) {
++        if (err) return res.send(err);
++
++        if (_.isUndefined(ticket) || _.isNull(ticket)) return res.send("Invalid Ticket Id");
++
++        return res.json(ticket);
++    });
++};
++
+ //Roles
+ apiController.roles = {};
+ apiController.roles.get = function(req, res, next) {
+diff --git a/src/controllers/tickets.js b/src/controllers/tickets.js
+index 4e8933f31..34c841bf4 100644
+--- a/src/controllers/tickets.js
++++ b/src/controllers/tickets.js
+@@ -42,6 +42,66 @@ ticketsController.get = function(req, res, next) {
+     });
+ };
+ 
++ticketsController.getByStatus = function(req, res, next) {
++    var url = require('url');
++    var self = this;
++    self.content = {};
++    self.content.title = "Tickets";
++    self.content.nav = 'tickets';
++    self.content.subnav = 'tickets-';
++
++    self.content.data = {};
++    self.content.data.user = req.user;
++    self.content.data.common = req.viewdata;
++
++    var pathname = url.parse(req.url).pathname;
++    var arr = pathname.split('/');
++    var tType = 'new';
++    var s  = 0;
++    if (_.size(arr) > 2) tType = arr[2];
++
++    switch (tType) {
++        case 'new':
++            s = 0;
++            break;
++        case 'open':
++            s = 1;
++            break;
++        case 'pending':
++            s = 2;
++            break;
++        case 'closed':
++            s = 3;
++            break;
++        default:
++            s = 0;
++            break;
++    }
++
++    self.content.subnav += tType;
++    //Ticket Data
++    self.content.data.tickets = {};
++    async.waterfall([
++        function(callback) {
++            groupSchema.getAllGroupsOfUser(req.user._id, function(err, grps) {
++                callback(err, grps);
++            });
++        },
++        function(grps, callback) {
++            ticketSchema.getTicketsByStatus(grps, s, function(err, results) {
++
++                callback(err, results);
++            });
++        }
++    ], function(err, results) {
++        if (err) return handleError(res, err);
++
++        self.content.data.tickets = results;
++
++        res.render('tickets', self.content);
++    });
++};
++
+ ticketsController.create = function(req, res, next) {
+     var self = this;
+     self.content = {};
+@@ -76,6 +136,7 @@ ticketsController.create = function(req, res, next) {
+ 
+ ticketsController.single = function(req, res, next) {
+     var self = this;
++    var user = req.user;
+     var uid = req.params.id;
+     self.content = {};
+     self.content.title = "Tickets - " + req.params.id;
+@@ -88,14 +149,16 @@ ticketsController.single = function(req, res, next) {
+ 
+     ticketSchema.getTicketByUid(uid, function(err, ticket) {
+         if (err) return handleError(res, err);
+-        if (_.isNull(ticket)) return res.redirect('/tickets');
++        if (_.isNull(ticket) || _.isUndefined(ticket)) return res.redirect('/tickets');
+ 
+-        if (!_.isUndefined(ticket)) {
+-            self.content.data.ticket = ticket;
+-            self.content.data.ticket.commentCount = _.size(ticket.comments);
++        if (!_.any(ticket.group.members, user._id)) {
++            return res.redirect('/tickets');
+         }
+ 
+-        res.render('subviews/singleticket', self.content);
++        self.content.data.ticket = ticket;
++        self.content.data.ticket.commentCount = _.size(ticket.comments);
++
++        return res.render('subviews/singleticket', self.content);
+     });
+ };
+ 
+@@ -156,6 +219,8 @@ ticketsController.submitTicket = function(req, res, next) {
+     }, function(err, t) {
+         if (err) return handleError(res, err);
+ 
++        //Trigger Event that a ticket was submitted.
++
+         res.redirect('/tickets');
+     });
+ };
+@@ -179,9 +244,12 @@ ticketsController.postcomment = function(req, res, next) {
+         };
+         t.updated = Date.now();
+         t.comments.push(Comment);
+-        t.save();
+-        res.status(200);
+-        res.end();
++        t.save(function (err) {
++            if (err) handleError(res, err);
++
++            res.status(200);
++            res.end();
++        });
+     });
+ };
+ 
+diff --git a/src/helpers/hbs/helpers.js b/src/helpers/hbs/helpers.js
+index 6ca672b15..e30aedcbb 100644
+--- a/src/helpers/hbs/helpers.js
++++ b/src/helpers/hbs/helpers.js
+@@ -464,7 +464,7 @@ var helpers = {
+         return str;
+     },
+ 
+-    isNull: function(obj) {
++    isNull: function(obj, options) {
+         if((_.isUndefined(obj) || _.isNull(obj))) {
+             return options.fn(this);
+         } else {
+diff --git a/src/middleware/index.js b/src/middleware/index.js
+index 46d01c7e2..02abc5003 100644
+--- a/src/middleware/index.js
++++ b/src/middleware/index.js
+@@ -1,18 +1,34 @@
+-var db = require('../database'),
+-    path = require('path'),
+-    async = require('async'),
+-    express = require('express'),
+-    hbs = require('express-hbs'),
+-    hbsHelpers = require('../helpers/hbs/helpers'),
+-    winston = require('winston'),
+-    flash = require('connect-flash'),
+-    bodyParser = require('body-parser'),
+-    cookieParser = require('cookie-parser'),
+-    favicon = require('serve-favicon'),
+-    session = require('express-session'),
+-    MongoStore = require('connect-mongo')(session),
+-    passportConfig = require('../passport')(),
+-    logger = require('morgan');
++/*
++     .                              .o8                     oooo
++   .o8                             "888                     `888
++ .o888oo oooo d8b oooo  oooo   .oooo888   .ooooo.   .oooo.o  888  oooo
++   888   `888""8P `888  `888  d88' `888  d88' `88b d88(  "8  888 .8P'
++   888    888      888   888  888   888  888ooo888 `"Y88b.   888888.
++   888 .  888      888   888  888   888  888    .o o.  )88b  888 `88b.
++   "888" d888b     `V88V"V8P' `Y8bod88P" `Y8bod8P' 8""888P' o888o o888o
++========================================================================
++    Created:    12/25/2014
++    Author:     Chris Brame
++
++
++ */
++
++var db              = require('../database'),
++    path            = require('path'),
++    async           = require('async'),
++    express         = require('express'),
++    hbs             = require('express-hbs'),
++    hbsHelpers      = require('../helpers/hbs/helpers'),
++    winston         = require('winston'),
++    flash           = require('connect-flash'),
++    bodyParser      = require('body-parser'),
++    cookieParser    = require('cookie-parser'),
++    multer          = require('multer'),
++    favicon         = require('serve-favicon'),
++    session         = require('express-session'),
++    MongoStore      = require('connect-mongo')(session),
++    passportConfig  = require('../passport')(),
++    logger          = require('morgan');
+ 
+ 
+ var middleware = {};
+@@ -31,6 +47,7 @@ module.exports = function(app, db, callback) {
+     //app.use(favicon(__dirname + '/public/favicon.ico'));
+     //app.use(logger('dev'));
+     app.use(express.static(path.join(__dirname, '../../', 'public')));
++    //app.use(multer({dest: path.join(__dirname, '../../', 'public/uploads')}));
+     app.use(bodyParser.json());
+     app.use(bodyParser.urlencoded({ extended: false }));
+     app.use(cookieParser());
+diff --git a/src/middleware/middleware.js b/src/middleware/middleware.js
+index 3557155d6..1cdda0deb 100644
+--- a/src/middleware/middleware.js
++++ b/src/middleware/middleware.js
+@@ -3,10 +3,18 @@
+ var async = require('async');
+ var _ = require('lodash');
+ var db = require('../database');
++var path = require('path');
++var multer = require('multer');
+ 
+ var app,
+     middleware = {};
+ 
++middleware.multerToUserDir = function(req, res, next) {
++    multer({dest: path.join(__dirname, '../../', 'public/uploads/users')});
++
++    next();
++};
++
+ middleware.redirectToDashboardIfLoggedIn = function(req, res, next) {
+     if (req.user) {
+         res.redirect('/dashboard');
+@@ -58,4 +66,4 @@ module.exports = function(server, mongodb) {
+     app = server;
+ 
+     return middleware;
+-}
++};
+diff --git a/src/models/ticket.js b/src/models/ticket.js
+index 07678c915..083f0a1b0 100644
+--- a/src/models/ticket.js
++++ b/src/models/ticket.js
+@@ -37,6 +37,19 @@ ticketSchema.pre('save', function(next) {
+     });
+ });
+ 
++ticketSchema.statics.getAll = function(callback) {
++    var q = this.model(COLLECTION).find({})
++        .populate('owner')
++        .populate('group')
++        .populate('comments')
++        .populate('comments.owner')
++        .populate('assignee')
++        .populate('type')
++        .sort({'status': 1});
++
++    return q.exec(callback);
++};
++
+ ticketSchema.statics.getTickets = function(grpId, callback) {
+     if (_.isUndefined(grpId)) {
+         return callback("Invalid GroupId - TicketSchema.GetTickets()", null);
+@@ -55,6 +68,24 @@ ticketSchema.statics.getTickets = function(grpId, callback) {
+     return q.exec(callback);
+ };
+ 
++ticketSchema.statics.getTicketsByStatus = function(grpId, status, callback) {
++    if (_.isUndefined(grpId)) {
++        return callback("Invalid GroupId - TicketSchema.GetTickets()", null);
++    }
++
++    var q = this.model(COLLECTION).find({group: {$in: grpId}, status: status})
++        .populate('owner')
++        .populate('group')
++        .populate('comments')
++        .populate('comments.owner')
++        .populate('assignee')
++        .populate('type')
++        .sort({'status': 1})
++        .limit(100);
++
++    return q.exec(callback);
++};
++
+ ticketSchema.statics.getTicketByUid = function(uid, callback) {
+     if (_.isUndefined(uid)) return callback("Invalid Uid - TicketSchema.GetTicketByUid()", null);
+ 
+@@ -70,7 +101,7 @@ ticketSchema.statics.getTicketByUid = function(uid, callback) {
+ };
+ 
+ ticketSchema.statics.getTicketById = function(id, callback) {
+-    if (_.isUndefined(id)) return callback("Invalid Uid - TicketSchema.GetTicketById()", null);
++    if (_.isUndefined(id)) return callback("Invalid Id - TicketSchema.GetTicketById()", null);
+ 
+     var q = this.model(COLLECTION).findOne({_id: id})
+         .populate('owner')
+diff --git a/src/models/user.js b/src/models/user.js
+index e6fe63579..4b602174d 100644
+--- a/src/models/user.js
++++ b/src/models/user.js
+@@ -3,6 +3,7 @@ var mongoose = require('mongoose');
+ var bcrypt = require('bcrypt');
+ var _ = require('lodash');
+ 
++var SALT_FACTOR = 10;
+ var COLLECTION = "accounts";
+ 
+ var userSchema = mongoose.Schema({
+@@ -15,12 +16,24 @@ var userSchema = mongoose.Schema({
+         image:      String
+     });
+ 
+-userSchema.methods.generateHash = function(password) {
+-    return bcrypt.hashSync(password, 10);
+-};
++userSchema.pre('save', function(next) {
++    var user = this;
++    if (!user.isModified('password')) return next();
++
++    bcrypt.genSalt(SALT_FACTOR, function(err, salt) {
++        if (err) return next(err);
++
++        bcrypt.hash(user.password, salt, function(err, hash) {
++            if (err) return next(err);
++
++            user.password = hash;
++            next();
++        });
++    })
++});
+ 
+-userSchema.methods.validate = function(password) {
+-    return bcrypt.compareSync(password, this.password);
++userSchema.statics.validate = function (password, dbPass) {
++    return bcrypt.compareSync(password, dbPass);
+ };
+ 
+ userSchema.statics.findAll = function(callback) {
+diff --git a/src/passport/index.js b/src/passport/index.js
+index 5af41c6b1..b2646def4 100644
+--- a/src/passport/index.js
++++ b/src/passport/index.js
+@@ -27,7 +27,7 @@ module.exports = function(app) {
+                 return done(null, false, req.flash('loginMessage', 'No User Found.'));
+             }
+ 
+-            if (!user.validate(password)) {
++            if (!User.validate(password, user.password)) {
+                 return done(null, false, req.flash('loginMessage', 'Incorrect Password.'));
+             }
+ 
+diff --git a/src/routes/index.js b/src/routes/index.js
+index 8272bc93d..48c6aae6b 100644
+--- a/src/routes/index.js
++++ b/src/routes/index.js
+@@ -1,10 +1,22 @@
+-"use strict";
+-
+-var express = require('express'),
+-    router = express.Router(),
++/*
++     .                              .o8                     oooo
++   .o8                             "888                     `888
++ .o888oo oooo d8b oooo  oooo   .oooo888   .ooooo.   .oooo.o  888  oooo
++   888   `888""8P `888  `888  d88' `888  d88' `88b d88(  "8  888 .8P'
++   888    888      888   888  888   888  888ooo888 `"Y88b.   888888.
++   888 .  888      888   888  888   888  888    .o o.  )88b  888 `88b.
++   "888" d888b     `V88V"V8P' `Y8bod88P" `Y8bod8P' 8""888P' o888o o888o
++=========================================================================
++    Created:    12/25/2014
++    Author:     Chris Brame
++ */
++
++var express     = require('express'),
++    router      = express.Router(),
+     controllers = require('../controllers/index.js'),
+-    path = require('path'),
+-    winston = require('winston');
++    path        = require('path'),
++    multer      = require('multer');
++    winston     = require('winston');
+ 
+ var passport = require('passport');
+ 
+@@ -20,6 +32,10 @@ function mainRoutes(router, middleware, controllers) {
+     router.get('/tickets', middleware.redirectToLogin, middleware.loadCommonData, controllers.tickets.get);
+     router.get('/tickets/create', middleware.redirectToLogin, middleware.loadCommonData, controllers.tickets.create);
+     router.post('/tickets/create', middleware.redirectToLogin, controllers.tickets.submitTicket);
++    router.get('/tickets/new', middleware.redirectToLogin, controllers.tickets.getByStatus);
++    router.get('/tickets/open', middleware.redirectToLogin, controllers.tickets.getByStatus);
++    router.get('/tickets/pending', middleware.redirectToLogin, controllers.tickets.getByStatus);
++    router.get('/tickets/closed', middleware.redirectToLogin, controllers.tickets.getByStatus);
+     router.get('/tickets/edit/:id', middleware.redirectToLogin, middleware.loadCommonData, controllers.tickets.editTicket);
+     router.get('/tickets/:id', middleware.redirectToLogin, middleware.loadCommonData, controllers.tickets.single);
+     router.post('/tickets/postcomment', middleware.redirectToLogin, controllers.tickets.postcomment);
+@@ -38,15 +54,20 @@ function mainRoutes(router, middleware, controllers) {
+     //Accounts
+     router.get('/accounts', middleware.redirectToLogin, middleware.loadCommonData, controllers.accounts.get);
+     router.get('/accounts/create', middleware.redirectToLogin, middleware.loadCommonData, controllers.accounts.createAccount);
+-    router.post('/accounts/create', middleware.redirectToLogin, controllers.accounts.postAccount);
++    router.post('/accounts/create', middleware.redirectToLogin, controllers.accounts.postCreate);
++    router.post('/accounts/edit', middleware.redirectToLogin, controllers.accounts.postEdit);
+     router.get('/accounts/:username', middleware.redirectToLogin, middleware.loadCommonData, controllers.accounts.editAccount);
++    router.post('/accounts/uploadimage', middleware.redirectToLogin, multer({dest: path.join(__dirname, '../../', 'public/uploads/users'), rename: function(fieldname, filename) {
++        return fieldname;
++    }}), controllers.accounts.uploadImage);
+ 
+     //API
+     router.get('/api', controllers.api.index);
+-    router.get('/api/tickets', middleware.api, controllers.api.users.get);
+-    router.get('/api/tickets/:id', middleware.api, controllers.api.users.get);
++    router.get('/api/tickets', middleware.api, controllers.api.tickets.get);
++    router.get('/api/tickets/:uid', middleware.api, controllers.api.tickets.single);
+     router.get('/api/users', middleware.api, controllers.api.users.get);
+     router.post('/api/users', controllers.api.users.insert);
++    router.get('/api/users/:username', middleware.api, controllers.api.users.single);
+     router.get('/api/roles', middleware.api, controllers.api.roles.get);
+ }
+ 
+diff --git a/src/views/partials/nav.hbs b/src/views/partials/nav.hbs
+index ef18d20d3..48b3d23d0 100644
+--- a/src/views/partials/nav.hbs
++++ b/src/views/partials/nav.hbs
+@@ -4,9 +4,10 @@
+         <li {{#is nav 'dashboard'}} class='active' {{/is}}><a href="/dashboard" class="ajaxify"><i class="fa fa-home fa-large"></i><span class="show-for-large-up">Home</span></a></li>
+         <li {{#is nav 'tickets'}} class='active' {{/is}}><a href="/tickets"><i class="fa fa-paste fa-large"></i>Tickets</a>
+             <ul id="side-nav-sub-tickets" class="side-nav-sub {{#is nav 'tickets'}} subMenuOpen {{/is}}">
+-                <li {{#is subnav 'messages-inbox'}} class='active' {{/is}}><a href="/messages/inbox"><i class="icon-inbox"></i>New</a></li>
+-                <li><a href="/messages/sentitems"><i class="icon-sent"></i>Open</a></li>
+-                <li><a href="/messages/trash"><i class="icon-trash"></i>Closed</a></li>
++                <li {{#is subnav 'tickets-new'}} class='active' {{/is}}><a href="/tickets/new"><i class="icon-inbox"></i>New</a></li>
++                <li {{#is subnav 'tickets-pending'}} class='active' {{/is}}><a href="/tickets/pending"><i class="icon-trash"></i>Pending</a></li>
++                <li {{#is subnav 'tickets-open'}} class='active' {{/is}}><a href="/tickets/open"><i class="icon-sent"></i>Open</a></li>
++                <li {{#is subnav 'tickets-closed'}} class='active' {{/is}}><a href="/tickets/closed"><i class="icon-trash"></i>Closed</a></li>
+             </ul>
+         </li>
+         <li {{#is nav 'messages'}} class='active' {{/is}}><a href="/messages/inbox" class="ajaxify" data-url="/messages" data-sub-menu="side-nav-sub-messages"><i class="fa fa-envelope-o fa-large"></i>Messages</a>
+diff --git a/src/views/partials/topbar.hbs b/src/views/partials/topbar.hbs
+index a209fd8be..55c962ce3 100644
+--- a/src/views/partials/topbar.hbs
++++ b/src/views/partials/topbar.hbs
+@@ -16,7 +16,14 @@
+                         </li>
+                         <li class="top-bar-icon"><a href="#" class="no-ajaxy" data-notifications="notifications"><i class="fa-exclamation-circle"></i></a></li>
+                         <li class="top-bar-icon"><a href="#" class="no-ajaxy" data-updateUi="online-Users" data-notifications="online-Users"><i class="fa-comments"></i></a></li>
+-                        <li class="profile-area profile-name" data-username="{{data.user.username}}" data-userId="{{data.user._id}}"><span>{{data.user.fullname}}</span><a href="#" class="profile-pic no-ajaxy"><img src="/uploads/users/{{data.user.image}}" alt="Profile"/></a></li>
++                        <li class="profile-area profile-name" data-username="{{data.user.username}}" data-userId="{{data.user._id}}"><span>{{data.user.fullname}}</span>
++                            {{#isNull data.user.image}}
++                                <a href="#" class="profile-pic no-ajaxy"><img src="/uploads/users/defaultProfile.jpg" alt="Profile"/></a>
++                            {{else}}
++                                <a href="#" class="profile-pic no-ajaxy"><img src="/uploads/users/{{data.user.image}}" alt="Profile"/></a>
++                            {{/isNull}}
++
++                        </li>
+                     </ul>
+                     <div id="online-Users" data-scroll="online-Users-List" class="notifications p-dropdown">
+                         <div class="actions"><strong>Online Users</strong><div class="right"><a class="hoverUnderline" href="#">Settings</a></div></div>
+diff --git a/src/views/subviews/editAccount.hbs b/src/views/subviews/editAccount.hbs
+index dcbb97885..d2c259863 100644
+--- a/src/views/subviews/editAccount.hbs
++++ b/src/views/subviews/editAccount.hbs
+@@ -5,7 +5,7 @@
+         <div class="right">
+             <ul class="button-group">
+                 <li><a href="/accounts" role="button" class="btn">Cancel</a></li>
+-                <li class="active"><button class="btn" ng-click="submitForm('createAccountForm')" data-form="createAccountForm">Save</button>
++                <li class="active"><button class="btn" ng-click="submitForm('createAccountForm', $event)">Save</button>
+                     <!--<a href="#" role="button" class="btn" data-action="submit" data-form="createAccountForm">Save</a>-->
+                 </li>
+             </ul>
+@@ -15,15 +15,20 @@
+     <div class="page-wrapper scrollable no-overflow-x full-height" ng-controller="accountsCtrl">
+         <div class="row padtop20 padleft30 padright20">
+             <div class="small-12 columns">
+-                <form id="createAccountForm" class="form nomargin" action="/accounts/create" method="POST">
+-                    <div class="largeProfilePic cursor-pointer" style="position: absolute; left: 15px; top: 0;" ng-click="accountEditPic($event)" >
+-                        <input name="aImage" type="hidden" value="{{data.account.image}}" />
++                <form id="aUploadImageForm" action="/account/uploadimage" method="post" class="form nomargin" enctype="multipart/form-data">
++                    <input type="hidden" name="_id" value="{{data.account._id}}" />
++                    <input type="hidden" name="username" value="{{data.account.username}}" />
++                    <div class="largeProfilePic cursor-pointer" style="position: absolute; left: 15px; top: 0;" ng-click="accountEditPic()" >
++                        <input id="inputFile" name="aProfile_{{data.account.username}}" type="file" value="{{data.account.image}}" class="hide" />
+                         {{#if data.account.image}}
+                             <img src="/uploads/users/{{data.account.image}}" alt="{{data.account.username}}"/>
+                         {{else}}
+-                            <p>No Image</p>
++                            <img src="/uploads/users/defaultProfile.jpg" alt="{{data.account.username}}"/>
+                         {{/if}}
+                     </div>
++                </form>
++                <form id="createAccountForm" class="form nomargin" action="/accounts/edit" method="POST">
++                    <input name="aId" type="hidden" value="{{data.account._id}}" />
+                     <div style="margin-left: 286px;">
+                         <label for="aUsername">Username</label>
+                         <input id="aUsername" name="aUsername" type="text" value="{{data.account.username}}" disabled/>
+@@ -54,4 +59,12 @@
+             </div>
+         </div>
+     </div>
+-</div>
+\ No newline at end of file
++</div>
++
++{{#contentFor 'js-plugins'}}
++    <script type="text/javascript">
++        require(['modules/ajaximgupload'], function(a) {
++            a.init();
++        });
++    </script>
++{{/contentFor}}
+\ No newline at end of file
+diff --git a/src/views/subviews/singleticket.hbs b/src/views/subviews/singleticket.hbs
+index 04337b783..d36d60aee 100644
+--- a/src/views/subviews/singleticket.hbs
++++ b/src/views/subviews/singleticket.hbs
+@@ -25,7 +25,7 @@
+                 <h4>Assignee</h4>
+                 {{#if data.ticket.assignee}}
+                     <div class="ticket-assignee">
+-                        <img src="/img/profile.png" alt=""/>
++                        <img src="/uploads/users/{{data.ticket.assignee.image}}" alt=""/>
+                         <div class="ticket-assignee-details">
+                             <h3>{{data.ticket.assignee.fullname}}</h3>
+                             <a class="comment-email-link" href="mailto:{{{data.ticket.assignee.email}}}">{{{data.ticket.assignee.email}}}</a>
+@@ -34,7 +34,7 @@
+                     </div>
+                 {{else}}
+                     <div class="ticket-assignee">
+-                        <img src="/img/defaultProfileImage.png" alt=""/>
++                        <img src="/uploads/users/defaultprofile.jpg" alt=""/>
+                         <div class="ticket-assignee-details">
+                             <h3>No User Assigned</h3>
+                         </div>

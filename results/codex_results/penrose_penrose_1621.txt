@@ -1,0 +1,24 @@
+{
+"issues": [
+{
+"file": "packages/core/src/renderer/AttrHelper.ts",
+"line": 138,
+"description": "Incorrect transform syntax uses scale{...} instead of scale(...), producing invalid SVG."
+},
+{
+"file": "packages/editor/src/components/ExamplesBrowser.tsx",
+"line": 38,
+"description": "Parsing the cropped viewBox indexes the 5th token which does not exist, causing NaN dimensions."
+},
+{
+"file": "packages/components/src/MultipleChoiceProblem.tsx",
+"line": 148,
+"description": "Mutates a Set in state directly, which can prevent React from detecting changes."
+},
+{
+"file": "packages/components/src/Grid.tsx",
+"line": 85,
+"description": "State update returns {...prev, optStatuses} instead of updating optimized, leaving state inconsistent."
+}
+]
+}

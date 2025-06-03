@@ -1,0 +1,34 @@
+{
+"issues": [
+{
+"file": "etebase_fastapi/routers/websocket.py",
+"line": 74,
+"description": "The dependency load_websocket_ticket is used twice in websocket_endpoint, once for user and once for ticket_model. This causes the ticket to be fetched and deleted twice, so the second call fails and the user cannot authenticate."
+},
+{
+"file": "etebase_fastapi/routers/websocket.py",
+"line": 58,
+"description": "load_websocket_ticket accesses redisw.redis without verifying that Redis was configured. If redisw.is_active is False, redisw.redis does not exist and this will raise an AttributeError."
+},
+{
+"file": "etebase_fastapi/routers/websocket.py",
+"line": 54,
+"description": "Ticket expiration time is set with expire=TICKET_VALIDITY_SECONDS * 1000, but aioredis expects seconds. This results in tickets remaining valid 1000 times longer than intended."
+},
+{
+"file": "etebase_fastapi/routers/collection.py",
+"line": 299,
+"description": "process_revisions_for_item searches for chunks only by uid, ignoring the collection. A chunk from a different collection could be reused, leaking its content to unauthorized users."
+},
+{
+"file": "etebase_fastapi/routers/collection.py",
+"line": 552,
+"description": "fetch_updates unpacks uids, etags = zip(*[(item.uid, item.etag) for item in data]). When data is empty, this raises a ValueError and aborts the request."
+},
+{
+"file": "etebase_fastapi/routers/authentication.py",
+"line": 164,
+"description": "Host validation compares the request host (including port) against validated_data.host stripped of the port. This can incorrectly raise a wrong_host error when the Host header contains a port."
+}
+]
+}

@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "src/BoundingBox.ts",
+"line": 190,
+"description": "Quadratic curve bounding box uses parameters in wrong order, leading to incorrect results"
+},
+{
+"file": "src/Font.ts",
+"line": 119,
+"description": "Sets 'fontStyle' flag instead of 'fontVariant', causing misparsed styles"
+},
+{
+"file": "src/Font.ts",
+"line": 149,
+"description": "Font family tokens are concatenated without spaces, corrupting multi-word names"
+}
+]
+}

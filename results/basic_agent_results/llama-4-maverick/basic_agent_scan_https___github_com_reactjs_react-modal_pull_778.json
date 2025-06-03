@@ -1,0 +1,1 @@
+{"repo_id": "reactjs_react-modal_778", "bugs": [{"description": "The variable 'target' is used before it is declared, and the browser detection method using 'navigator.userAgent' can be brittle.", "file": "src/helpers/scopeTab.js", "line": 18}], "updated_files": {}}

@@ -1,0 +1,2287 @@
+Please review the following commit for potential bugs:
+
+```
+diff --git a/server/cmd/user.go b/server/cmd/user.go
+index 386333d2..263558ce 100644
+--- a/server/cmd/user.go
++++ b/server/cmd/user.go
+@@ -124,11 +124,13 @@ func createUser(cmd *cobra.Command, args []string) {
+ 	}
+ 
+ 	// Create user
+-	user = common.NewUser(userParams.provider, userParams.login)
+-	user.Login = userParams.login
+-	user.Name = userParams.name
+-	user.Email = userParams.email
+-	user.IsAdmin = userParams.admin
++	params := &common.User{
++		Provider: userParams.provider,
++		Login:    userParams.login,
++		Name:     userParams.name,
++		Email:    userParams.email,
++		IsAdmin:  userParams.admin,
++	}
+ 
+ 	if userParams.maxFileSize != "" {
+ 		maxFileSize, err := humanize.ParseBytes(userParams.maxFileSize)
+@@ -136,7 +138,7 @@ func createUser(cmd *cobra.Command, args []string) {
+ 			fmt.Printf("Unable to parse max-file-size\n")
+ 			os.Exit(1)
+ 		}
+-		user.MaxFileSize = int64(maxFileSize)
++		params.MaxFileSize = int64(maxFileSize)
+ 	}
+ 
+ 	if userParams.maxTTL != "" {
+@@ -145,24 +147,24 @@ func createUser(cmd *cobra.Command, args []string) {
+ 			fmt.Printf("Unable to parse max-ttl\n")
+ 			os.Exit(1)
+ 		}
+-		user.MaxTTL = maxTTL
++		params.MaxTTL = maxTTL
+ 	}
+ 
+-	if userParams.password == "" {
++	if userParams.provider == common.ProviderLocal && userParams.password == "" {
+ 		userParams.password = common.GenerateRandomID(32)
+ 		fmt.Printf("Generated password for user %s is %s\n", userParams.login, userParams.password)
++		params.Password = userParams.password
+ 	}
+ 
+-	hash, err := common.HashPassword(userParams.password)
++	user, err = common.CreateUserFromParams(params)
+ 	if err != nil {
+-		fmt.Printf("Unable to hash password : %s\n", err)
++		fmt.Printf("unable to create user : %s\n", err)
+ 		os.Exit(1)
+ 	}
+-	user.Password = hash
+ 
+ 	err = metadataBackend.CreateUser(user)
+ 	if err != nil {
+-		fmt.Printf("Unable to create user : %s\n", err)
++		fmt.Printf("Unable to save user : %s\n", err)
+ 		os.Exit(1)
+ 	}
+ }
+@@ -228,25 +230,36 @@ func updateUser(cmd *cobra.Command, args []string) {
+ 		os.Exit(1)
+ 	}
+ 
++	params := &common.User{}
+ 	if userParams.name != "" {
+-		user.Name = userParams.name
++		params.Name = userParams.name
++	} else {
++		params.Name = user.Name
+ 	}
+ 
+ 	if userParams.email != "" {
+-		user.Email = userParams.email
++		params.Email = userParams.email
++	} else {
++		params.Email = user.Email
+ 	}
+ 
+ 	if cmd.Flags().Changed("admin") {
+-		user.IsAdmin = userParams.admin
++		params.IsAdmin = userParams.admin
++	} else {
++		params.IsAdmin = user.IsAdmin
+ 	}
+ 
+-	if userParams.maxFileSize != "" {
++	if userParams.maxFileSize == "-1" {
++		params.MaxFileSize = -1
++	} else if userParams.maxFileSize != "" {
+ 		maxFileSize, err := humanize.ParseBytes(userParams.maxFileSize)
+ 		if err != nil {
+ 			fmt.Printf("Unable to parse max-file-size\n")
+ 			os.Exit(1)
+ 		}
+-		user.MaxFileSize = int64(maxFileSize)
++		params.MaxFileSize = int64(maxFileSize)
++	} else {
++		params.MaxFileSize = user.MaxFileSize
+ 	}
+ 
+ 	if userParams.maxTTL != "" {
+@@ -255,16 +268,19 @@ func updateUser(cmd *cobra.Command, args []string) {
+ 			fmt.Printf("Unable to parse max-ttl : %s\n", err)
+ 			os.Exit(1)
+ 		}
+-		user.MaxTTL = maxTTL
++		params.MaxTTL = maxTTL
++	} else {
++		params.MaxTTL = user.MaxTTL
+ 	}
+ 
+ 	if userParams.password != "" {
+-		hash, err := common.HashPassword(userParams.password)
+-		if err != nil {
+-			fmt.Printf("Unable to hash password : %s\n", err)
+-			os.Exit(1)
+-		}
+-		user.Password = hash
++		params.Password = userParams.password
++	}
++
++	err = common.UpdateUser(user, params)
++	if err != nil {
++		fmt.Printf("Unable to update user : %s\n", err)
++		os.Exit(1)
+ 	}
+ 
+ 	err = metadataBackend.UpdateUser(user)
+diff --git a/server/common/authentication.go b/server/common/authentication.go
+index bc36dc78..684af15e 100644
+--- a/server/common/authentication.go
++++ b/server/common/authentication.go
+@@ -11,10 +11,13 @@ import (
+ 	"golang.org/x/crypto/bcrypt"
+ )
+ 
++// SessionCookieName Cookie key
+ const SessionCookieName = "plik-session"
+-const XsrfCookieName = "plik-xsrf"
+ 
+-// GenerateAuthenticationSignatureKey create an new random key
++// XSRFCookieName Cookie key
++const XSRFCookieName = "plik-xsrf"
++
++// GenerateAuthenticationSignatureKey create a new random key
+ func GenerateAuthenticationSignatureKey() (s *Setting) {
+ 	key := GenerateRandomID(64)
+ 	return &Setting{
+@@ -63,7 +66,7 @@ func (sa *SessionAuthenticator) GenAuthCookies(user *User) (sessionCookie *http.
+ 	// Store xsrf token cookie
+ 	xsrfCookie = &http.Cookie{}
+ 	xsrfCookie.HttpOnly = false
+-	xsrfCookie.Name = XsrfCookieName
++	xsrfCookie.Name = XSRFCookieName
+ 	xsrfCookie.Value = xsrfToken.String()
+ 	xsrfCookie.MaxAge = sa.SessionTimeout
+ 	xsrfCookie.Path = sa.Path
+@@ -155,7 +158,7 @@ func (sa *SessionAuthenticator) Logout() (sessionCookie *http.Cookie, xsrfCookie
+ 	// Store xsrf token cookie
+ 	xsrfCookie = &http.Cookie{}
+ 	xsrfCookie.HttpOnly = false
+-	xsrfCookie.Name = XsrfCookieName
++	xsrfCookie.Name = XSRFCookieName
+ 	xsrfCookie.Value = ""
+ 	xsrfCookie.MaxAge = -1
+ 	xsrfCookie.Path = sa.Path
+diff --git a/server/common/authentication_test.go b/server/common/authentication_test.go
+index 1982d6c4..f3fc2d7d 100644
+--- a/server/common/authentication_test.go
++++ b/server/common/authentication_test.go
+@@ -56,7 +56,7 @@ func TestLogout(t *testing.T) {
+ 		if cookie.Name == SessionCookieName {
+ 			sessionCookie = cookie
+ 		}
+-		if cookie.Name == XsrfCookieName {
++		if cookie.Name == XSRFCookieName {
+ 			xsrfCookie = cookie
+ 		}
+ 	}
+diff --git a/server/common/config.go b/server/common/config.go
+index c9b36ba5..665dc345 100644
+--- a/server/common/config.go
++++ b/server/common/config.go
+@@ -207,11 +207,11 @@ func (config *Configuration) Initialize() (err error) {
+ 		}
+ 
+ 		for _, domainAlias := range config.DownloadDomainAlias {
+-			if domainAlias, err := url.Parse(domainAlias); err != nil {
++			domainAlias, err := url.Parse(domainAlias)
++			if err != nil {
+ 				return fmt.Errorf("invalid download domain URL %s : %s", domainAlias, err)
+-			} else {
+-				config.downloadDomainURLAlias = append(config.downloadDomainURLAlias, domainAlias)
+ 			}
++			config.downloadDomainURLAlias = append(config.downloadDomainURLAlias, domainAlias)
+ 		}
+ 	}
+ 
+diff --git a/server/common/user.go b/server/common/user.go
+index 246cb872..19efc2f3 100644
+--- a/server/common/user.go
++++ b/server/common/user.go
+@@ -74,3 +74,59 @@ func (user *User) String() string {
+ 	}
+ 	return str
+ }
++
++// CreateUserFromParams return a user object ready to be inserted in the metadata backend
++func CreateUserFromParams(userParams *User) (user *User, err error) {
++	if !IsValidProvider(userParams.Provider) {
++		return nil, fmt.Errorf("invalid provider")
++	}
++
++	if len(userParams.Login) < 4 {
++		return nil, fmt.Errorf("login is too short (min 4 chars)")
++	}
++
++	user = NewUser(userParams.Provider, userParams.Login)
++	user.Login = userParams.Login
++	user.Name = userParams.Name
++	user.Email = userParams.Email
++	user.IsAdmin = userParams.IsAdmin
++	user.MaxFileSize = userParams.MaxFileSize
++	user.MaxTTL = userParams.MaxTTL
++
++	if user.Provider == ProviderLocal {
++		if len(userParams.Password) < 8 {
++			return nil, fmt.Errorf("password is too short (min 8 chars)")
++		}
++
++		hash, err := HashPassword(userParams.Password)
++		if err != nil {
++			return nil, fmt.Errorf("unable to hash password : %s\n", err)
++		}
++		user.Password = hash
++	}
++
++	return user, nil
++}
++
++// UpdateUser update a user object with the params
++//   - prevent to update provider, user ID or login
++//   - only update password if a new one is provided
++func UpdateUser(user *User, userParams *User) (err error) {
++	if user.Provider == ProviderLocal && len(userParams.Password) > 0 {
++		if len(userParams.Password) < 8 {
++			return fmt.Errorf("password is too short (min 8 chars)")
++		}
++		hash, err := HashPassword(userParams.Password)
++		if err != nil {
++			return fmt.Errorf("unable to hash password : %s", err)
++		}
++		user.Password = hash
++	}
++
++	user.Name = userParams.Name
++	user.Email = userParams.Email
++	user.IsAdmin = userParams.IsAdmin
++	user.MaxFileSize = userParams.MaxFileSize
++	user.MaxTTL = userParams.MaxTTL
++	return nil
++}
+diff --git a/server/common/user_test.go b/server/common/user_test.go
+index 81fa9a10..481a49d5 100644
+--- a/server/common/user_test.go
++++ b/server/common/user_test.go
+@@ -31,3 +31,130 @@ func TestIsValidProvider(t *testing.T) {
+ 	require.False(t, IsValidProvider(""))
+ 	require.False(t, IsValidProvider("foo"))
+ }
++
++func TestCreateUserFromParams(t *testing.T) {
++	params := &User{}
++	user, err := CreateUserFromParams(params)
++	require.Error(t, err)
++	require.Nil(t, user)
++
++	userOK := &User{
++		Provider:    "local",
++		Login:       "user",
++		Password:    "password",
++		Email:       "user@root.gg",
++		Name:        "user",
++		MaxFileSize: 1234,
++		MaxTTL:      1234,
++		IsAdmin:     true,
++	}
++
++	user, err = CreateUserFromParams(userOK)
++	require.NoError(t, err)
++	require.NotNil(t, user)
++	require.Equal(t, userOK.Provider+":"+userOK.Login, user.ID)
++	require.Equal(t, userOK.Provider, user.Provider)
++	require.Equal(t, userOK.Login, user.Login)
++	require.True(t, CheckPasswordHash(userOK.Password, user.Password))
++	require.Equal(t, userOK.Name, user.Name)
++	require.Equal(t, userOK.Email, user.Email)
++	require.Equal(t, userOK.MaxFileSize, user.MaxFileSize)
++	require.Equal(t, userOK.MaxTTL, user.MaxTTL)
++	require.Equal(t, userOK.IsAdmin, user.IsAdmin)
++
++	userKO := *userOK
++	userKO.Provider = ""
++	user, err = CreateUserFromParams(&userKO)
++	require.Error(t, err)
++	require.Nil(t, user)
++
++	userKO = *userOK
++	userKO.Login = ""
++	user, err = CreateUserFromParams(&userKO)
++	require.Error(t, err)
++	require.Nil(t, user)
++
++	userKO = *userOK
++	userKO.Login = "bad"
++	user, err = CreateUserFromParams(&userKO)
++	require.Error(t, err)
++	require.Nil(t, user)
++
++	userKO = *userOK
++	userKO.Password = ""
++	user, err = CreateUserFromParams(&userKO)
++	require.Error(t, err)
++	require.Nil(t, user)
++
++	userGoogle := *userOK
++	userGoogle.Provider = ProviderGoogle
++	userGoogle.Password = ""
++	user, err = CreateUserFromParams(&userGoogle)
++	require.NoError(t, err)
++	require.Empty(t, user.Password)
++}
++
++func TestUpdateUser(t *testing.T) {
++	userOK := &User{
++		Provider:    "local",
++		Login:       "user",
++		Password:    "password",
++		Email:       "user@root.gg",
++		Name:        "user",
++		MaxFileSize: 1234,
++		MaxTTL:      1234,
++		IsAdmin:     true,
++	}
++
++	params := *userOK
++	params.Login = "notupdated"
++	params.Provider = "notupdated"
++	params.ID = "notupdated"
++	params.Email = "updated@root.gg"
++	params.Name = "updated"
++	params.MaxFileSize = 0
++	params.MaxTTL = 0
++	params.IsAdmin = false
++
++	user := *userOK
++	err := UpdateUser(&user, &params)
++	require.NoError(t, err)
++
++	require.Equal(t, userOK.Provider, user.Provider)
++	require.Equal(t, userOK.ID, user.ID)
++	require.Equal(t, userOK.Login, user.Login)
++	require.True(t, CheckPasswordHash(params.Password, user.Password))
++	require.Equal(t, params.Name, user.Name)
++	require.Equal(t, params.Email, user.Email)
++	require.Equal(t, params.MaxFileSize, user.MaxFileSize)
++	require.Equal(t, params.MaxTTL, user.MaxTTL)
++	require.Equal(t, params.IsAdmin, user.IsAdmin)
++
++	params = *userOK
++	params.Password = "newpassword"
++
++	user = *userOK
++	err = UpdateUser(&user, &params)
++	require.NoError(t, err)
++	require.NotEqual(t, userOK.Password, user.Password)
++
++	require.Equal(t, params.Name, user.Name)
++
++	params = *userOK
++	params.Password = "short"
++
++	user = *userOK
++	err = UpdateUser(&user, &params)
++	require.Error(t, err)
++
++	params = *userOK
++	user = *userOK
++	user.Provider = ProviderGoogle
++	user.Password = ""
++	params.Password = "abcdefgh"
++
++	err = UpdateUser(&user, &params)
++	require.NoError(t, err)
++	require.Equal(t, "", user.Password)
++
++}
+diff --git a/server/context/admin.go b/server/context/admin.go
+index 04fd44de..c9dba250 100644
+--- a/server/context/admin.go
++++ b/server/context/admin.go
+@@ -1,9 +1,37 @@
+ package context
+ 
++import "github.com/root-gg/plik/server/common"
++
+ // IsAdmin get context user admin status
+ func (ctx *Context) IsAdmin() bool {
+ 	ctx.mu.RLock()
+ 	defer ctx.mu.RUnlock()
+ 
+-	return ctx.user != nil && ctx.user.IsAdmin
++	user := ctx.user
++
++	if ctx.originalUser != nil {
++		user = ctx.originalUser
++	}
++
++	return user != nil && user.IsAdmin
++}
++
++// GetOriginalUser get original user in the context
++func (ctx *Context) GetOriginalUser() (user *common.User) {
++	ctx.mu.Lock()
++	defer ctx.mu.Unlock()
++
++	if ctx.originalUser != nil {
++		return ctx.originalUser
++	}
++
++	return ctx.user
++}
++
++// SaveOriginalUser save the current user in the context
++func (ctx *Context) SaveOriginalUser() {
++	ctx.mu.Lock()
++	defer ctx.mu.Unlock()
++
++	ctx.originalUser = ctx.user
+ }
+diff --git a/server/context/admin_test.go b/server/context/admin_test.go
+index 32c28e07..89a6904f 100644
+--- a/server/context/admin_test.go
++++ b/server/context/admin_test.go
+@@ -17,4 +17,13 @@ func TestContext_IsAdmin(t *testing.T) {
+ 
+ 	ctx.user.IsAdmin = true
+ 	require.True(t, ctx.IsAdmin())
++
++	ctx.originalUser = &common.User{}
++	require.False(t, ctx.IsAdmin())
++
++	ctx.originalUser.IsAdmin = true
++	require.True(t, ctx.IsAdmin())
++
++	ctx.user.IsAdmin = false
++	require.True(t, ctx.IsAdmin())
+ }
+diff --git a/server/context/context.go b/server/context/context.go
+index 6427000e..14406f4d 100644
+--- a/server/context/context.go
++++ b/server/context/context.go
+@@ -6,7 +6,6 @@ import (
+ 	"sync"
+ 
+ 	"github.com/root-gg/logger"
+-
+ 	"github.com/root-gg/plik/server/common"
+ 	"github.com/root-gg/plik/server/data"
+ 	"github.com/root-gg/plik/server/metadata"
+@@ -25,6 +24,7 @@ type Context struct {
+ 	upload              *common.Upload
+ 	file                *common.File
+ 	user                *common.User
++	originalUser        *common.User
+ 	token               *common.Token
+ 	isWhitelisted       *bool
+ 	isRedirectOnFailure bool
+diff --git a/server/context/gen.pl b/server/context/gen.pl
+index f6b0e13c..304a5c76 100755
+--- a/server/context/gen.pl
++++ b/server/context/gen.pl
+@@ -21,6 +21,7 @@
+ 	'upload', '*common.Upload', {},
+ 	'file', '*common.File', {},
+ 	'user', '*common.User', {},
++	'originalUser', '*common.User', { internal => 1 },
+ 	'token', '*common.Token', {},
+ 
+ 	'isWhitelisted', '*bool', { internal => 1 },
+diff --git a/server/handlers/user.go b/server/handlers/user.go
+new file mode 100644
+index 00000000..16cd367b
+--- /dev/null
++++ b/server/handlers/user.go
+@@ -0,0 +1,142 @@
++package handlers
++
++import (
++	"encoding/json"
++	"io/ioutil"
++	"net/http"
++
++	"github.com/root-gg/plik/server/common"
++	"github.com/root-gg/plik/server/context"
++)
++
++// CreateUser create a new user
++func CreateUser(ctx *context.Context, resp http.ResponseWriter, req *http.Request) {
++	// Double check authorization
++	if !ctx.IsAdmin() {
++		ctx.Forbidden("you need administrator privileges")
++		return
++	}
++
++	// Read request body
++	defer func() { _ = req.Body.Close() }()
++	req.Body = http.MaxBytesReader(resp, req.Body, 1048576)
++	body, err := ioutil.ReadAll(req.Body)
++	if err != nil {
++		ctx.BadRequest("unable to read request body : %s", err)
++		return
++	}
++
++	if len(body) == 0 {
++		ctx.BadRequest("unable to deserialize user : missing")
++		return
++	}
++
++	// Deserialize json body
++	userParams := &common.User{}
++	err = json.Unmarshal(body, userParams)
++	if err != nil {
++		ctx.BadRequest("unable to deserialize user : %s", err)
++		return
++	}
++
++	// Deserialize password because it's a private field
++	password := &struct {
++		Password string `json:"password"`
++	}{}
++	err = json.Unmarshal(body, password)
++	if err != nil {
++		ctx.BadRequest("unable to deserialize password : %s", err)
++		return
++	}
++	userParams.Password = password.Password
++
++	// Create user from user params
++	user, err := common.CreateUserFromParams(userParams)
++	if err != nil {
++		ctx.BadRequest("unable to create user : %s", err)
++		return
++	}
++
++	err = ctx.GetMetadataBackend().CreateUser(user)
++	if err != nil {
++		ctx.InternalServerError("unable to save user : %s", err)
++		return
++	}
++
++	common.WriteJSONResponse(resp, user)
++}
++
++// UpdateUser edit an existing user
++func UpdateUser(ctx *context.Context, resp http.ResponseWriter, req *http.Request) {
++	user := ctx.GetUser()
++
++	// Double check authorization
++	if user == nil {
++		ctx.Unauthorized("you need to be authenticated, please login first")
++		return
++	}
++
++	// Read request body
++	defer func() { _ = req.Body.Close() }()
++	req.Body = http.MaxBytesReader(resp, req.Body, 1048576)
++	body, err := ioutil.ReadAll(req.Body)
++	if err != nil {
++		ctx.BadRequest("unable to read request body : %s", err)
++		return
++	}
++
++	if len(body) == 0 {
++		ctx.BadRequest("unable to deserialize user : missing")
++		return
++	}
++
++	// Deserialize json body
++	userParams := &common.User{}
++	err = json.Unmarshal(body, userParams)
++	if err != nil {
++		ctx.BadRequest("unable to deserialize user : %s", err)
++		return
++	}
++
++	if userParams.ID != user.ID {
++		ctx.BadRequest("user id mismatch")
++		return
++	}
++
++	if !ctx.IsAdmin() {
++		if userParams.IsAdmin && !user.IsAdmin {
++			ctx.Forbidden("can't grant yourself admin right, nice try!")
++			return
++		}
++		if userParams.MaxTTL != user.MaxTTL || userParams.MaxFileSize != user.MaxFileSize {
++			ctx.Forbidden("can't edit your own quota, nice try!")
++			return
++		}
++	}
++
++	// Deserialize password because it's a private field
++	password := &struct {
++		Password string `json:"password"`
++	}{}
++	err = json.Unmarshal(body, password)
++	if err != nil {
++		ctx.BadRequest("unable to deserialize password : %s", err)
++		return
++	}
++	userParams.Password = password.Password
++
++	// Create user from user params
++	err = common.UpdateUser(user, userParams)
++	if err != nil {
++		ctx.BadRequest("unable to update user : %s", err)
++		return
++	}
++
++	err = ctx.GetMetadataBackend().UpdateUser(user)
++	if err != nil {
++		ctx.InternalServerError("unable to save user : %s", err)
++		return
++	}
++
++	common.WriteJSONResponse(resp, user)
++}
+diff --git a/server/handlers/user_test.go b/server/handlers/user_test.go
+new file mode 100644
+index 00000000..5201b0fe
+--- /dev/null
++++ b/server/handlers/user_test.go
+@@ -0,0 +1,440 @@
++package handlers
++
++import (
++	"bytes"
++	"encoding/json"
++	"io/ioutil"
++	"net/http"
++
++	"testing"
++
++	"github.com/stretchr/testify/require"
++
++	"github.com/root-gg/plik/server/common"
++	"github.com/root-gg/plik/server/context"
++	"github.com/root-gg/utils"
++)
++
++var userOK = &struct {
++	ID       string `json:"id,omitempty"`
++	Provider string `json:"provider"`
++	Login    string `json:"login,omitempty"`
++	Password string `json:"password"` // Needed here because it's json private
++	Name     string `json:"name,omitempty"`
++	Email    string `json:"email,omitempty"`
++	IsAdmin  bool   `json:"admin"`
++
++	MaxFileSize int64 `json:"maxFileSize"`
++	MaxTTL      int   `json:"maxTTL"`
++}{
++	ID:          "nope",
++	Provider:    "local",
++	Login:       "user",
++	Password:    "password",
++	Email:       "user@root.gg",
++	Name:        "user",
++	MaxFileSize: 1234,
++	MaxTTL:      1234,
++	IsAdmin:     true,
++}
++
++func TestCreateUser(t *testing.T) {
++	ctx := newTestingContext(common.NewConfiguration())
++	ctx.SetUser(&common.User{IsAdmin: true})
++
++	user := *userOK
++	userJSON, err := utils.ToJsonString(user)
++	require.NoError(t, err)
++
++	req, err := http.NewRequest("GET", "/", bytes.NewBufferString(userJSON))
++	require.NoError(t, err, "unable to create new request")
++
++	rr := ctx.NewRecorder(req)
++	CreateUser(ctx, rr, req)
++
++	// Check the status code is what we expect.
++	context.TestOK(t, rr)
++
++	respBody, err := ioutil.ReadAll(rr.Body)
++	require.NoError(t, err, "unable to read response body")
++
++	var userResult *common.User
++	err = json.Unmarshal(respBody, &userResult)
++	require.NoError(t, err, "unable to unmarshal response body")
++	require.NotNil(t, userResult)
++	require.Equal(t, "local:user", userResult.ID, "invalid user id")
++	require.Equal(t, user.Provider, userResult.Provider, "invalid user provider")
++	require.Equal(t, user.Name, userResult.Name, "invalid user name")
++	require.Equal(t, user.Email, userResult.Email, "invalid user email")
++	require.Equal(t, user.Login, userResult.Login, "invalid user login")
++	require.Empty(t, userResult.Password, "user password returned")
++	require.Equal(t, user.MaxTTL, userResult.MaxTTL, "invalid user login")
++	require.Equal(t, user.MaxFileSize, userResult.MaxFileSize, "invalid user login")
++
++	userResult, err = ctx.GetMetadataBackend().GetUser("local:user")
++	require.NoError(t, err)
++	require.NotNil(t, userResult)
++	require.Equal(t, "local:user", userResult.ID, "invalid user id")
++	require.Equal(t, user.Provider, userResult.Provider, "invalid user provider")
++	require.Equal(t, user.Name, userResult.Name, "invalid user name")
++	require.Equal(t, user.Email, userResult.Email, "invalid user email")
++	require.Equal(t, user.Login, userResult.Login, "invalid user login")
++	require.True(t, common.CheckPasswordHash(user.Password, userResult.Password), "invalid user password")
++	require.Equal(t, user.MaxTTL, userResult.MaxTTL, "invalid user login")
++	require.Equal(t, user.MaxFileSize, userResult.MaxFileSize, "invalid user login")
++}
++
++func TestCreateUser_Unauthorized(t *testing.T) {
++	ctx := newTestingContext(common.NewConfiguration())
++
++	req, err := http.NewRequest("GET", "/", bytes.NewBuffer([]byte{}))
++	require.NoError(t, err, "unable to create new request")
++
++	rr := ctx.NewRecorder(req)
++	CreateUser(ctx, rr, req)
++
++	context.TestForbidden(t, rr, "you need administrator privileges")
++}
++
++func TestCreateUser_InvaliduserJSON(t *testing.T) {
++	ctx := newTestingContext(common.NewConfiguration())
++	ctx.SetUser(&common.User{IsAdmin: true})
++
++	req, err := http.NewRequest("GET", "/", bytes.NewBufferString(""))
++	require.NoError(t, err, "unable to create new request")
++
++	rr := ctx.NewRecorder(req)
++	CreateUser(ctx, rr, req)
++	context.TestBadRequest(t, rr, "unable to deserialize user : missing")
++
++	req, err = http.NewRequest("GET", "/", bytes.NewBufferString("invalid"))
++	require.NoError(t, err, "unable to create new request")
++
++	rr = ctx.NewRecorder(req)
++	CreateUser(ctx, rr, req)
++	context.TestBadRequest(t, rr, "unable to deserialize user")
++
++	req, err = http.NewRequest("GET", "/", bytes.NewBufferString("{\"password\": 1}"))
++	require.NoError(t, err, "unable to create new request")
++
++	rr = ctx.NewRecorder(req)
++	CreateUser(ctx, rr, req)
++	context.TestBadRequest(t, rr, "unable to deserialize password")
++}
++
++func TestCreateUser_InvalidUserParams(t *testing.T) {
++	ctx := newTestingContext(common.NewConfiguration())
++	ctx.SetUser(&common.User{IsAdmin: true})
++
++	req, err := http.NewRequest("GET", "/", bytes.NewBufferString("{}"))
++	require.NoError(t, err, "unable to create new request")
++
++	rr := ctx.NewRecorder(req)
++	CreateUser(ctx, rr, req)
++	context.TestBadRequest(t, rr, "unable to create user")
++}
++
++func TestCreateUser_DuplicateUser(t *testing.T) {
++	ctx := newTestingContext(common.NewConfiguration())
++	ctx.SetUser(&common.User{IsAdmin: true})
++
++	err := ctx.GetMetadataBackend().CreateUser(&common.User{ID: "local:user"})
++	require.NoError(t, err)
++
++	userJSON, err := utils.ToJsonString(userOK)
++	require.NoError(t, err)
++
++	req, err := http.NewRequest("GET", "/", bytes.NewBufferString(userJSON))
++	require.NoError(t, err, "unable to create new request")
++
++	rr := ctx.NewRecorder(req)
++	CreateUser(ctx, rr, req)
++	context.TestInternalServerError(t, rr, "unable to save user")
++}
++
++func TestUpdateUser(t *testing.T) {
++	ctx := newTestingContext(common.NewConfiguration())
++
++	originalUser := &common.User{
++		ID:          "local:user",
++		Provider:    "local",
++		Login:       "user",
++		Password:    "password",
++		Email:       "user@root.gg",
++		Name:        "user",
++		MaxFileSize: 1234,
++		MaxTTL:      1234,
++		IsAdmin:     true,
++	}
++	ctx.SetUser(originalUser)
++
++	err := ctx.GetMetadataBackend().CreateUser(originalUser)
++	require.NoError(t, err)
++
++	var updateParams = &struct {
++		ID       string `json:"id,omitempty"`
++		Provider string `json:"provider"`
++		Login    string `json:"login,omitempty"`
++		Password string `json:"password"` // Needed here because
++		Name     string `json:"name,omitempty"`
++		Email    string `json:"email,omitempty"`
++		IsAdmin  bool   `json:"admin"`
++
++		MaxFileSize int64 `json:"maxFileSize"`
++		MaxTTL      int   `json:"maxTTL"`
++	}{
++		ID:          "local:user",
++		Provider:    "nope",
++		Login:       "nope",
++		Password:    "newpassword",
++		Email:       "new@email",
++		Name:        "newname",
++		MaxFileSize: -1,
++		MaxTTL:      -1,
++		IsAdmin:     false,
++	}
++
++	userJSON, err := utils.ToJsonString(updateParams)
++	require.NoError(t, err)
++
++	req, err := http.NewRequest("GET", "/", bytes.NewBufferString(userJSON))
++	require.NoError(t, err, "unable to update new request")
++
++	rr := ctx.NewRecorder(req)
++	UpdateUser(ctx, rr, req)
++
++	// Check the status code is what we expect.
++	context.TestOK(t, rr)
++
++	respBody, err := ioutil.ReadAll(rr.Body)
++	require.NoError(t, err, "unable to read response body")
++
++	var userResult *common.User
++	err = json.Unmarshal(respBody, &userResult)
++	require.NoError(t, err, "unable to unmarshal response body")
++	require.NotNil(t, userResult)
++	require.Equal(t, "local:user", userResult.ID, "invalid user id")
++	require.Equal(t, originalUser.Provider, userResult.Provider, "invalid user provider")
++	require.Equal(t, updateParams.Name, userResult.Name, "invalid user name")
++	require.Equal(t, updateParams.Email, userResult.Email, "invalid user email")
++	require.Equal(t, originalUser.Login, userResult.Login, "invalid user login")
++	require.Empty(t, userResult.Password, "user password returned")
++	require.Equal(t, updateParams.MaxTTL, userResult.MaxTTL, "invalid user MaxTTL")
++	require.Equal(t, updateParams.MaxFileSize, userResult.MaxFileSize, "invalid user MaxFileSize")
++	require.Equal(t, updateParams.IsAdmin, userResult.IsAdmin, "invalid user IsAdmin")
++
++	userResult, err = ctx.GetMetadataBackend().GetUser("local:user")
++	require.NoError(t, err)
++	require.NotNil(t, userResult)
++	require.Equal(t, "local:user", userResult.ID, "invalid user id")
++	require.Equal(t, originalUser.Provider, userResult.Provider, "invalid user provider")
++	require.Equal(t, updateParams.Name, userResult.Name, "invalid user name")
++	require.Equal(t, updateParams.Email, userResult.Email, "invalid user email")
++	require.Equal(t, originalUser.Login, userResult.Login, "invalid user login")
++	require.True(t, common.CheckPasswordHash(updateParams.Password, userResult.Password), "invalid user password")
++	require.Equal(t, updateParams.MaxTTL, userResult.MaxTTL, "invalid user MaxTTL")
++	require.Equal(t, updateParams.MaxFileSize, userResult.MaxFileSize, "invalid user MaxFileSize")
++	require.Equal(t, updateParams.IsAdmin, userResult.IsAdmin, "invalid user IsAdmin")
++}
++
++func TestUpdateUser_Unauthorized(t *testing.T) {
++	ctx := newTestingContext(common.NewConfiguration())
++
++	req, err := http.NewRequest("GET", "/", bytes.NewBuffer([]byte{}))
++	require.NoError(t, err, "unable to update new request")
++
++	rr := ctx.NewRecorder(req)
++	UpdateUser(ctx, rr, req)
++
++	context.TestUnauthorized(t, rr, "you need to be authenticated, please login first")
++}
++
++func TestUpdateUser_InvaliduserJSON(t *testing.T) {
++	ctx := newTestingContext(common.NewConfiguration())
++	ctx.SetUser(&common.User{IsAdmin: true})
++
++	req, err := http.NewRequest("GET", "/", bytes.NewBufferString(""))
++	require.NoError(t, err, "unable to update new request")
++
++	rr := ctx.NewRecorder(req)
++	UpdateUser(ctx, rr, req)
++	context.TestBadRequest(t, rr, "unable to deserialize user : missing")
++
++	req, err = http.NewRequest("GET", "/", bytes.NewBufferString("invalid"))
++	require.NoError(t, err, "unable to update new request")
++
++	rr = ctx.NewRecorder(req)
++	UpdateUser(ctx, rr, req)
++	context.TestBadRequest(t, rr, "unable to deserialize user")
++
++	req, err = http.NewRequest("GET", "/", bytes.NewBufferString("{\"password\": 1}"))
++	require.NoError(t, err, "unable to update new request")
++
++	rr = ctx.NewRecorder(req)
++	UpdateUser(ctx, rr, req)
++	context.TestBadRequest(t, rr, "unable to deserialize password")
++}
++
++func TestUpdateUser_InvalidUserParams(t *testing.T) {
++	ctx := newTestingContext(common.NewConfiguration())
++	ctx.SetUser(&common.User{Provider: common.ProviderLocal, IsAdmin: true})
++
++	req, err := http.NewRequest("GET", "/", bytes.NewBufferString("{\"password\":\"short\"}"))
++	require.NoError(t, err, "unable to update new request")
++
++	rr := ctx.NewRecorder(req)
++	UpdateUser(ctx, rr, req)
++	context.TestBadRequest(t, rr, "unable to update user")
++}
++
++func TestUpdateUser_InvalidUserID(t *testing.T) {
++	ctx := newTestingContext(common.NewConfiguration())
++	ctx.SetUser(&common.User{ID: "local:user"})
++
++	req, err := http.NewRequest("GET", "/", bytes.NewBufferString("{\"id\":\"invalid\"}"))
++	require.NoError(t, err, "unable to update new request")
++
++	rr := ctx.NewRecorder(req)
++	UpdateUser(ctx, rr, req)
++	context.TestBadRequest(t, rr, "user id mismatch")
++}
++
++func TestUpdateUser_FailGrant(t *testing.T) {
++	ctx := newTestingContext(common.NewConfiguration())
++
++	originalUser := &common.User{
++		ID:          "local:user",
++		Provider:    "local",
++		Login:       "user",
++		Password:    "password",
++		Email:       "user@root.gg",
++		Name:        "user",
++		MaxFileSize: 1234,
++		MaxTTL:      1234,
++		IsAdmin:     false,
++	}
++	ctx.SetUser(originalUser)
++
++	err := ctx.GetMetadataBackend().CreateUser(originalUser)
++	require.NoError(t, err)
++
++	var updateParams = &struct {
++		ID       string `json:"id,omitempty"`
++		Provider string `json:"provider"`
++		Login    string `json:"login,omitempty"`
++		Password string `json:"password"` // Needed here because
++		Name     string `json:"name,omitempty"`
++		Email    string `json:"email,omitempty"`
++		IsAdmin  bool   `json:"admin"`
++
++		MaxFileSize int64 `json:"maxFileSize"`
++		MaxTTL      int   `json:"maxTTL"`
++	}{
++		ID:          "local:user",
++		Provider:    "nope",
++		Login:       "nope",
++		Password:    "newpassword",
++		Email:       "new@email",
++		Name:        "newname",
++		MaxFileSize: -1,
++		MaxTTL:      -1,
++		IsAdmin:     true,
++	}
++
++	userJSON, err := utils.ToJsonString(updateParams)
++	require.NoError(t, err)
++
++	req, err := http.NewRequest("GET", "/", bytes.NewBufferString(userJSON))
++	require.NoError(t, err, "unable to update new request")
++
++	rr := ctx.NewRecorder(req)
++	UpdateUser(ctx, rr, req)
++	context.TestForbidden(t, rr, "can't grant yourself admin right")
++
++	updateParams.IsAdmin = false
++	userJSON, err = utils.ToJsonString(updateParams)
++	require.NoError(t, err)
++
++	req, err = http.NewRequest("GET", "/", bytes.NewBufferString(userJSON))
++	require.NoError(t, err, "unable to update new request")
++
++	rr = ctx.NewRecorder(req)
++	UpdateUser(ctx, rr, req)
++
++	context.TestForbidden(t, rr, "can't edit your own quota")
++
++	updatedUser, err := ctx.GetMetadataBackend().GetUser(originalUser.ID)
++	require.NoError(t, err)
++	require.False(t, updatedUser.IsAdmin)
++}
++
++func TestUpdateUser_OKGrant(t *testing.T) {
++	ctx := newTestingContext(common.NewConfiguration())
++
++	originalUser := &common.User{
++		ID:          "local:admin",
++		Provider:    "local",
++		Login:       "admin",
++		Password:    "password",
++		Email:       "admin@root.gg",
++		Name:        "admin",
++		MaxFileSize: 1234,
++		MaxTTL:      1234,
++		IsAdmin:     true,
++	}
++	ctx.SetUser(originalUser)
++	ctx.SaveOriginalUser()
++
++	userToUpdate := &common.User{
++		ID:          "local:user",
++		Provider:    "local",
++		Login:       "user",
++		Password:    "password",
++		Email:       "user@root.gg",
++		Name:        "user",
++		MaxFileSize: 1234,
++		MaxTTL:      1234,
++		IsAdmin:     false,
++	}
++	ctx.SetUser(userToUpdate)
++
++	err := ctx.GetMetadataBackend().CreateUser(userToUpdate)
++	require.NoError(t, err)
++
++	var updateParams = &struct {
++		ID       string `json:"id,omitempty"`
++		Provider string `json:"provider"`
++		Login    string `json:"login,omitempty"`
++		Password string `json:"password"` // Needed here because
++		Name     string `json:"name,omitempty"`
++		Email    string `json:"email,omitempty"`
++		IsAdmin  bool   `json:"admin"`
++
++		MaxFileSize int64 `json:"maxFileSize"`
++		MaxTTL      int   `json:"maxTTL"`
++	}{
++		ID:          "local:user",
++		Provider:    "nope",
++		Login:       "nope",
++		Password:    "newpassword",
++		Email:       "new@email",
++		Name:        "newname",
++		MaxFileSize: -1,
++		MaxTTL:      -1,
++		IsAdmin:     true,
++	}
++
++	userJSON, err := utils.ToJsonString(updateParams)
++	require.NoError(t, err)
++
++	req, err := http.NewRequest("GET", "/", bytes.NewBufferString(userJSON))
++	require.NoError(t, err, "unable to update new request")
++
++	rr := ctx.NewRecorder(req)
++	UpdateUser(ctx, rr, req)
++	context.TestOK(t, rr)
++
++	updatedUser, err := ctx.GetMetadataBackend().GetUser(userToUpdate.ID)
++	require.NoError(t, err)
++	require.True(t, updatedUser.IsAdmin)
++}
+diff --git a/server/middleware/authenticate_test.go b/server/middleware/authenticate_test.go
+index 7f00875a..b8a9bbbb 100644
+--- a/server/middleware/authenticate_test.go
++++ b/server/middleware/authenticate_test.go
+@@ -165,7 +165,7 @@ func TestAuthenticate(t *testing.T) {
+ 
+ 	rr := ctx.NewRecorder(req)
+ 	Authenticate(false)(ctx, common.DummyHandler).ServeHTTP(rr, req)
+-	require.Equal(t, http.StatusOK, rr.Code, "invalid handler response status code")
++	context.TestOK(t, rr)
+ 	require.Equal(t, user.ID, ctx.GetUser().ID, "invalid user from context")
+ }
+ 
+@@ -189,7 +189,7 @@ func TestAuthenticateAdminUser(t *testing.T) {
+ 
+ 	rr := ctx.NewRecorder(req)
+ 	Authenticate(false)(ctx, common.DummyHandler).ServeHTTP(rr, req)
+-	require.Equal(t, http.StatusOK, rr.Code, "invalid handler response status code")
++	context.TestOK(t, rr)
+ 	require.Equal(t, user.ID, ctx.GetUser().ID, "invalid user from context")
+ 	require.True(t, ctx.IsAdmin(), "context is not admin")
+ }
+@@ -205,7 +205,7 @@ func TestAuthenticatedOnly_OK(t *testing.T) {
+ 
+ 	rr := ctx.NewRecorder(req)
+ 	AuthenticatedOnly(ctx, common.DummyHandler).ServeHTTP(rr, req)
+-	require.Equal(t, http.StatusOK, rr.Code, "invalid handler response status code")
++	context.TestOK(t, rr)
+ }
+ 
+ func TestAuthenticatedOnly_NoUser(t *testing.T) {
+@@ -216,7 +216,7 @@ func TestAuthenticatedOnly_NoUser(t *testing.T) {
+ 
+ 	rr := ctx.NewRecorder(req)
+ 	AuthenticatedOnly(ctx, common.DummyHandler).ServeHTTP(rr, req)
+-	require.Equal(t, http.StatusUnauthorized, rr.Code, "invalid handler response status code")
++	context.TestUnauthorized(t, rr, "please login first")
+ }
+ 
+ func TestAdminOnly_OK(t *testing.T) {
+@@ -231,7 +231,7 @@ func TestAdminOnly_OK(t *testing.T) {
+ 
+ 	rr := ctx.NewRecorder(req)
+ 	AdminOnly(ctx, common.DummyHandler).ServeHTTP(rr, req)
+-	require.Equal(t, http.StatusOK, rr.Code, "invalid handler response status code")
++	context.TestOK(t, rr)
+ 	require.Equal(t, user.ID, ctx.GetUser().ID, "invalid user from context")
+ }
+ 
+@@ -243,7 +243,7 @@ func TestAdminOnly_NoUser(t *testing.T) {
+ 
+ 	rr := ctx.NewRecorder(req)
+ 	AdminOnly(ctx, common.DummyHandler).ServeHTTP(rr, req)
+-	require.Equal(t, http.StatusUnauthorized, rr.Code, "invalid handler response status code")
++	context.TestUnauthorized(t, rr, "please login first")
+ }
+ 
+ func TestAdminOnly_NotAdmin(t *testing.T) {
+@@ -257,5 +257,5 @@ func TestAdminOnly_NotAdmin(t *testing.T) {
+ 
+ 	rr := ctx.NewRecorder(req)
+ 	AdminOnly(ctx, common.DummyHandler).ServeHTTP(rr, req)
+-	require.Equal(t, http.StatusForbidden, rr.Code, "invalid handler response status code")
++	context.TestForbidden(t, rr, "you need administrator privileges")
+ }
+diff --git a/server/middleware/user.go b/server/middleware/user.go
+new file mode 100644
+index 00000000..b7418ba7
+--- /dev/null
++++ b/server/middleware/user.go
+@@ -0,0 +1,50 @@
++package middleware
++
++import (
++	"net/http"
++
++	"github.com/gorilla/mux"
++
++	"github.com/root-gg/plik/server/context"
++)
++
++// User middleware for all the /user/{userID} routes.
++func User(ctx *context.Context, next http.Handler) http.Handler {
++	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
++		if ctx.GetUser() == nil {
++			ctx.Unauthorized("You must be authenticated, please login first")
++			return
++		}
++
++		// Get the user id from the url params
++		vars := mux.Vars(req)
++		userID := vars["userID"]
++		if userID == "" {
++			ctx.MissingParameter("user id")
++			return
++		}
++
++		if userID != ctx.GetUser().ID {
++			if !ctx.IsAdmin() {
++				ctx.Forbidden("you need administrator privileges")
++				return
++			}
++
++			// Get user from session
++			user, err := ctx.GetMetadataBackend().GetUser(userID)
++			if err != nil {
++				ctx.InternalServerError("unable to get user", err)
++				return
++			}
++			if user == nil {
++				ctx.NotFound("user not found")
++				return
++			}
++
++			ctx.SaveOriginalUser()
++			ctx.SetUser(user)
++		}
++
++		next.ServeHTTP(resp, req)
++	})
++}
+diff --git a/server/middleware/user_test.go b/server/middleware/user_test.go
+new file mode 100644
+index 00000000..7ebd561f
+--- /dev/null
++++ b/server/middleware/user_test.go
+@@ -0,0 +1,118 @@
++package middleware
++
++import (
++	"bytes"
++	"github.com/gorilla/mux"
++	"github.com/root-gg/plik/server/common"
++	"github.com/root-gg/plik/server/context"
++	"github.com/stretchr/testify/require"
++	"net/http"
++	"testing"
++)
++
++func TestUser_NoUser(t *testing.T) {
++	ctx := newTestingContext(common.NewConfiguration())
++	ctx.SetUser(&common.User{})
++
++	req, err := http.NewRequest("GET", "", &bytes.Buffer{})
++	require.NoError(t, err, "unable to create new request")
++
++	rr := ctx.NewRecorder(req)
++	User(ctx, common.DummyHandler).ServeHTTP(rr, req)
++	context.TestBadRequest(t, rr, "missing user")
++}
++
++func TestUser_NotAuthenticated(t *testing.T) {
++	ctx := newTestingContext(common.NewConfiguration())
++
++	req, err := http.NewRequest("GET", "", &bytes.Buffer{})
++	require.NoError(t, err, "unable to create new request")
++
++	rr := ctx.NewRecorder(req)
++	User(ctx, common.DummyHandler).ServeHTTP(rr, req)
++	context.TestUnauthorized(t, rr, "please login first")
++}
++
++func TestUser_Admin(t *testing.T) {
++	ctx := newTestingContext(common.NewConfiguration())
++	ctx.SetUser(common.NewUser(common.ProviderLocal, "admin"))
++	ctx.GetUser().IsAdmin = true
++
++	user := common.NewUser(common.ProviderLocal, "user")
++	err := ctx.GetMetadataBackend().CreateUser(user)
++	require.NoError(t, err)
++
++	req, err := http.NewRequest("GET", "", &bytes.Buffer{})
++	require.NoError(t, err, "unable to create new request")
++
++	// Fake gorilla/mux vars
++	vars := map[string]string{
++		"userID": user.ID,
++	}
++	req = mux.SetURLVars(req, vars)
++
++	rr := ctx.NewRecorder(req)
++	User(ctx, common.DummyHandler).ServeHTTP(rr, req)
++	context.TestOK(t, rr)
++
++	require.Equal(t, user.ID, ctx.GetUser().ID)
++}
++
++func TestUser_NotFound(t *testing.T) {
++	ctx := newTestingContext(common.NewConfiguration())
++	ctx.SetUser(common.NewUser(common.ProviderLocal, "admin"))
++	ctx.GetUser().IsAdmin = true
++
++	req, err := http.NewRequest("GET", "", &bytes.Buffer{})
++	require.NoError(t, err, "unable to create new request")
++
++	// Fake gorilla/mux vars
++	vars := map[string]string{
++		"userID": "local:user",
++	}
++	req = mux.SetURLVars(req, vars)
++
++	rr := ctx.NewRecorder(req)
++	User(ctx, common.DummyHandler).ServeHTTP(rr, req)
++	context.TestNotFound(t, rr, "user not found")
++}
++
++func TestUser_Self(t *testing.T) {
++	ctx := newTestingContext(common.NewConfiguration())
++
++	user := common.NewUser(common.ProviderLocal, "user")
++	ctx.SetUser(user)
++
++	req, err := http.NewRequest("GET", "", &bytes.Buffer{})
++	require.NoError(t, err, "unable to create new request")
++
++	// Fake gorilla/mux vars
++	vars := map[string]string{
++		"userID": user.ID,
++	}
++	req = mux.SetURLVars(req, vars)
++
++	rr := ctx.NewRecorder(req)
++	User(ctx, common.DummyHandler).ServeHTTP(rr, req)
++	context.TestOK(t, rr)
++
++	require.Equal(t, user.ID, ctx.GetUser().ID)
++}
++
++func TestUser_KO(t *testing.T) {
++	ctx := newTestingContext(common.NewConfiguration())
++	ctx.SetUser(common.NewUser(common.ProviderLocal, "local:bad"))
++
++	req, err := http.NewRequest("GET", "", &bytes.Buffer{})
++	require.NoError(t, err, "unable to create new request")
++
++	// Fake gorilla/mux vars
++	vars := map[string]string{
++		"userID": "local:user",
++	}
++	req = mux.SetURLVars(req, vars)
++
++	rr := ctx.NewRecorder(req)
++	User(ctx, common.DummyHandler).ServeHTTP(rr, req)
++	context.TestForbidden(t, rr, "you need administrator privileges")
++}
+diff --git a/server/plikd.cfg b/server/plikd.cfg
+index 5893ff7c..6eeaf4f4 100644
+--- a/server/plikd.cfg
++++ b/server/plikd.cfg
+@@ -36,7 +36,7 @@ MaxTTLStr           = "30d"            # 0 : No limit
+ #  - enabled  : feature is opt-in
+ #  - default  : feature is opt-out
+ #  - forced   : feature is always on
+-FeatureAuthentication = "enabled"     # disabled -> no authentication / forced -> no anonymous upload / default -> enabled
++FeatureAuthentication = "disabled"     # disabled -> no authentication / forced -> no anonymous upload / default -> enabled
+ FeatureOneShot        = "enabled"      # Upload with files that are automatically deleted after the first download
+ FeatureRemovable      = "enabled"      # Upload with files that anybody can delete
+ FeatureStream         = "enabled"      # Upload with files that are not stored on the server
+diff --git a/server/server/server.go b/server/server/server.go
+index 5a79f2bd..762ebc53 100644
+--- a/server/server/server.go
++++ b/server/server/server.go
+@@ -238,6 +238,7 @@ func (ps *PlikServer) getHTTPHandler() (handler http.Handler) {
+ 
+ 	// Chain that fetches the requested upload and file metadata
+ 	getFileChain := context.NewChain(middleware.Upload, middleware.File)
++	userChain := authenticatedChain.Append(middleware.User)
+ 
+ 	// HTTP Api routes configuration
+ 	router := mux.NewRouter()
+@@ -275,8 +276,13 @@ func (ps *PlikServer) getHTTPHandler() (handler http.Handler) {
+ 	router.Handle("/me/uploads", authenticatedChain.Then(handlers.RemoveUserUploads)).Methods("DELETE")
+ 	router.Handle("/me/stats", authenticatedChain.Then(handlers.GetUserStatistics)).Methods("GET")
+ 
++	router.Handle("/user/{userID}", userChain.Then(handlers.UserInfo)).Methods("GET")
++	router.Handle("/user/{userID}", userChain.Then(handlers.UpdateUser)).Methods("POST")
++	router.Handle("/user/{userID}", userChain.Then(handlers.DeleteAccount)).Methods("DELETE")
++
+ 	router.Handle("/stats", adminChain.Then(handlers.GetServerStatistics)).Methods("GET")
+ 	router.Handle("/users", adminChain.Append(middleware.Paginate).Then(handlers.GetUsers)).Methods("GET")
++	router.Handle("/user", adminChain.Then(handlers.CreateUser)).Methods("POST")
+ 
+ 	if !ps.config.NoWebInterface {
+ 
+diff --git a/webapp/js/ctrl/admin.js b/webapp/js/ctrl/admin.js
+index db3b7cff..3c4cb4ff 100644
+--- a/webapp/js/ctrl/admin.js
++++ b/webapp/js/ctrl/admin.js
+@@ -84,6 +84,84 @@ plik.controller('AdminCtrl', ['$scope', '$api', '$config', '$dialog', '$location
+                 });
+         };
+ 
++        // Display create user dialog
++        $scope.createUser = function () {
++            $dialog.openDialog({
++                backdrop: true,
++                backdropClick: true,
++                templateUrl: 'partials/user.html',
++                controller: 'UserController',
++                resolve: {
++                    args: function () { return {}; }
++                }
++            }).result.then(
++                function (result) {
++                    if (result.user) {
++                        $api.createUser(result.user)
++                            .then(function (user) {
++                                $scope.displayUsers();
++                            })
++                            .then(null, function (error) {
++                                $dialog.alert(error);
++                            });
++                    } else if (result.error) {
++                        $dialog.alert(result.error);
++                    }
++                }, function () {
++                    // Avoid "Possibly unhandled rejection"
++                });
++        };
++
++        // Display edit user dialog
++        $scope.editUser = function (user) {
++            $dialog.openDialog({
++                backdrop: true,
++                backdropClick: true,
++                templateUrl: 'partials/user.html',
++                controller: 'UserController',
++                resolve: {
++                    args: function () { return { user : user }; }
++                }
++            }).result.then(
++                function (result) {
++                    if (result.user) {
++                        $api.updateUser(result.user)
++                            .then(function (user) {
++                                $scope.displayUsers();
++                            })
++                            .then(null, function (error) {
++                                $dialog.alert(error);
++                            });
++                    } else if (result.error) {
++                        $dialog.alert(result.error);
++                    }
++                }, function () {
++                    // Avoid "Possibly unhandled rejection"
++                });
++        };
++
++        // Display edit user dialog
++        $scope.deleteUser = function (user) {
++            $dialog.alert({
++                title: "Really ?",
++                message: "This will remove " + user.provider + " user " + user.login + " from the server",
++                confirm: true
++            }).result.then(
++                function () {
++                    $api.deleteUser(user)
++                        .then(function () {
++                            $scope.users = _.reject($scope.users, function (u) {
++                                return u.id === user.id;
++                            });
++                        })
++                        .then(null, function (error) {
++                            $dialog.alert(error);
++                        });
++                }, function () {
++                    // Avoid "Possibly unhandled rejection"
++                });
++        };
++
+         // This functionality allows an admin to browse another user account
+         // In order to delete it or delete some uploads if needed
+         $scope.impersonate = function (user) {
+@@ -99,7 +177,7 @@ plik.controller('AdminCtrl', ['$scope', '$api', '$config', '$dialog', '$location
+ 
+             $scope.setFakeUser(user);
+ 
+-            // Dummy try to double check that we can get the user
++            // Dummy try to double-check that we can get the user
+             $api.getUser()
+                 .then(function () {
+                     // Success
+@@ -123,35 +201,24 @@ plik.controller('AdminCtrl', ['$scope', '$api', '$config', '$dialog', '$location
+             if (user.maxFileSize > 0) {
+                 return $scope.humanReadableSize(user.maxFileSize);
+             }
+-            if ($scope.config.maxFileSize > 0) {
+-                return $scope.humanReadableSize($scope.config.maxFileSize);
++            if (user.maxFileSize === 0 && $scope.config.maxFileSize > 0) {
++                return "default";
+             }
+             return "unlimited"
+         };
+ 
+         $scope.getUserMaxTTL = function (user) {
+             if (user.maxTTL > 0) {
+-                return $scope.humanReadableTTL(user.maxTTL);
++                return getHumanReadableTTLString(user.maxTTL)
+             }
+-            if ($scope.config.maxTTL > 0) {
+-                return $scope.humanReadableTTL($scope.config.maxTTL);
++            if (user.maxTTL === 0 && $scope.config.maxTTL > 0) {
++                return "default";
+             }
+             return "unlimited"
+         };
+ 
+-        // Compute human readable size
+-        // TODO This should be global as we also use it in other controllers
+-        $scope.humanReadableSize = function (size) {
+-            if (_.isUndefined(size)) return;
+-            return filesize(size, {base: 2});
+-        };
+-
+-        // Compute human readable TTL
+-        // TODO This should be global as we also use it in other controllers
+-        $scope.humanReadableTTL = function (ttl) {
+-            if (_.isUndefined(ttl)) return;
+-            return (ttl / 86400) + " days";
+-        };
++        $scope.getHumanReadableTTLString = getHumanReadableTTLString;
++        $scope.humanReadableSize = getHumanReadableSize;
+ 
+         $scope.displayStats();
+ 
+diff --git a/webapp/js/ctrl/home.js b/webapp/js/ctrl/home.js
+index e1728099..157ca418 100644
+--- a/webapp/js/ctrl/home.js
++++ b/webapp/js/ctrl/home.js
+@@ -34,6 +34,7 @@ plik.controller('HomeCtrl', ['$scope', '$api', '$config', '$dialog', '$location'
+                 $scope.getUploads();
+                 $scope.getTokens();
+                 $scope.getUserStats();
++                $scope.fake_user = $api.fake_user;
+             })
+                 .then(null, function (error) {
+                     if (error.status === 401 || error.status === 403) {
+@@ -208,6 +209,33 @@ plik.controller('HomeCtrl', ['$scope', '$api', '$config', '$dialog', '$location'
+             );
+         };
+ 
++        // Edit user
++        $scope.editAccount = function () {
++            $dialog.openDialog({
++                backdrop: true,
++                backdropClick: true,
++                templateUrl: 'partials/user.html',
++                controller: 'UserController',
++                resolve: {
++                    args: function () { return { user : $scope.user }; }
++                }
++            }).result.then(
++                function (result) {
++                    if (result.user) {
++                        $api.updateUser(result.user)
++                            .then(function (user) {
++                            })
++                            .then(null, function (error) {
++                                $dialog.alert(error);
++                            });
++                    } else if (result.error) {
++                        $dialog.alert(result.error);
++                    }
++                }, function () {
++                    // Avoid "Possibly unhandled rejection"
++                });
++        };
++
+         // Get upload url
+         $scope.getUploadUrl = function (upload) {
+             return $api.base + '/#/?id=' + upload.id;
+@@ -219,10 +247,7 @@ plik.controller('HomeCtrl', ['$scope', '$api', '$config', '$dialog', '$location'
+         };
+ 
+         // Compute human readable size
+-        $scope.humanReadableSize = function (size) {
+-            if (_.isUndefined(size)) return;
+-            return filesize(size, {base: 2});
+-        };
++        $scope.humanReadableSize = getHumanReadableSize;
+ 
+         // Redirect to main page
+         $scope.mainpage = function () {
+diff --git a/webapp/js/ctrl/main.js b/webapp/js/ctrl/main.js
+index bed5b9ef..e0b51fcd 100644
+--- a/webapp/js/ctrl/main.js
++++ b/webapp/js/ctrl/main.js
+@@ -158,8 +158,8 @@ plik.controller('MainCtrl', ['$scope', '$api', '$config', '$route', '$location',
+             if (maxFileSize && size > maxFileSize) {
+                 $dialog.alert({
+                     status: 0,
+-                    message: "File is too big : " + $scope.humanReadableSize(size),
+-                    value: "Maximum allowed size is : " + $scope.humanReadableSize($scope.config.maxFileSize)
++                    message: "File is too big : " + getHumanReadableSize(size),
++                    value: "Maximum allowed size is : " + getHumanReadableSize($scope.config.maxFileSize)
+                 });
+                 return false;
+             }
+@@ -256,7 +256,7 @@ plik.controller('MainCtrl', ['$scope', '$api', '$config', '$route', '$location',
+             } else {
+                 // Get TTL value
+                 if (!$scope.checkTTL()) return;
+-                $scope.upload.ttl = $scope.getTTL();
++                $scope.upload.ttl = getTTL($scope.ttlValue, $scope.ttlUnit);
+                 // HTTP basic auth prompt dialog
+                 if ($scope.password && !($scope.upload.login && $scope.upload.password)) {
+                     $scope.getPassword();
+@@ -440,10 +440,7 @@ plik.controller('MainCtrl', ['$scope', '$api', '$config', '$route', '$location',
+ 
+ 
+         // Compute human readable size
+-        $scope.humanReadableSize = function (size) {
+-            if (_.isUndefined(size)) return;
+-            return filesize(size, {base: 2});
+-        };
++        $scope.humanReadableSize = getHumanReadableSize;
+ 
+         $scope.getMode = function () {
+             return $scope.upload.stream ? "stream" : "file";
+@@ -548,75 +545,31 @@ plik.controller('MainCtrl', ['$scope', '$api', '$config', '$route', '$location',
+         $scope.ttlUnit = "days";
+         $scope.ttlValue = 30;
+ 
+-        // Change ttl unit
+-        $scope.switchTimeUnit = function () {
+-            var index = (_.indexOf($scope.ttl.units, $scope.ttl.unit) + 1) % $scope.ttl.units.length;
+-            $scope.ttl.unit = $scope.ttl.units[index];
+-        };
+-
+-        // Return TTL value in seconds
+-        $scope.getTTL = function () {
+-            var ttl = $scope.ttlValue;
+-            if (ttl > 0) {
+-                if ($scope.ttlUnit === "minutes") {
+-                    ttl = ttl * 60;
+-                } else if ($scope.ttlUnit === "hours") {
+-                    ttl = ttl * 3600;
+-                } else if ($scope.ttlUnit === "days") {
+-                    ttl = ttl * 86400;
+-                }
+-            } else {
+-                ttl = -1;
+-            }
+-            return ttl;
+-        };
+-
+-        // Return TTL unit and value
+-        $scope.getHumanReadableTTL = function (ttl) {
+-            var value, unit;
+-            if (ttl === -1) {
+-                value = -1;
+-                unit = "never"
+-            } else if (ttl < 3600) {
+-                value = Math.round(ttl / 60);
+-                unit = "minutes"
+-            } else if (ttl < 86400) {
+-                value = Math.round(ttl / 3600);
+-                unit = "hours"
+-            } else if (ttl >= 86400) {
+-                value = Math.round(ttl / 86400);
+-                unit = "days"
+-            } else {
+-                value = 0;
+-                unit = "invalid";
+-            }
+-            return [value, unit];
+-        };
+-
+         // Check TTL value
+         $scope.checkTTL = function () {
+             var ok = true;
+ 
+-            // Fix never value
+-            if ($scope.ttlUnit === 'never') {
++            // Fix unlimited value
++            if ($scope.ttlUnit === 'unlimited') {
+                 $scope.ttlValue = -1;
+             }
+ 
+             // Get TTL in seconds
+-            var ttl = $scope.getTTL();
++            var ttl = getTTL($scope.ttlValue, $scope.ttlUnit);
+ 
+             // Invalid negative value
+-            if ($scope.ttlUnit !== 'never' && ttl < 0) ok = false;
++            if ($scope.ttlUnit !== 'unlimited' && ttl < 0) ok = false;
+ 
+             // Check against server side allowed maximum
+             maxTTL = $scope.config.maxTTL;
+             if ($scope.user && $scope.user.maxTTL !== 0) {
+                 maxTTL = $scope.user.maxTTL;
+             }
++
+             if (maxTTL > 0 && ttl > maxTTL) ok = false;
+ 
+             if (!ok) {
+-                var maxTTL = $scope.getHumanReadableTTL(maxTTL);
++                var maxTTL = getHumanReadableTTL(maxTTL);
+                 $dialog.alert({
+                     status: 0,
+                     message: "Invalid expiration delay : " + $scope.ttlValue + " " + $scope.ttlUnit + ". " +
+@@ -636,9 +589,13 @@ plik.controller('MainCtrl', ['$scope', '$api', '$config', '$route', '$location',
+             }
+             if (maxTTL < 0) {
+                 // Never expiring upload is allowed
+-                $scope.ttlUnits = ["days", "hours", "minutes", "never"];
++                $scope.ttlUnits = ["days", "hours", "minutes", "unlimited"];
++            }
++            if ($scope.user.maxTTL > 0 && $scope.config.defaultTTL > $scope.user.maxTTL) {
++                // If user maxTTL is less than defaultTTL then set to user maxTTL to avoid error on upload
++                $scope.config.defaultTTL = $scope.user.maxTTL;
+             }
+-            var ttl = $scope.getHumanReadableTTL($scope.config.defaultTTL);
++            var ttl = getHumanReadableTTL($scope.config.defaultTTL);
+             $scope.ttlValue = ttl[0];
+             $scope.ttlUnit = ttl[1];
+         };
+@@ -700,8 +657,8 @@ plik.controller('MainCtrl', ['$scope', '$api', '$config', '$route', '$location',
+             }
+         };
+ 
+-        $scope.openTextDialog = function(text) {
+-            // Open a dialog to entenr text
++        $scope.openTextDialog = function (text) {
++            // Open a dialog to enter text
+             $dialog.openDialog({
+                 backdrop: true,
+                 backdropClick: true,
+diff --git a/webapp/js/ctrl/user.js b/webapp/js/ctrl/user.js
+new file mode 100644
+index 00000000..2015b0c9
+--- /dev/null
++++ b/webapp/js/ctrl/user.js
+@@ -0,0 +1,146 @@
++// HTTP basic auth credentials dialog controller
++plik.controller('UserController', ['$scope', 'args', '$config', '$q',
++    function ($scope, args, $config, $q) {
++        $scope.title = 'User :';
++
++        $scope.providers = ["local", "google", "ovh"];
++        $scope.edit = false;
++        $scope.user = {};
++        $scope.warning = null;
++
++        $scope.configReady = $q.defer();
++        $config.getConfig()
++            .then(function (config) {
++                $scope.config = config;
++                $scope.configReady.resolve(true);
++            }).then(null, function (error) {
++            $scope.$close({error: error});
++        });
++
++        $scope.userReady = $q.defer();
++        $config.getUser()
++            .then(function (user) {
++                $scope.auth_user = user;
++                $scope.userReady.resolve(true);
++            }).then(null, function (error) {
++            $scope.$close({error: error});
++        });
++
++
++        $scope.maxFileSize = -1;
++        $scope.ttlUnits = ttlUnits;
++        $scope.ttlUnits[3] = "unlimited";
++        $scope.ttlUnit = "days";
++        $scope.ttlValue = 30;
++
++        // Set MaxTTL value
++        $scope.setMaxTTL = function (ttl) {
++            var res = getHumanReadableTTL(ttl)
++            $scope.ttlValue = res[0]
++            $scope.ttlUnit = $scope.ttlUnits[res[2]];
++        };
++
++        $scope.setMaxFileSize = function (maxFileSize) {
++            if (maxFileSize > 0) {
++                $scope.maxFileSize = getHumanReadableSize(maxFileSize);
++            } else {
++                $scope.maxFileSize = maxFileSize;
++            }
++        }
++
++        // whenReady ensure that the scope has been initialized especially :
++        // $scope.config, $scope.user, $scope.mode, $scope.upload, $scope.files, ...
++        $scope.ready = $q.all([$scope.configReady, $scope.userReady]);
++
++        $scope.ready
++            .then(function () {
++                if (args.user) {
++                    // Paranoid useless check
++                    if (!$scope.auth_user.admin && args.user.id !== $scope.auth_user.id) {
++                        $scope.closeWithError("forbidden")
++                        return;
++                    }
++
++                    $scope.edit = true;
++                    $scope.user = args.user;
++                    $scope.setMaxTTL($scope.user.maxTTL);
++                    $scope.setMaxFileSize($scope.user.maxFileSize);
++                } else {
++                    $scope.user.provider = "local";
++                    $scope.setMaxTTL(0);
++                    $scope.setMaxFileSize(0);
++                    $scope.generatePassword();
++                }
++            }).then(function () {
++            // discard
++        })
++
++        // Generate random 16 chars
++        $scope.generatePassword = function () {
++            pass = "";
++            for (i=0;i<2;i++) {
++                pass += window.crypto.getRandomValues(new BigUint64Array(1))[0].toString(36)
++            }
++            $scope.user.password = pass;
++        }
++
++        // Check TTL value
++        $scope.checkTTL = function (ttl) {
++            // Invalid negative value
++            if ($scope.ttlUnit !== 'unlimited' && ttl < 0) {
++                $scope.warning = "Invalid max TTL : " + getHumanReadableTTLString(ttl);
++                return false;
++            }
++
++            return true;
++        };
++
++        $scope.check = function(user) {
++            $scope.warning = null;
++
++            if (!$scope.edit && (!user.login || user.login.length < 4)) {
++                $scope.warning = "invalid login (min 4 chars)";
++                return false;
++            }
++
++            if (!($scope.edit && !user.password)) {
++                if (!user.password || user.password.length < 8) {
++                    $scope.warning = "invalid password (min 8 chars)";
++                    return false;
++                }
++            }
++
++            // Get TTL in seconds
++            var ttl = getTTL($scope.ttlValue, $scope.ttlUnit);
++            if (!$scope.checkTTL(ttl)) {
++                return false;
++            }
++            $scope.user.maxTTL = ttl;
++
++            // Parse maxFileSize
++            var maxFileSize = parseHumanReadableSize($scope.maxFileSize, {base: 10});
++            if (_.isNumber(maxFileSize)) {
++                $scope.user.maxFileSize = maxFileSize;
++            } else {
++                maxFileSize = Number($scope.maxFileSize)
++                if (maxFileSize === 0 || maxFileSize === -1) {
++                    $scope.user.maxFileSize = maxFileSize;
++                } else {
++                    $scope.warning = "invalid max file size";
++                    return false;
++                }
++            }
++
++            return true;
++        };
++
++        $scope.closeWithError = function (error) {
++            $scope.$close({error: error});
++        }
++
++        $scope.close = function (user) {
++            if ($scope.check(user)) {
++                $scope.$close({user: user});
++            }
++        };
++    }]);
+\ No newline at end of file
+diff --git a/webapp/js/lib/api.js b/webapp/js/lib/api.js
+index 478fe566..372c8273 100644
+--- a/webapp/js/lib/api.js
++++ b/webapp/js/lib/api.js
+@@ -110,6 +110,24 @@ angular.module('api', ['ngFileUpload']).factory('$api', function ($http, $q, Upl
+         return api.call(url, 'GET');
+     };
+ 
++    // Create user
++    api.createUser = function (user) {
++        var url = api.base + '/user';
++        return api.call(url, 'POST', {}, user);
++    };
++
++    // Update user
++    api.updateUser = function (user) {
++        var url = api.base + '/user/' + user.id;
++        return api.call(url, 'POST', {}, user);
++    };
++
++    // Create user
++    api.deleteUser = function (user) {
++        var url = api.base + '/user/' + user.id;
++        return api.call(url, 'DELETE');
++    };
++
+     // Get user statistics
+     api.getUserTokens = function (limit, cursor) {
+         var url = api.base + '/me/token';
+diff --git a/webapp/js/lib/modal.js b/webapp/js/lib/modal.js
+index 25c6aa9c..edcdb5b7 100644
+--- a/webapp/js/lib/modal.js
++++ b/webapp/js/lib/modal.js
+@@ -3,7 +3,7 @@ angular.module('dialog', ['ui.bootstrap']).factory('$dialog', function ($uibModa
+ 
+     var module = {};
+ 
+-    // Define error partial here so we can display a connection error
++    // Define error partial here, so we can display a connection error
+     // without having to load the template from the server
+     var alertTemplate = '<div class="modal-header">' + "\n";
+     alertTemplate += '<h1>{{title}}</h1>' + "\n";
+diff --git a/webapp/js/lib/utils.js b/webapp/js/lib/utils.js
+new file mode 100644
+index 00000000..331fbba7
+--- /dev/null
++++ b/webapp/js/lib/utils.js
+@@ -0,0 +1,129 @@
++ttlUnits = ["days", "hours", "minutes", "unlimited"];
++
++// Return TTL unit and value
++function getHumanReadableTTL(ttl) {
++    var value, unit, idx;
++    if (ttl === -1) {
++        value = -1;
++        unit = "unlimited"
++        idx = 3
++    } else if (ttl < 3600) {
++        value = Math.round(ttl / 60);
++        unit = "minutes"
++        idx = 2
++    } else if (ttl < 86400) {
++        value = Math.round(ttl / 3600);
++        unit = "hours"
++        idx = 1
++    } else if (ttl >= 86400) {
++        value = Math.round(ttl / 86400);
++        unit = "days"
++        idx = 0
++    } else {
++        value = 0;
++        unit = "invalid";
++        idx = 0
++    }
++    return [value, unit, idx];
++}
++
++// Return TTL as a string
++function getHumanReadableTTLString(ttl) {
++    var res = getHumanReadableTTL(ttl)
++    if (res[0] > 0) {
++        return res[0] + " " + res[1];
++    }
++    return res[1];
++}
++
++// Return TTL value in seconds
++function getTTL (ttl, unit) {
++    ttl = Number(ttl)
++    if (unit === "minutes") {
++        return ttl * 60;
++    } else if (unit === "hours") {
++        return ttl * 3600;
++    } else if (unit === "days") {
++        return ttl * 86400;
++    } else {
++        return -1;
++    }
++}
++
++// Return human-readable filesize
++function getHumanReadableSize(size) {
++    if (_.isUndefined(size)) return;
++    return filesize(size, {base: 10});
++}
++
++var validAmount  = function(n) {
++    return !isNaN(parseFloat(n)) && isFinite(n);
++};
++
++var parsableUnit = function(u) {
++    return u.match(/\D*/).pop() === u;
++};
++
++var incrementBases = {
++    2: [
++        [["b", "bit", "bits"], 1/8],
++        [["B", "Byte", "Bytes", "bytes"], 1],
++        [["Kb"], 128],
++        [["k", "K", "kb", "KB", "KiB", "Ki", "ki"], 1024],
++        [["Mb"], 131072],
++        [["m", "M", "mb", "MB", "MiB", "Mi", "mi"], Math.pow(1024, 2)],
++        [["Gb"], 1.342e+8],
++        [["g", "G", "gb", "GB", "GiB", "Gi", "gi"], Math.pow(1024, 3)],
++        [["Tb"], 1.374e+11],
++        [["t", "T", "tb", "TB", "TiB", "Ti", "ti"], Math.pow(1024, 4)],
++        [["Pb"], 1.407e+14],
++        [["p", "P", "pb", "PB", "PiB", "Pi", "pi"], Math.pow(1024, 5)],
++        [["Eb"], 1.441e+17],
++        [["e", "E", "eb", "EB", "EiB", "Ei", "ei"], Math.pow(1024, 6)]
++    ],
++    10: [
++        [["b", "bit", "bits"], 1/8],
++        [["B", "Byte", "Bytes", "bytes"], 1],
++        [["Kb"], 125],
++        [["k", "K", "kb", "KB", "KiB", "Ki", "ki"], 1000],
++        [["Mb"], 125000],
++        [["m", "M", "mb", "MB", "MiB", "Mi", "mi"], 1.0e+6],
++        [["Gb"], 1.25e+8],
++        [["g", "G", "gb", "GB", "GiB", "Gi", "gi"], 1.0e+9],
++        [["Tb"], 1.25e+11],
++        [["t", "T", "tb", "TB", "TiB", "Ti", "ti"], 1.0e+12],
++        [["Pb"], 1.25e+14],
++        [["p", "P", "pb", "PB", "PiB", "Pi", "pi"], 1.0e+15],
++        [["Eb"], 1.25e+17],
++        [["e", "E", "eb", "EB", "EiB", "Ei", "ei"], 1.0e+18]
++    ]
++};
++
++// from https://github.com/patrickkettner/filesize-parser/blob/master/index.js
++function parseHumanReadableSize(input) {
++    if (_.isUndefined(input)) return;
++    var options = arguments[1] || {};
++    var base = parseInt(options.base || 2);
++
++    var parsed = input.toString().match(/^([0-9\.,]*)(?:\s*)?(.*)$/);
++    var amount = parsed[1].replace(',','.');
++    var unit = parsed[2];
++
++    var validUnit = function(sourceUnit) {
++        return sourceUnit === unit;
++    };
++
++    if (!validAmount(amount) || !parsableUnit(unit)) {
++        return;
++    }
++    if (unit === '') return Math.round(Number(amount));
++
++    var increments = incrementBases[base];
++    for (var i = 0; i < increments.length; i++) {
++        var _increment = increments[i];
++
++        if (_increment[0].some(validUnit)) {
++            return Math.round(amount * _increment[1]);
++        }
++    }
++}
+\ No newline at end of file
+diff --git a/webapp/partials/admin.html b/webapp/partials/admin.html
+index 45af9394..93a5d640 100644
+--- a/webapp/partials/admin.html
++++ b/webapp/partials/admin.html
+@@ -32,6 +32,14 @@
+                 </button>
+             </div>
+         </div>
++        <!-- CREATE USER BUTTON -->
++        <div class="tile menu">
++            <div class="menu-item">
++                <button type="button" class="btn btn-lg btn-primary btn-block" ng-click="createUser()">
++                    <i class="fa fa-users"></i> Create User
++                </button>
++            </div>
++        </div>
+     </div>
+     <!-- MAIN -->
+     <div class="col-sm-9">
+@@ -45,10 +53,10 @@
+                                 Max File Size : {{humanReadableSize(config.maxFileSize)}}
+                             </p>
+                             <p>
+-                                Default TTL : {{humanReadableTTL(config.defaultTTL)}}
++                                Default TTL : {{getHumanReadableTTLString(config.defaultTTL)}}
+                             </p>
+                             <p>
+-                                Max TTL : {{humanReadableTTL(config.maxTTL)}}
++                                Max TTL : {{getHumanReadableTTLString(config.maxTTL)}}
+                             </p>
+                         </div>
+                     </div>
+@@ -109,7 +117,9 @@
+                         <div class="tile panel panel-body main text-center" ng-repeat="user in users">
+                             <div class="row">
+                                 <div class="col-sm-3">
+-                                    {{user.login}}
++                                    {{user.login}}<br/>
++                                    ({{user.provider}})<br/>
++                                    <p ng-if="user.admin"><span class="label label-success">admin</span></p>
+                                 </div>
+                                 <div class="col-sm-3 hidden-md hidden-sm hidden-xs">
+                                     {{user.name}}<br/>
+@@ -125,6 +135,16 @@
+                                         <i class="glyphicon glyphicon-ok"></i>
+                                         <span class="hidden-xs hidden-sm hidden-md"> Impersonate</span>
+                                     </button>
++                                    <button title="Edit" type="button" class="btn btn-info"
++                                            ng-click="editUser(user)">
++                                        <i class="glyphicon glyphicon-pencil"></i>
++                                        <span class="hidden-xs hidden-sm hidden-md"> Edit</span>
++                                    </button>
++                                    <button title="Edit" type="button" class="btn btn-danger"
++                                            ng-click="deleteUser(user)">
++                                        <i class="glyphicon glyphicon-remove"></i>
++                                        <span class="hidden-xs hidden-sm hidden-md"> Delete</span>
++                                    </button>
+                                 </div>
+                             </div>
+                         </div>
+diff --git a/webapp/partials/home.html b/webapp/partials/home.html
+index 6841bab6..6866e195 100644
+--- a/webapp/partials/home.html
++++ b/webapp/partials/home.html
+@@ -8,8 +8,8 @@
+             <!-- USER INFO -->
+             <div class="menu-item text-center">
+                 <p>{{user.login}}</p>
+-
+                 <p>{{user.name}}</p>
++                <p ng-if="user.admin"><span class="label label-success">admin</span></p>
+             </div>
+             <p>&nbsp;</p>
+             <!-- USER STATS -->
+@@ -29,6 +29,14 @@
+                 </button>
+             </div>
+         </div>
++        <!-- EDIT ACCOUNT BUTTON -->
++        <div class="tile menu" ng-if="!fake_user">
++            <div class="menu-item">
++                <button type="button" class="btn btn-lg btn-primary btn-block" ng-click="editAccount()">
++                    <i class="fa fa-pencil"></i> Edit account
++                </button>
++            </div>
++        </div>
+         <!-- LOGOUT BUTTON -->
+         <div class="tile menu">
+             <div class="menu-item">
+diff --git a/webapp/partials/main.html b/webapp/partials/main.html
+index 5a3d1e37..c0d0b8f2 100644
+--- a/webapp/partials/main.html
++++ b/webapp/partials/main.html
+@@ -78,7 +78,7 @@
+                             Files will be automatically removed in
+                             <div style="display:inline-block;">
+                                 <input class="form-control" style="width:60px;display:inline-block;" type="number"
+-                                       ng-model="$parent.ttlValue" ng-show="ttlUnit != 'never'"
++                                       ng-model="$parent.ttlValue" ng-show="ttlUnit != 'unlimited'"
+                                        ng-disabled="!isFeatureEnabled('set_ttl')">
+                                 <select class="form-control" style="width:auto;display:inline-block;"
+                                         ng-options="unit as unit for unit in ttlUnits"
+diff --git a/webapp/partials/user.html b/webapp/partials/user.html
+new file mode 100644
+index 00000000..007ca6c7
+--- /dev/null
++++ b/webapp/partials/user.html
+@@ -0,0 +1,112 @@
++
++<div class="modal-header">
++    <h1>{{title}}</h1>
++</div>
++<div class="modal-body">
++    <div class="row">
++        <div class="col-sm-11 col-sm-offset-1">
++            <form class="form-horizontal" ng-submit="close(login,password)">
++                <!-- needed for ng-submit to work -->
++                <input type="submit" id="submit" style="display:none"/>
++
++                <div ng-if="warning">
++                    <p style="color:red;">
++                        {{warning}}
++                    </p>
++                </div>
++
++                <!-- PROVIDER -->
++                <div class="form-group">
++                    <label for="provider" class="col-sm-2 control-label">Provider</label>
++
++                    <div class="col-sm-8">
++                        <select id="provider" class="form-control" style="width:auto;display:inline-block;"
++                                ng-options="provider as provider for provider in providers"
++                                ng-model="user.provider"
++                                ng-disabled="edit"></select>
++                    </div>
++                </div>
++
++                <!-- LOGIN -->
++                <div class="form-group">
++                    <label for="login" class="col-sm-2 control-label">Login</label>
++
++                    <div class="col-sm-8">
++                        <input id="login" type="text" ng-model="user.login" class="form-control" placeholder="Login" ng-readonly="edit">
++                    </div>
++                </div>
++
++                <!-- NAME -->
++                <div class="form-group">
++                    <label for="name" class="col-sm-2 control-label">Name</label>
++
++                    <div class="col-sm-8">
++                        <input id="name" type="text" ng-model="user.name" class="form-control" placeholder="Name">
++                    </div>
++                </div>
++
++                <!-- EMAIL -->
++                <div class="form-group">
++                    <label for="email" class="col-sm-2 control-label">Email</label>
++
++                    <div class="col-sm-8">
++                        <input id="email" type="text" ng-model="user.email" class="form-control" placeholder="Email">
++                    </div>
++                </div>
++
++                <!-- PASSWORD -->
++                <div class="form-group">
++                    <i class="fa fa-refresh" ng-click="generatePassword()" ng-if="user.provider == 'local'"></i>
++                    <label for="password" class="col-sm-2 control-label">Password</label>
++
++                    <div class="col-sm-8">
++                        <input id="password" type="text" ng-model="user.password" ng-readonly="user.provider != 'local'" class="form-control" placeholder="Password">
++                    </div>
++                </div>
++
++                <!-- MAX FILE SIZE -->
++                <div class="form-group">
++                    <p>0 for server default, -1 for unlimited</p>
++                    <label for="maxFileSize" class="col-sm-2 control-label">Max File Size</label>
++
++                    <div class="col-sm-8">
++                        <input id="maxFileSize" type="text" ng-model="maxFileSize" class="form-control" placeholder="Max File Size" ng-readonly="!auth_user.admin">
++                    </div>
++                </div>
++
++                <!-- MAX TTL -->
++                <div class="form-group">
++                    <p>0 for server default</p>
++                    <label for="maxTTL" class="col-sm-2 control-label">Max TTL</label>
++
++                    <div class="col-sm-8">
++                        <div id="maxTTL" style="display:inline-block;">
++                            <input class="form-control" style="width:60px;display:inline-block;" type="number"
++                                   ng-model="ttlValue" ng-show="ttlUnit != 'unlimited'"
++                                   ng-disabled="!auth_user.admin">
++                            <select class="form-control" style="width:auto;display:inline-block;"
++                                    ng-options="unit as unit for unit in ttlUnits"
++                                    ng-model="ttlUnit"
++                                    ng-disabled="!auth_user.admin"></select>
++                        </div>
++                    </div>
++                </div>
++
++                <!-- ADMIN -->
++                <div class="form-group">
++                    <label for="admin" class="col-sm-2 control-label">Admin</label>
++
++                    <div class="col-sm-8">
++                        <div id="admin" style="display:inline-block;">
++                            <input type="checkbox" class="form-control" ng-model="user.admin" ng-disabled="!auth_user.admin">
++                        </div>
++                    </div>
++                </div>
++            </form>
++        </div>
++    </div>
++</div>
++<div class="modal-footer">
++    <button ng-click="$dismiss('cancel')" class="btn btn-danger">Cancel</button>
++    <button ng-click="close(user)" class="btn btn-primary">ok</button>
++</div>
+\ No newline at end of file
+
+```
+
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Report all of your findings in a single JSON object with the following format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

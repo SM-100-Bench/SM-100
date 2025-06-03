@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "conf/lex.go",
+"line": 1194,
+"description": "itemType.String() calls itself inside the panic message, causing infinite recursion and stack overflow when the type is unknown"
+},
+{
+"file": "conf/parse.go",
+"line": 251,
+"description": "Integer suffix handling multiplies parsed values without checking for overflow, which can wrap around int64 and produce incorrect results"
+}
+]
+}

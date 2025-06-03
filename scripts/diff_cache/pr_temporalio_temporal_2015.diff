@@ -1,0 +1,21 @@
+diff --git a/common/persistence/sql/sqlplugin/postgresql/plugin.go b/common/persistence/sql/sqlplugin/postgresql/plugin.go
+index 5c8d50695dd..44b49b61b44 100644
+--- a/common/persistence/sql/sqlplugin/postgresql/plugin.go
++++ b/common/persistence/sql/sqlplugin/postgresql/plugin.go
+@@ -26,6 +26,7 @@ package postgresql
+ 
+ import (
+ 	"fmt"
++	"net/url"
+ 	"strings"
+ 
+ 	"github.com/iancoleman/strcase"
+@@ -149,7 +150,7 @@ func buildDSN(
+ 	dsn := fmt.Sprintf(
+ 		dsnFmt,
+ 		cfg.User,
+-		cfg.Password,
++		url.QueryEscape(cfg.Password),
+ 		resolvedAddr,
+ 		cfg.DatabaseName,
+ 		tlsAttrs,

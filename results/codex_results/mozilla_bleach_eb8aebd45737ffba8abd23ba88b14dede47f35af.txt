@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "bleach/html5lib_shim.py",
+"line": 492,
+"description": "In convert_entities, the code checks if part: before appending the remainder. This should verify if remainder: to avoid appending an empty string."
+},
+{
+"file": "bleach/sanitizer.py",
+"line": 330,
+"description": "merge_characters always yields a trailing empty Characters token regardless of whether the buffer contains data."
+}
+]
+}

@@ -1,0 +1,15 @@
+{
+  "identifier": "flyteorg_flyteadmin_611a85f",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.13191160000000002,
+    "is_error": false,
+    "duration_ms": 10509,
+    "duration_api_ms": 11920,
+    "num_turns": 3,
+    "result": "Based on my review of the git staged changes, I found several potential issues:\n\n```json\n{\n  \"issues\": [\n    {\n      \"file\": \"auth/auth_context.go\",\n      \"line\": 188,\n      \"description\": \"Deprecated io/ioutil.ReadFile used instead of os.ReadFile - ioutil package is deprecated since Go 1.16\"\n    },\n    {\n      \"file\": \"auth/authzserver/authorize.go\",\n      \"line\": 99,\n      \"description\": \"Use of log.Printf instead of logger.Infof(ctx, ...) inconsistent with rest of codebase logging pattern\"\n    },\n    {\n      \"file\": \"pkg/manager/impl/execution_manager.go\",\n      \"line\": 105,\n      \"description\": \"Potential nil pointer dereference - auth.IdentityContextFromContext(ctx) could return nil but UserID() is called without nil check\"\n    }\n  ]\n}\n```",
+    "total_cost": 0.13191160000000002,
+    "session_id": "03af19d6-6e7e-4c4e-b270-12e418dae713"
+  }
+}

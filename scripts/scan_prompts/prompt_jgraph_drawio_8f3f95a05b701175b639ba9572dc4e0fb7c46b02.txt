@@ -1,0 +1,19 @@
+Please review the code in the jgraph_drawio_8f3f95a05b701175b639ba9572dc4e0fb7c46b02 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Web Application Core subsystem (consisting of 'src/main/webapp/index.html', 'src/main/webapp/js/PostConfig.js', 'src/main/webapp/js/PreConfig.js', 'src/main/webapp/js/diagramly/App.js', 'src/main/webapp/js/diagramly/Dialogs.js', 'src/main/webapp/js/diagramly/Editor.js', 'src/main/webapp/js/diagramly/EditorUi.js', 'src/main/webapp/js/diagramly/Init.js', 'src/main/webapp/js/diagramly/Menus.js', 'src/main/webapp/js/diagramly/Pages.js', 'src/main/webapp/js/diagramly/Settings.js', 'src/main/webapp/js/grapheditor/Actions.js', 'src/main/webapp/js/grapheditor/Dialogs.js', 'src/main/webapp/js/grapheditor/Editor.js', 'src/main/webapp/js/grapheditor/EditorUi.js', 'src/main/webapp/js/grapheditor/Format.js', 'src/main/webapp/js/grapheditor/Graph.js', 'src/main/webapp/js/grapheditor/Init.js', 'src/main/webapp/js/grapheditor/Menus.js', 'src/main/webapp/js/grapheditor/Shapes.js', 'src/main/webapp/js/grapheditor/Sidebar.js', 'src/main/webapp/js/grapheditor/Toolbar.js')
+2. Storage and File Management subsystem (consisting of 'src/main/webapp/js/diagramly/DrawioFile.js', 'src/main/webapp/js/diagramly/DrawioFileSync.js', 'src/main/webapp/js/diagramly/LocalFile.js', 'src/main/webapp/js/diagramly/RemoteFile.js', 'src/main/webapp/js/diagramly/StorageFile.js')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

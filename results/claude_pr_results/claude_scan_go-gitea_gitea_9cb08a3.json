@@ -1,0 +1,15 @@
+{
+  "identifier": "go-gitea_gitea_9cb08a3",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.07990405,
+    "is_error": false,
+    "duration_ms": 8563,
+    "duration_api_ms": 10606,
+    "num_turns": 3,
+    "result": "After carefully reviewing the staged changes in `models/repo.go`, I found one significant bug:\n\n```json\n{\n  \"issues\": [\n    {\n      \"file\": \"models/repo.go\",\n      \"line\": 1583,\n      \"description\": \"Incorrect SQL query syntax - using 'In(\\\"issue_id=?\\\", issueIDs)' instead of 'In(\\\"issue_id\\\", issueIDs)'. The '=?' should not be included when using the In() method, causing a SQL syntax error.\"\n    }\n  ]\n}\n```",
+    "total_cost": 0.07990405,
+    "session_id": "34c0ed31-b896-4127-baa0-225130692471"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "session_id": "devin-79b15ce2d2a04dec9e2edb0f0f99e9d6",
+  "issues": [
+    {
+      "file": "zstd/seqdec_amd64.go",
+      "line": 94,
+      "description": "Buffer overflow vulnerability: The assembly implementation only checks if s.seqSize > maxBlockSize after all sequences are processed, while the generic implementation in seqdec_generic.go checks after each sequence (lines 107-110). This allows s.seqSize to potentially exceed maxBlockSize during sequence processing, which could lead to buffer overflows if the output buffer is allocated based on maxBlockSize."
+    },
+    {
+      "file": "zstd/seqdec_amd64.s",
+      "line": 280,
+      "description": "Missing bounds check: The assembly code updates s.seqSize (ADDQ R12, 256(R13)) for each sequence without checking if it exceeds maxBlockSize, unlike the generic implementation which performs this check after each sequence update."
+    },
+    {
+      "file": "zstd/seqdec_amd64.s",
+      "line": 561,
+      "description": "Missing bounds check in BMI2 implementation: Similar to the standard implementation, the BMI2 version also updates s.seqSize (ADDQ R12, 256(R13)) without checking if it exceeds maxBlockSize after each sequence."
+    }
+  ]
+}

@@ -1,0 +1,1917 @@
+Please review the following commit for potential bugs:
+
+```
+diff --git a/.github/workflows/mobile-build-validation.yml b/.github/workflows/mobile-build-validation.yml
+index 8cb0eed74c3..85296484229 100644
+--- a/.github/workflows/mobile-build-validation.yml
++++ b/.github/workflows/mobile-build-validation.yml
+@@ -11,7 +11,7 @@ concurrency:
+   cancel-in-progress: true
+ 
+ jobs:
+-  andrloid_build:
++  android_build:
+     runs-on: ubuntu-latest
+     steps:
+       - name: Checkout repository
+@@ -41,7 +41,7 @@ jobs:
+         run: go install golang.org/x/mobile/cmd/gomobile@v0.0.0-20230531173138-3c911d8e3eda
+       - name: gomobile init
+         run: gomobile init
+-      - name: build android nebtird lib
++      - name: build android netbird lib
+         run: PATH=$PATH:$(go env GOPATH) gomobile bind -o $GITHUB_WORKSPACE/netbird.aar -javapkg=io.netbird.gomobile -ldflags="-X golang.zx2c4.com/wireguard/ipc.socketDirectory=/data/data/io.netbird.client/cache/wireguard -X github.com/netbirdio/netbird/version.version=buildtest"  $GITHUB_WORKSPACE/client/android
+         env:
+           CGO_ENABLED: 0
+@@ -59,7 +59,7 @@ jobs:
+         run: go install golang.org/x/mobile/cmd/gomobile@v0.0.0-20230531173138-3c911d8e3eda
+       - name: gomobile init
+         run: gomobile init
+-      - name: build iOS nebtird lib
++      - name: build iOS netbird lib
+         run: PATH=$PATH:$(go env GOPATH) gomobile bind -target=ios -bundleid=io.netbird.framework -ldflags="-X github.com/netbirdio/netbird/version.version=buildtest" -o $GITHUB_WORKSPACE/NetBirdSDK.xcframework $GITHUB_WORKSPACE/client/ios/NetBirdSDK
+         env:
+           CGO_ENABLED: 0
+\ No newline at end of file
+diff --git a/client/cmd/status.go b/client/cmd/status.go
+index fded7dff8fe..4c7218fde94 100644
+--- a/client/cmd/status.go
++++ b/client/cmd/status.go
+@@ -35,6 +35,7 @@ type peerStateDetailOutput struct {
+ 	TransferReceived       int64            `json:"transferReceived" yaml:"transferReceived"`
+ 	TransferSent           int64            `json:"transferSent" yaml:"transferSent"`
+ 	RosenpassEnabled       bool             `json:"quantumResistance" yaml:"quantumResistance"`
++	Routes                 []string         `json:"routes" yaml:"routes"`
+ }
+ 
+ type peersStateOutput struct {
+@@ -72,19 +73,28 @@ type iceCandidateType struct {
+ 	Remote string `json:"remote" yaml:"remote"`
+ }
+ 
++type nsServerGroupStateOutput struct {
++	Servers []string `json:"servers" yaml:"servers"`
++	Domains []string `json:"domains" yaml:"domains"`
++	Enabled bool     `json:"enabled" yaml:"enabled"`
++	Error   string   `json:"error" yaml:"error"`
++}
++
+ type statusOutputOverview struct {
+-	Peers               peersStateOutput      `json:"peers" yaml:"peers"`
+-	CliVersion          string                `json:"cliVersion" yaml:"cliVersion"`
+-	DaemonVersion       string                `json:"daemonVersion" yaml:"daemonVersion"`
+-	ManagementState     managementStateOutput `json:"management" yaml:"management"`
+-	SignalState         signalStateOutput     `json:"signal" yaml:"signal"`
+-	Relays              relayStateOutput      `json:"relays" yaml:"relays"`
+-	IP                  string                `json:"netbirdIp" yaml:"netbirdIp"`
+-	PubKey              string                `json:"publicKey" yaml:"publicKey"`
+-	KernelInterface     bool                  `json:"usesKernelInterface" yaml:"usesKernelInterface"`
+-	FQDN                string                `json:"fqdn" yaml:"fqdn"`
+-	RosenpassEnabled    bool                  `json:"quantumResistance" yaml:"quantumResistance"`
+-	RosenpassPermissive bool                  `json:"quantumResistancePermissive" yaml:"quantumResistancePermissive"`
++	Peers               peersStateOutput           `json:"peers" yaml:"peers"`
++	CliVersion          string                     `json:"cliVersion" yaml:"cliVersion"`
++	DaemonVersion       string                     `json:"daemonVersion" yaml:"daemonVersion"`
++	ManagementState     managementStateOutput      `json:"management" yaml:"management"`
++	SignalState         signalStateOutput          `json:"signal" yaml:"signal"`
++	Relays              relayStateOutput           `json:"relays" yaml:"relays"`
++	IP                  string                     `json:"netbirdIp" yaml:"netbirdIp"`
++	PubKey              string                     `json:"publicKey" yaml:"publicKey"`
++	KernelInterface     bool                       `json:"usesKernelInterface" yaml:"usesKernelInterface"`
++	FQDN                string                     `json:"fqdn" yaml:"fqdn"`
++	RosenpassEnabled    bool                       `json:"quantumResistance" yaml:"quantumResistance"`
++	RosenpassPermissive bool                       `json:"quantumResistancePermissive" yaml:"quantumResistancePermissive"`
++	Routes              []string                   `json:"routes" yaml:"routes"`
++	NSServerGroups      []nsServerGroupStateOutput `json:"dnsServers" yaml:"dnsServers"`
+ }
+ 
+ var (
+@@ -168,7 +178,7 @@ func statusFunc(cmd *cobra.Command, args []string) error {
+ 	case yamlFlag:
+ 		statusOutputString, err = parseToYAML(outputInformationHolder)
+ 	default:
+-		statusOutputString = parseGeneralSummary(outputInformationHolder, false, false)
++		statusOutputString = parseGeneralSummary(outputInformationHolder, false, false, false)
+ 	}
+ 
+ 	if err != nil {
+@@ -268,6 +278,8 @@ func convertToStatusOutputOverview(resp *proto.StatusResponse) statusOutputOverv
+ 		FQDN:                pbFullStatus.GetLocalPeerState().GetFqdn(),
+ 		RosenpassEnabled:    pbFullStatus.GetLocalPeerState().GetRosenpassEnabled(),
+ 		RosenpassPermissive: pbFullStatus.GetLocalPeerState().GetRosenpassPermissive(),
++		Routes:              pbFullStatus.GetLocalPeerState().GetRoutes(),
++		NSServerGroups:      mapNSGroups(pbFullStatus.GetDnsServers()),
+ 	}
+ 
+ 	return overview
+@@ -299,6 +311,19 @@ func mapRelays(relays []*proto.RelayState) relayStateOutput {
+ 	}
+ }
+ 
++func mapNSGroups(servers []*proto.NSGroupState) []nsServerGroupStateOutput {
++	mappedNSGroups := make([]nsServerGroupStateOutput, 0, len(servers))
++	for _, pbNsGroupServer := range servers {
++		mappedNSGroups = append(mappedNSGroups, nsServerGroupStateOutput{
++			Servers: pbNsGroupServer.GetServers(),
++			Domains: pbNsGroupServer.GetDomains(),
++			Enabled: pbNsGroupServer.GetEnabled(),
++			Error:   pbNsGroupServer.GetError(),
++		})
++	}
++	return mappedNSGroups
++}
++
+ func mapPeers(peers []*proto.PeerState) peersStateOutput {
+ 	var peersStateDetail []peerStateDetailOutput
+ 	localICE := ""
+@@ -352,6 +377,7 @@ func mapPeers(peers []*proto.PeerState) peersStateOutput {
+ 			TransferReceived:       transferReceived,
+ 			TransferSent:           transferSent,
+ 			RosenpassEnabled:       pbPeerState.GetRosenpassEnabled(),
++			Routes:                 pbPeerState.GetRoutes(),
+ 		}
+ 
+ 		peersStateDetail = append(peersStateDetail, peerState)
+@@ -401,8 +427,7 @@ func parseToYAML(overview statusOutputOverview) (string, error) {
+ 	return string(yamlBytes), nil
+ }
+ 
+-func parseGeneralSummary(overview statusOutputOverview, showURL bool, showRelays bool) string {
+-
++func parseGeneralSummary(overview statusOutputOverview, showURL bool, showRelays bool, showNameServers bool) string {
+ 	var managementConnString string
+ 	if overview.ManagementState.Connected {
+ 		managementConnString = "Connected"
+@@ -438,7 +463,7 @@ func parseGeneralSummary(overview statusOutputOverview, showURL bool, showRelays
+ 		interfaceIP = "N/A"
+ 	}
+ 
+-	var relayAvailableString string
++	var relaysString string
+ 	if showRelays {
+ 		for _, relay := range overview.Relays.Details {
+ 			available := "Available"
+@@ -447,15 +472,46 @@ func parseGeneralSummary(overview statusOutputOverview, showURL bool, showRelays
+ 				available = "Unavailable"
+ 				reason = fmt.Sprintf(", reason: %s", relay.Error)
+ 			}
+-			relayAvailableString += fmt.Sprintf("\n  [%s] is %s%s", relay.URI, available, reason)
+-
++			relaysString += fmt.Sprintf("\n  [%s] is %s%s", relay.URI, available, reason)
+ 		}
+ 	} else {
++		relaysString = fmt.Sprintf("%d/%d Available", overview.Relays.Available, overview.Relays.Total)
++	}
+ 
+-		relayAvailableString = fmt.Sprintf("%d/%d Available", overview.Relays.Available, overview.Relays.Total)
++	routes := "-"
++	if len(overview.Routes) > 0 {
++		sort.Strings(overview.Routes)
++		routes = strings.Join(overview.Routes, ", ")
+ 	}
+ 
+-	peersCountString := fmt.Sprintf("%d/%d Connected", overview.Peers.Connected, overview.Peers.Total)
++	var dnsServersString string
++	if showNameServers {
++		for _, nsServerGroup := range overview.NSServerGroups {
++			enabled := "Available"
++			if !nsServerGroup.Enabled {
++				enabled = "Unavailable"
++			}
++			errorString := ""
++			if nsServerGroup.Error != "" {
++				errorString = fmt.Sprintf(", reason: %s", nsServerGroup.Error)
++				errorString = strings.TrimSpace(errorString)
++			}
++
++			domainsString := strings.Join(nsServerGroup.Domains, ", ")
++			if domainsString == "" {
++				domainsString = "." // Show "." for the default zone
++			}
++			dnsServersString += fmt.Sprintf(
++				"\n  [%s] for [%s] is %s%s",
++				strings.Join(nsServerGroup.Servers, ", "),
++				domainsString,
++				enabled,
++				errorString,
++			)
++		}
++	} else {
++		dnsServersString = fmt.Sprintf("%d/%d Available", countEnabled(overview.NSServerGroups), len(overview.NSServerGroups))
++	}
+ 
+ 	rosenpassEnabledStatus := "false"
+ 	if overview.RosenpassEnabled {
+@@ -465,26 +521,32 @@ func parseGeneralSummary(overview statusOutputOverview, showURL bool, showRelays
+ 		}
+ 	}
+ 
++	peersCountString := fmt.Sprintf("%d/%d Connected", overview.Peers.Connected, overview.Peers.Total)
++
+ 	summary := fmt.Sprintf(
+ 		"Daemon version: %s\n"+
+ 			"CLI version: %s\n"+
+ 			"Management: %s\n"+
+ 			"Signal: %s\n"+
+ 			"Relays: %s\n"+
++			"Nameservers: %s\n"+
+ 			"FQDN: %s\n"+
+ 			"NetBird IP: %s\n"+
+ 			"Interface type: %s\n"+
+ 			"Quantum resistance: %s\n"+
++			"Routes: %s\n"+
+ 			"Peers count: %s\n",
+ 		overview.DaemonVersion,
+ 		version.NetbirdVersion(),
+ 		managementConnString,
+ 		signalConnString,
+-		relayAvailableString,
++		relaysString,
++		dnsServersString,
+ 		overview.FQDN,
+ 		interfaceIP,
+ 		interfaceTypeString,
+ 		rosenpassEnabledStatus,
++		routes,
+ 		peersCountString,
+ 	)
+ 	return summary
+@@ -492,7 +554,7 @@ func parseGeneralSummary(overview statusOutputOverview, showURL bool, showRelays
+ 
+ func parseToFullDetailSummary(overview statusOutputOverview) string {
+ 	parsedPeersString := parsePeers(overview.Peers, overview.RosenpassEnabled, overview.RosenpassPermissive)
+-	summary := parseGeneralSummary(overview, true, true)
++	summary := parseGeneralSummary(overview, true, true, true)
+ 
+ 	return fmt.Sprintf(
+ 		"Peers detail:"+
+@@ -556,6 +618,12 @@ func parsePeers(peers peersStateOutput, rosenpassEnabled, rosenpassPermissive bo
+ 			}
+ 		}
+ 
++		routes := "-"
++		if len(peerState.Routes) > 0 {
++			sort.Strings(peerState.Routes)
++			routes = strings.Join(peerState.Routes, ", ")
++		}
++
+ 		peerString := fmt.Sprintf(
+ 			"\n %s:\n"+
+ 				"  NetBird IP: %s\n"+
+@@ -569,7 +637,8 @@ func parsePeers(peers peersStateOutput, rosenpassEnabled, rosenpassPermissive bo
+ 				"  Last connection update: %s\n"+
+ 				"  Last WireGuard handshake: %s\n"+
+ 				"  Transfer status (received/sent) %s/%s\n"+
+-				"  Quantum resistance: %s\n",
++				"  Quantum resistance: %s\n"+
++				"  Routes: %s\n",
+ 			peerState.FQDN,
+ 			peerState.IP,
+ 			peerState.PubKey,
+@@ -585,6 +654,7 @@ func parsePeers(peers peersStateOutput, rosenpassEnabled, rosenpassPermissive bo
+ 			toIEC(peerState.TransferReceived),
+ 			toIEC(peerState.TransferSent),
+ 			rosenpassEnabledStatus,
++			routes,
+ 		)
+ 
+ 		peersString += peerString
+@@ -638,3 +708,13 @@ func toIEC(b int64) string {
+ 	return fmt.Sprintf("%.1f %ciB",
+ 		float64(b)/float64(div), "KMGTPE"[exp])
+ }
++
++func countEnabled(dnsServers []nsServerGroupStateOutput) int {
++	count := 0
++	for _, server := range dnsServers {
++		if server.Enabled {
++			count++
++		}
++	}
++	return count
++}
+diff --git a/client/cmd/status_test.go b/client/cmd/status_test.go
+index b5db576e47b..ea6980c3df7 100644
+--- a/client/cmd/status_test.go
++++ b/client/cmd/status_test.go
+@@ -42,6 +42,9 @@ var resp = &proto.StatusResponse{
+ 				LastWireguardHandshake:     timestamppb.New(time.Date(2001, time.Month(1), 1, 1, 1, 2, 0, time.UTC)),
+ 				BytesRx:                    200,
+ 				BytesTx:                    100,
++				Routes: []string{
++					"10.1.0.0/24",
++				},
+ 			},
+ 			{
+ 				IP:                         "192.168.178.102",
+@@ -87,6 +90,31 @@ var resp = &proto.StatusResponse{
+ 			PubKey:          "Some-Pub-Key",
+ 			KernelInterface: true,
+ 			Fqdn:            "some-localhost.awesome-domain.com",
++			Routes: []string{
++				"10.10.0.0/24",
++			},
++		},
++		DnsServers: []*proto.NSGroupState{
++			{
++				Servers: []string{
++					"8.8.8.8:53",
++				},
++				Domains: nil,
++				Enabled: true,
++				Error:   "",
++			},
++			{
++				Servers: []string{
++					"1.1.1.1:53",
++					"2.2.2.2:53",
++				},
++				Domains: []string{
++					"example.com",
++					"example.net",
++				},
++				Enabled: false,
++				Error:   "timeout",
++			},
+ 		},
+ 	},
+ 	DaemonVersion: "0.14.1",
+@@ -116,6 +144,9 @@ var overview = statusOutputOverview{
+ 				LastWireguardHandshake: time.Date(2001, 1, 1, 1, 1, 2, 0, time.UTC),
+ 				TransferReceived:       200,
+ 				TransferSent:           100,
++				Routes: []string{
++					"10.1.0.0/24",
++				},
+ 			},
+ 			{
+ 				IP:               "192.168.178.102",
+@@ -171,6 +202,31 @@ var overview = statusOutputOverview{
+ 	PubKey:          "Some-Pub-Key",
+ 	KernelInterface: true,
+ 	FQDN:            "some-localhost.awesome-domain.com",
++	NSServerGroups: []nsServerGroupStateOutput{
++		{
++			Servers: []string{
++				"8.8.8.8:53",
++			},
++			Domains: nil,
++			Enabled: true,
++			Error:   "",
++		},
++		{
++			Servers: []string{
++				"1.1.1.1:53",
++				"2.2.2.2:53",
++			},
++			Domains: []string{
++				"example.com",
++				"example.net",
++			},
++			Enabled: false,
++			Error:   "timeout",
++		},
++	},
++	Routes: []string{
++		"10.10.0.0/24",
++	},
+ }
+ 
+ func TestConversionFromFullStatusToOutputOverview(t *testing.T) {
+@@ -232,7 +288,10 @@ func TestParsingToJSON(t *testing.T) {
+                 "lastWireguardHandshake": "2001-01-01T01:01:02Z",
+                 "transferReceived": 200,
+                 "transferSent": 100,
+-				"quantumResistance":false
++                "quantumResistance": false,
++                "routes": [
++                  "10.1.0.0/24"
++                ]
+               },
+               {
+                 "fqdn": "peer-2.awesome-domain.com",
+@@ -253,7 +312,8 @@ func TestParsingToJSON(t *testing.T) {
+                 "lastWireguardHandshake": "2002-02-02T02:02:03Z",
+                 "transferReceived": 2000,
+                 "transferSent": 1000,
+-				"quantumResistance":false
++                "quantumResistance": false,
++                "routes": null
+               }
+             ]
+           },
+@@ -289,8 +349,33 @@ func TestParsingToJSON(t *testing.T) {
+           "publicKey": "Some-Pub-Key",
+           "usesKernelInterface": true,
+           "fqdn": "some-localhost.awesome-domain.com",
+-          "quantumResistance":false,
+-          "quantumResistancePermissive":false
++          "quantumResistance": false,
++          "quantumResistancePermissive": false,
++          "routes": [
++            "10.10.0.0/24"
++          ],
++          "dnsServers": [
++            {
++              "servers": [
++                "8.8.8.8:53"
++              ],
++              "domains": null,
++              "enabled": true,
++              "error": ""
++            },
++            {
++              "servers": [
++                "1.1.1.1:53",
++                "2.2.2.2:53"
++              ],
++              "domains": [
++                "example.com",
++                "example.net"
++              ],
++              "enabled": false,
++              "error": "timeout"
++            }
++          ]
+         }`
+ 	// @formatter:on
+ 
+@@ -325,6 +410,8 @@ func TestParsingToYAML(t *testing.T) {
+           transferReceived: 200
+           transferSent: 100
+           quantumResistance: false
++          routes:
++            - 10.1.0.0/24
+         - fqdn: peer-2.awesome-domain.com
+           netbirdIp: 192.168.178.102
+           publicKey: Pubkey2
+@@ -342,6 +429,7 @@ func TestParsingToYAML(t *testing.T) {
+           transferReceived: 2000
+           transferSent: 1000
+           quantumResistance: false
++          routes: []
+ cliVersion: development
+ daemonVersion: 0.14.1
+ management:
+@@ -368,6 +456,22 @@ usesKernelInterface: true
+ fqdn: some-localhost.awesome-domain.com
+ quantumResistance: false
+ quantumResistancePermissive: false
++routes:
++    - 10.10.0.0/24
++dnsServers:
++    - servers:
++        - 8.8.8.8:53
++      domains: []
++      enabled: true
++      error: ""
++    - servers:
++        - 1.1.1.1:53
++        - 2.2.2.2:53
++      domains:
++        - example.com
++        - example.net
++      enabled: false
++      error: timeout
+ `
+ 
+ 	assert.Equal(t, expectedYAML, yaml)
+@@ -391,6 +495,7 @@ func TestParsingToDetail(t *testing.T) {
+   Last WireGuard handshake: 2001-01-01 01:01:02
+   Transfer status (received/sent) 200 B/100 B
+   Quantum resistance: false
++  Routes: 10.1.0.0/24
+ 
+  peer-2.awesome-domain.com:
+   NetBird IP: 192.168.178.102
+@@ -405,6 +510,7 @@ func TestParsingToDetail(t *testing.T) {
+   Last WireGuard handshake: 2002-02-02 02:02:03
+   Transfer status (received/sent) 2.0 KiB/1000 B
+   Quantum resistance: false
++  Routes: -
+ 
+ Daemon version: 0.14.1
+ CLI version: development
+@@ -413,10 +519,14 @@ Signal: Connected to my-awesome-signal.com:443
+ Relays: 
+   [stun:my-awesome-stun.com:3478] is Available
+   [turns:my-awesome-turn.com:443?transport=tcp] is Unavailable, reason: context: deadline exceeded
++Nameservers: 
++  [8.8.8.8:53] for [.] is Available
++  [1.1.1.1:53, 2.2.2.2:53] for [example.com, example.net] is Unavailable, reason: timeout
+ FQDN: some-localhost.awesome-domain.com
+ NetBird IP: 192.168.178.100/16
+ Interface type: Kernel
+ Quantum resistance: false
++Routes: 10.10.0.0/24
+ Peers count: 2/2 Connected
+ `
+ 
+@@ -424,7 +534,7 @@ Peers count: 2/2 Connected
+ }
+ 
+ func TestParsingToShortVersion(t *testing.T) {
+-	shortVersion := parseGeneralSummary(overview, false, false)
++	shortVersion := parseGeneralSummary(overview, false, false, false)
+ 
+ 	expectedString :=
+ 		`Daemon version: 0.14.1
+@@ -432,10 +542,12 @@ CLI version: development
+ Management: Connected
+ Signal: Connected
+ Relays: 1/2 Available
++Nameservers: 1/2 Available
+ FQDN: some-localhost.awesome-domain.com
+ NetBird IP: 192.168.178.100/16
+ Interface type: Kernel
+ Quantum resistance: false
++Routes: 10.10.0.0/24
+ Peers count: 2/2 Connected
+ `
+ 
+diff --git a/client/internal/dns/server.go b/client/internal/dns/server.go
+index 9986f632ec5..dff44f01d1d 100644
+--- a/client/internal/dns/server.go
++++ b/client/internal/dns/server.go
+@@ -4,6 +4,7 @@ import (
+ 	"context"
+ 	"fmt"
+ 	"net/netip"
++	"strings"
+ 	"sync"
+ 
+ 	"github.com/miekg/dns"
+@@ -11,6 +12,7 @@ import (
+ 	log "github.com/sirupsen/logrus"
+ 
+ 	"github.com/netbirdio/netbird/client/internal/listener"
++	"github.com/netbirdio/netbird/client/internal/peer"
+ 	nbdns "github.com/netbirdio/netbird/dns"
+ )
+ 
+@@ -59,6 +61,8 @@ type DefaultServer struct {
+ 	// make sense on mobile only
+ 	searchDomainNotifier *notifier
+ 	iosDnsManager        IosDnsManager
++
++	statusRecorder *peer.Status
+ }
+ 
+ type handlerWithStop interface {
+@@ -73,7 +77,12 @@ type muxUpdate struct {
+ }
+ 
+ // NewDefaultServer returns a new dns server
+-func NewDefaultServer(ctx context.Context, wgInterface WGIface, customAddress string) (*DefaultServer, error) {
++func NewDefaultServer(
++	ctx context.Context,
++	wgInterface WGIface,
++	customAddress string,
++	statusRecorder *peer.Status,
++) (*DefaultServer, error) {
+ 	var addrPort *netip.AddrPort
+ 	if customAddress != "" {
+ 		parsedAddrPort, err := netip.ParseAddrPort(customAddress)
+@@ -90,13 +99,20 @@ func NewDefaultServer(ctx context.Context, wgInterface WGIface, customAddress st
+ 		dnsService = newServiceViaListener(wgInterface, addrPort)
+ 	}
+ 
+-	return newDefaultServer(ctx, wgInterface, dnsService), nil
++	return newDefaultServer(ctx, wgInterface, dnsService, statusRecorder), nil
+ }
+ 
+ // NewDefaultServerPermanentUpstream returns a new dns server. It optimized for mobile systems
+-func NewDefaultServerPermanentUpstream(ctx context.Context, wgInterface WGIface, hostsDnsList []string, config nbdns.Config, listener listener.NetworkChangeListener) *DefaultServer {
++func NewDefaultServerPermanentUpstream(
++	ctx context.Context,
++	wgInterface WGIface,
++	hostsDnsList []string,
++	config nbdns.Config,
++	listener listener.NetworkChangeListener,
++	statusRecorder *peer.Status,
++) *DefaultServer {
+ 	log.Debugf("host dns address list is: %v", hostsDnsList)
+-	ds := newDefaultServer(ctx, wgInterface, newServiceViaMemory(wgInterface))
++	ds := newDefaultServer(ctx, wgInterface, newServiceViaMemory(wgInterface), statusRecorder)
+ 	ds.permanent = true
+ 	ds.hostsDnsList = hostsDnsList
+ 	ds.addHostRootZone()
+@@ -108,13 +124,18 @@ func NewDefaultServerPermanentUpstream(ctx context.Context, wgInterface WGIface,
+ }
+ 
+ // NewDefaultServerIos returns a new dns server. It optimized for ios
+-func NewDefaultServerIos(ctx context.Context, wgInterface WGIface, iosDnsManager IosDnsManager) *DefaultServer {
+-	ds := newDefaultServer(ctx, wgInterface, newServiceViaMemory(wgInterface))
++func NewDefaultServerIos(
++	ctx context.Context,
++	wgInterface WGIface,
++	iosDnsManager IosDnsManager,
++	statusRecorder *peer.Status,
++) *DefaultServer {
++	ds := newDefaultServer(ctx, wgInterface, newServiceViaMemory(wgInterface), statusRecorder)
+ 	ds.iosDnsManager = iosDnsManager
+ 	return ds
+ }
+ 
+-func newDefaultServer(ctx context.Context, wgInterface WGIface, dnsService service) *DefaultServer {
++func newDefaultServer(ctx context.Context, wgInterface WGIface, dnsService service, statusRecorder *peer.Status) *DefaultServer {
+ 	ctx, stop := context.WithCancel(ctx)
+ 	defaultServer := &DefaultServer{
+ 		ctx:       ctx,
+@@ -124,7 +145,8 @@ func newDefaultServer(ctx context.Context, wgInterface WGIface, dnsService servi
+ 		localResolver: &localResolver{
+ 			registeredMap: make(registrationMap),
+ 		},
+-		wgInterface: wgInterface,
++		wgInterface:    wgInterface,
++		statusRecorder: statusRecorder,
+ 	}
+ 
+ 	return defaultServer
+@@ -299,6 +321,8 @@ func (s *DefaultServer) applyConfiguration(update nbdns.Config) error {
+ 		s.searchDomainNotifier.onNewSearchDomains(s.SearchDomains())
+ 	}
+ 
++	s.updateNSGroupStates(update.NameServerGroups)
++
+ 	return nil
+ }
+ 
+@@ -338,7 +362,13 @@ func (s *DefaultServer) buildUpstreamHandlerUpdate(nameServerGroups []*nbdns.Nam
+ 			continue
+ 		}
+ 
+-		handler, err := newUpstreamResolver(s.ctx, s.wgInterface.Name(), s.wgInterface.Address().IP, s.wgInterface.Address().Network)
++		handler, err := newUpstreamResolver(
++			s.ctx,
++			s.wgInterface.Name(),
++			s.wgInterface.Address().IP,
++			s.wgInterface.Address().Network,
++			s.statusRecorder,
++		)
+ 		if err != nil {
+ 			return nil, fmt.Errorf("unable to create a new upstream resolver, error: %v", err)
+ 		}
+@@ -460,14 +490,14 @@ func getNSHostPort(ns nbdns.NameServer) string {
+ func (s *DefaultServer) upstreamCallbacks(
+ 	nsGroup *nbdns.NameServerGroup,
+ 	handler dns.Handler,
+-) (deactivate func(), reactivate func()) {
++) (deactivate func(error), reactivate func()) {
+ 	var removeIndex map[string]int
+-	deactivate = func() {
++	deactivate = func(err error) {
+ 		s.mux.Lock()
+ 		defer s.mux.Unlock()
+ 
+ 		l := log.WithField("nameservers", nsGroup.NameServers)
+-		l.Info("temporary deactivate nameservers group due timeout")
++		l.Info("Temporarily deactivating nameservers group due to timeout")
+ 
+ 		removeIndex = make(map[string]int)
+ 		for _, domain := range nsGroup.Domains {
+@@ -486,8 +516,11 @@ func (s *DefaultServer) upstreamCallbacks(
+ 			}
+ 		}
+ 		if err := s.hostManager.applyDNSConfig(s.currentConfig); err != nil {
+-			l.WithError(err).Error("fail to apply nameserver deactivation on the host")
++			l.Errorf("Failed to apply nameserver deactivation on the host: %v", err)
+ 		}
++
++		s.updateNSState(nsGroup, err, false)
++
+ 	}
+ 	reactivate = func() {
+ 		s.mux.Lock()
+@@ -510,12 +543,20 @@ func (s *DefaultServer) upstreamCallbacks(
+ 		if err := s.hostManager.applyDNSConfig(s.currentConfig); err != nil {
+ 			l.WithError(err).Error("reactivate temporary disabled nameserver group, DNS update apply")
+ 		}
++
++		s.updateNSState(nsGroup, nil, true)
+ 	}
+ 	return
+ }
+ 
+ func (s *DefaultServer) addHostRootZone() {
+-	handler, err := newUpstreamResolver(s.ctx, s.wgInterface.Name(), s.wgInterface.Address().IP, s.wgInterface.Address().Network)
++	handler, err := newUpstreamResolver(
++		s.ctx,
++		s.wgInterface.Name(),
++		s.wgInterface.Address().IP,
++		s.wgInterface.Address().Network,
++		s.statusRecorder,
++	)
+ 	if err != nil {
+ 		log.Errorf("unable to create a new upstream resolver, error: %v", err)
+ 		return
+@@ -535,7 +576,50 @@ func (s *DefaultServer) addHostRootZone() {
+ 
+ 		handler.upstreamServers[n] = fmt.Sprintf("%s:53", ipString)
+ 	}
+-	handler.deactivate = func() {}
++	handler.deactivate = func(error) {}
+ 	handler.reactivate = func() {}
+ 	s.service.RegisterMux(nbdns.RootZone, handler)
+ }
++
++func (s *DefaultServer) updateNSGroupStates(groups []*nbdns.NameServerGroup) {
++	var states []peer.NSGroupState
++
++	for _, group := range groups {
++		var servers []string
++		for _, ns := range group.NameServers {
++			servers = append(servers, fmt.Sprintf("%s:%d", ns.IP, ns.Port))
++		}
++
++		state := peer.NSGroupState{
++			ID:      generateGroupKey(group),
++			Servers: servers,
++			Domains: group.Domains,
++			// The probe will determine the state, default enabled
++			Enabled: true,
++			Error:   nil,
++		}
++		states = append(states, state)
++	}
++	s.statusRecorder.UpdateDNSStates(states)
++}
++
++func (s *DefaultServer) updateNSState(nsGroup *nbdns.NameServerGroup, err error, enabled bool) {
++	states := s.statusRecorder.GetDNSStates()
++	id := generateGroupKey(nsGroup)
++	for i, state := range states {
++		if state.ID == id {
++			states[i].Enabled = enabled
++			states[i].Error = err
++			break
++		}
++	}
++	s.statusRecorder.UpdateDNSStates(states)
++}
++
++func generateGroupKey(nsGroup *nbdns.NameServerGroup) string {
++	var servers []string
++	for _, ns := range nsGroup.NameServers {
++		servers = append(servers, fmt.Sprintf("%s:%d", ns.IP, ns.Port))
++	}
++	return fmt.Sprintf("%s_%s_%s", nsGroup.ID, nsGroup.Name, strings.Join(servers, ","))
++}
+diff --git a/client/internal/dns/server_test.go b/client/internal/dns/server_test.go
+index 68c4992d816..f3282f1f49c 100644
+--- a/client/internal/dns/server_test.go
++++ b/client/internal/dns/server_test.go
+@@ -15,6 +15,7 @@ import (
+ 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+ 
+ 	"github.com/netbirdio/netbird/client/firewall/uspfilter"
++	"github.com/netbirdio/netbird/client/internal/peer"
+ 	"github.com/netbirdio/netbird/client/internal/stdnet"
+ 	nbdns "github.com/netbirdio/netbird/dns"
+ 	"github.com/netbirdio/netbird/formatter"
+@@ -274,7 +275,7 @@ func TestUpdateDNSServer(t *testing.T) {
+ 					t.Log(err)
+ 				}
+ 			}()
+-			dnsServer, err := NewDefaultServer(context.Background(), wgIface, "")
++			dnsServer, err := NewDefaultServer(context.Background(), wgIface, "", &peer.Status{})
+ 			if err != nil {
+ 				t.Fatal(err)
+ 			}
+@@ -375,7 +376,7 @@ func TestDNSFakeResolverHandleUpdates(t *testing.T) {
+ 		return
+ 	}
+ 
+-	dnsServer, err := NewDefaultServer(context.Background(), wgIface, "")
++	dnsServer, err := NewDefaultServer(context.Background(), wgIface, "", &peer.Status{})
+ 	if err != nil {
+ 		t.Errorf("create DNS server: %v", err)
+ 		return
+@@ -470,7 +471,7 @@ func TestDNSServerStartStop(t *testing.T) {
+ 
+ 	for _, testCase := range testCases {
+ 		t.Run(testCase.name, func(t *testing.T) {
+-			dnsServer, err := NewDefaultServer(context.Background(), &mocWGIface{}, testCase.addrPort)
++			dnsServer, err := NewDefaultServer(context.Background(), &mocWGIface{}, testCase.addrPort, &peer.Status{})
+ 			if err != nil {
+ 				t.Fatalf("%v", err)
+ 			}
+@@ -541,6 +542,7 @@ func TestDNSServerUpstreamDeactivateCallback(t *testing.T) {
+ 				{false, "domain2", false},
+ 			},
+ 		},
++		statusRecorder: &peer.Status{},
+ 	}
+ 
+ 	var domainsUpdate string
+@@ -563,7 +565,7 @@ func TestDNSServerUpstreamDeactivateCallback(t *testing.T) {
+ 		},
+ 	}, nil)
+ 
+-	deactivate()
++	deactivate(nil)
+ 	expected := "domain0,domain2"
+ 	domains := []string{}
+ 	for _, item := range server.currentConfig.Domains {
+@@ -601,7 +603,7 @@ func TestDNSPermanent_updateHostDNS_emptyUpstream(t *testing.T) {
+ 
+ 	var dnsList []string
+ 	dnsConfig := nbdns.Config{}
+-	dnsServer := NewDefaultServerPermanentUpstream(context.Background(), wgIFace, dnsList, dnsConfig, nil)
++	dnsServer := NewDefaultServerPermanentUpstream(context.Background(), wgIFace, dnsList, dnsConfig, nil, &peer.Status{})
+ 	err = dnsServer.Initialize()
+ 	if err != nil {
+ 		t.Errorf("failed to initialize DNS server: %v", err)
+@@ -625,7 +627,7 @@ func TestDNSPermanent_updateUpstream(t *testing.T) {
+ 	}
+ 	defer wgIFace.Close()
+ 	dnsConfig := nbdns.Config{}
+-	dnsServer := NewDefaultServerPermanentUpstream(context.Background(), wgIFace, []string{"8.8.8.8"}, dnsConfig, nil)
++	dnsServer := NewDefaultServerPermanentUpstream(context.Background(), wgIFace, []string{"8.8.8.8"}, dnsConfig, nil, &peer.Status{})
+ 	err = dnsServer.Initialize()
+ 	if err != nil {
+ 		t.Errorf("failed to initialize DNS server: %v", err)
+@@ -717,7 +719,7 @@ func TestDNSPermanent_matchOnly(t *testing.T) {
+ 	}
+ 	defer wgIFace.Close()
+ 	dnsConfig := nbdns.Config{}
+-	dnsServer := NewDefaultServerPermanentUpstream(context.Background(), wgIFace, []string{"8.8.8.8"}, dnsConfig, nil)
++	dnsServer := NewDefaultServerPermanentUpstream(context.Background(), wgIFace, []string{"8.8.8.8"}, dnsConfig, nil, &peer.Status{})
+ 	err = dnsServer.Initialize()
+ 	if err != nil {
+ 		t.Errorf("failed to initialize DNS server: %v", err)
+diff --git a/client/internal/dns/upstream.go b/client/internal/dns/upstream.go
+index 9fd524700a5..cc31559fab1 100644
+--- a/client/internal/dns/upstream.go
++++ b/client/internal/dns/upstream.go
+@@ -11,8 +11,11 @@ import (
+ 	"time"
+ 
+ 	"github.com/cenkalti/backoff/v4"
++	"github.com/hashicorp/go-multierror"
+ 	"github.com/miekg/dns"
+ 	log "github.com/sirupsen/logrus"
++
++	"github.com/netbirdio/netbird/client/internal/peer"
+ )
+ 
+ const (
+@@ -45,12 +48,13 @@ type upstreamResolverBase struct {
+ 	reactivatePeriod time.Duration
+ 	upstreamTimeout  time.Duration
+ 
+-	deactivate func()
+-	reactivate func()
++	deactivate     func(error)
++	reactivate     func()
++	statusRecorder *peer.Status
+ }
+ 
+-func newUpstreamResolverBase(parentCTX context.Context) *upstreamResolverBase {
+-	ctx, cancel := context.WithCancel(parentCTX)
++func newUpstreamResolverBase(ctx context.Context, statusRecorder *peer.Status) *upstreamResolverBase {
++	ctx, cancel := context.WithCancel(ctx)
+ 
+ 	return &upstreamResolverBase{
+ 		ctx:              ctx,
+@@ -58,6 +62,7 @@ func newUpstreamResolverBase(parentCTX context.Context) *upstreamResolverBase {
+ 		upstreamTimeout:  upstreamTimeout,
+ 		reactivatePeriod: reactivatePeriod,
+ 		failsTillDeact:   failsTillDeact,
++		statusRecorder:   statusRecorder,
+ 	}
+ }
+ 
+@@ -68,7 +73,10 @@ func (u *upstreamResolverBase) stop() {
+ 
+ // ServeDNS handles a DNS request
+ func (u *upstreamResolverBase) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
+-	defer u.checkUpstreamFails()
++	var err error
++	defer func() {
++		u.checkUpstreamFails(err)
++	}()
+ 
+ 	log.WithField("question", r.Question[0]).Trace("received an upstream question")
+ 
+@@ -81,7 +89,6 @@ func (u *upstreamResolverBase) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
+ 	for _, upstream := range u.upstreamServers {
+ 		var rm *dns.Msg
+ 		var t time.Duration
+-		var err error
+ 
+ 		func() {
+ 			ctx, cancel := context.WithTimeout(u.ctx, u.upstreamTimeout)
+@@ -132,7 +139,7 @@ func (u *upstreamResolverBase) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
+ // If fails count is greater that failsTillDeact, upstream resolving
+ // will be disabled for reactivatePeriod, after that time period fails counter
+ // will be reset and upstream will be reactivated.
+-func (u *upstreamResolverBase) checkUpstreamFails() {
++func (u *upstreamResolverBase) checkUpstreamFails(err error) {
+ 	u.mutex.Lock()
+ 	defer u.mutex.Unlock()
+ 
+@@ -146,7 +153,7 @@ func (u *upstreamResolverBase) checkUpstreamFails() {
+ 	default:
+ 	}
+ 
+-	u.disable()
++	u.disable(err)
+ }
+ 
+ // probeAvailability tests all upstream servers simultaneously and
+@@ -165,13 +172,16 @@ func (u *upstreamResolverBase) probeAvailability() {
+ 	var mu sync.Mutex
+ 	var wg sync.WaitGroup
+ 
++	var errors *multierror.Error
+ 	for _, upstream := range u.upstreamServers {
+ 		upstream := upstream
+ 
+ 		wg.Add(1)
+ 		go func() {
+ 			defer wg.Done()
+-			if err := u.testNameserver(upstream); err != nil {
++			err := u.testNameserver(upstream)
++			if err != nil {
++				errors = multierror.Append(errors, err)
+ 				log.Warnf("probing upstream nameserver %s: %s", upstream, err)
+ 				return
+ 			}
+@@ -186,7 +196,7 @@ func (u *upstreamResolverBase) probeAvailability() {
+ 
+ 	// didn't find a working upstream server, let's disable and try later
+ 	if !success {
+-		u.disable()
++		u.disable(errors.ErrorOrNil())
+ 	}
+ }
+ 
+@@ -245,15 +255,15 @@ func isTimeout(err error) bool {
+ 	return false
+ }
+ 
+-func (u *upstreamResolverBase) disable() {
++func (u *upstreamResolverBase) disable(err error) {
+ 	if u.disabled {
+ 		return
+ 	}
+ 
+ 	// todo test the deactivation logic, it seems to affect the client
+ 	if runtime.GOOS != "ios" {
+-		log.Warnf("upstream resolving is Disabled for %v", reactivatePeriod)
+-		u.deactivate()
++		log.Warnf("Upstream resolving is Disabled for %v", reactivatePeriod)
++		u.deactivate(err)
+ 		u.disabled = true
+ 		go u.waitUntilResponse()
+ 	}
+diff --git a/client/internal/dns/upstream_ios.go b/client/internal/dns/upstream_ios.go
+index 33937d8d88d..c9d3bb942b4 100644
+--- a/client/internal/dns/upstream_ios.go
++++ b/client/internal/dns/upstream_ios.go
+@@ -11,6 +11,8 @@ import (
+ 	"github.com/miekg/dns"
+ 	log "github.com/sirupsen/logrus"
+ 	"golang.org/x/sys/unix"
++
++	"github.com/netbirdio/netbird/client/internal/peer"
+ )
+ 
+ type upstreamResolverIOS struct {
+@@ -20,8 +22,14 @@ type upstreamResolverIOS struct {
+ 	iIndex int
+ }
+ 
+-func newUpstreamResolver(parentCTX context.Context, interfaceName string, ip net.IP, net *net.IPNet) (*upstreamResolverIOS, error) {
+-	upstreamResolverBase := newUpstreamResolverBase(parentCTX)
++func newUpstreamResolver(
++	ctx context.Context,
++	interfaceName string,
++	ip net.IP,
++	net *net.IPNet,
++	statusRecorder *peer.Status,
++) (*upstreamResolverIOS, error) {
++	upstreamResolverBase := newUpstreamResolverBase(ctx, statusRecorder)
+ 
+ 	index, err := getInterfaceIndex(interfaceName)
+ 	if err != nil {
+diff --git a/client/internal/dns/upstream_nonios.go b/client/internal/dns/upstream_nonios.go
+index 93e523c4ef3..22bd24ca989 100644
+--- a/client/internal/dns/upstream_nonios.go
++++ b/client/internal/dns/upstream_nonios.go
+@@ -8,14 +8,22 @@ import (
+ 	"time"
+ 
+ 	"github.com/miekg/dns"
++
++	"github.com/netbirdio/netbird/client/internal/peer"
+ )
+ 
+ type upstreamResolverNonIOS struct {
+ 	*upstreamResolverBase
+ }
+ 
+-func newUpstreamResolver(parentCTX context.Context, interfaceName string, ip net.IP, net *net.IPNet) (*upstreamResolverNonIOS, error) {
+-	upstreamResolverBase := newUpstreamResolverBase(parentCTX)
++func newUpstreamResolver(
++	ctx context.Context,
++	_ string,
++	_ net.IP,
++	_ *net.IPNet,
++	statusRecorder *peer.Status,
++) (*upstreamResolverNonIOS, error) {
++	upstreamResolverBase := newUpstreamResolverBase(ctx, statusRecorder)
+ 	nonIOS := &upstreamResolverNonIOS{
+ 		upstreamResolverBase: upstreamResolverBase,
+ 	}
+diff --git a/client/internal/dns/upstream_test.go b/client/internal/dns/upstream_test.go
+index 13610df4188..77851dd9d64 100644
+--- a/client/internal/dns/upstream_test.go
++++ b/client/internal/dns/upstream_test.go
+@@ -58,7 +58,7 @@ func TestUpstreamResolver_ServeDNS(t *testing.T) {
+ 	for _, testCase := range testCases {
+ 		t.Run(testCase.name, func(t *testing.T) {
+ 			ctx, cancel := context.WithCancel(context.TODO())
+-			resolver, _ := newUpstreamResolver(ctx, "", net.IP{}, &net.IPNet{})
++			resolver, _ := newUpstreamResolver(ctx, "", net.IP{}, &net.IPNet{}, nil)
+ 			resolver.upstreamServers = testCase.InputServers
+ 			resolver.upstreamTimeout = testCase.timeout
+ 			if testCase.cancelCTX {
+@@ -131,7 +131,7 @@ func TestUpstreamResolver_DeactivationReactivation(t *testing.T) {
+ 	}
+ 
+ 	failed := false
+-	resolver.deactivate = func() {
++	resolver.deactivate = func(error) {
+ 		failed = true
+ 	}
+ 
+diff --git a/client/internal/engine.go b/client/internal/engine.go
+index e4f0f236d4c..9e52cea4446 100644
+--- a/client/internal/engine.go
++++ b/client/internal/engine.go
+@@ -1188,14 +1188,21 @@ func (e *Engine) newDnsServer() ([]*route.Route, dns.Server, error) {
+ 		if err != nil {
+ 			return nil, nil, err
+ 		}
+-		dnsServer := dns.NewDefaultServerPermanentUpstream(e.ctx, e.wgInterface, e.mobileDep.HostDNSAddresses, *dnsConfig, e.mobileDep.NetworkChangeListener)
++		dnsServer := dns.NewDefaultServerPermanentUpstream(
++			e.ctx,
++			e.wgInterface,
++			e.mobileDep.HostDNSAddresses,
++			*dnsConfig,
++			e.mobileDep.NetworkChangeListener,
++			e.statusRecorder,
++		)
+ 		go e.mobileDep.DnsReadyListener.OnReady()
+ 		return routes, dnsServer, nil
+ 	case "ios":
+-		dnsServer := dns.NewDefaultServerIos(e.ctx, e.wgInterface, e.mobileDep.DnsManager)
++		dnsServer := dns.NewDefaultServerIos(e.ctx, e.wgInterface, e.mobileDep.DnsManager, e.statusRecorder)
+ 		return nil, dnsServer, nil
+ 	default:
+-		dnsServer, err := dns.NewDefaultServer(e.ctx, e.wgInterface, e.config.CustomDNSAddress)
++		dnsServer, err := dns.NewDefaultServer(e.ctx, e.wgInterface, e.config.CustomDNSAddress, e.statusRecorder)
+ 		if err != nil {
+ 			return nil, nil, err
+ 		}
+diff --git a/client/internal/peer/status.go b/client/internal/peer/status.go
+index 87338f646d7..1e252c5dd48 100644
+--- a/client/internal/peer/status.go
++++ b/client/internal/peer/status.go
+@@ -29,6 +29,7 @@ type State struct {
+ 	BytesTx                    int64
+ 	BytesRx                    int64
+ 	RosenpassEnabled           bool
++	Routes                     map[string]struct{}
+ }
+ 
+ // LocalPeerState contains the latest state of the local peer
+@@ -37,6 +38,7 @@ type LocalPeerState struct {
+ 	PubKey          string
+ 	KernelInterface bool
+ 	FQDN            string
++	Routes          map[string]struct{}
+ }
+ 
+ // SignalState contains the latest state of a signal connection
+@@ -59,6 +61,16 @@ type RosenpassState struct {
+ 	Permissive bool
+ }
+ 
++// NSGroupState represents the status of a DNS server group, including associated domains,
++// whether it's enabled, and the last error message encountered during probing.
++type NSGroupState struct {
++	ID      string
++	Servers []string
++	Domains []string
++	Enabled bool
++	Error   error
++}
++
+ // FullStatus contains the full state held by the Status instance
+ type FullStatus struct {
+ 	Peers           []State
+@@ -67,6 +79,7 @@ type FullStatus struct {
+ 	LocalPeerState  LocalPeerState
+ 	RosenpassState  RosenpassState
+ 	Relays          []relay.ProbeResult
++	NSGroupStates   []NSGroupState
+ }
+ 
+ // Status holds a state of peers, signal, management connections and relays
+@@ -86,6 +99,7 @@ type Status struct {
+ 	notifier            *notifier
+ 	rosenpassEnabled    bool
+ 	rosenpassPermissive bool
++	nsGroupStates       []NSGroupState
+ 
+ 	// To reduce the number of notification invocation this bool will be true when need to call the notification
+ 	// Some Peer actions mostly used by in a batch when the network map has been synchronized. In these type of events
+@@ -174,6 +188,10 @@ func (d *Status) UpdatePeerState(receivedState State) error {
+ 		peerState.IP = receivedState.IP
+ 	}
+ 
++	if receivedState.Routes != nil {
++		peerState.Routes = receivedState.Routes
++	}
++
+ 	skipNotification := shouldSkipNotify(receivedState, peerState)
+ 
+ 	if receivedState.ConnStatus != peerState.ConnStatus {
+@@ -278,6 +296,13 @@ func (d *Status) GetPeerStateChangeNotifier(peer string) <-chan struct{} {
+ 	return ch
+ }
+ 
++// GetLocalPeerState returns the local peer state
++func (d *Status) GetLocalPeerState() LocalPeerState {
++	d.mux.Lock()
++	defer d.mux.Unlock()
++	return d.localPeer
++}
++
+ // UpdateLocalPeerState updates local peer status
+ func (d *Status) UpdateLocalPeerState(localPeerState LocalPeerState) {
+ 	d.mux.Lock()
+@@ -364,6 +389,12 @@ func (d *Status) UpdateRelayStates(relayResults []relay.ProbeResult) {
+ 	d.relayStates = relayResults
+ }
+ 
++func (d *Status) UpdateDNSStates(dnsStates []NSGroupState) {
++	d.mux.Lock()
++	defer d.mux.Unlock()
++	d.nsGroupStates = dnsStates
++}
++
+ func (d *Status) GetRosenpassState() RosenpassState {
+ 	return RosenpassState{
+ 		d.rosenpassEnabled,
+@@ -409,6 +440,10 @@ func (d *Status) GetRelayStates() []relay.ProbeResult {
+ 	return d.relayStates
+ }
+ 
++func (d *Status) GetDNSStates() []NSGroupState {
++	return d.nsGroupStates
++}
++
+ // GetFullStatus gets full status
+ func (d *Status) GetFullStatus() FullStatus {
+ 	d.mux.Lock()
+@@ -420,6 +455,7 @@ func (d *Status) GetFullStatus() FullStatus {
+ 		LocalPeerState:  d.localPeer,
+ 		Relays:          d.GetRelayStates(),
+ 		RosenpassState:  d.GetRosenpassState(),
++		NSGroupStates:   d.GetDNSStates(),
+ 	}
+ 
+ 	for _, status := range d.peers {
+diff --git a/client/internal/routemanager/client.go b/client/internal/routemanager/client.go
+index ee98d503de5..f7ead582720 100644
+--- a/client/internal/routemanager/client.go
++++ b/client/internal/routemanager/client.go
+@@ -160,6 +160,12 @@ func (c *clientNetwork) removeRouteFromWireguardPeer(peerKey string) error {
+ 	if err != nil {
+ 		return err
+ 	}
++
++	delete(state.Routes, c.network.String())
++	if err := c.statusRecorder.UpdatePeerState(state); err != nil {
++		log.Warnf("Failed to update peer state: %v", err)
++	}
++
+ 	if state.ConnStatus != peer.StatusConnected {
+ 		return nil
+ 	}
+@@ -225,6 +231,20 @@ func (c *clientNetwork) recalculateRouteAndUpdatePeerAndSystem() error {
+ 	}
+ 
+ 	c.chosenRoute = c.routes[chosen]
++
++	state, err := c.statusRecorder.GetPeer(c.chosenRoute.Peer)
++	if err != nil {
++		log.Errorf("Failed to get peer state: %v", err)
++	} else {
++		if state.Routes == nil {
++			state.Routes = map[string]struct{}{}
++		}
++		state.Routes[c.network.String()] = struct{}{}
++		if err := c.statusRecorder.UpdatePeerState(state); err != nil {
++			log.Warnf("Failed to update peer state: %v", err)
++		}
++	}
++
+ 	err = c.wgInterface.AddAllowedIP(c.chosenRoute.Peer, c.network.String())
+ 	if err != nil {
+ 		log.Errorf("couldn't add allowed IP %s added for peer %s, err: %v",
+diff --git a/client/internal/routemanager/manager.go b/client/internal/routemanager/manager.go
+index e8a4bd1341f..fde943757f2 100644
+--- a/client/internal/routemanager/manager.go
++++ b/client/internal/routemanager/manager.go
+@@ -58,7 +58,7 @@ func NewManager(ctx context.Context, pubKey string, wgInterface *iface.WGIface,
+ 
+ func (m *DefaultManager) EnableServerRouter(firewall firewall.Manager) error {
+ 	var err error
+-	m.serverRouter, err = newServerRouter(m.ctx, m.wgInterface, firewall)
++	m.serverRouter, err = newServerRouter(m.ctx, m.wgInterface, firewall, m.statusRecorder)
+ 	if err != nil {
+ 		return err
+ 	}
+diff --git a/client/internal/routemanager/server_android.go b/client/internal/routemanager/server_android.go
+index 1918c7f6f12..b4065bca69d 100644
+--- a/client/internal/routemanager/server_android.go
++++ b/client/internal/routemanager/server_android.go
+@@ -7,9 +7,10 @@ import (
+ 	"fmt"
+ 
+ 	firewall "github.com/netbirdio/netbird/client/firewall/manager"
++	"github.com/netbirdio/netbird/client/internal/peer"
+ 	"github.com/netbirdio/netbird/iface"
+ )
+ 
+-func newServerRouter(context.Context, *iface.WGIface, firewall.Manager) (serverRouter, error) {
++func newServerRouter(context.Context, *iface.WGIface, firewall.Manager, *peer.Status) (serverRouter, error) {
+ 	return nil, fmt.Errorf("server route not supported on this os")
+ }
+diff --git a/client/internal/routemanager/server_nonandroid.go b/client/internal/routemanager/server_nonandroid.go
+index 20e500e7944..19236787772 100644
+--- a/client/internal/routemanager/server_nonandroid.go
++++ b/client/internal/routemanager/server_nonandroid.go
+@@ -10,24 +10,27 @@ import (
+ 	log "github.com/sirupsen/logrus"
+ 
+ 	firewall "github.com/netbirdio/netbird/client/firewall/manager"
++	"github.com/netbirdio/netbird/client/internal/peer"
+ 	"github.com/netbirdio/netbird/iface"
+ 	"github.com/netbirdio/netbird/route"
+ )
+ 
+ type defaultServerRouter struct {
+-	mux         sync.Mutex
+-	ctx         context.Context
+-	routes      map[string]*route.Route
+-	firewall    firewall.Manager
+-	wgInterface *iface.WGIface
++	mux            sync.Mutex
++	ctx            context.Context
++	routes         map[string]*route.Route
++	firewall       firewall.Manager
++	wgInterface    *iface.WGIface
++	statusRecorder *peer.Status
+ }
+ 
+-func newServerRouter(ctx context.Context, wgInterface *iface.WGIface, firewall firewall.Manager) (serverRouter, error) {
++func newServerRouter(ctx context.Context, wgInterface *iface.WGIface, firewall firewall.Manager, statusRecorder *peer.Status) (serverRouter, error) {
+ 	return &defaultServerRouter{
+-		ctx:         ctx,
+-		routes:      make(map[string]*route.Route),
+-		firewall:    firewall,
+-		wgInterface: wgInterface,
++		ctx:            ctx,
++		routes:         make(map[string]*route.Route),
++		firewall:       firewall,
++		wgInterface:    wgInterface,
++		statusRecorder: statusRecorder,
+ 	}, nil
+ }
+ 
+@@ -88,6 +91,11 @@ func (m *defaultServerRouter) removeFromServerNetwork(route *route.Route) error
+ 			return err
+ 		}
+ 		delete(m.routes, route.ID)
++
++		state := m.statusRecorder.GetLocalPeerState()
++		delete(state.Routes, route.Network.String())
++		m.statusRecorder.UpdateLocalPeerState(state)
++
+ 		return nil
+ 	}
+ }
+@@ -105,6 +113,14 @@ func (m *defaultServerRouter) addToServerNetwork(route *route.Route) error {
+ 			return err
+ 		}
+ 		m.routes[route.ID] = route
++
++		state := m.statusRecorder.GetLocalPeerState()
++		if state.Routes == nil {
++			state.Routes = map[string]struct{}{}
++		}
++		state.Routes[route.Network.String()] = struct{}{}
++		m.statusRecorder.UpdateLocalPeerState(state)
++
+ 		return nil
+ 	}
+ }
+@@ -117,6 +133,10 @@ func (m *defaultServerRouter) cleanUp() {
+ 		if err != nil {
+ 			log.Warnf("failed to remove clean up route: %s", r.ID)
+ 		}
++
++		state := m.statusRecorder.GetLocalPeerState()
++		state.Routes = nil
++		m.statusRecorder.UpdateLocalPeerState(state)
+ 	}
+ }
+ 
+diff --git a/client/proto/daemon.pb.go b/client/proto/daemon.pb.go
+index a1c3aef1164..869eceee550 100644
+--- a/client/proto/daemon.pb.go
++++ b/client/proto/daemon.pb.go
+@@ -772,6 +772,7 @@ type PeerState struct {
+ 	BytesRx                    int64                `protobuf:"varint,13,opt,name=bytesRx,proto3" json:"bytesRx,omitempty"`
+ 	BytesTx                    int64                `protobuf:"varint,14,opt,name=bytesTx,proto3" json:"bytesTx,omitempty"`
+ 	RosenpassEnabled           bool                 `protobuf:"varint,15,opt,name=rosenpassEnabled,proto3" json:"rosenpassEnabled,omitempty"`
++	Routes                     []string             `protobuf:"bytes,16,rep,name=routes,proto3" json:"routes,omitempty"`
+ }
+ 
+ func (x *PeerState) Reset() {
+@@ -911,18 +912,26 @@ func (x *PeerState) GetRosenpassEnabled() bool {
+ 	return false
+ }
+ 
++func (x *PeerState) GetRoutes() []string {
++	if x != nil {
++		return x.Routes
++	}
++	return nil
++}
++
+ // LocalPeerState contains the latest state of the local peer
+ type LocalPeerState struct {
+ 	state         protoimpl.MessageState
+ 	sizeCache     protoimpl.SizeCache
+ 	unknownFields protoimpl.UnknownFields
+ 
+-	IP                  string `protobuf:"bytes,1,opt,name=IP,proto3" json:"IP,omitempty"`
+-	PubKey              string `protobuf:"bytes,2,opt,name=pubKey,proto3" json:"pubKey,omitempty"`
+-	KernelInterface     bool   `protobuf:"varint,3,opt,name=kernelInterface,proto3" json:"kernelInterface,omitempty"`
+-	Fqdn                string `protobuf:"bytes,4,opt,name=fqdn,proto3" json:"fqdn,omitempty"`
+-	RosenpassEnabled    bool   `protobuf:"varint,5,opt,name=rosenpassEnabled,proto3" json:"rosenpassEnabled,omitempty"`
+-	RosenpassPermissive bool   `protobuf:"varint,6,opt,name=rosenpassPermissive,proto3" json:"rosenpassPermissive,omitempty"`
++	IP                  string   `protobuf:"bytes,1,opt,name=IP,proto3" json:"IP,omitempty"`
++	PubKey              string   `protobuf:"bytes,2,opt,name=pubKey,proto3" json:"pubKey,omitempty"`
++	KernelInterface     bool     `protobuf:"varint,3,opt,name=kernelInterface,proto3" json:"kernelInterface,omitempty"`
++	Fqdn                string   `protobuf:"bytes,4,opt,name=fqdn,proto3" json:"fqdn,omitempty"`
++	RosenpassEnabled    bool     `protobuf:"varint,5,opt,name=rosenpassEnabled,proto3" json:"rosenpassEnabled,omitempty"`
++	RosenpassPermissive bool     `protobuf:"varint,6,opt,name=rosenpassPermissive,proto3" json:"rosenpassPermissive,omitempty"`
++	Routes              []string `protobuf:"bytes,7,rep,name=routes,proto3" json:"routes,omitempty"`
+ }
+ 
+ func (x *LocalPeerState) Reset() {
+@@ -999,6 +1008,13 @@ func (x *LocalPeerState) GetRosenpassPermissive() bool {
+ 	return false
+ }
+ 
++func (x *LocalPeerState) GetRoutes() []string {
++	if x != nil {
++		return x.Routes
++	}
++	return nil
++}
++
+ // SignalState contains the latest state of a signal connection
+ type SignalState struct {
+ 	state         protoimpl.MessageState
+@@ -1191,6 +1207,77 @@ func (x *RelayState) GetError() string {
+ 	return ""
+ }
+ 
++type NSGroupState struct {
++	state         protoimpl.MessageState
++	sizeCache     protoimpl.SizeCache
++	unknownFields protoimpl.UnknownFields
++
++	Servers []string `protobuf:"bytes,1,rep,name=servers,proto3" json:"servers,omitempty"`
++	Domains []string `protobuf:"bytes,2,rep,name=domains,proto3" json:"domains,omitempty"`
++	Enabled bool     `protobuf:"varint,3,opt,name=enabled,proto3" json:"enabled,omitempty"`
++	Error   string   `protobuf:"bytes,4,opt,name=error,proto3" json:"error,omitempty"`
++}
++
++func (x *NSGroupState) Reset() {
++	*x = NSGroupState{}
++	if protoimpl.UnsafeEnabled {
++		mi := &file_daemon_proto_msgTypes[17]
++		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
++		ms.StoreMessageInfo(mi)
++	}
++}
++
++func (x *NSGroupState) String() string {
++	return protoimpl.X.MessageStringOf(x)
++}
++
++func (*NSGroupState) ProtoMessage() {}
++
++func (x *NSGroupState) ProtoReflect() protoreflect.Message {
++	mi := &file_daemon_proto_msgTypes[17]
++	if protoimpl.UnsafeEnabled && x != nil {
++		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
++		if ms.LoadMessageInfo() == nil {
++			ms.StoreMessageInfo(mi)
++		}
++		return ms
++	}
++	return mi.MessageOf(x)
++}
++
++// Deprecated: Use NSGroupState.ProtoReflect.Descriptor instead.
++func (*NSGroupState) Descriptor() ([]byte, []int) {
++	return file_daemon_proto_rawDescGZIP(), []int{17}
++}
++
++func (x *NSGroupState) GetServers() []string {
++	if x != nil {
++		return x.Servers
++	}
++	return nil
++}
++
++func (x *NSGroupState) GetDomains() []string {
++	if x != nil {
++		return x.Domains
++	}
++	return nil
++}
++
++func (x *NSGroupState) GetEnabled() bool {
++	if x != nil {
++		return x.Enabled
++	}
++	return false
++}
++
++func (x *NSGroupState) GetError() string {
++	if x != nil {
++		return x.Error
++	}
++	return ""
++}
++
+ // FullStatus contains the full state held by the Status instance
+ type FullStatus struct {
+ 	state         protoimpl.MessageState
+@@ -1202,12 +1289,13 @@ type FullStatus struct {
+ 	LocalPeerState  *LocalPeerState  `protobuf:"bytes,3,opt,name=localPeerState,proto3" json:"localPeerState,omitempty"`
+ 	Peers           []*PeerState     `protobuf:"bytes,4,rep,name=peers,proto3" json:"peers,omitempty"`
+ 	Relays          []*RelayState    `protobuf:"bytes,5,rep,name=relays,proto3" json:"relays,omitempty"`
++	DnsServers      []*NSGroupState  `protobuf:"bytes,6,rep,name=dns_servers,json=dnsServers,proto3" json:"dns_servers,omitempty"`
+ }
+ 
+ func (x *FullStatus) Reset() {
+ 	*x = FullStatus{}
+ 	if protoimpl.UnsafeEnabled {
+-		mi := &file_daemon_proto_msgTypes[17]
++		mi := &file_daemon_proto_msgTypes[18]
+ 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+ 		ms.StoreMessageInfo(mi)
+ 	}
+@@ -1220,7 +1308,7 @@ func (x *FullStatus) String() string {
+ func (*FullStatus) ProtoMessage() {}
+ 
+ func (x *FullStatus) ProtoReflect() protoreflect.Message {
+-	mi := &file_daemon_proto_msgTypes[17]
++	mi := &file_daemon_proto_msgTypes[18]
+ 	if protoimpl.UnsafeEnabled && x != nil {
+ 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+ 		if ms.LoadMessageInfo() == nil {
+@@ -1233,7 +1321,7 @@ func (x *FullStatus) ProtoReflect() protoreflect.Message {
+ 
+ // Deprecated: Use FullStatus.ProtoReflect.Descriptor instead.
+ func (*FullStatus) Descriptor() ([]byte, []int) {
+-	return file_daemon_proto_rawDescGZIP(), []int{17}
++	return file_daemon_proto_rawDescGZIP(), []int{18}
+ }
+ 
+ func (x *FullStatus) GetManagementState() *ManagementState {
+@@ -1271,6 +1359,13 @@ func (x *FullStatus) GetRelays() []*RelayState {
+ 	return nil
+ }
+ 
++func (x *FullStatus) GetDnsServers() []*NSGroupState {
++	if x != nil {
++		return x.DnsServers
++	}
++	return nil
++}
++
+ var File_daemon_proto protoreflect.FileDescriptor
+ 
+ var file_daemon_proto_rawDesc = []byte{
+@@ -1380,7 +1475,7 @@ var file_daemon_proto_rawDesc = []byte{
+ 	0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x70, 0x72, 0x65, 0x53, 0x68, 0x61, 0x72, 0x65,
+ 	0x64, 0x4b, 0x65, 0x79, 0x12, 0x1a, 0x0a, 0x08, 0x61, 0x64, 0x6d, 0x69, 0x6e, 0x55, 0x52, 0x4c,
+ 	0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x61, 0x64, 0x6d, 0x69, 0x6e, 0x55, 0x52, 0x4c,
+-	0x22, 0x81, 0x05, 0x0a, 0x09, 0x50, 0x65, 0x65, 0x72, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x0e,
++	0x22, 0x99, 0x05, 0x0a, 0x09, 0x50, 0x65, 0x65, 0x72, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x0e,
+ 	0x0a, 0x02, 0x49, 0x50, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x49, 0x50, 0x12, 0x16,
+ 	0x0a, 0x06, 0x70, 0x75, 0x62, 0x4b, 0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06,
+ 	0x70, 0x75, 0x62, 0x4b, 0x65, 0x79, 0x12, 0x1e, 0x0a, 0x0a, 0x63, 0x6f, 0x6e, 0x6e, 0x53, 0x74,
+@@ -1420,20 +1515,23 @@ var file_daemon_proto_rawDesc = []byte{
+ 	0x07, 0x62, 0x79, 0x74, 0x65, 0x73, 0x54, 0x78, 0x12, 0x2a, 0x0a, 0x10, 0x72, 0x6f, 0x73, 0x65,
+ 	0x6e, 0x70, 0x61, 0x73, 0x73, 0x45, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x18, 0x0f, 0x20, 0x01,
+ 	0x28, 0x08, 0x52, 0x10, 0x72, 0x6f, 0x73, 0x65, 0x6e, 0x70, 0x61, 0x73, 0x73, 0x45, 0x6e, 0x61,
+-	0x62, 0x6c, 0x65, 0x64, 0x22, 0xd4, 0x01, 0x0a, 0x0e, 0x4c, 0x6f, 0x63, 0x61, 0x6c, 0x50, 0x65,
+-	0x65, 0x72, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x49, 0x50, 0x18, 0x01, 0x20,
+-	0x01, 0x28, 0x09, 0x52, 0x02, 0x49, 0x50, 0x12, 0x16, 0x0a, 0x06, 0x70, 0x75, 0x62, 0x4b, 0x65,
+-	0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x70, 0x75, 0x62, 0x4b, 0x65, 0x79, 0x12,
+-	0x28, 0x0a, 0x0f, 0x6b, 0x65, 0x72, 0x6e, 0x65, 0x6c, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x66, 0x61,
+-	0x63, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x08, 0x52, 0x0f, 0x6b, 0x65, 0x72, 0x6e, 0x65, 0x6c,
+-	0x49, 0x6e, 0x74, 0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x66, 0x71, 0x64,
+-	0x6e, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x66, 0x71, 0x64, 0x6e, 0x12, 0x2a, 0x0a,
++	0x62, 0x6c, 0x65, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x72, 0x6f, 0x75, 0x74, 0x65, 0x73, 0x18, 0x10,
++	0x20, 0x03, 0x28, 0x09, 0x52, 0x06, 0x72, 0x6f, 0x75, 0x74, 0x65, 0x73, 0x22, 0xec, 0x01, 0x0a,
++	0x0e, 0x4c, 0x6f, 0x63, 0x61, 0x6c, 0x50, 0x65, 0x65, 0x72, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12,
++	0x0e, 0x0a, 0x02, 0x49, 0x50, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x49, 0x50, 0x12,
++	0x16, 0x0a, 0x06, 0x70, 0x75, 0x62, 0x4b, 0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
++	0x06, 0x70, 0x75, 0x62, 0x4b, 0x65, 0x79, 0x12, 0x28, 0x0a, 0x0f, 0x6b, 0x65, 0x72, 0x6e, 0x65,
++	0x6c, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x08,
++	0x52, 0x0f, 0x6b, 0x65, 0x72, 0x6e, 0x65, 0x6c, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x66, 0x61, 0x63,
++	0x65, 0x12, 0x12, 0x0a, 0x04, 0x66, 0x71, 0x64, 0x6e, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52,
++	0x04, 0x66, 0x71, 0x64, 0x6e, 0x12, 0x2a, 0x0a, 0x10, 0x72, 0x6f, 0x73, 0x65, 0x6e, 0x70, 0x61,
++	0x73, 0x73, 0x45, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x18, 0x05, 0x20, 0x01, 0x28, 0x08, 0x52,
+ 	0x10, 0x72, 0x6f, 0x73, 0x65, 0x6e, 0x70, 0x61, 0x73, 0x73, 0x45, 0x6e, 0x61, 0x62, 0x6c, 0x65,
+-	0x64, 0x18, 0x05, 0x20, 0x01, 0x28, 0x08, 0x52, 0x10, 0x72, 0x6f, 0x73, 0x65, 0x6e, 0x70, 0x61,
+-	0x73, 0x73, 0x45, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x12, 0x30, 0x0a, 0x13, 0x72, 0x6f, 0x73,
+-	0x65, 0x6e, 0x70, 0x61, 0x73, 0x73, 0x50, 0x65, 0x72, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x76, 0x65,
+-	0x18, 0x06, 0x20, 0x01, 0x28, 0x08, 0x52, 0x13, 0x72, 0x6f, 0x73, 0x65, 0x6e, 0x70, 0x61, 0x73,
+-	0x73, 0x50, 0x65, 0x72, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x76, 0x65, 0x22, 0x53, 0x0a, 0x0b, 0x53,
++	0x64, 0x12, 0x30, 0x0a, 0x13, 0x72, 0x6f, 0x73, 0x65, 0x6e, 0x70, 0x61, 0x73, 0x73, 0x50, 0x65,
++	0x72, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x76, 0x65, 0x18, 0x06, 0x20, 0x01, 0x28, 0x08, 0x52, 0x13,
++	0x72, 0x6f, 0x73, 0x65, 0x6e, 0x70, 0x61, 0x73, 0x73, 0x50, 0x65, 0x72, 0x6d, 0x69, 0x73, 0x73,
++	0x69, 0x76, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x72, 0x6f, 0x75, 0x74, 0x65, 0x73, 0x18, 0x07, 0x20,
++	0x03, 0x28, 0x09, 0x52, 0x06, 0x72, 0x6f, 0x75, 0x74, 0x65, 0x73, 0x22, 0x53, 0x0a, 0x0b, 0x53,
+ 	0x69, 0x67, 0x6e, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x55, 0x52,
+ 	0x4c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x55, 0x52, 0x4c, 0x12, 0x1c, 0x0a, 0x09,
+ 	0x63, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x65, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52,
+@@ -1449,50 +1547,61 @@ var file_daemon_proto_rawDesc = []byte{
+ 	0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x55, 0x52, 0x49, 0x12, 0x1c, 0x0a, 0x09, 0x61, 0x76, 0x61,
+ 	0x69, 0x6c, 0x61, 0x62, 0x6c, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x09, 0x61, 0x76,
+ 	0x61, 0x69, 0x6c, 0x61, 0x62, 0x6c, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72,
+-	0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x22, 0x9b, 0x02,
+-	0x0a, 0x0a, 0x46, 0x75, 0x6c, 0x6c, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x41, 0x0a, 0x0f,
+-	0x6d, 0x61, 0x6e, 0x61, 0x67, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x53, 0x74, 0x61, 0x74, 0x65, 0x18,
+-	0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x2e, 0x4d,
+-	0x61, 0x6e, 0x61, 0x67, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x53, 0x74, 0x61, 0x74, 0x65, 0x52, 0x0f,
+-	0x6d, 0x61, 0x6e, 0x61, 0x67, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12,
+-	0x35, 0x0a, 0x0b, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x74, 0x65, 0x18, 0x02,
+-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x2e, 0x53, 0x69,
+-	0x67, 0x6e, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x74, 0x65, 0x52, 0x0b, 0x73, 0x69, 0x67, 0x6e, 0x61,
+-	0x6c, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x3e, 0x0a, 0x0e, 0x6c, 0x6f, 0x63, 0x61, 0x6c, 0x50,
+-	0x65, 0x65, 0x72, 0x53, 0x74, 0x61, 0x74, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x16,
+-	0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x2e, 0x4c, 0x6f, 0x63, 0x61, 0x6c, 0x50, 0x65, 0x65,
+-	0x72, 0x53, 0x74, 0x61, 0x74, 0x65, 0x52, 0x0e, 0x6c, 0x6f, 0x63, 0x61, 0x6c, 0x50, 0x65, 0x65,
+-	0x72, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x27, 0x0a, 0x05, 0x70, 0x65, 0x65, 0x72, 0x73, 0x18,
+-	0x04, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x2e, 0x50,
+-	0x65, 0x65, 0x72, 0x53, 0x74, 0x61, 0x74, 0x65, 0x52, 0x05, 0x70, 0x65, 0x65, 0x72, 0x73, 0x12,
+-	0x2a, 0x0a, 0x06, 0x72, 0x65, 0x6c, 0x61, 0x79, 0x73, 0x18, 0x05, 0x20, 0x03, 0x28, 0x0b, 0x32,
+-	0x12, 0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x2e, 0x52, 0x65, 0x6c, 0x61, 0x79, 0x53, 0x74,
+-	0x61, 0x74, 0x65, 0x52, 0x06, 0x72, 0x65, 0x6c, 0x61, 0x79, 0x73, 0x32, 0xf7, 0x02, 0x0a, 0x0d,
+-	0x44, 0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x36, 0x0a,
+-	0x05, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x12, 0x14, 0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x2e,
+-	0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x15, 0x2e, 0x64,
+-	0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x2e, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f,
+-	0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x4b, 0x0a, 0x0c, 0x57, 0x61, 0x69, 0x74, 0x53, 0x53, 0x4f,
+-	0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x12, 0x1b, 0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x2e, 0x57,
+-	0x61, 0x69, 0x74, 0x53, 0x53, 0x4f, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65,
+-	0x73, 0x74, 0x1a, 0x1c, 0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x2e, 0x57, 0x61, 0x69, 0x74,
+-	0x53, 0x53, 0x4f, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+-	0x22, 0x00, 0x12, 0x2d, 0x0a, 0x02, 0x55, 0x70, 0x12, 0x11, 0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f,
+-	0x6e, 0x2e, 0x55, 0x70, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x12, 0x2e, 0x64, 0x61,
+-	0x65, 0x6d, 0x6f, 0x6e, 0x2e, 0x55, 0x70, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
+-	0x00, 0x12, 0x39, 0x0a, 0x06, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x15, 0x2e, 0x64, 0x61,
+-	0x65, 0x6d, 0x6f, 0x6e, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65,
+-	0x73, 0x74, 0x1a, 0x16, 0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x2e, 0x53, 0x74, 0x61, 0x74,
+-	0x75, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x33, 0x0a, 0x04,
+-	0x44, 0x6f, 0x77, 0x6e, 0x12, 0x13, 0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x2e, 0x44, 0x6f,
+-	0x77, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x14, 0x2e, 0x64, 0x61, 0x65, 0x6d,
+-	0x6f, 0x6e, 0x2e, 0x44, 0x6f, 0x77, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
+-	0x00, 0x12, 0x42, 0x0a, 0x09, 0x47, 0x65, 0x74, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12, 0x18,
+-	0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x2e, 0x47, 0x65, 0x74, 0x43, 0x6f, 0x6e, 0x66, 0x69,
+-	0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x19, 0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f,
+-	0x6e, 0x2e, 0x47, 0x65, 0x74, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x52, 0x65, 0x73, 0x70, 0x6f,
+-	0x6e, 0x73, 0x65, 0x22, 0x00, 0x42, 0x08, 0x5a, 0x06, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
+-	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
++	0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x22, 0x72, 0x0a,
++	0x0c, 0x4e, 0x53, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x18, 0x0a,
++	0x07, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x09, 0x52, 0x07,
++	0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x64, 0x6f, 0x6d, 0x61, 0x69,
++	0x6e, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x09, 0x52, 0x07, 0x64, 0x6f, 0x6d, 0x61, 0x69, 0x6e,
++	0x73, 0x12, 0x18, 0x0a, 0x07, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x18, 0x03, 0x20, 0x01,
++	0x28, 0x08, 0x52, 0x07, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x65,
++	0x72, 0x72, 0x6f, 0x72, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x65, 0x72, 0x72, 0x6f,
++	0x72, 0x22, 0xd2, 0x02, 0x0a, 0x0a, 0x46, 0x75, 0x6c, 0x6c, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73,
++	0x12, 0x41, 0x0a, 0x0f, 0x6d, 0x61, 0x6e, 0x61, 0x67, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x53, 0x74,
++	0x61, 0x74, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x64, 0x61, 0x65, 0x6d,
++	0x6f, 0x6e, 0x2e, 0x4d, 0x61, 0x6e, 0x61, 0x67, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x53, 0x74, 0x61,
++	0x74, 0x65, 0x52, 0x0f, 0x6d, 0x61, 0x6e, 0x61, 0x67, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x53, 0x74,
++	0x61, 0x74, 0x65, 0x12, 0x35, 0x0a, 0x0b, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x53, 0x74, 0x61,
++	0x74, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f,
++	0x6e, 0x2e, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x74, 0x65, 0x52, 0x0b, 0x73,
++	0x69, 0x67, 0x6e, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x3e, 0x0a, 0x0e, 0x6c, 0x6f,
++	0x63, 0x61, 0x6c, 0x50, 0x65, 0x65, 0x72, 0x53, 0x74, 0x61, 0x74, 0x65, 0x18, 0x03, 0x20, 0x01,
++	0x28, 0x0b, 0x32, 0x16, 0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x2e, 0x4c, 0x6f, 0x63, 0x61,
++	0x6c, 0x50, 0x65, 0x65, 0x72, 0x53, 0x74, 0x61, 0x74, 0x65, 0x52, 0x0e, 0x6c, 0x6f, 0x63, 0x61,
++	0x6c, 0x50, 0x65, 0x65, 0x72, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x27, 0x0a, 0x05, 0x70, 0x65,
++	0x65, 0x72, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x64, 0x61, 0x65, 0x6d,
++	0x6f, 0x6e, 0x2e, 0x50, 0x65, 0x65, 0x72, 0x53, 0x74, 0x61, 0x74, 0x65, 0x52, 0x05, 0x70, 0x65,
++	0x65, 0x72, 0x73, 0x12, 0x2a, 0x0a, 0x06, 0x72, 0x65, 0x6c, 0x61, 0x79, 0x73, 0x18, 0x05, 0x20,
++	0x03, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x2e, 0x52, 0x65, 0x6c,
++	0x61, 0x79, 0x53, 0x74, 0x61, 0x74, 0x65, 0x52, 0x06, 0x72, 0x65, 0x6c, 0x61, 0x79, 0x73, 0x12,
++	0x35, 0x0a, 0x0b, 0x64, 0x6e, 0x73, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x73, 0x18, 0x06,
++	0x20, 0x03, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x2e, 0x4e, 0x53,
++	0x47, 0x72, 0x6f, 0x75, 0x70, 0x53, 0x74, 0x61, 0x74, 0x65, 0x52, 0x0a, 0x64, 0x6e, 0x73, 0x53,
++	0x65, 0x72, 0x76, 0x65, 0x72, 0x73, 0x32, 0xf7, 0x02, 0x0a, 0x0d, 0x44, 0x61, 0x65, 0x6d, 0x6f,
++	0x6e, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x36, 0x0a, 0x05, 0x4c, 0x6f, 0x67, 0x69,
++	0x6e, 0x12, 0x14, 0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x2e, 0x4c, 0x6f, 0x67, 0x69, 0x6e,
++	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x15, 0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f, 0x6e,
++	0x2e, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00,
++	0x12, 0x4b, 0x0a, 0x0c, 0x57, 0x61, 0x69, 0x74, 0x53, 0x53, 0x4f, 0x4c, 0x6f, 0x67, 0x69, 0x6e,
++	0x12, 0x1b, 0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x2e, 0x57, 0x61, 0x69, 0x74, 0x53, 0x53,
++	0x4f, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1c, 0x2e,
++	0x64, 0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x2e, 0x57, 0x61, 0x69, 0x74, 0x53, 0x53, 0x4f, 0x4c, 0x6f,
++	0x67, 0x69, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x2d, 0x0a,
++	0x02, 0x55, 0x70, 0x12, 0x11, 0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x2e, 0x55, 0x70, 0x52,
++	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x12, 0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x2e,
++	0x55, 0x70, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x39, 0x0a, 0x06,
++	0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x15, 0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x2e,
++	0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e,
++	0x64, 0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x65, 0x73,
++	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x33, 0x0a, 0x04, 0x44, 0x6f, 0x77, 0x6e, 0x12,
++	0x13, 0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x2e, 0x44, 0x6f, 0x77, 0x6e, 0x52, 0x65, 0x71,
++	0x75, 0x65, 0x73, 0x74, 0x1a, 0x14, 0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x2e, 0x44, 0x6f,
++	0x77, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x42, 0x0a, 0x09,
++	0x47, 0x65, 0x74, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12, 0x18, 0x2e, 0x64, 0x61, 0x65, 0x6d,
++	0x6f, 0x6e, 0x2e, 0x47, 0x65, 0x74, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x52, 0x65, 0x71, 0x75,
++	0x65, 0x73, 0x74, 0x1a, 0x19, 0x2e, 0x64, 0x61, 0x65, 0x6d, 0x6f, 0x6e, 0x2e, 0x47, 0x65, 0x74,
++	0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00,
++	0x42, 0x08, 0x5a, 0x06, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
++	0x6f, 0x33,
+ }
+ 
+ var (
+@@ -1507,7 +1616,7 @@ func file_daemon_proto_rawDescGZIP() []byte {
+ 	return file_daemon_proto_rawDescData
+ }
+ 
+-var file_daemon_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
++var file_daemon_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
+ var file_daemon_proto_goTypes = []interface{}{
+ 	(*LoginRequest)(nil),         // 0: daemon.LoginRequest
+ 	(*LoginResponse)(nil),        // 1: daemon.LoginResponse
+@@ -1526,35 +1635,37 @@ var file_daemon_proto_goTypes = []interface{}{
+ 	(*SignalState)(nil),          // 14: daemon.SignalState
+ 	(*ManagementState)(nil),      // 15: daemon.ManagementState
+ 	(*RelayState)(nil),           // 16: daemon.RelayState
+-	(*FullStatus)(nil),           // 17: daemon.FullStatus
+-	(*timestamp.Timestamp)(nil),  // 18: google.protobuf.Timestamp
++	(*NSGroupState)(nil),         // 17: daemon.NSGroupState
++	(*FullStatus)(nil),           // 18: daemon.FullStatus
++	(*timestamp.Timestamp)(nil),  // 19: google.protobuf.Timestamp
+ }
+ var file_daemon_proto_depIdxs = []int32{
+-	17, // 0: daemon.StatusResponse.fullStatus:type_name -> daemon.FullStatus
+-	18, // 1: daemon.PeerState.connStatusUpdate:type_name -> google.protobuf.Timestamp
+-	18, // 2: daemon.PeerState.lastWireguardHandshake:type_name -> google.protobuf.Timestamp
++	18, // 0: daemon.StatusResponse.fullStatus:type_name -> daemon.FullStatus
++	19, // 1: daemon.PeerState.connStatusUpdate:type_name -> google.protobuf.Timestamp
++	19, // 2: daemon.PeerState.lastWireguardHandshake:type_name -> google.protobuf.Timestamp
+ 	15, // 3: daemon.FullStatus.managementState:type_name -> daemon.ManagementState
+ 	14, // 4: daemon.FullStatus.signalState:type_name -> daemon.SignalState
+ 	13, // 5: daemon.FullStatus.localPeerState:type_name -> daemon.LocalPeerState
+ 	12, // 6: daemon.FullStatus.peers:type_name -> daemon.PeerState
+ 	16, // 7: daemon.FullStatus.relays:type_name -> daemon.RelayState
+-	0,  // 8: daemon.DaemonService.Login:input_type -> daemon.LoginRequest
+-	2,  // 9: daemon.DaemonService.WaitSSOLogin:input_type -> daemon.WaitSSOLoginRequest
+-	4,  // 10: daemon.DaemonService.Up:input_type -> daemon.UpRequest
+-	6,  // 11: daemon.DaemonService.Status:input_type -> daemon.StatusRequest
+-	8,  // 12: daemon.DaemonService.Down:input_type -> daemon.DownRequest
+-	10, // 13: daemon.DaemonService.GetConfig:input_type -> daemon.GetConfigRequest
+-	1,  // 14: daemon.DaemonService.Login:output_type -> daemon.LoginResponse
+-	3,  // 15: daemon.DaemonService.WaitSSOLogin:output_type -> daemon.WaitSSOLoginResponse
+-	5,  // 16: daemon.DaemonService.Up:output_type -> daemon.UpResponse
+-	7,  // 17: daemon.DaemonService.Status:output_type -> daemon.StatusResponse
+-	9,  // 18: daemon.DaemonService.Down:output_type -> daemon.DownResponse
+-	11, // 19: daemon.DaemonService.GetConfig:output_type -> daemon.GetConfigResponse
+-	14, // [14:20] is the sub-list for method output_type
+-	8,  // [8:14] is the sub-list for method input_type
+-	8,  // [8:8] is the sub-list for extension type_name
+-	8,  // [8:8] is the sub-list for extension extendee
+-	0,  // [0:8] is the sub-list for field type_name
++	17, // 8: daemon.FullStatus.dns_servers:type_name -> daemon.NSGroupState
++	0,  // 9: daemon.DaemonService.Login:input_type -> daemon.LoginRequest
++	2,  // 10: daemon.DaemonService.WaitSSOLogin:input_type -> daemon.WaitSSOLoginRequest
++	4,  // 11: daemon.DaemonService.Up:input_type -> daemon.UpRequest
++	6,  // 12: daemon.DaemonService.Status:input_type -> daemon.StatusRequest
++	8,  // 13: daemon.DaemonService.Down:input_type -> daemon.DownRequest
++	10, // 14: daemon.DaemonService.GetConfig:input_type -> daemon.GetConfigRequest
++	1,  // 15: daemon.DaemonService.Login:output_type -> daemon.LoginResponse
++	3,  // 16: daemon.DaemonService.WaitSSOLogin:output_type -> daemon.WaitSSOLoginResponse
++	5,  // 17: daemon.DaemonService.Up:output_type -> daemon.UpResponse
++	7,  // 18: daemon.DaemonService.Status:output_type -> daemon.StatusResponse
++	9,  // 19: daemon.DaemonService.Down:output_type -> daemon.DownResponse
++	11, // 20: daemon.DaemonService.GetConfig:output_type -> daemon.GetConfigResponse
++	15, // [15:21] is the sub-list for method output_type
++	9,  // [9:15] is the sub-list for method input_type
++	9,  // [9:9] is the sub-list for extension type_name
++	9,  // [9:9] is the sub-list for extension extendee
++	0,  // [0:9] is the sub-list for field type_name
+ }
+ 
+ func init() { file_daemon_proto_init() }
+@@ -1768,6 +1879,18 @@ func file_daemon_proto_init() {
+ 			}
+ 		}
+ 		file_daemon_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
++			switch v := v.(*NSGroupState); i {
++			case 0:
++				return &v.state
++			case 1:
++				return &v.sizeCache
++			case 2:
++				return &v.unknownFields
++			default:
++				return nil
++			}
++		}
++		file_daemon_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
+ 			switch v := v.(*FullStatus); i {
+ 			case 0:
+ 				return &v.state
+@@ -1787,7 +1910,7 @@ func file_daemon_proto_init() {
+ 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
+ 			RawDescriptor: file_daemon_proto_rawDesc,
+ 			NumEnums:      0,
+-			NumMessages:   18,
++			NumMessages:   19,
+ 			NumExtensions: 0,
+ 			NumServices:   1,
+ 		},
+diff --git a/client/proto/daemon.proto b/client/proto/daemon.proto
+index 2858ba2e050..bdb1cb83eea 100644
+--- a/client/proto/daemon.proto
++++ b/client/proto/daemon.proto
+@@ -141,6 +141,7 @@ message PeerState {
+   int64 bytesRx = 13;
+   int64 bytesTx = 14;
+   bool rosenpassEnabled = 15;
++  repeated string routes = 16;
+ }
+ 
+ // LocalPeerState contains the latest state of the local peer
+@@ -151,6 +152,7 @@ message LocalPeerState {
+   string fqdn = 4;
+   bool rosenpassEnabled = 5;
+   bool rosenpassPermissive = 6;
++  repeated string routes = 7;
+ }
+ 
+ // SignalState contains the latest state of a signal connection
+@@ -174,6 +176,13 @@ message RelayState {
+   string error = 3;
+ }
+ 
++message NSGroupState {
++  repeated string servers = 1;
++  repeated string domains = 2;
++  bool enabled = 3;
++  string error = 4;
++}
++
+ // FullStatus contains the full state held by the Status instance
+ message FullStatus {
+   ManagementState managementState = 1;
+@@ -181,4 +190,5 @@ message FullStatus {
+   LocalPeerState  localPeerState = 3;
+   repeated PeerState peers = 4;
+   repeated RelayState relays = 5;
++  repeated NSGroupState dns_servers = 6;
+ }
+\ No newline at end of file
+diff --git a/client/server/server.go b/client/server/server.go
+index 90b5bcb642c..5f1bf0100a4 100644
+--- a/client/server/server.go
++++ b/client/server/server.go
+@@ -11,6 +11,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/cenkalti/backoff/v4"
++	"golang.org/x/exp/maps"
+ 
+ 	"github.com/netbirdio/netbird/client/internal/auth"
+ 	"github.com/netbirdio/netbird/client/system"
+@@ -670,7 +671,6 @@ func toProtoFullStatus(fullStatus peer.FullStatus) *proto.FullStatus {
+ 		SignalState:     &proto.SignalState{},
+ 		LocalPeerState:  &proto.LocalPeerState{},
+ 		Peers:           []*proto.PeerState{},
+-		Relays:          []*proto.RelayState{},
+ 	}
+ 
+ 	pbFullStatus.ManagementState.URL = fullStatus.ManagementState.URL
+@@ -691,6 +691,7 @@ func toProtoFullStatus(fullStatus peer.FullStatus) *proto.FullStatus {
+ 	pbFullStatus.LocalPeerState.Fqdn = fullStatus.LocalPeerState.FQDN
+ 	pbFullStatus.LocalPeerState.RosenpassPermissive = fullStatus.RosenpassState.Permissive
+ 	pbFullStatus.LocalPeerState.RosenpassEnabled = fullStatus.RosenpassState.Enabled
++	pbFullStatus.LocalPeerState.Routes = maps.Keys(fullStatus.LocalPeerState.Routes)
+ 
+ 	for _, peerState := range fullStatus.Peers {
+ 		pbPeerState := &proto.PeerState{
+@@ -709,6 +710,7 @@ func toProtoFullStatus(fullStatus peer.FullStatus) *proto.FullStatus {
+ 			BytesRx:                    peerState.BytesRx,
+ 			BytesTx:                    peerState.BytesTx,
+ 			RosenpassEnabled:           peerState.RosenpassEnabled,
++			Routes:                     maps.Keys(peerState.Routes),
+ 		}
+ 		pbFullStatus.Peers = append(pbFullStatus.Peers, pbPeerState)
+ 	}
+@@ -724,6 +726,20 @@ func toProtoFullStatus(fullStatus peer.FullStatus) *proto.FullStatus {
+ 		pbFullStatus.Relays = append(pbFullStatus.Relays, pbRelayState)
+ 	}
+ 
++	for _, dnsState := range fullStatus.NSGroupStates {
++		var err string
++		if dnsState.Error != nil {
++			err = dnsState.Error.Error()
++		}
++		pbDnsState := &proto.NSGroupState{
++			Servers: dnsState.Servers,
++			Domains: dnsState.Domains,
++			Enabled: dnsState.Enabled,
++			Error:   err,
++		}
++		pbFullStatus.DnsServers = append(pbFullStatus.DnsServers, pbDnsState)
++	}
++
+ 	return &pbFullStatus
+ }
+ 
+diff --git a/go.mod b/go.mod
+index d435e4eb8c3..6aba599f810 100644
+--- a/go.mod
++++ b/go.mod
+@@ -48,6 +48,7 @@ require (
+ 	github.com/google/gopacket v1.1.19
+ 	github.com/google/nftables v0.0.0-20220808154552-2eca00135732
+ 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.0.2-0.20240212192251-757544f21357
++	github.com/hashicorp/go-multierror v1.1.0
+ 	github.com/hashicorp/go-secure-stdlib/base62 v0.1.2
+ 	github.com/hashicorp/go-version v1.6.0
+ 	github.com/libp2p/go-netroute v0.2.0
+@@ -123,6 +124,7 @@ require (
+ 	github.com/googleapis/enterprise-certificate-proxy v0.2.3 // indirect
+ 	github.com/googleapis/gax-go/v2 v2.10.0 // indirect
+ 	github.com/gopacket/gopacket v1.1.1 // indirect
++	github.com/hashicorp/errwrap v1.0.0 // indirect
+ 	github.com/hashicorp/go-uuid v1.0.2 // indirect
+ 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+ 	github.com/jinzhu/inflection v1.0.0 // indirect
+diff --git a/go.sum b/go.sum
+index cc7a52ed636..ca10cd55367 100644
+--- a/go.sum
++++ b/go.sum
+@@ -289,6 +289,10 @@ github.com/gorilla/mux v1.8.0/go.mod h1:DVbg23sWSpFRCP0SfiEN6jmj59UnW/n46BH5rLB7
+ github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.0.2-0.20240212192251-757544f21357 h1:Fkzd8ktnpOR9h47SXHe2AYPwelXLH2GjGsjlAloiWfo=
+ github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.0.2-0.20240212192251-757544f21357/go.mod h1:w9Y7gY31krpLmrVU5ZPG9H7l9fZuRu5/3R3S3FMtVQ4=
+ github.com/grpc-ecosystem/grpc-gateway v1.16.0/go.mod h1:BDjrQk3hbvj6Nolgz8mAMFbcEtjT1g+wF4CSlocrBnw=
++github.com/hashicorp/errwrap v1.0.0 h1:hLrqtEDnRye3+sgx6z4qVLNuviH3MR5aQ0ykNJa/UYA=
++github.com/hashicorp/errwrap v1.0.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
++github.com/hashicorp/go-multierror v1.1.0 h1:B9UzwGQJehnUY1yNrnwREHc3fGbC2xefo8g4TbElacI=
++github.com/hashicorp/go-multierror v1.1.0/go.mod h1:spPvp8C1qA32ftKqdAHm4hHTbPw+vmowP0z+KUhOZdA=
+ github.com/hashicorp/go-secure-stdlib/base62 v0.1.2 h1:ET4pqyjiGmY09R5y+rSd70J2w45CtbWDNvGqWp/R3Ng=
+ github.com/hashicorp/go-secure-stdlib/base62 v0.1.2/go.mod h1:EdWO6czbmthiwZ3/PUsDV+UD1D5IRU4ActiaWGwt0Yw=
+ github.com/hashicorp/go-uuid v1.0.2 h1:cfejS+Tpcp13yd5nYHWDI6qVCny6wyX2Mt5SGur2IGE=
+
+```
+
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Report all of your findings in a single JSON object with the following format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

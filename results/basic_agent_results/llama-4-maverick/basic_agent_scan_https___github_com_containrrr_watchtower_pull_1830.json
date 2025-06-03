@@ -1,0 +1,1 @@
+{"repo_id": "containrrr_watchtower_1830", "bugs": [{"description": "Potential panic in GetCreateConfig() function due to nil nested fields", "file": "pkg/container/container.go", "line": 284}, {"description": "Potential panic in GetCreateConfig() function due to nil nested fields", "file": "pkg/container/container.go", "line": 284}], "updated_files": {}}

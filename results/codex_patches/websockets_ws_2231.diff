@@ -1,0 +1,60 @@
+diff --git a/lib/websocket-server.js b/lib/websocket-server.js
+index 40980f6..54a78e1 100644
+--- a/lib/websocket-server.js
++++ b/lib/websocket-server.js
+@@ -221,51 +221,54 @@ class WebSocketServer extends EventEmitter {
+ 
+     return true;
+   }
+ 
+   /**
+    * Handle a HTTP Upgrade request.
+    *
+    * @param {http.IncomingMessage} req The request object
+    * @param {Duplex} socket The network socket between the server and client
+    * @param {Buffer} head The first packet of the upgraded stream
+    * @param {Function} cb Callback
+    * @public
+    */
+   handleUpgrade(req, socket, head, cb) {
+     socket.on('error', socketOnError);
+ 
+     const key = req.headers['sec-websocket-key'];
+     const version = +req.headers['sec-websocket-version'];
+ 
+     if (req.method !== 'GET') {
+       const message = 'Invalid HTTP method';
+       abortHandshakeOrEmitwsClientError(this, req, socket, 405, message);
+       return;
+     }
+ 
+-    if (req.headers.upgrade.toLowerCase() !== 'websocket') {
++    if (
++      typeof req.headers.upgrade !== 'string' ||
++      req.headers.upgrade.toLowerCase() !== 'websocket'
++    ) {
+       const message = 'Invalid Upgrade header';
+       abortHandshakeOrEmitwsClientError(this, req, socket, 400, message);
+       return;
+     }
+ 
+     if (!key || !keyRegex.test(key)) {
+       const message = 'Missing or invalid Sec-WebSocket-Key header';
+       abortHandshakeOrEmitwsClientError(this, req, socket, 400, message);
+       return;
+     }
+ 
+     if (version !== 8 && version !== 13) {
+       const message = 'Missing or invalid Sec-WebSocket-Version header';
+       abortHandshakeOrEmitwsClientError(this, req, socket, 400, message);
+       return;
+     }
+ 
+     if (!this.shouldHandle(req)) {
+       abortHandshake(socket, 400);
+       return;
+     }
+ 
+     const secWebSocketProtocol = req.headers['sec-websocket-protocol'];
+     let protocols = new Set();
+ 

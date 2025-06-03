@@ -1,0 +1,9 @@
+{
+"issues": [
+{
+"file": "lib/fsevents-handler.js",
+"line": 197,
+"description": "The calcDepth function miscalculates directory depth. It uses while (!path.indexOf(root) && (path = sysPath.dirname(path)) !== root) which returns incorrect values (e.g., calcDepth('/foo/bar','/foo/bar') yields 1 instead of 0). This can lead to incorrect behavior for depth-based logic."
+}
+]
+}

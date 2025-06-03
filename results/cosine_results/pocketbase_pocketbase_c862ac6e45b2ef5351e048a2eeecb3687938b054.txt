@@ -1,0 +1,49 @@
+{
+  "issues": [
+    {
+      "file": "core/db_table.go",
+      "line": 76,
+      "description": "DeleteTable is vulnerable to SQL injection if 'tableName' comes from untrusted input. The comment warns of this, but if user-controllable data is passed here, it could allow arbitrary table deletion or worse."
+    },
+    {
+      "file": "core/view.go",
+      "line": 19,
+      "description": "DeleteView and SaveView are vulnerable to SQL injection if 'name' or 'selectQuery' come from untrusted input. Comments warn about this, but they are only safe if all upstream callers strictly control these arguments."
+    },
+    {
+      "file": "core/view.go",
+      "line": 47,
+      "description": "SaveView only checks for multiple SQL statements by splitting on semicolons, which is a weak defense. SQL injection is possible if untrusted input is passed as 'selectQuery'."
+    },
+    {
+      "file": "core/collection_import.go",
+      "line": 30,
+      "description": "When importing collections, if 'deleteMissing' is true, ALL non-system collections and fields NOT present in the import are deleted. This is documented, but could be destructive if the import is malformed or incomplete."
+    },
+    {
+      "file": "core/field_file.go",
+      "line": 153",
+      "description": "FileField.ProcessFilesToUpload expects record.Id to be set. If not, it returns an error, but if upstream logic does not check for this, file uploads can silently fail."
+    },
+    {
+      "file": "core/app.go",
+      "line": 753,
+      "description": "DeleteTable, DeleteView, SaveView methods are documented as vulnerable to SQL injection. Upstream validation is critical to prevent exploitation."
+    },
+    {
+      "file": "core/field.go",
+      "line": 32,
+      "description": "Field interface expects several methods to be implemented; if a custom field type fails to properly implement required methods, it may cause runtime panics or silent data loss."
+    },
+    {
+      "file": "core/base.go",
+      "line": 1298,
+      "description": "resetting all DB connections on ResetBootstrapState may cause issues if any other goroutine is using the old connections. All DB operations should be quiesced before calling this."
+    },
+    {
+      "file": "core/field_file.go",
+      "line": 736,
+      "description": "deleteFilesByNamesList skips files with slashes in their names, but does not otherwise restrict file names. If file names are manipulated upstream, directory traversal or other attacks may be possible."
+    }
+  ]
+}

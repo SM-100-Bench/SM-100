@@ -1,0 +1,14 @@
+{
+  "issues": [
+    {
+      "file": "weave/autopatch.py",
+      "line": 12,
+      "description": "String comparison for openai.__version__ ('openai.__version__ < \"1\"') may not handle semantic versioning correctly (e.g., '1.0.0rc1' < '1' is True). Consider using packaging.version.parse for robust version checks."
+    },
+    {
+      "file": "weave/engine_trace.py",
+      "line": 206,
+      "description": "WeaveWriter.write() skips logging when len(spans) == 1, potentially resulting in missing trace logs for single-span traces."
+    }
+  ]
+}

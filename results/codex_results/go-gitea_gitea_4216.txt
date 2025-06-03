@@ -1,0 +1,34 @@
+{
+"issues": [
+{
+"file": "models/attachment.go",
+"line": 169,
+"description": "getAttachmentsByCommentID ignores its Engine parameter and uses the global DB handle, which breaks transactional consistency"
+},
+{
+"file": "models/ssh_key.go",
+"line": 581,
+"description": "opened file f is closed with defer after a loop; early returns before defer may leak the file descriptor"
+},
+{
+"file": "models/login_source.go",
+"line": 179,
+"description": "panic on unrecognized login source type can crash the application if DB contains unexpected value"
+},
+{
+"file": "models/repo_unit.go",
+"line": 129,
+"description": "panic on unrecognized repository unit type can crash the application for malformed DB records"
+},
+{
+"file": "models/repo.go",
+"line": 781,
+"description": "NextIssueIndex lacks synchronization; concurrent issue creation may generate duplicate indexes"
+},
+{
+"file": "models/twofactor.go",
+"line": 54,
+"description": "encryption key derived from MD5 hash of secret key; MD5 is considered insecure for cryptographic use"
+}
+]
+}

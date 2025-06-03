@@ -1,0 +1,24 @@
+{
+"issues": [
+{
+"file": "tests/base.py",
+"line": 33,
+"description": "The alias list for MariaDBConnectorDatabase contains a misspelled entry 'maridbconnector'. This prevents the expected 'mariadbconnector' engine name from being recognized."
+},
+{
+"file": "pwiz.py",
+"line": 60,
+"description": "Database connection parameters (including passwords) are inserted into generated model code via repr(db_kwargs). Running pwiz with the --password option will embed plaintext credentials in the output."
+},
+{
+"file": "peewee.py",
+"line": 7576,
+"description": "A broad 'except:' in the filter logic silently ignores all exceptions when obtaining model attributes, potentially masking programming errors."
+},
+{
+"file": "tests/libs/mock.py",
+"line": 211,
+"description": "Dynamic code is executed with eval/exec when generating signature-checking functions. If untrusted input reaches this code it could lead to arbitrary code execution."
+}
+]
+}

@@ -1,0 +1,68 @@
+diff --git a/.eslintrc.js b/.eslintrc.js
+deleted file mode 100644
+index aac5a018b..000000000
+--- a/.eslintrc.js
++++ /dev/null
+@@ -1,8 +0,0 @@
+-module.exports = {
+-    "extends": "standard",
+-    "installedESLint": true,
+-    "plugins": [
+-        "standard",
+-        "promise"
+-    ]
+-};
+\ No newline at end of file
+diff --git a/fixtures/curl_commands/post_binary_file.txt b/fixtures/curl_commands/post_binary_file.txt
+new file mode 100644
+index 000000000..85325b1e4
+--- /dev/null
++++ b/fixtures/curl_commands/post_binary_file.txt
+@@ -0,0 +1 @@
++curl -i -X POST  --data-binary @./sample.sparql  -H "Content-type: application/sparql-query"  -H "Accept: application/sparql-results+json"  http://lodstories.isi.edu:3030/american-art/query
+\ No newline at end of file
+diff --git a/fixtures/python_output/post_binary_file.py b/fixtures/python_output/post_binary_file.py
+new file mode 100644
+index 000000000..bf90f1445
+--- /dev/null
++++ b/fixtures/python_output/post_binary_file.py
+@@ -0,0 +1,9 @@
++import requests
++
++headers = {
++    'Content-type': 'application/sparql-query',
++    'Accept': 'application/sparql-results+json',
++}
++
++data = open('./sample.sparql', 'rb').read()
++requests.post('http://lodstories.isi.edu:3030/american-art/query', headers=headers, data=data)
+\ No newline at end of file
+diff --git a/generators/python.js b/generators/python.js
+index c8eaec4a2..24ff181c5 100644
+--- a/generators/python.js
++++ b/generators/python.js
+@@ -27,7 +27,11 @@ var toPython = function (curlCommand) {
+   if (request.data) {
+     if (request.data.startsWith('@')) {
+       var filePath = request.data.slice(1)
+-      dataString = 'data = open(\'' + filePath + '\')'
++      if (request.isDataBinary) {
++        dataString = 'data = open(\'' + filePath + '\', \'rb\').read()'
++      } else {
++        dataString = 'data = open(\'' + filePath + '\')'
++      }
+     } else {
+       var escapedData = request.data.replace(/'/g, "\\'")
+       if (escapedData.indexOf("'") > -1) {
+diff --git a/util.js b/util.js
+index 0970be819..621092949 100644
+--- a/util.js
++++ b/util.js
+@@ -84,6 +84,7 @@ var parseCurlCommand = function (curlCommand) {
+     request.data = parsedArguments.data
+   } else if (parsedArguments['data-binary']) {
+     request.data = parsedArguments['data-binary']
++    request.isDataBinary = true
+   } else if (parsedArguments['d']) {
+     request.data = parsedArguments['d']
+   }

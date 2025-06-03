@@ -1,0 +1,45 @@
+{
+  "session_id": "devin-1ed67f2529e043bbae60cafabd1bd4d9",
+  "issues": [
+    {
+      "file": "web/src/components/SearchBar.tsx",
+      "line": 41,
+      "description": "Changed from locationStore.getState().query.text to locationStore.state.query.text in useEffect dependency array, which could break reactivity if the state implementation requires getState() to be called for fresh state"
+    },
+    {
+      "file": "web/src/labs/highlighter/index.ts",
+      "line": 23,
+      "description": "Type error: Potentially passing undefined value to walkthroughNodeWithKeyword function which expects a string"
+    },
+    {
+      "file": "web/src/labs/highlighter/index.ts",
+      "line": 22,
+      "description": "Double escaping issue: HTML content is escaped but then passed to walkthroughNodeWithKeyword which contains regex operations that may not work correctly on escaped content"
+    },
+    {
+      "file": "web/src/labs/marked/parser/Link.ts",
+      "line": 1,
+      "description": "Inconsistent import source: imports escape from 'lodash-es' while other parser files import from 'lodash', which could cause runtime conflicts"
+    },
+    {
+      "file": "web/src/labs/marked/parser/Link.ts",
+      "line": 20,
+      "description": "Potential circular dependency: Link.ts imports Bold.ts (and others) while Bold.ts imports Link.ts"
+    },
+    {
+      "file": "web/src/labs/marked/parser/Bold.ts",
+      "line": 18,
+      "description": "Security issue: Content is escaped before being passed to marked(), but marked() may process the escaped characters as markdown, potentially allowing XSS"
+    },
+    {
+      "file": "web/src/labs/marked/parser/BoldEmphasis.ts",
+      "line": 18,
+      "description": "Security issue: Content is escaped before being passed to marked(), but marked() may process the escaped characters as markdown, potentially allowing XSS"
+    },
+    {
+      "file": "web/src/labs/marked/parser/Emphasis.ts",
+      "line": 18,
+      "description": "Security issue: Content is escaped before being passed to marked(), but marked() may process the escaped characters as markdown, potentially allowing XSS"
+    }
+  ]
+}

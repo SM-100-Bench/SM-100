@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "lib/customErrors.js",
+"line": 12,
+"description": "Loop uses key as a truthy check, so objects with an empty-string key stop iteration early and skip property copying. Should check key !== undefined instead."
+},
+{
+"file": "lib/utils.js",
+"line": 65,
+"description": "Camel‑case to snake_case conversion regex inserts a leading underscore for keys beginning with capital letters (e.g., CamelCase → _camel_case). Consecutive capitals also yield incorrect results."
+},
+{
+"file": "lib/extendedApi.js",
+"line": 71,
+"description": "The end method unconditionally calls destroySoon() on the stream. Custom streams passed via options may lack this method, leading to a runtime exception."
+}
+]
+}

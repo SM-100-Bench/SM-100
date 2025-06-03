@@ -1,0 +1,18 @@
+Please review the code in the agronholm_apscheduler_898 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Triggers subsystem (consisting of 'src/apscheduler/triggers/__init__.py', 'src/apscheduler/triggers/calendarinterval.py', 'src/apscheduler/triggers/combining.py', 'src/apscheduler/triggers/cron/__init__.py', 'src/apscheduler/triggers/cron/expressions.py', 'src/apscheduler/triggers/cron/fields.py', 'src/apscheduler/triggers/date.py', 'src/apscheduler/triggers/interval.py')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

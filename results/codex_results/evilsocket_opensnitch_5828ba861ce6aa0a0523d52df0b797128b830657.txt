@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "daemon/rule/loader.go",
+"line": 151,
+"description": "The boolean 'liveReloadRunning' is accessed by multiple goroutines without synchronization. Reads and writes occur in Load(), Reload() and the liveReloadWorker goroutine without locks, leading to a potential data race."
+},
+{
+"file": "daemon/rule/operator_lists.go",
+"line": 100,
+"description": "StopMonitoringLists uses an unbuffered channel and sends on it without ensuring the receiver is ready, causing StopMonitoringLists to block until the monitoring goroutine checks the channel (can be up to 4 seconds due to a sleep in monitorLists)."
+}
+]
+}

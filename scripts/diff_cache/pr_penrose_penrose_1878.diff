@@ -1,0 +1,13 @@
+diff --git a/packages/core/src/engine/Autodiff.ts b/packages/core/src/engine/Autodiff.ts
+index e26853be0d..8da18d95be 100644
+--- a/packages/core/src/engine/Autodiff.ts
++++ b/packages/core/src/engine/Autodiff.ts
+@@ -766,7 +766,7 @@ const emitUnary = (
+     case "expm1":
+       return builtins.expm1(x);
+     case "floor":
+-      return rose.ceil(x);
++      return rose.floor(x);
+     case "log":
+       return builtins.log(x);
+     case "log2":

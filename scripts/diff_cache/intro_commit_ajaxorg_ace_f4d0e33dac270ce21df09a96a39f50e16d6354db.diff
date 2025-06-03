@@ -1,0 +1,1557 @@
+diff --git a/ace-internal.d.ts b/ace-internal.d.ts
+index 4066f585241..9beea6bd076 100644
+--- a/ace-internal.d.ts
++++ b/ace-internal.d.ts
+@@ -783,7 +783,10 @@ export namespace Ace {
+         closingBracketBlock(session: EditSession, bracket: string, row: number, column: number, typeRe?: RegExp): Range | undefined;
+     }
+ 
+-    type BehaviorAction = (state: string, action: string, editor: Editor, session: EditSession, text: string | Range) => ({ text: string, selection: number[] } | Range) & { [key: string]: any } | undefined;
++    type BehaviorAction = (state: string | string[], action: string, editor: Editor, session: EditSession, text: string | Range) => ({
++        text: string,
++        selection: number[]
++    } | Range) & { [key: string]: any } | undefined;
+     type BehaviorMap = Record<string, Record<string, BehaviorAction>>;
+ 
+     interface Behaviour {
+@@ -841,21 +844,21 @@ export namespace Ace {
+ 
+         getTokenizer(): Tokenizer;
+ 
+-        toggleCommentLines(state: any,
++        toggleCommentLines(state: string | string[],
+                            session: EditSession,
+                            startRow: number,
+                            endRow: number): void;
+ 
+-        toggleBlockComment(state: any,
++        toggleBlockComment(state: string | string[],
+                            session: EditSession,
+                            range: Range,
+                            cursor: Point): void;
+ 
+-        getNextLineIndent(state: any, line: string, tab: string): string;
++        getNextLineIndent(state: string | string[], line: string, tab: string): string;
+ 
+-        checkOutdent(state: any, line: string, input: string): boolean;
++        checkOutdent(state: string | string[], line: string, input: string): boolean;
+ 
+-        autoOutdent(state: any, doc: EditSession, row: number): void;
++        autoOutdent(state: string | string[], doc: EditSession, row: number): void;
+ 
+         // TODO implement WorkerClient types
+         createWorker(session: EditSession): any;
+@@ -864,7 +867,7 @@ export namespace Ace {
+ 
+         getKeywords(append?: boolean): Array<string | RegExp>;
+ 
+-        getCompletions(state: string,
++        getCompletions(state: string | string[],
+                        session: EditSession,
+                        pos: Point,
+                        prefix: string): Completion[];
+diff --git a/src/background_tokenizer.js b/src/background_tokenizer.js
+index f52649caea8..f96599350b8 100644
+--- a/src/background_tokenizer.js
++++ b/src/background_tokenizer.js
+@@ -23,6 +23,7 @@ class BackgroundTokenizer {
+         /**@type {false|number}*/
+         this.running = false;
+         this.lines = [];
++        /**@type {string[]|string[][]}*/
+         this.states = [];
+         this.currentLine = 0;
+         this.tokenizer = tokenizer;
+@@ -176,7 +177,7 @@ class BackgroundTokenizer {
+     /**
+      * Returns the state of tokenization at the end of a row.
+      * @param {Number} row The row to get state at
+-     * @returns {string}
++     * @returns {string | string[]}
+      **/
+     getState(row) {
+         if (this.currentLine == row)
+diff --git a/src/edit_session.js b/src/edit_session.js
+index 9b3c248a1fb..9cb28439f8b 100644
+--- a/src/edit_session.js
++++ b/src/edit_session.js
+@@ -272,7 +272,7 @@ class EditSession {
+     /**
+      * {:BackgroundTokenizer.getState}
+      * @param {Number} row The row to start at
+-     * @returns {string}
++     * @returns {string | string[]}
+      * @related BackgroundTokenizer.getState
+      **/
+     getState(row) {
+diff --git a/src/edit_session/folding.js b/src/edit_session/folding.js
+index 19deef96980..2951d695c76 100644
+--- a/src/edit_session/folding.js
++++ b/src/edit_session/folding.js
+@@ -716,14 +716,15 @@ function Folding() {
+             if (dir != 1) {
+                 do {
+                     token = iterator.stepBackward();
+-                } while (token && re.test(token.type) && !/^comment.end/.test(token.type));
++                } while (token && re.test(token.type));
+                 token = iterator.stepForward();
+             }
+             
+             range.start.row = iterator.getCurrentTokenRow();
+-            range.start.column = iterator.getCurrentTokenColumn() + (/^comment.start/.test(token.type) ? token.value.length : 2);
++            range.start.column = iterator.getCurrentTokenColumn() + token.value.length;
+ 
+             iterator = new TokenIterator(this, row, column);
++            var initState = this.getState(iterator.$row);
+             
+             if (dir != -1) {
+                 var lastRow = -1;
+@@ -731,21 +732,18 @@ function Folding() {
+                     token = iterator.stepForward();
+                     if (lastRow == -1) {
+                         var state = this.getState(iterator.$row);
+-                        if (!re.test(state))
++                        if (initState.toString() !== state.toString())
+                             lastRow = iterator.$row;
+                     } else if (iterator.$row > lastRow) {
+                         break;
+                     }
+-                } while (token && re.test(token.type) && !/^comment.start/.test(token.type));
++                } while (token && re.test(token.type));
+                 token = iterator.stepBackward();
+             } else
+                 token = iterator.getCurrentToken();
+ 
+             range.end.row = iterator.getCurrentTokenRow();
+             range.end.column = iterator.getCurrentTokenColumn();
+-            if (!/^comment.end/.test(token.type)) {
+-                range.end.column += token.value.length - 2;
+-            }
+             return range;
+         }
+     };
+diff --git a/src/editor.js b/src/editor.js
+index ab0ce713404..048f503b054 100644
+--- a/src/editor.js
++++ b/src/editor.js
+@@ -983,6 +983,7 @@ class Editor {
+             ? [new Range(0, 0, session.doc.getLength() - 1, 0)]
+             : this.selection.getAllRanges();
+ 
++        /**@type{string|string[]}*/
+         var prevLineState = "";
+         var prevLine = "";
+         var lineIndent = "";
+diff --git a/src/ext/static_highlight_test.js b/src/ext/static_highlight_test.js
+index e9f4a8cb690..6275fe88dab 100644
+--- a/src/ext/static_highlight_test.js
++++ b/src/ext/static_highlight_test.js
+@@ -39,17 +39,16 @@ module.exports = {
+         ].join("\n");
+         var mode = new JavaScriptMode();
+         var result = highlighter.render(snippet, mode, theme);
+-        assert.equal(result.html, "<div class='ace-tomorrow'><div class='ace_static_highlight ace_show_gutter' style='counter-reset:ace_line 0'>"
+-            + "<div class='ace_line'><span class='ace_gutter ace_gutter-cell'></span><span class='ace_comment ace_doc'>/** this is a function</span>\n</div>"
+-            + "<div class='ace_line'><span class='ace_gutter ace_gutter-cell'></span><span class='ace_comment ace_doc'>*</span>\n</div>"
+-            + "<div class='ace_line'><span class='ace_gutter ace_gutter-cell'></span><span class='ace_comment ace_doc'>*/</span>\n</div>"
+-            + "<div class='ace_line'><span class='ace_gutter ace_gutter-cell'></span>\n</div>"
+-            + "<div class='ace_line'><span class='ace_gutter ace_gutter-cell'></span><span class='ace_storage ace_type'>function</span> <span class='ace_entity ace_name ace_function'>hello</span> <span class='ace_paren ace_lparen'>(</span><span class='ace_variable ace_parameter'>a</span><span class='ace_punctuation ace_operator'>,</span> <span class='ace_variable ace_parameter'>b</span><span class='ace_punctuation ace_operator'>,</span> <span class='ace_variable ace_parameter'>c</span><span class='ace_paren ace_rparen'>)</span> <span class='ace_paren ace_lparen'>{</span>\n</div>"
+-            + "<div class='ace_line'><span class='ace_gutter ace_gutter-cell'></span>    <span class='ace_storage ace_type'>console</span><span class='ace_punctuation ace_operator'>.</span><span class='ace_support ace_function ace_firebug'>log</span><span class='ace_paren ace_lparen'>(</span><span class='ace_identifier'>a</span> <span class='ace_keyword ace_operator'>*</span> <span class='ace_identifier'>b</span> <span class='ace_keyword ace_operator'>+</span> <span class='ace_identifier'>c</span> <span class='ace_keyword ace_operator'>+</span> <span class='ace_string'>&#39;sup$&#39;</span><span class='ace_paren ace_rparen'>)</span><span class='ace_punctuation ace_operator'>;</span>\n</div>"
+-            + "<div class='ace_line'><span class='ace_gutter ace_gutter-cell'></span><span class='ace_indent-guide'>    </span><span class='ace_indent-guide'>    </span>   <span class='ace_comment'>//</span>\n</div>"
+-            + "<div class='ace_line'><span class='ace_gutter ace_gutter-cell'></span><span class='ace_indent-guide'>    </span><span class='ace_indent-guide'>    </span>    <span class='ace_comment'>//</span>\n</div>"
+-            + "<div class='ace_line'><span class='ace_gutter ace_gutter-cell'></span><span class='ace_paren ace_rparen'>}</span>\n</div>"
+-            + "</div></div>");
++        assert.equal(result.html, `<div class='ace-tomorrow'><div class='ace_static_highlight ace_show_gutter' style='counter-reset:ace_line 0'><div class='ace_line'><span class='ace_gutter ace_gutter-cell'></span><span class='ace_comment ace_doc'>/**</span><span class='ace_comment ace_doc ace_body'> this is a function</span>
++</div><div class='ace_line'><span class='ace_gutter ace_gutter-cell'></span><span class='ace_comment ace_doc ace_body'>*</span>
++</div><div class='ace_line'><span class='ace_gutter ace_gutter-cell'></span><span class='ace_comment ace_doc'>*/</span>
++</div><div class='ace_line'><span class='ace_gutter ace_gutter-cell'></span>
++</div><div class='ace_line'><span class='ace_gutter ace_gutter-cell'></span><span class='ace_storage ace_type'>function</span> <span class='ace_entity ace_name ace_function'>hello</span> <span class='ace_paren ace_lparen'>(</span><span class='ace_variable ace_parameter'>a</span><span class='ace_punctuation ace_operator'>,</span> <span class='ace_variable ace_parameter'>b</span><span class='ace_punctuation ace_operator'>,</span> <span class='ace_variable ace_parameter'>c</span><span class='ace_paren ace_rparen'>)</span> <span class='ace_paren ace_lparen'>{</span>
++</div><div class='ace_line'><span class='ace_gutter ace_gutter-cell'></span>    <span class='ace_storage ace_type'>console</span><span class='ace_punctuation ace_operator'>.</span><span class='ace_support ace_function ace_firebug'>log</span><span class='ace_paren ace_lparen'>(</span><span class='ace_identifier'>a</span> <span class='ace_keyword ace_operator'>*</span> <span class='ace_identifier'>b</span> <span class='ace_keyword ace_operator'>+</span> <span class='ace_identifier'>c</span> <span class='ace_keyword ace_operator'>+</span> <span class='ace_string'>&#39;sup$&#39;</span><span class='ace_paren ace_rparen'>)</span><span class='ace_punctuation ace_operator'>;</span>
++</div><div class='ace_line'><span class='ace_gutter ace_gutter-cell'></span><span class='ace_indent-guide'>    </span><span class='ace_indent-guide'>    </span>   <span class='ace_comment'>//</span>
++</div><div class='ace_line'><span class='ace_gutter ace_gutter-cell'></span><span class='ace_indent-guide'>    </span><span class='ace_indent-guide'>    </span>    <span class='ace_comment'>//</span>
++</div><div class='ace_line'><span class='ace_gutter ace_gutter-cell'></span><span class='ace_paren ace_rparen'>}</span>
++</div></div></div>`);
+         assert.ok(!!result.css);
+         next();
+     },
+diff --git a/src/mode/_test/tokens_drools.json b/src/mode/_test/tokens_drools.json
+index e312d03d442..a55bb8d95ca 100644
+--- a/src/mode/_test/tokens_drools.json
++++ b/src/mode/_test/tokens_drools.json
+@@ -206,12 +206,25 @@
+   ["comment.doc","/**"]
+ ],[
+    "doc-start",
+-  ["comment.doc"," * "],
++  [
++    "comment.doc.body",
++    " * "
++  ],
+   ["comment.doc.tag","@param"],
+-  ["comment.doc"," name who we'll salute?"]
++  [
++    "comment.doc.body",
++    " name who we'll salute?"
++  ]
+ ],[
+    "start",
+-  ["comment.doc"," */"]
++  [
++    "comment.doc.body",
++    " "
++  ],
++  [
++    "comment.doc",
++    "*/"
++  ]
+ ],[
+    "start",
+   ["keyword","function"],
+@@ -419,12 +432,25 @@
+   ["comment.doc","/**"]
+ ],[
+    "java-doc-start",
+-  ["comment.doc","   * "],
++  [
++    "comment.doc.body",
++    "   * "
++  ],
+   ["comment.doc.tag.storage.type","TODO"],
+-  ["comment.doc"," There mus be better way"]
++  [
++    "comment.doc.body",
++    " There mus be better way"
++  ]
+ ],[
+    "java-start",
+-  ["comment.doc","   */"]
++  [
++    "comment.doc.body",
++    "   "
++  ],
++  [
++    "comment.doc",
++    "*/"
++  ]
+ ],[
+    "java-start",
+   ["text","  "],
+@@ -751,10 +777,20 @@
+   ["comment.doc","/**"]
+ ],[
+    "doc-start",
+-  ["comment.doc"," * Go Right"]
++  [
++    "comment.doc.body",
++    " * Go Right"
++  ]
+ ],[
+    "start",
+-  ["comment.doc"," */"]
++  [
++    "comment.doc.body",
++    " "
++  ],
++  [
++    "comment.doc",
++    "*/"
++  ]
+ ],[
+    "start",
+   ["keyword","rule"],
+@@ -932,4 +968,4 @@
+   ["keyword","end"]
+ ],[
+    "start"
+-]]
+\ No newline at end of file
++]]
+diff --git a/src/mode/_test/tokens_flix.json b/src/mode/_test/tokens_flix.json
+index cb1bc7137f6..add7a042a23 100644
+--- a/src/mode/_test/tokens_flix.json
++++ b/src/mode/_test/tokens_flix.json
+@@ -1,171 +1,240 @@
+ [[
+    "start",
+-  ["text","    "]
++  ["comment.line","/// Mooo's `n` times on channel `c`."]
+ ],[
+    "start",
+-  ["comment.block","/* Hello comment */"]
+-],[
+-   "comment",
+-  ["comment.block","/* Hello "]
+-],[
+-   "start",
+-  ["comment.block"," comment */"]
+-],[
+-   "start",
+-  ["comment.line","// Hello comment"]
+-],[
+-   "start",
+-  ["keyword","use"],
+-  ["text"," "],
+-  ["identifier","Add"],
+-  ["text","."],
+-  ["identifier","add"]
+-],[
+-   "start",
+-  ["storage.type","mod"],
+-  ["text"," "],
+-  ["paren.lparen","{"],
+   ["storage.type","def"],
+   ["text"," "],
+-  ["identifier","main"],
++  ["identifier","mooo"],
+   ["paren.lparen","("],
+-  ["paren.rparen",")"],
++  ["identifier","tx"],
++  ["text",": "],
++  ["identifier","Sender"],
++  ["paren.lparen","["],
++  ["support.type","String"],
++  ["text",", "],
++  ["identifier","r"],
++  ["paren.rparen","]"],
++  ["text",", "],
++  ["identifier","n"],
+   ["text",": "],
+   ["support.type","Int32"],
+-  ["text"," = "],
+-  ["constant.numeric","42"],
+-  ["paren.rparen","}"]
++  ["paren.rparen",")"],
++  ["text",": "],
++  ["support.type","Unit"],
++  ["text"," \\ "],
++  ["identifier","IO"],
++  ["text"," ="]
+ ],[
+    "start",
+-  ["storage.type","class"],
++  ["text","    "],
++  ["keyword.control","match"],
+   ["text"," "],
+-  ["identifier","Add"],
+-  ["paren.lparen","["],
+-  ["identifier","a"],
+-  ["paren.rparen","]"],
++  ["identifier","n"],
+   ["text"," "],
+-  ["paren.lparen","{"],
+-  ["paren.rparen","}"]
++  ["paren.lparen","{"]
+ ],[
+    "start",
+-  ["storage.type","enum"],
+-  ["text"," "],
+-  ["identifier","Down"],
+-  ["paren.lparen","["],
+-  ["identifier","a"],
+-  ["paren.rparen","]"],
++  ["text","        "],
++  ["storage.type","case"],
+   ["text"," "],
+-  ["storage.modifier","with"],
++  ["constant.numeric","0"],
+   ["text"," "],
+-  ["identifier","Sendable"],
++  ["keyword.operator","=>"],
+   ["text"," "],
+-  ["paren.lparen","{"],
++  ["paren.lparen","("],
++  ["paren.rparen",")"]
++],[
++   "start",
++  ["text","        "],
+   ["storage.type","case"],
+   ["text"," "],
+-  ["identifier","Down"],
++  ["identifier","x"],
++  ["text"," "],
++  ["keyword.operator","=>"],
++  ["text"," "],
++  ["identifier","Channel"],
++  ["text","."],
++  ["identifier","send"],
++  ["paren.lparen","("],
++  ["string","\"Mooo!\""],
++  ["text",", "],
++  ["identifier","tx"],
++  ["paren.rparen",")"],
++  ["text","; "],
++  ["identifier","mooo"],
+   ["paren.lparen","("],
+-  ["identifier","a"],
+-  ["paren.rparen",")}"]
++  ["identifier","tx"],
++  ["text",", "],
++  ["identifier","x"],
++  ["text"," - "],
++  ["constant.numeric","1"],
++  ["paren.rparen",")"]
+ ],[
+    "start",
+-  ["storage.type","eff"],
+-  ["text"," "],
+-  ["identifier","NonDet"]
++  ["text","    "],
++  ["paren.rparen","}"]
++],[
++   "start"
+ ],[
+    "start",
+-  ["storage.type","type"],
+-  ["text"," "],
+-  ["storage.type","alias"],
+-  ["text"," "],
+-  ["identifier","Static"],
+-  ["text"," = "],
+-  ["identifier","Impure"]
++  ["comment.line","/// Meow's `n` times on channel `c`."]
+ ],[
+    "start",
+   ["storage.type","def"],
+   ["text"," "],
+-  ["identifier","main"],
++  ["identifier","meow"],
+   ["paren.lparen","("],
+-  ["paren.rparen",")"],
++  ["identifier","tx"],
++  ["text",": "],
++  ["identifier","Sender"],
++  ["paren.lparen","["],
++  ["support.type","String"],
++  ["text",", "],
++  ["identifier","r"],
++  ["paren.rparen","]"],
++  ["text",", "],
++  ["identifier","n"],
+   ["text",": "],
+   ["support.type","Int32"],
+-  ["text"," = "],
+-  ["paren.lparen","{"],
+-  ["constant.numeric","42"],
+-  ["paren.rparen","}"]
++  ["paren.rparen",")"],
++  ["text",": "],
++  ["support.type","Unit"],
++  ["text"," \\ "],
++  ["identifier","IO"],
++  ["text"," ="]
+ ],[
+    "start",
+-  ["storage.type","def"],
++  ["text","    "],
++  ["keyword.control","match"],
++  ["text"," "],
++  ["identifier","n"],
++  ["text"," "],
++  ["paren.lparen","{"]
++],[
++   "start",
++  ["text","        "],
++  ["storage.type","case"],
++  ["text"," "],
++  ["constant.numeric","0"],
++  ["text"," "],
++  ["keyword.operator","=>"],
+   ["text"," "],
+-  ["identifier","main"],
+   ["paren.lparen","("],
+-  ["paren.rparen",")"],
+-  ["text",": "],
+-  ["support.type","Float64"],
+-  ["text"," = "],
+-  ["keyword.control","if"],
++  ["paren.rparen",")"]
++],[
++   "start",
++  ["text","        "],
++  ["storage.type","case"],
++  ["text"," "],
++  ["identifier","x"],
++  ["text"," "],
++  ["keyword.operator","=>"],
++  ["text"," "],
++  ["identifier","Channel"],
++  ["text","."],
++  ["identifier","send"],
+   ["paren.lparen","("],
+-  ["constant.language.boolean","true"],
++  ["string","\"Meow!\""],
++  ["text",", "],
++  ["identifier","tx"],
+   ["paren.rparen",")"],
+-  ["paren.lparen","{"],
+-  ["constant.numeric","42.0"],
+-  ["paren.rparen","}"],
+-  ["keyword.control","else"],
+-  ["paren.lparen","{"],
+-  ["constant.numeric","43.0"],
++  ["text","; "],
++  ["identifier","meow"],
++  ["paren.lparen","("],
++  ["identifier","tx"],
++  ["text",", "],
++  ["identifier","x"],
++  ["text"," - "],
++  ["constant.numeric","1"],
++  ["paren.rparen",")"]
++],[
++   "start",
++  ["text","    "],
+   ["paren.rparen","}"]
++],[
++   "start"
++],[
++   "start",
++  ["comment.line","/// Hiss'es `n` times on channel `c`."]
+ ],[
+    "start",
+   ["storage.type","def"],
+   ["text"," "],
+-  ["identifier","main"],
++  ["identifier","hiss"],
+   ["paren.lparen","("],
+-  ["paren.rparen",")"],
++  ["identifier","tx"],
+   ["text",": "],
++  ["identifier","Sender"],
++  ["paren.lparen","["],
+   ["support.type","String"],
+-  ["text"," = "],
+-  ["string","\"Hello"],
+-  ["constant.character.escape","\\\""],
+-  ["string","World"],
+-  ["constant.character.escape","\\u0021"],
+-  ["string","\""]
++  ["text",", "],
++  ["identifier","r"],
++  ["paren.rparen","]"],
++  ["text",", "],
++  ["identifier","n"],
++  ["text",": "],
++  ["support.type","Int32"],
++  ["paren.rparen",")"],
++  ["text",": "],
++  ["support.type","Unit"],
++  ["text"," \\ "],
++  ["identifier","IO"],
++  ["text"," ="]
+ ],[
+    "start",
+-  ["storage.type","def"],
++  ["text","    "],
++  ["keyword.control","match"],
+   ["text"," "],
+-  ["identifier","main"],
+-  ["paren.lparen","("],
+-  ["paren.rparen",")"],
+-  ["text",": "],
+-  ["support.type","Char"],
+-  ["text"," = "],
+-  ["constant.character","'a'"]
++  ["identifier","n"],
++  ["text"," "],
++  ["paren.lparen","{"]
+ ],[
+    "start",
+-  ["storage.type","def"],
++  ["text","        "],
++  ["storage.type","case"],
++  ["text"," "],
++  ["constant.numeric","0"],
++  ["text"," "],
++  ["keyword.operator","=>"],
+   ["text"," "],
+-  ["identifier","main"],
+   ["paren.lparen","("],
+-  ["paren.rparen",")"],
+-  ["text",": "],
+-  ["support.type","Char"],
+-  ["text"," = "],
+-  ["constant.character","'"],
+-  ["constant.character.escape","\\u0021"],
+-  ["constant.character","'"]
++  ["paren.rparen",")"]
+ ],[
+    "start",
+-  ["storage.type","def"],
++  ["text","        "],
++  ["storage.type","case"],
+   ["text"," "],
+-  ["identifier","main"],
++  ["identifier","x"],
++  ["text"," "],
++  ["keyword.operator","=>"],
++  ["text"," "],
++  ["identifier","Channel"],
++  ["text","."],
++  ["identifier","send"],
+   ["paren.lparen","("],
++  ["string","\"Hiss!\""],
++  ["text",", "],
++  ["identifier","tx"],
+   ["paren.rparen",")"],
+-  ["text",": "],
+-  ["support.type","Char"],
+-  ["text"," = "],
+-  ["constant.character","'"],
+-  ["constant.character.escape","\\'"],
+-  ["constant.character","'"]
++  ["text","; "],
++  ["identifier","hiss"],
++  ["paren.lparen","("],
++  ["identifier","tx"],
++  ["text",", "],
++  ["identifier","x"],
++  ["text"," - "],
++  ["constant.numeric","1"],
++  ["paren.rparen",")"]
++],[
++   "start",
++  ["text","    "],
++  ["paren.rparen","}"]
++],[
++   "start"
++],[
++   "start",
++  ["comment.line","/// Start the animal farm..."]
+ ],[
+    "start",
+   ["storage.type","def"],
+@@ -174,126 +243,187 @@
+   ["paren.lparen","("],
+   ["paren.rparen",")"],
+   ["text",": "],
+-  ["identifier","Regex"],
++  ["support.type","Unit"],
++  ["text"," \\ "],
++  ["identifier","IO"],
+   ["text"," = "],
+-  ["string.regexp","regex\"Hello"],
+-  ["constant.character.escape","\\\""],
+-  ["string.regexp","World"],
+-  ["constant.character.escape","\\u0021"],
+-  ["string.regexp","\""]
++  ["keyword","region"],
++  ["text"," "],
++  ["identifier","rc"],
++  ["text"," "],
++  ["paren.lparen","{"]
+ ],[
+    "start",
+-  ["storage.type","def"],
++  ["text","    "],
++  ["storage.type","let"],
+   ["text"," "],
+-  ["identifier","main"],
+   ["paren.lparen","("],
++  ["identifier","tx1"],
++  ["text",", "],
++  ["identifier","rx1"],
+   ["paren.rparen",")"],
+-  ["text",": "],
+-  ["support.type","String"],
+   ["text"," = "],
+-  ["keyword","???"]
++  ["identifier","Channel"],
++  ["text","."],
++  ["identifier","buffered"],
++  ["paren.lparen","("],
++  ["identifier","rc"],
++  ["text",", "],
++  ["constant.numeric","10"],
++  ["paren.rparen",")"],
++  ["text",";"]
+ ],[
+    "start",
+-  ["storage.type","def"],
++  ["text","    "],
++  ["storage.type","let"],
+   ["text"," "],
+-  ["identifier","main"],
+   ["paren.lparen","("],
++  ["identifier","tx2"],
++  ["text",", "],
++  ["identifier","rx2"],
+   ["paren.rparen",")"],
+-  ["text",": "],
+-  ["support.type","String"],
+   ["text"," = "],
+-  ["keyword","?someHole"]
++  ["identifier","Channel"],
++  ["text","."],
++  ["identifier","buffered"],
++  ["paren.lparen","("],
++  ["identifier","rc"],
++  ["text",", "],
++  ["constant.numeric","10"],
++  ["paren.rparen",")"],
++  ["text",";"]
+ ],[
+    "start",
+-  ["storage.type","def"],
++  ["text","    "],
++  ["storage.type","let"],
+   ["text"," "],
+-  ["identifier","main"],
+   ["paren.lparen","("],
++  ["identifier","tx3"],
++  ["text",", "],
++  ["identifier","rx3"],
+   ["paren.rparen",")"],
+-  ["text",": "],
+-  ["support.type","Int32"],
+   ["text"," = "],
+-  ["constant.numeric","0x123i32"]
++  ["identifier","Channel"],
++  ["text","."],
++  ["identifier","buffered"],
++  ["paren.lparen","("],
++  ["identifier","rc"],
++  ["text",", "],
++  ["constant.numeric","10"],
++  ["paren.rparen",")"],
++  ["text",";"]
+ ],[
+    "start",
+-  ["storage.type","def"],
++  ["text","    "],
++  ["keyword.control","spawn"],
+   ["text"," "],
+-  ["identifier","main"],
++  ["identifier","mooo"],
+   ["paren.lparen","("],
++  ["identifier","tx1"],
++  ["text",", "],
++  ["constant.numeric","0"],
+   ["paren.rparen",")"],
+-  ["text",": "],
+-  ["support.type","Int32"],
+-  ["text"," = "],
+-  ["constant.numeric","42i32"]
++  ["text"," @ "],
++  ["identifier","rc"],
++  ["text",";"]
+ ],[
+    "start",
+-  ["storage.type","def"],
++  ["text","    "],
++  ["keyword.control","spawn"],
+   ["text"," "],
+-  ["identifier","main"],
++  ["identifier","meow"],
+   ["paren.lparen","("],
++  ["identifier","tx2"],
++  ["text",", "],
++  ["constant.numeric","3"],
+   ["paren.rparen",")"],
+-  ["text",": "],
+-  ["support.type","Float64"],
+-  ["text"," = "],
+-  ["constant.numeric","42.0f64"]
++  ["text"," @ "],
++  ["identifier","rc"],
++  ["text",";"]
+ ],[
+    "start",
+-  ["storage.type","def"],
++  ["text","    "],
++  ["keyword.control","spawn"],
+   ["text"," "],
+-  ["identifier","main"],
++  ["identifier","hiss"],
+   ["paren.lparen","("],
++  ["identifier","tx3"],
++  ["text",", "],
++  ["constant.numeric","7"],
+   ["paren.rparen",")"],
+-  ["text",": "],
+-  ["support.type","Bool"],
+-  ["text"," = "],
+-  ["constant.language.boolean","true"]
++  ["text"," @ "],
++  ["identifier","rc"],
++  ["text",";"]
+ ],[
+    "start",
+-  ["storage.type","def"],
++  ["text","    "],
++  ["keyword","select"],
+   ["text"," "],
+-  ["identifier","main"],
+-  ["paren.lparen","("],
+-  ["paren.rparen",")"],
+-  ["text",": "],
+-  ["support.type","Bool"],
+-  ["text"," = "],
+-  ["constant.language.boolean","false"]
++  ["paren.lparen","{"]
+ ],[
+    "start",
+-  ["storage.type","def"],
++  ["text","        "],
++  ["storage.type","case"],
+   ["text"," "],
+-  ["identifier","main"],
++  ["identifier","m"],
++  ["text"," "],
++  ["keyword.operator","<-"],
++  ["text"," "],
++  ["identifier","recv"],
+   ["paren.lparen","("],
++  ["identifier","rx1"],
+   ["paren.rparen",")"],
+-  ["text",": "],
+-  ["identifier","Null"],
+-  ["text"," = "],
+-  ["constant.language","null"]
+-],[
+-   "start",
+-  ["storage.modifier","@Lazy"]
++  ["text"," "],
++  ["keyword.operator","=>"],
++  ["text"," "],
++  ["identifier","m"],
++  ["text"," |> "],
++  ["identifier","println"]
+ ],[
+    "start",
+-  ["storage.type","def"],
++  ["text","        "],
++  ["storage.type","case"],
+   ["text"," "],
+-  ["identifier","main"],
++  ["identifier","m"],
++  ["text"," "],
++  ["keyword.operator","<-"],
++  ["text"," "],
++  ["identifier","recv"],
+   ["paren.lparen","("],
++  ["identifier","rx2"],
+   ["paren.rparen",")"],
+-  ["text",": "],
+-  ["support.type","Int32"],
+-  ["text"," = "],
+-  ["constant.numeric","42"]
++  ["text"," "],
++  ["keyword.operator","=>"],
++  ["text"," "],
++  ["identifier","m"],
++  ["text"," |> "],
++  ["identifier","println"]
+ ],[
+    "start",
+-  ["storage.modifier","pub"],
++  ["text","        "],
++  ["storage.type","case"],
+   ["text"," "],
+-  ["storage.type","def"],
++  ["identifier","m"],
+   ["text"," "],
+-  ["identifier","main"],
++  ["keyword.operator","<-"],
++  ["text"," "],
++  ["identifier","recv"],
+   ["paren.lparen","("],
++  ["identifier","rx3"],
+   ["paren.rparen",")"],
+-  ["text",": "],
+-  ["support.type","Int32"],
+-  ["text"," = "],
+-  ["constant.numeric","42"]
++  ["text"," "],
++  ["keyword.operator","=>"],
++  ["text"," "],
++  ["identifier","m"],
++  ["text"," |> "],
++  ["identifier","println"]
++],[
++   "start",
++  ["text","    "],
++  ["paren.rparen","}"]
++],[
++   "start",
++  ["paren.rparen","}"]
++],[
++   "start"
+ ]]
+\ No newline at end of file
+diff --git a/src/mode/_test/tokens_javascript.json b/src/mode/_test/tokens_javascript.json
+index 7e11d31fae5..bfb91f78a74 100644
+--- a/src/mode/_test/tokens_javascript.json
++++ b/src/mode/_test/tokens_javascript.json
+@@ -32,14 +32,39 @@
+   ["identifier","test"],
+   ["punctuation.operator",":"],
+   ["text"," "],
+-  ["comment.doc","/**tokenize doc*/"],
++  [
++    "comment.doc",
++    "/**"
++  ],
++  [
++    "comment.doc.body",
++    "tokenize doc"
++  ],
++  [
++    "comment.doc",
++    "*/"
++  ],
+   ["text"," "],
+   ["identifier","comment"]
+ ],[
+    "no_regex",
+-  ["comment.doc","/**tokenize doc comment with "],
++  [
++    "comment.doc",
++    "/**"
++  ],
++  [
++    "comment.doc.body",
++    "tokenize doc comment with "
++  ],
+   ["comment.doc.tag","@tag"],
+-  ["comment.doc"," {}*/"]
++  [
++    "comment.doc.body",
++    " {}"
++  ],
++  [
++    "comment.doc",
++    "*/"
++  ]
+ ],[
+    "no_regex",
+   ["comment","//test: tokenize parens"]
+@@ -333,10 +358,32 @@
+ ],[
+    "no_regex",
+   ["text"," "],
+-  ["comment.doc","/************************************/"]
+-],[
+-   "no_regex",
+-  ["comment.doc","/** total mess, tricky to highlight**/"]
++  [
++    "comment.doc",
++    "/**"
++  ],
++  [
++    "comment.doc.body",
++    "*********************************"
++  ],
++  [
++    "comment.doc",
++    "*/"
++  ]
++],[
++   "no_regex",
++  [
++    "comment.doc",
++    "/**"
++  ],
++  [
++    "comment.doc.body",
++    " total mess, tricky to highlight*"
++  ],
++  [
++    "comment.doc",
++    "*/"
++  ]
+ ],[
+    "no_regex"
+ ],[
+@@ -353,10 +400,20 @@
+   ["comment.doc","/**"]
+ ],[
+    "doc-start",
+-  ["comment.doc","\t * docComment"]
++  [
++    "comment.doc.body",
++    "\t * docComment"
++  ]
+ ],[
+    "no_regex",
+-  ["comment.doc","\t **/"]
++  [
++    "comment.doc.body",
++    "\t *"
++  ],
++  [
++    "comment.doc",
++    "*/"
++  ]
+ ],[
+    "no_regex",
+   ["text","\t"],
+@@ -483,10 +540,20 @@
+   ["comment.doc","/**"]
+ ],[
+    "doc-start",
+-  ["comment.doc"," *doc"]
+-],[
+-   "no_regex",
+-  ["comment.doc"," */"]
++  [
++    "comment.doc.body",
++    " *doc"
++  ]
++],[
++   "no_regex",
++  [
++    "comment.doc.body",
++    " "
++  ],
++  [
++    "comment.doc",
++    "*/"
++  ]
+ ],[
+    "no_regex"
+ ],[
+diff --git a/src/mode/_test/tokens_lua.json b/src/mode/_test/tokens_lua.json
+index cc6d849391c..c721a8284da 100644
+--- a/src/mode/_test/tokens_lua.json
++++ b/src/mode/_test/tokens_lua.json
+@@ -1,15 +1,35 @@
+ [[
+    ["bracketedComment",2,"start"],
+-  ["comment","--[[--"]
++  [
++    "comment",
++    "--[["
++  ],
++  [
++    "comment.body",
++    "--"
++  ]
+ ],[
+    ["bracketedComment",2,"start"],
+-  ["comment","num_args takes in 5.1 byte code and extracts the number of arguments"]
++  [
++    "comment.body",
++    "num_args takes in 5.1 byte code and extracts the number of arguments"
++  ]
+ ],[
+    ["bracketedComment",2,"start"],
+-  ["comment","from its function header."]
++  [
++    "comment.body",
++    "from its function header."
++  ]
+ ],[
+    "start",
+-  ["comment","--]]--"]
++  [
++    "comment.body",
++    "--"
++  ],
++  [
++    "comment",
++    "]]--"
++  ]
+ ],[
+    "start"
+ ],[
+@@ -302,13 +322,30 @@
+    "start"
+ ],[
+    ["bracketedComment",3,"start"],
+-  ["comment","--[=[--"]
++  [
++    "comment",
++    "--[=["
++  ],
++  [
++    "comment.body",
++    "--"
++  ]
+ ],[
+    ["bracketedComment",3,"start"],
+-  ["comment","table.maxn is deprecated, use # instead."]
++  [
++    "comment.body",
++    "table.maxn is deprecated, use # instead."
++  ]
+ ],[
+    "start",
+-  ["comment","--]=]--"]
++  [
++    "comment.body",
++    "--"
++  ],
++  [
++    "comment",
++    "]=]--"
++  ]
+ ],[
+    "start",
+   ["support.function","print"],
+@@ -343,6 +380,17 @@
+   ["paren.lparen","("],
+   ["constant.numeric","5"],
+   ["text"," "],
+-  ["comment","--[[ blah ]]"],
++  [
++    "comment",
++    "--[["
++  ],
++  [
++    "comment.body",
++    " blah "
++  ],
++  [
++    "comment",
++    "]]"
++  ],
+   ["paren.rparen",")"]
+-]]
+\ No newline at end of file
++]]
+diff --git a/src/mode/_test/tokens_luapage.json b/src/mode/_test/tokens_luapage.json
+index fda36eba4c8..55d43ec74d2 100644
+--- a/src/mode/_test/tokens_luapage.json
++++ b/src/mode/_test/tokens_luapage.json
+@@ -23,16 +23,36 @@
+    ["lua-bracketedComment",2,"lua-start"],
+   ["keyword","<%"],
+   ["text"," "],
+-  ["comment","--[[--"]
++  [
++    "comment",
++    "--[["
++  ],
++  [
++    "comment.body",
++    "--"
++  ]
+ ],[
+    ["lua-bracketedComment",2,"lua-start"],
+-  ["comment","    index.lp from the Kepler Project's LuaDoc HTML doclet."]
++  [
++    "comment.body",
++    "    index.lp from the Kepler Project's LuaDoc HTML doclet."
++  ]
+ ],[
+    ["lua-bracketedComment",2,"lua-start"],
+-  ["comment","    http://keplerproject.github.com/luadoc/"]
+-],[
+-   "start",
+-  ["comment","--]]"],
++  [
++    "comment.body",
++    "    http://keplerproject.github.com/luadoc/"
++  ]
++],[
++   "start",
++  [
++    "comment.body",
++    "--"
++  ],
++  [
++    "comment",
++    "]]"
++  ],
+   ["text"," "],
+   ["keyword","%>"]
+ ],[
+@@ -648,4 +668,4 @@
+   ["meta.tag.punctuation.tag-close.xml",">"]
+ ],[
+    "start"
+-]]
+\ No newline at end of file
++]]
+diff --git a/src/mode/_test/tokens_pgsql.json b/src/mode/_test/tokens_pgsql.json
+index 6f66d730af0..ed22fcb5efe 100644
+--- a/src/mode/_test/tokens_pgsql.json
++++ b/src/mode/_test/tokens_pgsql.json
+@@ -11,7 +11,10 @@
+   ["comment.doc","/**"]
+ ],[
+    "doc-start",
+-  ["comment.doc","* Samples from PostgreSQL src/tutorial/basics.source"]
++  [
++    "comment.doc.body",
++    "* Samples from PostgreSQL src/tutorial/basics.source"
++  ]
+ ],[
+    "start",
+   ["comment.doc","*/"]
+@@ -294,13 +297,22 @@
+   ["comment.doc","/**"]
+ ],[
+    "doc-start",
+-  ["comment.doc","* Dollar quotes starting at the end of the line are colored as SQL unless"]
++  [
++    "comment.doc.body",
++    "* Dollar quotes starting at the end of the line are colored as SQL unless"
++  ]
+ ],[
+    "doc-start",
+-  ["comment.doc","* a special language tag is used. Dollar quote syntax coloring is implemented"]
++  [
++    "comment.doc.body",
++    "* a special language tag is used. Dollar quote syntax coloring is implemented"
++  ]
+ ],[
+    "doc-start",
+-  ["comment.doc","* for Perl, Python, JavaScript, and Json."]
++  [
++    "comment.doc.body",
++    "* for Perl, Python, JavaScript, and Json."
++  ]
+ ],[
+    "start",
+   ["comment.doc","*/"]
+@@ -934,4 +946,4 @@
+   ["statementEnd",";"]
+ ],[
+    "start"
+-]]
+\ No newline at end of file
++]]
+diff --git a/src/mode/_test/tokens_sac.json b/src/mode/_test/tokens_sac.json
+index 18350f158e4..2c5a1a12415 100644
+--- a/src/mode/_test/tokens_sac.json
++++ b/src/mode/_test/tokens_sac.json
+@@ -1,42 +1,89 @@
+ [[
+    "doc-start",
+-  ["comment.doc","/*****************************************************************************"]
++  [
++    "comment.doc",
++    "/**"
++  ],
++  [
++    "comment.doc.body",
++    "***************************************************************************"
++  ]
+ ],[
+    "doc-start",
+-  ["comment.doc"," *"]
++  [
++    "comment.doc.body",
++    " *"
++  ]
+ ],[
+    "doc-start",
+-  ["comment.doc"," *   SAC demo program"]
++  [
++    "comment.doc.body",
++    " *   SAC demo program"
++  ]
+ ],[
+    "doc-start",
+-  ["comment.doc"," *"]
++  [
++    "comment.doc.body",
++    " *"
++  ]
+ ],[
+    "doc-start",
+-  ["comment.doc"," *   This SAC demo program implements 2-dimensional relaxation on double"]
++  [
++    "comment.doc.body",
++    " *   This SAC demo program implements 2-dimensional relaxation on double"
++  ]
+ ],[
+    "doc-start",
+-  ["comment.doc"," *   precision floating point numbers applying a 4-point stencil and fixed"]
++  [
++    "comment.doc.body",
++    " *   precision floating point numbers applying a 4-point stencil and fixed"
++  ]
+ ],[
+    "doc-start",
+-  ["comment.doc"," *   boundary conditions."]
++  [
++    "comment.doc.body",
++    " *   boundary conditions."
++  ]
+ ],[
+    "doc-start",
+-  ["comment.doc"," *"]
++  [
++    "comment.doc.body",
++    " *"
++  ]
+ ],[
+    "doc-start",
+-  ["comment.doc"," *   The vertical (SIZE1) and the horizontal (SIZE2) array size as well as"]
++  [
++    "comment.doc.body",
++    " *   The vertical (SIZE1) and the horizontal (SIZE2) array size as well as"
++  ]
+ ],[
+    "doc-start",
+-  ["comment.doc"," *   the number of iterations to be performed (LOOP) may be set at compile"]
++  [
++    "comment.doc.body",
++    " *   the number of iterations to be performed (LOOP) may be set at compile"
++  ]
+ ],[
+    "doc-start",
+-  ["comment.doc"," *   time."]
++  [
++    "comment.doc.body",
++    " *   time."
++  ]
+ ],[
+    "doc-start",
+-  ["comment.doc"," *"]
++  [
++    "comment.doc.body",
++    " *"
++  ]
+ ],[
+    "start",
+-  ["comment.doc"," *****************************************************************************/"]
++  [
++    "comment.doc.body",
++    " ****************************************************************************"
++  ],
++  [
++    "comment.doc",
++    "*/"
++  ]
+ ],[
+    "start"
+ ],[
+@@ -541,4 +588,4 @@
+    "start"
+ ],[
+    "start"
+-]]
+\ No newline at end of file
++]]
+diff --git a/src/mode/_test/tokens_sqlserver.json b/src/mode/_test/tokens_sqlserver.json
+index 446f52ccd76..a4693b9ac00 100644
+--- a/src/mode/_test/tokens_sqlserver.json
++++ b/src/mode/_test/tokens_sqlserver.json
+@@ -149,10 +149,20 @@
+   ["comment.doc","/**"]
+ ],[
+    "doc-start",
+-  ["comment.doc","\t * These comments will produce a fold widget"]
++  [
++    "comment.doc.body",
++    "\t * These comments will produce a fold widget"
++  ]
+ ],[
+    "start",
+-  ["comment.doc","\t */"]
++  [
++    "comment.doc.body",
++    "\t "
++  ],
++  [
++    "comment.doc",
++    "*/"
++  ]
+ ],[
+    "start",
+   ["text","\t"]
+@@ -454,4 +464,4 @@
+   ["keyword","END"]
+ ],[
+    "start"
+-]]
+\ No newline at end of file
++]]
+diff --git a/src/mode/doc_comment_highlight_rules.js b/src/mode/doc_comment_highlight_rules.js
+index b0f3ca353b3..5b10e9ba2bd 100644
+--- a/src/mode/doc_comment_highlight_rules.js
++++ b/src/mode/doc_comment_highlight_rules.js
+@@ -10,7 +10,7 @@ var DocCommentHighlightRules = function () {
+                 token: "comment.doc.tag",
+                 regex: "@\\w+(?=\\s|$)"
+             }, DocCommentHighlightRules.getTagRule(), {
+-                defaultToken: "comment.doc",
++                defaultToken: "comment.doc.body",
+                 caseInsensitive: true
+             }
+         ]
+@@ -29,7 +29,7 @@ DocCommentHighlightRules.getTagRule = function(start) {
+ DocCommentHighlightRules.getStartRule = function(start) {
+     return {
+         token : "comment.doc", // doc comment
+-        regex : "\\/\\*(?=\\*)",
++        regex: /\/\*\*(?!\/)/,
+         next  : start
+     };
+ };
+diff --git a/src/mode/folding/cstyle_test.js b/src/mode/folding/cstyle_test.js
+index e88d22f3f44..5b48032c604 100644
+--- a/src/mode/folding/cstyle_test.js
++++ b/src/mode/folding/cstyle_test.js
+@@ -43,8 +43,8 @@ module.exports = {
+         assert.equal(session.getFoldWidget(1), "");
+         assert.equal(session.getFoldWidget(2), "end");
+         
+-        assert.range(session.getFoldWidgetRange(0), 0, 2, 2, 7);
+-        assert.range(session.getFoldWidgetRange(2), 0, 2, 2, 7);
++        assert.range(session.getFoldWidgetRange(0), 0, 3, 2, 7);
++        assert.range(session.getFoldWidgetRange(2), 0, 3, 2, 7);
+     },
+     
+     "test: fold sections": function() {
+diff --git a/src/mode/folding/javascript_test.js b/src/mode/folding/javascript_test.js
+index dac74eb1546..366968f4124 100644
+--- a/src/mode/folding/javascript_test.js
++++ b/src/mode/folding/javascript_test.js
+@@ -27,8 +27,8 @@ module.exports = {
+         assert.equal(session.getFoldWidget(3), "");
+         assert.equal(session.getFoldWidget(4), "end");
+ 
+-        assert.range(session.getFoldWidgetRange(0), 0, 2, 4, 0);
+-        assert.range(session.getFoldWidgetRange(4), 0, 2, 4, 0);
++        assert.range(session.getFoldWidgetRange(0), 0, 3, 4, 0);
++        assert.range(session.getFoldWidgetRange(4), 0, 3, 4, 0);
+     },
+     "test: fold mixed js and jsx": function () {
+         var session = new EditSession([
+diff --git a/src/mode/folding/lua_test.js b/src/mode/folding/lua_test.js
+new file mode 100644
+index 00000000000..380d9874e43
+--- /dev/null
++++ b/src/mode/folding/lua_test.js
+@@ -0,0 +1,37 @@
++if (typeof process !== "undefined") require("amd-loader");
++
++"use strict";
++
++var LuaMode = require("../lua").Mode;
++var EditSession = require("../../edit_session").EditSession;
++var assert = require("../../test/assertions");
++
++module.exports = {
++    "test: lua multi-line comment and string folding": function () {
++        var session = new EditSession([
++            '--[[This is a multi-line comment in Lua', 'It can span multiple lines until it encounters', ']]--', '',
++            'local title = [[This is a multi-line string in Lua',
++            'It can also span multiple lines until it encounters ]]'
++        ]);
++
++        var luaMode = new LuaMode();
++        session.setFoldStyle("markbeginend");
++        session.setMode(luaMode);
++        session.bgTokenizer.$worker();
++
++        assert.equal(session.getFoldWidget(0), "start"); // Comment starts
++        assert.equal(session.getFoldWidget(1), "");
++        assert.equal(session.getFoldWidget(2), "end");
++        assert.equal(session.getFoldWidget(3), "");
++        assert.equal(session.getFoldWidget(4), "start"); // String starts
++        assert.equal(session.getFoldWidget(5), "end");
++
++        assert.range(session.getFoldWidgetRange(0), 0, 4, 2, 0);
++        assert.range(session.getFoldWidgetRange(2), 0, 4, 2, 0);
++        assert.range(session.getFoldWidgetRange(4), 4, 16, 5, 52);
++        assert.range(session.getFoldWidgetRange(5), 4, 16, 5, 52);
++    }
++
++};
++
++if (typeof module !== "undefined" && module === require.main) require("asyncjs").test.testcase(module.exports).exec();
+diff --git a/src/mode/folding/xml.js b/src/mode/folding/xml.js
+index 22f4f2c0b7b..5ed806901a5 100644
+--- a/src/mode/folding/xml.js
++++ b/src/mode/folding/xml.js
+@@ -114,13 +114,15 @@ function is(token, type) {
+     };
+ 
+     this.getFoldWidgetRange = function(session, foldStyle, row) {
++        var firstTag = this._getFirstTagInLine(session, row);
++        if (!firstTag) {
++            return this.getCommentFoldWidget(session, row) && session.getCommentFoldRange(
++                row, session.getLine(row).length);
++        }
+         var tags = session.getMatchingTags({row: row, column: 0});
+         if (tags) {
+             return new Range(
+                 tags.openTag.end.row, tags.openTag.end.column, tags.closeTag.start.row, tags.closeTag.start.column);
+-        } else {
+-            return this.getCommentFoldWidget(session, row)
+-                && session.getCommentFoldRange(row, session.getLine(row).length);
+         }
+     };
+ 
+diff --git a/src/mode/folding/xml_test.js b/src/mode/folding/xml_test.js
+index b958734904f..ea9d799ab57 100644
+--- a/src/mode/folding/xml_test.js
++++ b/src/mode/folding/xml_test.js
+@@ -70,7 +70,36 @@ module.exports = {
+         assert.range(session.getFoldWidgetRange(1), 1, 9, 3, 19);
+         assert.range(session.getFoldWidgetRange(3), 1, 9, 3, 19);
+         assert.range(session.getFoldWidgetRange(4), 0, 8, 4, 0);
++    },
++    "test: fold should handle multi-line comments inside nested elements correctly": function () {
++        var session = new EditSession([
++            '<parentElement>', '  <childElement>', '    text <!--', '      This is a multi-line comment',
++            '      that spans multiple lines', '    -->', '  </childElement>', '  <anotherChildElement>',
++            '    <!-- Another comment -->', '  </anotherChildElement>', '</parentElement>'
++        ]);
++
++        var mode = new XmlMode();
++        session.setMode(mode);
++        session.setFoldStyle("markbeginend");
++
++        // Checks for the parentElement
++        assert.equal(session.getFoldWidget(0), "start");
++        assert.equal(session.getFoldWidget(10), "end");
++
++        // Checks for multi-line comment folding
++        assert.equal(session.getFoldWidget(2), "start");
++
++        // Checks for anotherChildElement folding (with single-line comment)
++        assert.equal(session.getFoldWidget(7), "start");
++        assert.equal(session.getFoldWidget(8), "");
++        assert.equal(session.getFoldWidget(9), "end");
++
++        // Verifying fold ranges
++        assert.range(session.getFoldWidgetRange(0), 0, 15, 10, 0);
++        assert.range(session.getFoldWidgetRange(2), 2, 13, 5, 4);
++        assert.equal(session.getFoldWidgetRange(8), "");
+     }
++
+ };
+ 
+ 
+diff --git a/src/mode/jsdoc_comment_highlight_rules.js b/src/mode/jsdoc_comment_highlight_rules.js
+index 4c3577d115f..8883d30d069 100644
+--- a/src/mode/jsdoc_comment_highlight_rules.js
++++ b/src/mode/jsdoc_comment_highlight_rules.js
+@@ -84,7 +84,7 @@ var JsDocCommentHighlightRules = function() {
+             },
+             JsDocCommentHighlightRules.getTagRule(),
+         {
+-            defaultToken : "comment.doc",
++            defaultToken: "comment.doc.body",
+             caseInsensitive: true
+         }],
+         "doc-syntax": [{
+@@ -110,7 +110,7 @@ JsDocCommentHighlightRules.getTagRule = function(start) {
+ JsDocCommentHighlightRules.getStartRule = function(start) {
+     return {
+         token : "comment.doc", // doc comment
+-        regex : "\\/\\*(?=\\*)",
++        regex: /\/\*\*(?!\/)/,
+         next  : start
+     };
+ };
+diff --git a/src/mode/lua_highlight_rules.js b/src/mode/lua_highlight_rules.js
+index 43da728cc4f..b03286dc78b 100644
+--- a/src/mode/lua_highlight_rules.js
++++ b/src/mode/lua_highlight_rules.js
+@@ -84,7 +84,7 @@ var LuaHighlightRules = function() {
+                     regex : /\]=*\]/,
+                     next  : "start"
+                 }, {
+-                    defaultToken : "comment"
++                    defaultToken: "comment.body"
+                 }
+             ]
+         },

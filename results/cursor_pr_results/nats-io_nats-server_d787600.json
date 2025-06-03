@@ -1,0 +1,8 @@
+{
+  "url": "https://github.com/nats-io/nats-server/pull/1792",
+  "identifier": "nats-io_nats-server_d787600",
+  "code_blocks": [
+    "json\nApply\n[\n\u00a0\u00a0{\n\u00a0\u00a0\u00a0\u00a0\"file\":\u00a0\"conf/lex.go\",\n\u00a0\u00a0\u00a0\u00a0\"line\":\u00a0434,\n\u00a0\u00a0\u00a0\u00a0\"description\":\u00a0\"Potential\u00a0infinite\u00a0loop\u00a0in\u00a0lexMapQuotedKey\u00a0when\u00a0encountering\u00a0EOF\u00a0without\u00a0closing\u00a0quote\"\n\u00a0\u00a0},\n\u00a0\u00a0{\n\u00a0\u00a0\u00a0\u00a0\"file\":\u00a0\"conf/lex.go\",\n\u00a0\u00a0\u00a0\u00a0\"line\":\u00a0447,\n\u00a0\u00a0\u00a0\u00a0\"description\":\u00a0\"Missing\u00a0error\u00a0handling\u00a0for\u00a0unterminated\u00a0quoted\u00a0keys\u00a0in\u00a0lexMapQuotedKey\"\n\u00a0\u00a0},\n\u00a0\u00a0{\n\u00a0\u00a0\u00a0\u00a0\"file\":\u00a0\"conf/lex.go\",\n\u00a0\u00a0\u00a0\u00a0\"line\":\u00a0447,\n\u00a0\u00a0\u00a0\u00a0\"description\":\u00a0\"No\u00a0validation\u00a0of\u00a0quote\u00a0type\u00a0matching\u00a0(single\u00a0vs\u00a0double\u00a0quotes)\u00a0in\u00a0lexMapQuotedKey\"\n\u00a0\u00a0},\n\u00a0\u00a0{\n\u00a0\u00a0\u00a0\u00a0\"file\":\u00a0\"conf/lex_test.go\",\n\u00a0\u00a0\u00a0\u00a0\"line\":\u00a0424,\n\u00a0\u00a0\u00a0\u00a0\"description\":\u00a0\"Test\u00a0cases\u00a0don't\u00a0cover\u00a0error\u00a0conditions\u00a0for\u00a0malformed\u00a0quoted\u00a0keys\"\n\u00a0\u00a0}\n]"
+  ],
+  "timestamp": "2025-05-26 14:23:13"
+}

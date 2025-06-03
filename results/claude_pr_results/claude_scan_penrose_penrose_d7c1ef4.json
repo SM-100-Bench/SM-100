@@ -1,0 +1,15 @@
+{
+  "identifier": "penrose_penrose_d7c1ef4",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.5508977999999999,
+    "is_error": false,
+    "duration_ms": 86108,
+    "duration_api_ms": 102292,
+    "num_turns": 33,
+    "result": "```json\n{\n  \"issues\": [\n    {\n      \"file\": \"packages/core/src/engine/Autodiff.ts\",\n      \"line\": 769,\n      \"description\": \"Floor function incorrectly calls rose.ceil(x) instead of rose.floor(x), causing mathematical inaccuracy\"\n    },\n    {\n      \"file\": \"packages/examples/setupVitest.js\", \n      \"line\": 11,\n      \"description\": \"Unsafe global fetch override with file:// URL manipulation without validation could expose file system\"\n    }\n  ]\n}\n```",
+    "total_cost": 0.5508977999999999,
+    "session_id": "47f13111-1022-475f-b398-2b0db8dda7db"
+  }
+}

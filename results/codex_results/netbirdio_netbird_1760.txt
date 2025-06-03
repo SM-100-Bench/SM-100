@@ -1,0 +1,14 @@
+{
+"issues": [
+{
+"file": "client/internal/auth/pkce_flow.go",
+"line": 188,
+"description": "Token expiration is computed using token.Expiry.Second(), which only returns the seconds component of the timestamp, not the duration until expiration. This results in incorrect ExpiresIn values."
+},
+{
+"file": "client/internal/acl/manager.go",
+"line": 262,
+"description": "getRuleID calculates the MD5 hash with md5.New().Sum([]byte(idStr)), which appends the hash of an empty input to the original data instead of hashing idStr. This produces incorrect IDs."
+}
+]
+}

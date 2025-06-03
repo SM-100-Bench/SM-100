@@ -1,0 +1,15 @@
+{
+  "identifier": "psf_requests_c86b09b",
+  "issues": {
+    "type": "result",
+    "subtype": "success",
+    "cost_usd": 0.04358545,
+    "is_error": false,
+    "duration_ms": 7145,
+    "duration_api_ms": 9328,
+    "num_turns": 3,
+    "result": "After reviewing the staged changes, I found one critical bug that could cause resource leaks:\n\n```json\n{\n  \"issues\": [\n    {\n      \"file\": \"requests/utils.py\",\n      \"line\": 240,\n      \"description\": \"Resource leak: ZipFile object is not properly closed, which can cause file handle exhaustion on repeated calls\"\n    }\n  ]\n}\n```",
+    "total_cost": 0.04358545,
+    "session_id": "c9e2672f-2649-43cf-bc4e-55a0c4aa98f9"
+  }
+}

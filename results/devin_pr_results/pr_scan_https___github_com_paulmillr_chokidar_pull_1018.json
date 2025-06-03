@@ -1,0 +1,25 @@
+{
+  "session_id": "devin-b9d10d5bd9114e3782030328024649ba",
+  "issues": [
+    {
+      "file": "lib/fsevents-handler.js",
+      "line": 134,
+      "description": "Circular reference issue: 'cont' is passed to bindFSEventsCallback before it's fully defined, creating a potential circular reference that could lead to undefined behavior"
+    },
+    {
+      "file": "lib/fsevents-handler.js",
+      "line": 73,
+      "description": "Missing null check: bindFSEventsCallback doesn't verify if 'fsw' is defined before accessing fsw.closed, which could cause a TypeError if fsw is null or undefined"
+    },
+    {
+      "file": "lib/fsevents-handler.js",
+      "line": 147,
+      "description": "Removed Object.freeze(cont.listeners) call without replacement, potentially allowing modification of listeners after watcher is closed"
+    },
+    {
+      "file": "lib/fsevents-handler.js",
+      "line": 74,
+      "description": "Race condition: The check for fsw.closed happens after the callback is triggered but before processing, which could lead to partial processing if the watcher is closed during callback execution"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+Please review the code in the codeclysm_extract_4a98568021b8e289345c7f526ccbd7ed732cf286 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Core Extraction subsystem (consisting of 'extract.go', 'extractor.go')
+2. Testing Tools subsystem (consisting of 'evil_generator/main.go')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

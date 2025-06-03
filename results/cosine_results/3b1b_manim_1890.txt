@@ -1,0 +1,1 @@
+{ "issues": [ { "file": "manimlib/animation/indication.py", "line": 298, "description": "In the ApplyWave class's homotopy function, division by zero may occur if the left and right x-coordinates of the mobject are equal ('right_x == left_x'). This will cause a runtime exception." } ] }

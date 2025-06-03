@@ -1,0 +1,13 @@
+diff --git a/ui/packages/audio/src/Audio.svelte b/ui/packages/audio/src/Audio.svelte
+index ea091f9c097dc..78aba71a6fbeb 100644
+--- a/ui/packages/audio/src/Audio.svelte
++++ b/ui/packages/audio/src/Audio.svelte
+@@ -74,6 +74,8 @@
+ 				name
+ 			};
+ 			dispatch(streaming ? "stream" : "change", value);
++			const audioTracks = stream.getAudioTracks();
++			audioTracks.forEach((track) => track.stop());
+ 		});
+ 	}
+ 

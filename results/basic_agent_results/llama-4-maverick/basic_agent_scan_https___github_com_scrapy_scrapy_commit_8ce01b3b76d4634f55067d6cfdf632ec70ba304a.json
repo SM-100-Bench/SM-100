@@ -1,0 +1,1 @@
+{"repo_id": "scrapy_scrapy_8ce01b3b76d4634f55067d6cfdf632ec70ba304a", "bugs": [{"description": "Potential issue in handling IgnoreRequest exceptions when a cached response is not found and self.ignore_missing is True.", "file": "scrapy/downloadermiddlewares/httpcache.py", "line": 73}], "updated_files": {}}

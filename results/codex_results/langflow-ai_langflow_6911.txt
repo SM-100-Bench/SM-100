@@ -1,0 +1,24 @@
+{
+"issues": [
+{
+"file": "src/backend/base/langflow/api/v1/endpoints.py",
+"line": 260,
+"description": "Final queue entry uses time.time without parentheses, pushing a function object that will cause a TypeError when consumers subtract timestamps."
+},
+{
+"file": "src/backend/base/langflow/api/v1/mcp.py",
+"line": 77,
+"description": "Typo in settings attribute ('holst' instead of 'host') forces the host to always default to 'localhost'."
+},
+{
+"file": "src/backend/base/langflow/api/v2/files.py",
+"line": 227,
+"description": "Deleting a single file passes the stored path (which already contains the user folder) to delete_file, resulting in an incorrect path and failed deletion."
+},
+{
+"file": "src/backend/base/langflow/api/v2/files.py",
+"line": 256,
+"description": "When deleting all files, each deletion again uses file.path with the folder prefix, causing incorrect concatenation and likely file not found errors."
+}
+]
+}

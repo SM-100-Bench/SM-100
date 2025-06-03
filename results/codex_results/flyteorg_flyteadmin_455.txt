@@ -1,0 +1,29 @@
+{
+"issues": [
+{
+"file": "auth/cookie.go",
+"line": 114,
+"description": "CSRF tokens are generated using math/rand with a predictable seed, which is not cryptographically secure. This also resets the global RNG on each call."
+},
+{
+"file": "auth/cookie.go",
+"line": 54,
+"description": "Secure cookies storing tokens are created without the HttpOnly flag, allowing client‑side scripts to access authentication cookies."
+},
+{
+"file": "auth/cookie_manager.go",
+"line": 178,
+"description": "Logout cookies are created without setting the domain attribute, so cookies originally set with a domain may not be deleted properly."
+},
+{
+"file": "auth/authzserver/metadata_provider.go",
+"line": 67,
+"description": "HTTP response body from http.Get is never closed, leading to a resource leak."
+},
+{
+"file": "auth/authzserver/provider.go",
+"line": 151,
+"description": "verifyClaims performs unchecked type assertions on JWT claims, which can panic if tokens contain unexpected types."
+}
+]
+}

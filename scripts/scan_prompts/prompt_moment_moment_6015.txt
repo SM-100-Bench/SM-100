@@ -1,0 +1,18 @@
+Please review the code in the moment_moment_6015 repository for potential bugs.
+Focus on identifying issues that represent objectively incorrect behavior, could lead to exceptions or program crashes, or constitute security vulnerabilities.
+
+Please analyze the following subsystems:
+
+1. Date Creation and Parsing subsystem (consisting of 'src/lib/create/check-overflow.js', 'src/lib/create/date-from-array.js', 'src/lib/create/from-anything.js', 'src/lib/create/from-array.js', 'src/lib/create/from-object.js', 'src/lib/create/from-string-and-array.js', 'src/lib/create/from-string-and-format.js', 'src/lib/create/from-string.js', 'src/lib/create/local.js', 'src/lib/create/parsing-flags.js', 'src/lib/create/utc.js', 'src/lib/create/valid.js', 'src/lib/parse/regex.js', 'src/lib/parse/token.js')
+
+Report your findings in the following structured format:
+
+{
+  "issues": [
+    {
+      "file": "src/App.tsx",
+      "line": 42,
+      "description": "Memory leak in useEffect cleanup"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+diff --git a/packages/vue2/src/useForm.ts b/packages/vue2/src/useForm.ts
+index 3ff255209..0262d8b40 100644
+--- a/packages/vue2/src/useForm.ts
++++ b/packages/vue2/src/useForm.ts
+@@ -79,6 +79,7 @@ export default function useForm<TForm extends FormDataType>(...args): InertiaFor
+ 
+       if (typeof key === 'undefined') {
+         defaults = this.data()
++        this.isDirty = false
+       } else {
+         defaults = Object.assign({}, cloneDeep(defaults), value ? { [key]: value } : key)
+       }
+diff --git a/packages/vue3/src/useForm.ts b/packages/vue3/src/useForm.ts
+index efdafd87c..2c8fa8095 100644
+--- a/packages/vue3/src/useForm.ts
++++ b/packages/vue3/src/useForm.ts
+@@ -79,6 +79,7 @@ export default function useForm<TForm extends FormDataType>(
+ 
+       if (typeof fieldOrFields === 'undefined') {
+         defaults = this.data()
++        this.isDirty = false
+       } else {
+         defaults = Object.assign(
+           {},

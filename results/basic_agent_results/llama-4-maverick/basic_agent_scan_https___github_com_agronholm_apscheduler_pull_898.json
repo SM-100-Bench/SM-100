@@ -1,0 +1,1 @@
+{"repo_id": "agronholm_apscheduler_898", "bugs": [{"description": "Potential bug in handling cron expressions with '*' and '-' together", "file": "src/apscheduler/triggers/cron/expressions.py", "line": 200}, {"description": "Potential bug in combining triggers with different timezones", "file": "src/apscheduler/triggers/combining.py", "line": 150}], "updated_files": {}}

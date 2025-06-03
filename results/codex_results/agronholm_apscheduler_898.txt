@@ -1,0 +1,19 @@
+{
+"issues": [
+{
+"file": "src/apscheduler/triggers/calendarinterval.py",
+"line": 80,
+"description": "_last_fire_date is typed as a date but uses as_aware_datetime for conversion. This may incorrectly convert string inputs to datetime objects."
+},
+{
+"file": "src/apscheduler/triggers/combining.py",
+"line": 31,
+"description": "setstate assigns _next_fire_times directly from state without using the list_converter(as_aware_datetime) converter, so deserialized values may not be timezone‑aware."
+},
+{
+"file": "src/apscheduler/triggers/cron/init.py",
+"line": 66,
+"description": "start_time defaults to datetime.now() in the local timezone. If a different timezone is provided, start_time may not match it, leading to inconsistent scheduling."
+}
+]
+}

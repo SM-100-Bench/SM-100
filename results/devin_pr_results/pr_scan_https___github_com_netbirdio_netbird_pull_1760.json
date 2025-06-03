@@ -1,0 +1,40 @@
+{
+  "session_id": "devin-31fecf2eb24549c2b674d7a4ecb9f8f0",
+  "issues": [
+    {
+      "file": "client/internal/dns/upstream.go",
+      "line": 196,
+      "description": "Potential null pointer dereference in probeAvailability() method. The 'errors' variable might be nil when errors.ErrorOrNil() is called if no errors were appended to it."
+    },
+    {
+      "file": "client/internal/routemanager/server_nonandroid.go",
+      "line": 138,
+      "description": "Race condition in cleanUp() method. The state.Routes is set to nil and then UpdateLocalPeerState() is called without proper synchronization, potentially causing concurrent access issues."
+    },
+    {
+      "file": "client/internal/dns/server.go",
+      "line": 731,
+      "description": "Potential memory leak in updateNSGroupStates() where new slices are continuously created and appended to without clearing old data."
+    },
+    {
+      "file": "client/internal/dns/server.go",
+      "line": 747,
+      "description": "Race condition in updateNSState() where it gets states with GetDNSStates(), modifies them, and then calls UpdateDNSStates() without proper locking, potentially causing concurrent access issues."
+    },
+    {
+      "file": "client/internal/routemanager/client.go",
+      "line": 1224,
+      "description": "Potential null pointer dereference in recalculateRouteAndUpdatePeerAndSystem() where state.Routes is accessed after a nil check but before initialization."
+    },
+    {
+      "file": "client/internal/peer/status.go",
+      "line": 1181,
+      "description": "GetDNSStates() returns the slice directly without copying, allowing external code to modify internal state without proper synchronization."
+    },
+    {
+      "file": "client/server/server.go",
+      "line": 671,
+      "description": "Bug in toProtoFullStatus() where Relays field is initialized but then overwritten, potentially causing inconsistent state."
+    }
+  ]
+}
