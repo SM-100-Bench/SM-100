@@ -1,6 +1,7 @@
 ## Setup Scripts
 * `construct_prompts.py`: create the results in `scan_prompts/` which are what are passed to interactive systems for needle in haystack bug scanning.
 * `construct_pr_prompts.py`: create the results in `pr_review_prompts/` - what is passed to interactive systems for PR review bug scanning.
+* `gh_*.py`: manage the mirrored repositories in the SM-100-Bench GitHub organization.
 
 ## Precomputes
 * `subsystems/`: for each repo, the automatically determined list of subsystems which are used to group and limit the files passed for review.
