@@ -4,6 +4,6 @@ tqdm
 GitPython
 bismuthsdk
 selenium
-webdriver-managet
+webdriver-manager
 asimov-agents @ git+https://github.com/BismuthCloud/asimov
-gasp @ git+https://github.com/iantbutler01/gasp
+gasp-py @ git+https://github.com/iantbutler01/gasp
