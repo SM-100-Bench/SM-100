@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/py-pdf/pypdf/pull/2505",
+    "commit_sha": "7c23cbb62f3268dfe203641e7da7fd27133f6b21",
+    "repo_identifier": "py-pdf_pypdf_2505",
+    "timestamp": "2025-06-12T23:06:19Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/py-pdf_pypdf_2505/issues/comments/2968356013",
+        "html_url": "https://github.com/SM-100-Bench/py-pdf_pypdf_2505/pull/3#issuecomment-2968356013",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/py-pdf_pypdf_2505/issues/3",
+        "id": 2968356013,
+        "node_id": "IC_kwDOOiCA1c6w7YSt",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T22:45:36Z",
+        "updated_at": "2025-06-12T22:45:36Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/py-pdf_pypdf_2505/issues/comments/2968356013/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922860060,
+        "node_id": "PRR_kwDOOiCA1c6uN04c",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: Cycle Detection Fails in Recursive Form XObject Handling</h3></summary>\n\nThe `clean_forms` helper's cycle detection (`if elt in stack:`) fails because `ContentStream` wraps form XObjects into new Python objects on each recursive call. This creates a new object identity, preventing the element from being found in the `stack` even if the underlying PDF object is the same. For self-referencing or mutually-referencing form XObjects, this leads to unbounded recursion and a `RecursionError`. This is a regression introduced by the new recursive implementation.\n\n<p></p>\n\n<details>\n<summary><code>pypdf/_writer.py#L2195-L2247</code></summary>\n\nhttps://github.com/SM-100-Bench/py-pdf_pypdf_2505/blob/549c5a125445dad879a788c87f61cd18f422fe85/pypdf/_writer.py#L2195-L2247\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp3ZVhCa1ppOWZkM0pwZEdWeUxuQjVJaXdpYzNSaGNuUk1hVzVsSWpveU1UazFMQ0psYm1STWFXNWxJam95TWpRM0xDSmpiMlJsVEdsdVpYTWlPbHRkZlYwc0ltbGtJam9pTVdOaVlqRTFOalF0TkdGbU5DMDBNRGsyTFRrME5UZ3RZamN4WlRZd01HSTVObVkzSWl3aVpHVnpZM0pwY0hScGIyNGlPaUpVYUdVZ1lHTnNaV0Z1WDJadmNtMXpZQ0JvWld4d1pYSW5jeUJqZVdOc1pTQmtaWFJsWTNScGIyNGdLR0JwWmlCbGJIUWdhVzRnYzNSaFkyczZZQ2tnWm1GcGJITWdZbVZqWVhWelpTQmdRMjl1ZEdWdWRGTjBjbVZoYldBZ2QzSmhjSE1nWm05eWJTQllUMkpxWldOMGN5QnBiblJ2SUc1bGR5QlFlWFJvYjI0Z2IySnFaV04wY3lCdmJpQmxZV05vSUhKbFkzVnljMmwyWlNCallXeHNMaUJVYUdseklHTnlaV0YwWlhNZ1lTQnVaWGNnYjJKcVpXTjBJR2xrWlc1MGFYUjVMQ0J3Y21WMlpXNTBhVzVuSUhSb1pTQmxiR1Z0Wlc1MElHWnliMjBnWW1WcGJtY2dabTkxYm1RZ2FXNGdkR2hsSUdCemRHRmphMkFnWlhabGJpQnBaaUIwYUdVZ2RXNWtaWEpzZVdsdVp5QlFSRVlnYjJKcVpXTjBJR2x6SUhSb1pTQnpZVzFsTGlCR2IzSWdjMlZzWmkxeVpXWmxjbVZ1WTJsdVp5QnZjaUJ0ZFhSMVlXeHNlUzF5WldabGNtVnVZMmx1WnlCbWIzSnRJRmhQWW1wbFkzUnpMQ0IwYUdseklHeGxZV1J6SUhSdklIVnVZbTkxYm1SbFpDQnlaV04xY25OcGIyNGdZVzVrSUdFZ1lGSmxZM1Z5YzJsdmJrVnljbTl5WUM0Z1ZHaHBjeUJwY3lCaElISmxaM0psYzNOcGIyNGdhVzUwY205a2RXTmxaQ0JpZVNCMGFHVWdibVYzSUhKbFkzVnljMmwyWlNCcGJYQnNaVzFsYm5SaGRHbHZiaTRpTENKamIyNW1hV1JsYm1ObElqb3dMall6Tnpnd016WXpNalV4TlRVMU5ESXNJbU5oZEdWbmIzSjVJam9pVEU5SFNVTmZRbFZISW4wIiwiYnJhbmNoIjoiYXV0by1wci03YzIzY2JiNi1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc2OTU3MCwiZXhwIjoxNzUwMzc0MzcwfQ.RP-VrLVaLjzKI6jIApER6O6HsCy4lpjgFGhsMbuKBhF6l-NK_txphTccuzJPgtWJgNdurdcIpYsABxQJL2wEikWRvNrRajOI1mijTUsw3z7a1zIO43lp_0XdDC_vXx_w6KZqVIggLdTlhIByA_Auhg4xrRk7p206_rvWQqXva_n5iIu7Fi47iNW9-Riccx8nmz6bYaFNmshAGtaLcbLOGY3sxq1P99T3PhxS6zour3obP_ex0wVhI_H2Sqv_SNJt_eckubQDC7JTP-VsfQFOWCTtbQ8PHZ2LpsKv-kReD5xgtQHjnv_SBKtPE8J08yN4VZ94buZ1xmIf9WGp-u9RDg\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/py-pdf_pypdf_2505/pull/3#pullrequestreview-2922860060",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/py-pdf_pypdf_2505/pulls/3",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/py-pdf_pypdf_2505/pull/3#pullrequestreview-2922860060"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/py-pdf_pypdf_2505/pulls/3"
+          }
+        },
+        "submitted_at": "2025-06-12T23:06:10Z",
+        "commit_id": "549c5a125445dad879a788c87f61cd18f422fe85"
+      }
+    ]
+  }
+}

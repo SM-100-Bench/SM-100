@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/temporalio/temporal/pull/2015",
+    "commit_sha": "cba849dfb19f13d9d0dad03d5f87d8b6e9c78ce4",
+    "repo_identifier": "temporalio_temporal_2015",
+    "timestamp": "2025-06-12T21:44:11Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/temporalio_temporal_2015/issues/comments/2968223319",
+        "html_url": "https://github.com/SM-100-Bench/temporalio_temporal_2015/pull/2#issuecomment-2968223319",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/temporalio_temporal_2015/issues/2",
+        "id": 2968223319,
+        "node_id": "IC_kwDOOiBkVc6w635X",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T21:36:24Z",
+        "updated_at": "2025-06-12T21:36:24Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/temporalio_temporal_2015/issues/comments/2968223319/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922742282,
+        "node_id": "PRR_kwDOOiBkVc6uNYIK",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug</h3></summary>\n\nMultiple SQL query functions in `common/persistence/sql/sqlplugin/postgres/` incorrectly pass pointer types (e.g., `*int`, `*string`, `*int64`) directly as SQL parameters instead of their dereferenced values.\n\nThis affects:\n*   `selectAllFromDomain` (for `filter.PageSize`)\n*   `DeleteFromDomain` (for `filter.ID` and `filter.Name`)\n*   `SelectFromTimerTasks` (for `filter.TaskID`)\n*   `DeleteFromTimerTasks` (for `filter.TaskID`)\n*   `SelectFromReplicationTasks` (for `filter.MinTaskID`, `filter.MaxTaskID`, `filter.PageSize`)\n*   `SelectFromReplicationTasksDLQ` (for `filter.MinTaskID`, `filter.MaxTaskID`, `filter.PageSize`)\n\nThe `pq` driver cannot convert these unsupported pointer types to SQL values, leading to runtime errors like \"unsupported type *<type>\" and preventing the respective database operations from completing successfully.\n\n<p></p>\n\n<details>\n<summary><code>common/persistence/sql/sqlplugin/postgres/domain.go#L97-L119</code></summary>\n\nhttps://github.com/SM-100-Bench/temporalio_temporal_2015/blob/9186fc4967b0f593b1d733bc10eda28e38beb5ee/common/persistence/sql/sqlplugin/postgres/domain.go#L97-L119\n\n</details>\n\n<details>\n<summary><code>common/persistence/sql/sqlplugin/postgres/execution.go#L250-L333</code></summary>\n\nhttps://github.com/SM-100-Bench/temporalio_temporal_2015/blob/9186fc4967b0f593b1d733bc10eda28e38beb5ee/common/persistence/sql/sqlplugin/postgres/execution.go#L250-L333\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpqYjIxdGIyNHZjR1Z5YzJsemRHVnVZMlV2YzNGc0wzTnhiSEJzZFdkcGJpOXdiM04wWjNKbGN5OWtiMjFoYVc0dVoyOGlMQ0p6ZEdGeWRFeHBibVVpT2prM0xDSmxibVJNYVc1bElqb3hNVGtzSW1OdlpHVk1hVzVsY3lJNlcxMTlMSHNpWm1sc1pTSTZJbU52YlcxdmJpOXdaWEp6YVhOMFpXNWpaUzl6Y1d3dmMzRnNjR3gxWjJsdUwzQnZjM1JuY21WekwyVjRaV04xZEdsdmJpNW5ieUlzSW5OMFlYSjBUR2x1WlNJNk1qVXdMQ0psYm1STWFXNWxJam96TXpNc0ltTnZaR1ZNYVc1bGN5STZXMTE5WFN3aWFXUWlPaUkyTURVMFpqQmtNUzFqWW1SaUxUUXlaV0V0WWpZd05pMWtNek5rWlRBMk16ZG1ZbU1pTENKa1pYTmpjbWx3ZEdsdmJpSTZJazExYkhScGNHeGxJRk5SVENCeGRXVnllU0JtZFc1amRHbHZibk1nYVc0Z1lHTnZiVzF2Ymk5d1pYSnphWE4wWlc1alpTOXpjV3d2YzNGc2NHeDFaMmx1TDNCdmMzUm5jbVZ6TDJBZ2FXNWpiM0p5WldOMGJIa2djR0Z6Y3lCd2IybHVkR1Z5SUhSNWNHVnpJQ2hsTG1jdUxDQmdLbWx1ZEdBc0lHQXFjM1J5YVc1bllDd2dZQ3BwYm5RMk5HQXBJR1JwY21WamRHeDVJR0Z6SUZOUlRDQndZWEpoYldWMFpYSnpJR2x1YzNSbFlXUWdiMllnZEdobGFYSWdaR1Z5WldabGNtVnVZMlZrSUhaaGJIVmxjeTVjYmx4dVZHaHBjeUJoWm1abFkzUnpPbHh1S2lBZ0lHQnpaV3hsWTNSQmJHeEdjbTl0Ukc5dFlXbHVZQ0FvWm05eUlHQm1hV3gwWlhJdVVHRm5aVk5wZW1WZ0tWeHVLaUFnSUdCRVpXeGxkR1ZHY205dFJHOXRZV2x1WUNBb1ptOXlJR0JtYVd4MFpYSXVTVVJnSUdGdVpDQmdabWxzZEdWeUxrNWhiV1ZnS1Z4dUtpQWdJR0JUWld4bFkzUkdjbTl0VkdsdFpYSlVZWE5yYzJBZ0tHWnZjaUJnWm1sc2RHVnlMbFJoYzJ0SlJHQXBYRzRxSUNBZ1lFUmxiR1YwWlVaeWIyMVVhVzFsY2xSaGMydHpZQ0FvWm05eUlHQm1hV3gwWlhJdVZHRnphMGxFWUNsY2Jpb2dJQ0JnVTJWc1pXTjBSbkp2YlZKbGNHeHBZMkYwYVc5dVZHRnphM05nSUNobWIzSWdZR1pwYkhSbGNpNU5hVzVVWVhOclNVUmdMQ0JnWm1sc2RHVnlMazFoZUZSaGMydEpSR0FzSUdCbWFXeDBaWEl1VUdGblpWTnBlbVZnS1Z4dUtpQWdJR0JUWld4bFkzUkdjbTl0VW1Wd2JHbGpZWFJwYjI1VVlYTnJjMFJNVVdBZ0tHWnZjaUJnWm1sc2RHVnlMazFwYmxSaGMydEpSR0FzSUdCbWFXeDBaWEl1VFdGNFZHRnphMGxFWUN3Z1lHWnBiSFJsY2k1UVlXZGxVMmw2WldBcFhHNWNibFJvWlNCZ2NIRmdJR1J5YVhabGNpQmpZVzV1YjNRZ1kyOXVkbVZ5ZENCMGFHVnpaU0IxYm5OMWNIQnZjblJsWkNCd2IybHVkR1Z5SUhSNWNHVnpJSFJ2SUZOUlRDQjJZV3gxWlhNc0lHeGxZV1JwYm1jZ2RHOGdjblZ1ZEdsdFpTQmxjbkp2Y25NZ2JHbHJaU0JjSW5WdWMzVndjRzl5ZEdWa0lIUjVjR1VnS2p4MGVYQmxQbHdpSUdGdVpDQndjbVYyWlc1MGFXNW5JSFJvWlNCeVpYTndaV04wYVhabElHUmhkR0ZpWVhObElHOXdaWEpoZEdsdmJuTWdabkp2YlNCamIyMXdiR1YwYVc1bklITjFZMk5sYzNObWRXeHNlUzRpTENKamIyNW1hV1JsYm1ObElqb3hMQ0pqWVhSbFoyOXllU0k2SWt4UFIwbERYMEpWUnlKOSIsImJyYW5jaCI6ImF1dG8tcHItY2JhODQ5ZGYtY3Vyc29yLWJ1Z2JvdCJ9LCJpYXQiOjE3NDk3NjQ2NDksImV4cCI6MTc1MDM2OTQ0OX0.ls2BXpUaZtioKROmD8iiS-P0nKPTiOkL8ZVYKPmN1TRSCBsSX9KPTJ30aBPeTqBfIiAjWvRg42AjxoRbSPM1KIlE3ZqEezEA-Fw9GOaSQ_JsUj-Pqr8sP5m1VCE83S-cOdePOwfAIHtlL1BBhTIcvAKzO7ObmU09ZX_4ApL8cbE1XQH7zxUpjCJrUVHxwgs3IDDKQRIU3iRGz69fp3m8epy1EFIO0QpfiYglPZRS6X1-SX7B3jur737sQZTRtz-3XwC076nDRjosaqnT7SPL_73DZsZGZbfyxyAcWF7_6wWlrfVhtimXQXfize1VoONHTpJcWvGmP4m6SwsNPAtalg\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Queue Query Missing Type Condition</h3></summary>\n\nThe `templateGetLastMessageIDQuery` in `postgres/queue.go` is missing a `queue_type` condition in its outer `SELECT` clause. This causes the `GetLastEnqueuedMessageIDForUpdate` function to fetch and `FOR UPDATE` lock rows from *all* queue types based solely on `message_id`. Consequently, it returns an incorrect last message ID and unnecessarily blocks unrelated queues, breaking queue semantics and potentially corrupting ack-level calculations.\n\n<p></p>\n\n<details>\n<summary><code>common/persistence/sql/sqlplugin/postgres/queue.go#L30-L35</code></summary>\n\nhttps://github.com/SM-100-Bench/temporalio_temporal_2015/blob/9186fc4967b0f593b1d733bc10eda28e38beb5ee/common/persistence/sql/sqlplugin/postgres/queue.go#L30-L35\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpqYjIxdGIyNHZjR1Z5YzJsemRHVnVZMlV2YzNGc0wzTnhiSEJzZFdkcGJpOXdiM04wWjNKbGN5OXhkV1YxWlM1bmJ5SXNJbk4wWVhKMFRHbHVaU0k2TXpBc0ltVnVaRXhwYm1VaU9qTTFMQ0pqYjJSbFRHbHVaWE1pT2x0ZGZWMHNJbWxrSWpvaVlXWXhaVGhpTVRrdFpUTTJOQzAwTjJObUxXRTJPV1l0WWpabE1EQm1aV1JoWkRaa0lpd2laR1Z6WTNKcGNIUnBiMjRpT2lKVWFHVWdZSFJsYlhCc1lYUmxSMlYwVEdGemRFMWxjM05oWjJWSlJGRjFaWEo1WUNCcGJpQmdjRzl6ZEdkeVpYTXZjWFZsZFdVdVoyOWdJR2x6SUcxcGMzTnBibWNnWVNCZ2NYVmxkV1ZmZEhsd1pXQWdZMjl1WkdsMGFXOXVJR2x1SUdsMGN5QnZkWFJsY2lCZ1UwVk1SVU5VWUNCamJHRjFjMlV1SUZSb2FYTWdZMkYxYzJWeklIUm9aU0JnUjJWMFRHRnpkRVZ1Y1hWbGRXVmtUV1Z6YzJGblpVbEVSbTl5VlhCa1lYUmxZQ0JtZFc1amRHbHZiaUIwYnlCbVpYUmphQ0JoYm1RZ1lFWlBVaUJWVUVSQlZFVmdJR3h2WTJzZ2NtOTNjeUJtY205dElDcGhiR3dxSUhGMVpYVmxJSFI1Y0dWeklHSmhjMlZrSUhOdmJHVnNlU0J2YmlCZ2JXVnpjMkZuWlY5cFpHQXVJRU52Ym5ObGNYVmxiblJzZVN3Z2FYUWdjbVYwZFhKdWN5QmhiaUJwYm1OdmNuSmxZM1FnYkdGemRDQnRaWE56WVdkbElFbEVJR0Z1WkNCMWJtNWxZMlZ6YzJGeWFXeDVJR0pzYjJOcmN5QjFibkpsYkdGMFpXUWdjWFZsZFdWekxDQmljbVZoYTJsdVp5QnhkV1YxWlNCelpXMWhiblJwWTNNZ1lXNWtJSEJ2ZEdWdWRHbGhiR3g1SUdOdmNuSjFjSFJwYm1jZ1lXTnJMV3hsZG1Wc0lHTmhiR04xYkdGMGFXOXVjeTRpTENKamIyNW1hV1JsYm1ObElqb3dMall5TURReE9ESTBNREk1TWpnME1USXNJbU5oZEdWbmIzSjVJam9pVEU5SFNVTmZRbFZISW4wIiwiYnJhbmNoIjoiYXV0by1wci1jYmE4NDlkZi1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc2NDY0OSwiZXhwIjoxNzUwMzY5NDQ5fQ.X50cAeoC73yT44y_GppwRGozogV3uGA_o6f4NR5rFOjq9jBGOASytq9HtJPUeMGYxffMrc_A6FQJS5nyThAmKUappQJmuXbtAidTdvU-1IxhU9vIwCI0GoMrLW4nqNOgZnh0RFJX8k2gTEWEn94ruIcCpxleqbH4ue7Ya0klOtfdYUHjTTHJ_11raStfheicfakbrekiD5m9HccacLagxS8odydG8f5JbnyZK-qPZ2oIAhA9qgMhKBR7vRH6hf37d4pP1mG_Um8nTcRVsHqQCQm0uDK6RmF6zfm1jMRzgsjeCPa20sIdlysGbzIVu5Uei0BGwWiWrSk2awYzWkavtQ\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Timezone Offset Error in Timestamp Conversion</h3></summary>\n\nThe `FromPostgresDateTime` function incorrectly subtracts the local time-zone offset (`localOffset`) from all timestamps. Instead of converting UTC timestamps from Postgres to local time by *adding* the offset, it subtracts it. This results in timestamps being off by twice the local zone offset, corrupting temporal calculations, including timer firing, visibility queries, and paging logic.\n\n<p></p>\n\n<details>\n<summary><code>common/persistence/sql/sqlplugin/postgres/typeconv.go#L53-L57</code></summary>\n\nhttps://github.com/SM-100-Bench/temporalio_temporal_2015/blob/9186fc4967b0f593b1d733bc10eda28e38beb5ee/common/persistence/sql/sqlplugin/postgres/typeconv.go#L53-L57\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpqYjIxdGIyNHZjR1Z5YzJsemRHVnVZMlV2YzNGc0wzTnhiSEJzZFdkcGJpOXdiM04wWjNKbGN5OTBlWEJsWTI5dWRpNW5ieUlzSW5OMFlYSjBUR2x1WlNJNk5UTXNJbVZ1WkV4cGJtVWlPalUzTENKamIyUmxUR2x1WlhNaU9sdGRmVjBzSW1sa0lqb2lNV0UxTVRrNFlqY3RaV00yT0MwME5EWTBMV0kxTkRndE56VXpZVGszWVdFek4yTXlJaXdpWkdWelkzSnBjSFJwYjI0aU9pSlVhR1VnWUVaeWIyMVFiM04wWjNKbGMwUmhkR1ZVYVcxbFlDQm1kVzVqZEdsdmJpQnBibU52Y25KbFkzUnNlU0J6ZFdKMGNtRmpkSE1nZEdobElHeHZZMkZzSUhScGJXVXRlbTl1WlNCdlptWnpaWFFnS0dCc2IyTmhiRTltWm5ObGRHQXBJR1p5YjIwZ1lXeHNJSFJwYldWemRHRnRjSE11SUVsdWMzUmxZV1FnYjJZZ1kyOXVkbVZ5ZEdsdVp5QlZWRU1nZEdsdFpYTjBZVzF3Y3lCbWNtOXRJRkJ2YzNSbmNtVnpJSFJ2SUd4dlkyRnNJSFJwYldVZ1lua2dLbUZrWkdsdVp5b2dkR2hsSUc5bVpuTmxkQ3dnYVhRZ2MzVmlkSEpoWTNSeklHbDBMaUJVYUdseklISmxjM1ZzZEhNZ2FXNGdkR2x0WlhOMFlXMXdjeUJpWldsdVp5QnZabVlnWW5rZ2RIZHBZMlVnZEdobElHeHZZMkZzSUhwdmJtVWdiMlptYzJWMExDQmpiM0p5ZFhCMGFXNW5JSFJsYlhCdmNtRnNJR05oYkdOMWJHRjBhVzl1Y3l3Z2FXNWpiSFZrYVc1bklIUnBiV1Z5SUdacGNtbHVaeXdnZG1semFXSnBiR2wwZVNCeGRXVnlhV1Z6TENCaGJtUWdjR0ZuYVc1bklHeHZaMmxqTGlJc0ltTnZibVpwWkdWdVkyVWlPakF1TXpnMk5qUTFNak0xTXpnM09ERTRNU3dpWTJGMFpXZHZjbmtpT2lKTVQwZEpRMTlDVlVjaWZRIiwiYnJhbmNoIjoiYXV0by1wci1jYmE4NDlkZi1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc2NDY0OSwiZXhwIjoxNzUwMzY5NDQ5fQ.KHj6p1yQzyNCLMst_Oz6eRwqzno6ph-TaFKoiCYcTKRAK8NeNfItuc-N4TYYZXNMi1TiY4jyMzAY135pP-ALkSZ2xDfz-RiCbZK7IYOYqID4TGqs1cwDYZkUXCn34zbyGrd_-YCmOxz0SA1mXqaT5oyMUrOR97hrjMDBvgG_ISIJEHASU_NVhdQDsKRdZHbfj_RJoPFiHhY5qyb-eqpCcierFwzwqL7MRKmlmYDttkx32mkpeb2B5mdIBi_OsEOUWlUGtDANOjpi5GyoEnD7oOPqEmczZRgZ-JmaNW68SuqxNnoLUG1HZu0tTlTUB_OBQ5yo4QYnqfui_xb-MyKkzQ\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Loop Modifies Copies, Not Originals</h3></summary>\n\nIn `SelectFromHistoryNode`, the `for ... range` loop intended to restore the original sign of `TxnID` operates on value copies of the rows. Consequently, the modification to revert the `TxnID` sign only affects these copies, leaving the `TxnID` values in the returned slice negative, contrary to the caller's expectation of positive values.\n\n<p></p>\n\n<details>\n<summary><code>common/persistence/sql/sqlplugin/postgres/events.go#L60-L68</code></summary>\n\nhttps://github.com/SM-100-Bench/temporalio_temporal_2015/blob/9186fc4967b0f593b1d733bc10eda28e38beb5ee/common/persistence/sql/sqlplugin/postgres/events.go#L60-L68\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpqYjIxdGIyNHZjR1Z5YzJsemRHVnVZMlV2YzNGc0wzTnhiSEJzZFdkcGJpOXdiM04wWjNKbGN5OWxkbVZ1ZEhNdVoyOGlMQ0p6ZEdGeWRFeHBibVVpT2pZd0xDSmxibVJNYVc1bElqbzJPQ3dpWTI5a1pVeHBibVZ6SWpwYlhYMWRMQ0pwWkNJNklqVmpZemM1WW1NekxUZzVNamd0TkdNNVpDMWhOMkkzTFdFMU5UazJZekppWVdKaVppSXNJbVJsYzJOeWFYQjBhVzl1SWpvaVNXNGdZRk5sYkdWamRFWnliMjFJYVhOMGIzSjVUbTlrWldBc0lIUm9aU0JnWm05eUlDNHVMaUJ5WVc1blpXQWdiRzl2Y0NCcGJuUmxibVJsWkNCMGJ5QnlaWE4wYjNKbElIUm9aU0J2Y21sbmFXNWhiQ0J6YVdkdUlHOW1JR0JVZUc1SlJHQWdiM0JsY21GMFpYTWdiMjRnZG1Gc2RXVWdZMjl3YVdWeklHOW1JSFJvWlNCeWIzZHpMaUJEYjI1elpYRjFaVzUwYkhrc0lIUm9aU0J0YjJScFptbGpZWFJwYjI0Z2RHOGdjbVYyWlhKMElIUm9aU0JnVkhodVNVUmdJSE5wWjI0Z2IyNXNlU0JoWm1abFkzUnpJSFJvWlhObElHTnZjR2xsY3l3Z2JHVmhkbWx1WnlCMGFHVWdZRlI0YmtsRVlDQjJZV3gxWlhNZ2FXNGdkR2hsSUhKbGRIVnlibVZrSUhOc2FXTmxJRzVsWjJGMGFYWmxMQ0JqYjI1MGNtRnllU0IwYnlCMGFHVWdZMkZzYkdWeUozTWdaWGh3WldOMFlYUnBiMjRnYjJZZ2NHOXphWFJwZG1VZ2RtRnNkV1Z6TGlJc0ltTnZibVpwWkdWdVkyVWlPakF1TXpZNE1qYzVNemt5TmpjNU1EY3hNelFzSW1OaGRHVm5iM0o1SWpvaVRFOUhTVU5mUWxWSEluMCIsImJyYW5jaCI6ImF1dG8tcHItY2JhODQ5ZGYtY3Vyc29yLWJ1Z2JvdCJ9LCJpYXQiOjE3NDk3NjQ2NDksImV4cCI6MTc1MDM2OTQ0OX0.AH_bUCYOyu9t8DGQ-xV6Zun9zmCqsvXYsKvPaT4RDqDiqmwipWoX6q5rhV5o8NmEJe1sGQhUgkj8VsL-fiDV9et4soJpmuVaDwS71BElydGd3K-BTpWkXLzkaqB3YtMzd_UFn08GkgHeel5eUSETIHdwDXuPZG9W4VgbGOtA32qzuro1oE8d15V31qJPbnb-KJCM1WU7WDhavreJBpy6ClaUq2QNS-t2e6XLA312tGl02Qf9lSCI8bkAmUc4wmCRgJrkt2xGV90dH89ZpJiaI61qT0fHA6tgg6rKCa5Q9V-hwm28z1bO9Ne7HF9q4aIGf-Kt5O1OpnndCZBXNSefiQ\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/temporalio_temporal_2015/pull/2#pullrequestreview-2922742282",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/temporalio_temporal_2015/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/temporalio_temporal_2015/pull/2#pullrequestreview-2922742282"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/temporalio_temporal_2015/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T21:44:10Z",
+        "commit_id": "9186fc4967b0f593b1d733bc10eda28e38beb5ee"
+      }
+    ]
+  }
+}

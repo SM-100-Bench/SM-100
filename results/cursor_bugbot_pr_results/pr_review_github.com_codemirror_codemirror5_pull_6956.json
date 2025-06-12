@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/codemirror/codemirror5/pull/6956",
+    "commit_sha": "607b32d857eac4315407d428a3245e971b212490",
+    "repo_identifier": "codemirror_codemirror5_6956",
+    "timestamp": "2025-06-12T22:08:33Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/codemirror_codemirror5_6956/issues/comments/2968274613",
+        "html_url": "https://github.com/SM-100-Bench/codemirror_codemirror5_6956/pull/2#issuecomment-2968274613",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/codemirror_codemirror5_6956/issues/2",
+        "id": 2968274613,
+        "node_id": "IC_kwDOOiBo4s6w7Ea1",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T21:59:13Z",
+        "updated_at": "2025-06-12T21:59:13Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/codemirror_codemirror5_6956/issues/comments/2968274613/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922781533,
+        "node_id": "PRR_kwDOOiBo4s6uNhtd",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: CodeMirror Listener Removal Bug</h3></summary>\n\nThe `delDoc` function mistakenly calls `CodeMirror.on()` instead of `CodeMirror.off()` when a document is deleted. This prevents the \"change\" listener from being removed, leading to memory leaks and duplicate change processing for documents that are no longer active.\n\n<p></p>\n\n<details>\n<summary><code>addon/tern/tern.js#L60-L66</code></summary>\n\nhttps://github.com/SM-100-Bench/codemirror_codemirror5_6956/blob/1ca3fc650122996cb0f6b4f1558f8a37e6c5d54d/addon/tern/tern.js#L60-L66\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpoWkdSdmJpOTBaWEp1TDNSbGNtNHVhbk1pTENKemRHRnlkRXhwYm1VaU9qWXdMQ0psYm1STWFXNWxJam8yTml3aVkyOWtaVXhwYm1WeklqcGJYWDFkTENKcFpDSTZJamd6Tm1VeU1EZ3hMVEF4TWpBdE5HWXpZUzFoTnpNeExUQmhaamRrWWpBME1UZGpNQ0lzSW1SbGMyTnlhWEIwYVc5dUlqb2lWR2hsSUdCa1pXeEViMk5nSUdaMWJtTjBhVzl1SUcxcGMzUmhhMlZ1YkhrZ1kyRnNiSE1nWUVOdlpHVk5hWEp5YjNJdWIyNG9LV0FnYVc1emRHVmhaQ0J2WmlCZ1EyOWtaVTFwY25KdmNpNXZabVlvS1dBZ2QyaGxiaUJoSUdSdlkzVnRaVzUwSUdseklHUmxiR1YwWldRdUlGUm9hWE1nY0hKbGRtVnVkSE1nZEdobElGd2lZMmhoYm1kbFhDSWdiR2x6ZEdWdVpYSWdabkp2YlNCaVpXbHVaeUJ5WlcxdmRtVmtMQ0JzWldGa2FXNW5JSFJ2SUcxbGJXOXllU0JzWldGcmN5QmhibVFnWkhWd2JHbGpZWFJsSUdOb1lXNW5aU0J3Y205alpYTnphVzVuSUdadmNpQmtiMk4xYldWdWRITWdkR2hoZENCaGNtVWdibThnYkc5dVoyVnlJR0ZqZEdsMlpTNGlMQ0pqYjI1bWFXUmxibU5sSWpveExDSmpZWFJsWjI5eWVTSTZJa3hQUjBsRFgwSlZSeUo5IiwiYnJhbmNoIjoiYXV0by1wci02MDdiMzJkOC1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc2NjEwMywiZXhwIjoxNzUwMzcwOTAzfQ.UYvt3pWQKJDsyZphOtBOOtW1b7PSf05APXDuYWnzYZPcfukKBsWv0sZ3jKaM9AP_bKzM4LI621PqqZwqtVBLbhKCnSaotuKm2iFUy2c9uy2cLYDBYA7FqfdBdcGSj44acUnchlQtrw4rLCCYLB7tGIsOTEw60-yJAfSuJRiyiO1Eg8zUghnzfM_0hpCj6I7GzCX3tIQ7fRpKX_3yTX96aEcBa9HExX7ixBCydymIU4MivlrNa9o4JQRBmoFhoTuWU2ayZrdH_IRzsaaruF1FiAxPqu_A42kfNZb8NfDgnqbcVZBxF0SWtg5ECb4Q46UpZADEJreesySeo5jcbn0CPA\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Argument Hint Caching Fails Due to Incorrect Position Handling</h3></summary>\n\nThe `updateArgHints()` function incorrectly stores the numeric argument index (`pos`) in `cachedArgHints.start` instead of the CodeMirror position object (`start`). This causes `cmpPos` to receive a number where it expects an object, leading to incorrect comparisons (e.g., `NaN` or `TypeError`) and breaking argument hint caching and invalidation.\n\n<p></p>\n\n<details>\n<summary><code>addon/tern/tern.js#L220-L231</code></summary>\n\nhttps://github.com/SM-100-Bench/codemirror_codemirror5_6956/blob/1ca3fc650122996cb0f6b4f1558f8a37e6c5d54d/addon/tern/tern.js#L220-L231\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpoWkdSdmJpOTBaWEp1TDNSbGNtNHVhbk1pTENKemRHRnlkRXhwYm1VaU9qSXlNQ3dpWlc1a1RHbHVaU0k2TWpNeExDSmpiMlJsVEdsdVpYTWlPbHRkZlYwc0ltbGtJam9pWVRZMFpqTTRaRFV0WlRVMVpTMDBOelV4TFRnMFlqTXRZakJsTm1GbU16TTRZams0SWl3aVpHVnpZM0pwY0hScGIyNGlPaUpVYUdVZ1lIVndaR0YwWlVGeVowaHBiblJ6S0NsZ0lHWjFibU4wYVc5dUlHbHVZMjl5Y21WamRHeDVJSE4wYjNKbGN5QjBhR1VnYm5WdFpYSnBZeUJoY21kMWJXVnVkQ0JwYm1SbGVDQW9ZSEJ2YzJBcElHbHVJR0JqWVdOb1pXUkJjbWRJYVc1MGN5NXpkR0Z5ZEdBZ2FXNXpkR1ZoWkNCdlppQjBhR1VnUTI5a1pVMXBjbkp2Y2lCd2IzTnBkR2x2YmlCdlltcGxZM1FnS0dCemRHRnlkR0FwTGlCVWFHbHpJR05oZFhObGN5QmdZMjF3VUc5ellDQjBieUJ5WldObGFYWmxJR0VnYm5WdFltVnlJSGRvWlhKbElHbDBJR1Y0Y0dWamRITWdZVzRnYjJKcVpXTjBMQ0JzWldGa2FXNW5JSFJ2SUdsdVkyOXljbVZqZENCamIyMXdZWEpwYzI5dWN5QW9aUzVuTGl3Z1lFNWhUbUFnYjNJZ1lGUjVjR1ZGY25KdmNtQXBJR0Z1WkNCaWNtVmhhMmx1WnlCaGNtZDFiV1Z1ZENCb2FXNTBJR05oWTJocGJtY2dZVzVrSUdsdWRtRnNhV1JoZEdsdmJpNGlMQ0pqYjI1bWFXUmxibU5sSWpvd0xqazVOekl6TXpNM05EZzNOams1TkN3aVkyRjBaV2R2Y25raU9pSk1UMGRKUTE5Q1ZVY2lmUSIsImJyYW5jaCI6ImF1dG8tcHItNjA3YjMyZDgtY3Vyc29yLWJ1Z2JvdCJ9LCJpYXQiOjE3NDk3NjYxMDMsImV4cCI6MTc1MDM3MDkwM30.DSA3KFpyQOo5yihluLLpDquK1x0qkfG3T3KgXFR0pr8wtmJpSXiKB-xGjGjnOWnrYhK4NcIu-ai08-aCtVuGDw1me6lHFy6IUWu0pevmUtosvF8lOj8HC2VCNLS1hJ3i9vF_9LBiOECxOdMQgHDy1pkjxQDTY4Wga3sD-bRyr1F-hnyOL_HOl7DL4nNZBBuTMfjc9huD4vUf3LgK6s0xhwLQYG0_8_c2UVkzqGBvm_FAab0h4TdbzFdgVHRPU0wvV2xQRAeyvt0lcC7MYnB39orwYFZ3ejcehOSY_uyHc0Umhx5zfaEI1iIapfExcpw9viPn52lgYjzVaiQQH9O03g\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Change Sorting Fails, Renames Applied Incorrectly</h3></summary>\n\nThe `applyChanges` function incorrectly sorts document changes. Its `chs.sort` comparator passes entire change objects to `cmpPos` instead of their `start` positions. Since `cmpPos` expects `{line, ch}` objects, this results in `NaN` comparisons, leaving the change list unsorted. Consequently, rename edits are applied in an incorrect order, which can corrupt the document.\n\n<p></p>\n\n<details>\n<summary><code>addon/tern/tern.js#L384-L395</code></summary>\n\nhttps://github.com/SM-100-Bench/codemirror_codemirror5_6956/blob/1ca3fc650122996cb0f6b4f1558f8a37e6c5d54d/addon/tern/tern.js#L384-L395\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpoWkdSdmJpOTBaWEp1TDNSbGNtNHVhbk1pTENKemRHRnlkRXhwYm1VaU9qTTROQ3dpWlc1a1RHbHVaU0k2TXprMUxDSmpiMlJsVEdsdVpYTWlPbHRkZlYwc0ltbGtJam9pT1RnMU16Sm1OV0l0TURsa1ppMDBOakptTFdJMU56QXRZelJrT1dZek1URmlNak0zSWl3aVpHVnpZM0pwY0hScGIyNGlPaUpVYUdVZ1lHRndjR3g1UTJoaGJtZGxjMkFnWm5WdVkzUnBiMjRnYVc1amIzSnlaV04wYkhrZ2MyOXlkSE1nWkc5amRXMWxiblFnWTJoaGJtZGxjeTRnU1hSeklHQmphSE11YzI5eWRHQWdZMjl0Y0dGeVlYUnZjaUJ3WVhOelpYTWdaVzUwYVhKbElHTm9ZVzVuWlNCdlltcGxZM1J6SUhSdklHQmpiWEJRYjNOZ0lHbHVjM1JsWVdRZ2IyWWdkR2hsYVhJZ1lITjBZWEowWUNCd2IzTnBkR2x2Ym5NdUlGTnBibU5sSUdCamJYQlFiM05nSUdWNGNHVmpkSE1nWUh0c2FXNWxMQ0JqYUgxZ0lHOWlhbVZqZEhNc0lIUm9hWE1nY21WemRXeDBjeUJwYmlCZ1RtRk9ZQ0JqYjIxd1lYSnBjMjl1Y3l3Z2JHVmhkbWx1WnlCMGFHVWdZMmhoYm1kbElHeHBjM1FnZFc1emIzSjBaV1F1SUVOdmJuTmxjWFZsYm5Sc2VTd2djbVZ1WVcxbElHVmthWFJ6SUdGeVpTQmhjSEJzYVdWa0lHbHVJR0Z1SUdsdVkyOXljbVZqZENCdmNtUmxjaXdnZDJocFkyZ2dZMkZ1SUdOdmNuSjFjSFFnZEdobElHUnZZM1Z0Wlc1MExpSXNJbU52Ym1acFpHVnVZMlVpT2pBdU9EZzFOekE0TURZeE5EWTVPRGcxT1N3aVkyRjBaV2R2Y25raU9pSk1UMGRKUTE5Q1ZVY2lmUSIsImJyYW5jaCI6ImF1dG8tcHItNjA3YjMyZDgtY3Vyc29yLWJ1Z2JvdCJ9LCJpYXQiOjE3NDk3NjYxMDMsImV4cCI6MTc1MDM3MDkwM30.aWxgPrXwEaPrF_51EjWimqlR0NvUUVLFmf9OSX8_Mcw699Q3oeKAutveuskinR1j3RprsV6C18FwSNfcpV732qYdKogm0AMAf9cQtni2qGcIAI7XgObpncHOuOzUXzqR5nYHdi3H0vK0T39b8-8j7kyjH9kXiD-uXqJafHgRnSuEMgmV9JkbO3E5nAKYbjtbPg385v3ReTRc_ddTJH4kHi0RtklsE_TrAIFM8pOeEFCS-h64dMSrQrNkS7A_b5p6LN9rS3IgRiB9XXGh8AtcBW_KbfsMxGJkvjiHsyTUz95VOec-NtimezA_fm-S8sJ4g8bscv12HCCWK-SJi2jKGA\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Position Object Error Disables Fast Sync</h3></summary>\n\nIn `trackChange`, the condition `change.to - changed.from > 100` attempts to subtract a line number from a position object, yielding `NaN`. This disables the big-document fast-path optimization, preventing large edits from being incrementally synced to the Tern server and degrading completion accuracy.\n\n<p></p>\n\n<details>\n<summary><code>addon/tern/tern.js#L120-L129</code></summary>\n\nhttps://github.com/SM-100-Bench/codemirror_codemirror5_6956/blob/1ca3fc650122996cb0f6b4f1558f8a37e6c5d54d/addon/tern/tern.js#L120-L129\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpoWkdSdmJpOTBaWEp1TDNSbGNtNHVhbk1pTENKemRHRnlkRXhwYm1VaU9qRXlNQ3dpWlc1a1RHbHVaU0k2TVRJNUxDSmpiMlJsVEdsdVpYTWlPbHRkZlYwc0ltbGtJam9pTVRrM056UTBOVGN0WlRkaE5DMDBOMlV5TFdFeU9UY3ROamxpTldNMk5qRXdZVEZpSWl3aVpHVnpZM0pwY0hScGIyNGlPaUpKYmlCZ2RISmhZMnREYUdGdVoyVmdMQ0IwYUdVZ1kyOXVaR2wwYVc5dUlHQmphR0Z1WjJVdWRHOGdMU0JqYUdGdVoyVmtMbVp5YjIwZ1BpQXhNREJnSUdGMGRHVnRjSFJ6SUhSdklITjFZblJ5WVdOMElHRWdiR2x1WlNCdWRXMWlaWElnWm5KdmJTQmhJSEJ2YzJsMGFXOXVJRzlpYW1WamRDd2dlV2xsYkdScGJtY2dZRTVoVG1BdUlGUm9hWE1nWkdsellXSnNaWE1nZEdobElHSnBaeTFrYjJOMWJXVnVkQ0JtWVhOMExYQmhkR2dnYjNCMGFXMXBlbUYwYVc5dUxDQndjbVYyWlc1MGFXNW5JR3hoY21kbElHVmthWFJ6SUdaeWIyMGdZbVZwYm1jZ2FXNWpjbVZ0Wlc1MFlXeHNlU0J6ZVc1alpXUWdkRzhnZEdobElGUmxjbTRnYzJWeWRtVnlJR0Z1WkNCa1pXZHlZV1JwYm1jZ1kyOXRjR3hsZEdsdmJpQmhZMk4xY21GamVTNGlMQ0pqYjI1bWFXUmxibU5sSWpvd0xqYzFOemd4T0RnMk5EVXhOemMyT0Rnc0ltTmhkR1ZuYjNKNUlqb2lURTlIU1VOZlFsVkhJbjAiLCJicmFuY2giOiJhdXRvLXByLTYwN2IzMmQ4LWN1cnNvci1idWdib3QifSwiaWF0IjoxNzQ5NzY2MTAzLCJleHAiOjE3NTAzNzA5MDN9.h3thw3DLmH3upKZMR88Kml8tG0WqrEIcOPY0MwoaWXG9xsnUy50RcmHL8pUODcLL-n2L_YvfYa2J4__II56FkgQoSsuX5WqL1EwVjRPdE3noQYSzVjclXTRQksnMegt1eaKkz7sYzI6l1xHzCynLPyBhz25aozmvdPlA5Kb8-ibc_38r_Qu7dEiTavzJ6veUzfeS1ltDljrxOXzSO0Cu8xJpgnQv3nZMyvAKhP8REvjtd-rHe0BuJ_RwxLhz0a30PAc4ywtN7WGyP5Dwgc9IkfOz4QLpBN9uiM-sL3A-WCZs98SeW3X7Tbc7zSrXftUU7ESueAyqYXj0em068WtNHQ\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Document Naming and File Loading Errors</h3></summary>\n\nThe `findDoc` function incorrectly handles new documents: the `name` parameter is shadowed by a loop variable, causing the `n` variable (intended for a unique name) to remain undefined when a new document is added and `ts.docs` is not empty. This results in `ts.addDoc(undefined, doc)`. Additionally, the `getFile` function invokes its callback with the file content as the first argument instead of `(err, text)`, causing Tern to misinterpret the content as an error and fail to load the file.\n\n<p></p>\n\n<details>\n<summary><code>addon/tern/tern.js#L89-L110</code></summary>\n\nhttps://github.com/SM-100-Bench/codemirror_codemirror5_6956/blob/1ca3fc650122996cb0f6b4f1558f8a37e6c5d54d/addon/tern/tern.js#L89-L110\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpoWkdSdmJpOTBaWEp1TDNSbGNtNHVhbk1pTENKemRHRnlkRXhwYm1VaU9qZzVMQ0psYm1STWFXNWxJam94TVRBc0ltTnZaR1ZNYVc1bGN5STZXMTE5WFN3aWFXUWlPaUl5TUdNNE1XWXpZUzAyWTJVMUxUUmxOMkV0T1RObU5pMDJOVGd3WmprMk1qRTFZamtpTENKa1pYTmpjbWx3ZEdsdmJpSTZJbFJvWlNCZ1ptbHVaRVJ2WTJBZ1puVnVZM1JwYjI0Z2FXNWpiM0p5WldOMGJIa2dhR0Z1Wkd4bGN5QnVaWGNnWkc5amRXMWxiblJ6T2lCMGFHVWdZRzVoYldWZ0lIQmhjbUZ0WlhSbGNpQnBjeUJ6YUdGa2IzZGxaQ0JpZVNCaElHeHZiM0FnZG1GeWFXRmliR1VzSUdOaGRYTnBibWNnZEdobElHQnVZQ0IyWVhKcFlXSnNaU0FvYVc1MFpXNWtaV1FnWm05eUlHRWdkVzVwY1hWbElHNWhiV1VwSUhSdklISmxiV0ZwYmlCMWJtUmxabWx1WldRZ2QyaGxiaUJoSUc1bGR5QmtiMk4xYldWdWRDQnBjeUJoWkdSbFpDQmhibVFnWUhSekxtUnZZM05nSUdseklHNXZkQ0JsYlhCMGVTNGdWR2hwY3lCeVpYTjFiSFJ6SUdsdUlHQjBjeTVoWkdSRWIyTW9kVzVrWldacGJtVmtMQ0JrYjJNcFlDNGdRV1JrYVhScGIyNWhiR3g1TENCMGFHVWdZR2RsZEVacGJHVmdJR1oxYm1OMGFXOXVJR2x1ZG05clpYTWdhWFJ6SUdOaGJHeGlZV05ySUhkcGRHZ2dkR2hsSUdacGJHVWdZMjl1ZEdWdWRDQmhjeUIwYUdVZ1ptbHljM1FnWVhKbmRXMWxiblFnYVc1emRHVmhaQ0J2WmlCZ0tHVnljaXdnZEdWNGRDbGdMQ0JqWVhWemFXNW5JRlJsY200Z2RHOGdiV2x6YVc1MFpYSndjbVYwSUhSb1pTQmpiMjUwWlc1MElHRnpJR0Z1SUdWeWNtOXlJR0Z1WkNCbVlXbHNJSFJ2SUd4dllXUWdkR2hsSUdacGJHVXVJaXdpWTI5dVptbGtaVzVqWlNJNk1DNDJNelkxTlRVd01EZzBNekkzTmpJeExDSmpZWFJsWjI5eWVTSTZJa3hQUjBsRFgwSlZSeUo5IiwiYnJhbmNoIjoiYXV0by1wci02MDdiMzJkOC1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc2NjEwMywiZXhwIjoxNzUwMzcwOTAzfQ.BwmPwAogCAd0YFQebd7ZETX-H-Rtz8-ucmcvLYB0ByqhGOeubbulFbYaQG_hFkaGnq1nhc45yZdEw2VNNUrCvem2A0e0-48Zt2XfzEkyE0YHNk-Wz8jjXAOR7AR2ExK4sQqekK3jvtzxM4qFSDpPf9u9al8HRsx3CV3YPtEz7cl2BK3rzDDowc05KPcqnTekkkhFN_mGsKf5-VWu5a7PQrvXjkZpUjPEQe9ZKiqSgOfHWLwVqzAb1iySHnCOu_pKaE39MSQo0d1JY3ooIzX4othlvZ7gygYg6_nc1Fh8g5ERvOyURHgHwEVOe8v7d39cx9WQ1kuc0kriV_tDKYANlA\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/codemirror_codemirror5_6956/pull/2#pullrequestreview-2922781533",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/codemirror_codemirror5_6956/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/codemirror_codemirror5_6956/pull/2#pullrequestreview-2922781533"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/codemirror_codemirror5_6956/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T22:08:24Z",
+        "commit_id": "1ca3fc650122996cb0f6b4f1558f8a37e6c5d54d"
+      }
+    ]
+  }
+}

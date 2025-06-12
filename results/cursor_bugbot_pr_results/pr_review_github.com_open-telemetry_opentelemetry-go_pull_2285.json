@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/open-telemetry/opentelemetry-go/pull/2285",
+    "commit_sha": "90703756d49acbd82b0e4cca0eec13bcc68e2d2c",
+    "repo_identifier": "open-telemetry_opentelemetry-go_2285",
+    "timestamp": "2025-06-12T21:39:29Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/open-telemetry_opentelemetry-go_2285/issues/comments/2968213279",
+        "html_url": "https://github.com/SM-100-Bench/open-telemetry_opentelemetry-go_2285/pull/86#issuecomment-2968213279",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/open-telemetry_opentelemetry-go_2285/issues/86",
+        "id": 2968213279,
+        "node_id": "IC_kwDOOiBjjc6w61cf",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T21:32:44Z",
+        "updated_at": "2025-06-12T21:32:44Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/open-telemetry_opentelemetry-go_2285/issues/comments/2968213279/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922734792,
+        "node_id": "PRR_kwDOOiBjjc6uNWTI",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug</h3></summary>\n\nThe `NetAttributesFromHTTPRequest` function incorrectly parses host and peer addresses, especially IPv6 literals. It uses `strings.LastIndex(\":\")` to separate host and port, which causes:\n\n*   **IPv6 misclassification:** Bracketed IPv6 (e.g., `[::1]:80`) retains `[]`, and bare IPv6 (e.g., `::1`) is truncated, leading `net.ParseIP` to fail. Consequently, valid IPv6 addresses are reported as host names (`net.peer.name`, `net.host.name`) instead of IP addresses (`net.peer.ip`, `net.host.ip`).\n*   **Data loss for invalid ports:** For addresses with non-numeric ports (e.g., `1.2.3.4:abc`), correctly parsed host/IP data is discarded.\n\nThese errors result in inaccurate OpenTelemetry semantic-convention attributes for both remote peers and local hosts. The parsing logic for `request.RemoteAddr` and `request.Host`/headers should use `net.SplitHostPort` or explicitly strip brackets.\n\n<p></p>\n\n<details>\n<summary><code>api/standard/http.go#L48-L108</code></summary>\n\nhttps://github.com/SM-100-Bench/open-telemetry_opentelemetry-go_2285/blob/341d4cbc3fb7abd06001e36f9c44ea63362a6740/api/standard/http.go#L48-L108\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpoY0drdmMzUmhibVJoY21RdmFIUjBjQzVuYnlJc0luTjBZWEowVEdsdVpTSTZORGdzSW1WdVpFeHBibVVpT2pFd09Dd2lZMjlrWlV4cGJtVnpJanBiWFgxZExDSnBaQ0k2SWpjellqRXlORFkwTFRBM1pETXRORFZpWkMxaE1XVXlMVGM0TXpWa1l6TXdZV1JtTlNJc0ltUmxjMk55YVhCMGFXOXVJam9pVkdobElHQk9aWFJCZEhSeWFXSjFkR1Z6Um5KdmJVaFVWRkJTWlhGMVpYTjBZQ0JtZFc1amRHbHZiaUJwYm1OdmNuSmxZM1JzZVNCd1lYSnpaWE1nYUc5emRDQmhibVFnY0dWbGNpQmhaR1J5WlhOelpYTXNJR1Z6Y0dWamFXRnNiSGtnU1ZCMk5pQnNhWFJsY21Gc2N5NGdTWFFnZFhObGN5QmdjM1J5YVc1bmN5NU1ZWE4wU1c1a1pYZ29YQ0k2WENJcFlDQjBieUJ6WlhCaGNtRjBaU0JvYjNOMElHRnVaQ0J3YjNKMExDQjNhR2xqYUNCallYVnpaWE02WEc1Y2Jpb2dJQ0FxS2tsUWRqWWdiV2x6WTJ4aGMzTnBabWxqWVhScGIyNDZLaW9nUW5KaFkydGxkR1ZrSUVsUWRqWWdLR1V1Wnk0c0lHQmJPam94WFRvNE1HQXBJSEpsZEdGcGJuTWdZRnRkWUN3Z1lXNWtJR0poY21VZ1NWQjJOaUFvWlM1bkxpd2dZRG82TVdBcElHbHpJSFJ5ZFc1allYUmxaQ3dnYkdWaFpHbHVaeUJnYm1WMExsQmhjbk5sU1ZCZ0lIUnZJR1poYVd3dUlFTnZibk5sY1hWbGJuUnNlU3dnZG1Gc2FXUWdTVkIyTmlCaFpHUnlaWE56WlhNZ1lYSmxJSEpsY0c5eWRHVmtJR0Z6SUdodmMzUWdibUZ0WlhNZ0tHQnVaWFF1Y0dWbGNpNXVZVzFsWUN3Z1lHNWxkQzVvYjNOMExtNWhiV1ZnS1NCcGJuTjBaV0ZrSUc5bUlFbFFJR0ZrWkhKbGMzTmxjeUFvWUc1bGRDNXdaV1Z5TG1sd1lDd2dZRzVsZEM1b2IzTjBMbWx3WUNrdVhHNHFJQ0FnS2lwRVlYUmhJR3h2YzNNZ1ptOXlJR2x1ZG1Gc2FXUWdjRzl5ZEhNNktpb2dSbTl5SUdGa1pISmxjM05sY3lCM2FYUm9JRzV2YmkxdWRXMWxjbWxqSUhCdmNuUnpJQ2hsTG1jdUxDQmdNUzR5TGpNdU5EcGhZbU5nS1N3Z1kyOXljbVZqZEd4NUlIQmhjbk5sWkNCb2IzTjBMMGxRSUdSaGRHRWdhWE1nWkdselkyRnlaR1ZrTGx4dVhHNVVhR1Z6WlNCbGNuSnZjbk1nY21WemRXeDBJR2x1SUdsdVlXTmpkWEpoZEdVZ1QzQmxibFJsYkdWdFpYUnllU0J6WlcxaGJuUnBZeTFqYjI1MlpXNTBhVzl1SUdGMGRISnBZblYwWlhNZ1ptOXlJR0p2ZEdnZ2NtVnRiM1JsSUhCbFpYSnpJR0Z1WkNCc2IyTmhiQ0JvYjNOMGN5NGdWR2hsSUhCaGNuTnBibWNnYkc5bmFXTWdabTl5SUdCeVpYRjFaWE4wTGxKbGJXOTBaVUZrWkhKZ0lHRnVaQ0JnY21WeGRXVnpkQzVJYjNOMFlDOW9aV0ZrWlhKeklITm9iM1ZzWkNCMWMyVWdZRzVsZEM1VGNHeHBkRWh2YzNSUWIzSjBZQ0J2Y2lCbGVIQnNhV05wZEd4NUlITjBjbWx3SUdKeVlXTnJaWFJ6TGlJc0ltTnZibVpwWkdWdVkyVWlPakVzSW1OaGRHVm5iM0o1SWpvaVRFOUhTVU5mUWxWSEluMCIsImJyYW5jaCI6ImF1dG8tcHItOTA3MDM3NTYtY3Vyc29yLWJ1Z2JvdCJ9LCJpYXQiOjE3NDk3NjQzNjQsImV4cCI6MTc1MDM2OTE2NH0.dBpwuqYcdKMOM8F3W0KsUGOGikvHkZtGpMJr3A3bgDvs9Xh0_zigV2hiM0ibHsWFO6c0rb2e4m2KIXvDQrG7BK0aUuEIiLs6ucEJ0FVR2RjPmC2mOJqOP-EQ0t0oX6zbcge2EZOleeHsEV3SP4UZFCRM4_QSz9AmjJjw3bN7YBamUuzW_1rXsrm3crQhr3SEzC9yKXhDG67V8NUUB8h1Hyk3vvQk3clumJf_OycBL9kBGa7sMufKXOv5xK6g6K83Cyjl9eHwU9MJgHwhynM1bniC2iTOEeJvfBc9WnTfGygQJmw7c1pb8jmBZ5Wt6W0EY39u3bAShoKem7l166e00g\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/open-telemetry_opentelemetry-go_2285/pull/86#pullrequestreview-2922734792",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/open-telemetry_opentelemetry-go_2285/pulls/86",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/open-telemetry_opentelemetry-go_2285/pull/86#pullrequestreview-2922734792"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/open-telemetry_opentelemetry-go_2285/pulls/86"
+          }
+        },
+        "submitted_at": "2025-06-12T21:39:24Z",
+        "commit_id": "341d4cbc3fb7abd06001e36f9c44ea63362a6740"
+      }
+    ]
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/zotero/reader/commit/9857a5960d6a6697332c905057434904df54df9d",
+    "commit_sha": "bf4e38b2ee24859257707e83256a5e00aa6381aa",
+    "repo_identifier": "zotero_reader_9857a5960d6a6697332c905057434904df54df9d",
+    "timestamp": "2025-06-12T21:29:37Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/zotero_reader_9857a5960d6a6697332c905057434904df54df9d/issues/comments/2968196377",
+        "html_url": "https://github.com/SM-100-Bench/zotero_reader_9857a5960d6a6697332c905057434904df54df9d/pull/2#issuecomment-2968196377",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/zotero_reader_9857a5960d6a6697332c905057434904df54df9d/issues/2",
+        "id": 2968196377,
+        "node_id": "IC_kwDOOiBfhc6w6xUZ",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T21:25:28Z",
+        "updated_at": "2025-06-12T21:25:28Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/zotero_reader_9857a5960d6a6697332c905057434904df54df9d/issues/comments/2968196377/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922715324,
+        "node_id": "PRR_kwDOOiBfhc6uNRi8",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: Navigation Logic Error: Incorrect Method Call</h3></summary>\n\n`canNavigateToPreviousPage()` incorrectly calls `this.flow.canNavigateToNextPage()`. As a result, both `canNavigateToPreviousPage()` and `canNavigateToNextPage()` return the same value, leading to incorrect UI state and navigation logic (e.g., the \"previous page\" button being enabled/disabled based on the *next* page's availability).\n\n<p></p>\n\n<details>\n<summary><code>src/dom/epub/epub-view.ts#L679-L686</code></summary>\n\nhttps://github.com/SM-100-Bench/zotero_reader_9857a5960d6a6697332c905057434904df54df9d/blob/ec3bfe74e4b9aba23154bdd00a045c76baa4b83c/src/dom/epub/epub-view.ts#L679-L686\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp6Y21NdlpHOXRMMlZ3ZFdJdlpYQjFZaTEyYVdWM0xuUnpJaXdpYzNSaGNuUk1hVzVsSWpvMk56a3NJbVZ1WkV4cGJtVWlPalk0Tml3aVkyOWtaVXhwYm1WeklqcGJYWDFkTENKcFpDSTZJalUzTlRRMU16azBMVFV3TURjdE5ESm1NQzFoT1dFd0xUbG1Nemd4WVRsbFlUY3dPU0lzSW1SbGMyTnlhWEIwYVc5dUlqb2lZR05oYms1aGRtbG5ZWFJsVkc5UWNtVjJhVzkxYzFCaFoyVW9LV0FnYVc1amIzSnlaV04wYkhrZ1kyRnNiSE1nWUhSb2FYTXVabXh2ZHk1allXNU9ZWFpwWjJGMFpWUnZUbVY0ZEZCaFoyVW9LV0F1SUVGeklHRWdjbVZ6ZFd4MExDQmliM1JvSUdCallXNU9ZWFpwWjJGMFpWUnZVSEpsZG1sdmRYTlFZV2RsS0NsZ0lHRnVaQ0JnWTJGdVRtRjJhV2RoZEdWVWIwNWxlSFJRWVdkbEtDbGdJSEpsZEhWeWJpQjBhR1VnYzJGdFpTQjJZV3gxWlN3Z2JHVmhaR2x1WnlCMGJ5QnBibU52Y25KbFkzUWdWVWtnYzNSaGRHVWdZVzVrSUc1aGRtbG5ZWFJwYjI0Z2JHOW5hV01nS0dVdVp5NHNJSFJvWlNCY0luQnlaWFpwYjNWeklIQmhaMlZjSWlCaWRYUjBiMjRnWW1WcGJtY2daVzVoWW14bFpDOWthWE5oWW14bFpDQmlZWE5sWkNCdmJpQjBhR1VnS201bGVIUXFJSEJoWjJVbmN5QmhkbUZwYkdGaWFXeHBkSGtwTGlJc0ltTnZibVpwWkdWdVkyVWlPakF1T1RrME9EQTVNVFUwTnpBeE9ERXhOeXdpWTJGMFpXZHZjbmtpT2lKTVQwZEpRMTlDVlVjaWZRIiwiYnJhbmNoIjoiYXV0by1wci1iZjRlMzhiMi1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc2Mzc2MiwiZXhwIjoxNzUwMzY4NTYyfQ.UKlRbN1wfWmRCPPDI3Sk2fA_aZf_ck3RJZJd4rb2Vo02mapPNOgOhOqwTiDysDW-bDFBcD5iMigyFDwHLcPtVbWtSm8m0UX-am1xlqvpWBJSzOY7MZLlq-CsmJ8mKqmi2u6dT9n9gGXR23c_DfKd5EupfzWGh2fnkAcMuhuflRxwIgYxoPSHd7XsVyk9UIv3ogSB2kfsE-aZLOPVRf98PWvK8aWS2CT7LICBcBJafhXUdcFqFmrxZKcqZVMG0u6wxxOQPv2BJORNjTacaEoC5XlmOetQ3kmsGP_6TIOxG5mwtTPe7yL5qMla3w2gLUBKah-1cOuytFqnv-Mfbbq7cA\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/zotero_reader_9857a5960d6a6697332c905057434904df54df9d/pull/2#pullrequestreview-2922715324",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/zotero_reader_9857a5960d6a6697332c905057434904df54df9d/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/zotero_reader_9857a5960d6a6697332c905057434904df54df9d/pull/2#pullrequestreview-2922715324"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/zotero_reader_9857a5960d6a6697332c905057434904df54df9d/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T21:29:22Z",
+        "commit_id": "ec3bfe74e4b9aba23154bdd00a045c76baa4b83c"
+      }
+    ]
+  }
+}

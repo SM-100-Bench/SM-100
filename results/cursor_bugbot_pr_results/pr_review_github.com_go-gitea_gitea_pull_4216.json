@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/go-gitea/gitea/pull/4216",
+    "commit_sha": "9cb08a3cf5b3e67402edb2a10ff63df2258bc731",
+    "repo_identifier": "go-gitea_gitea_4216",
+    "timestamp": "2025-06-12T22:30:00Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/go-gitea_gitea_4216/issues/comments/2968317135",
+        "html_url": "https://github.com/SM-100-Bench/go-gitea_gitea_4216/pull/2#issuecomment-2968317135",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/go-gitea_gitea_4216/issues/2",
+        "id": 2968317135,
+        "node_id": "IC_kwDOOiB6HM6w7OzP",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T22:23:15Z",
+        "updated_at": "2025-06-12T22:23:15Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/go-gitea_gitea_4216/issues/comments/2968317135/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922809432,
+        "node_id": "PRR_kwDOOiB6HM6uNohY",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: XORM `In` Method Misuse Causes Repository Deletion Failures</h3></summary>\n\nIn `DeleteRepository`, the `sess.In(\"issue_id=?\", issueIDs)` call used for loading attachments is malformed. XORM's `In` method expects only the column name (e.g., `\"issue_id\"`) as its first argument, not an expression containing a placeholder. This incorrect usage generates invalid SQL, causing the attachment query to fail at runtime. Consequently, the repository deletion transaction is aborted, leaving orphaned attachment files on disk and preventing the repository from being fully deleted.\n\n<p></p>\n\n<details>\n<summary><code>models/repo.go#L1580-L1589</code></summary>\n\nhttps://github.com/SM-100-Bench/go-gitea_gitea_4216/blob/44520b6f11e97c2351cf649e8dbcacf9eba40186/models/repo.go#L1580-L1589\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp0YjJSbGJITXZjbVZ3Ynk1bmJ5SXNJbk4wWVhKMFRHbHVaU0k2TVRVNE1Dd2laVzVrVEdsdVpTSTZNVFU0T1N3aVkyOWtaVXhwYm1WeklqcGJYWDFkTENKcFpDSTZJalV5TlRBM09UZzBMV0ppTkRFdE5HSXdNQzFpTnpZMUxUbGlNakZtTWpWak1HUmxOaUlzSW1SbGMyTnlhWEIwYVc5dUlqb2lTVzRnWUVSbGJHVjBaVkpsY0c5emFYUnZjbmxnTENCMGFHVWdZSE5sYzNNdVNXNG9YQ0pwYzNOMVpWOXBaRDBfWENJc0lHbHpjM1ZsU1VSektXQWdZMkZzYkNCMWMyVmtJR1p2Y2lCc2IyRmthVzVuSUdGMGRHRmphRzFsYm5SeklHbHpJRzFoYkdadmNtMWxaQzRnV0U5U1RTZHpJR0JKYm1BZ2JXVjBhRzlrSUdWNGNHVmpkSE1nYjI1c2VTQjBhR1VnWTI5c2RXMXVJRzVoYldVZ0tHVXVaeTRzSUdCY0ltbHpjM1ZsWDJsa1hDSmdLU0JoY3lCcGRITWdabWx5YzNRZ1lYSm5kVzFsYm5Rc0lHNXZkQ0JoYmlCbGVIQnlaWE56YVc5dUlHTnZiblJoYVc1cGJtY2dZU0J3YkdGalpXaHZiR1JsY2k0Z1ZHaHBjeUJwYm1OdmNuSmxZM1FnZFhOaFoyVWdaMlZ1WlhKaGRHVnpJR2x1ZG1Gc2FXUWdVMUZNTENCallYVnphVzVuSUhSb1pTQmhkSFJoWTJodFpXNTBJSEYxWlhKNUlIUnZJR1poYVd3Z1lYUWdjblZ1ZEdsdFpTNGdRMjl1YzJWeGRXVnVkR3g1TENCMGFHVWdjbVZ3YjNOcGRHOXllU0JrWld4bGRHbHZiaUIwY21GdWMyRmpkR2x2YmlCcGN5QmhZbTl5ZEdWa0xDQnNaV0YyYVc1bklHOXljR2hoYm1Wa0lHRjBkR0ZqYUcxbGJuUWdabWxzWlhNZ2IyNGdaR2x6YXlCaGJtUWdjSEpsZG1WdWRHbHVaeUIwYUdVZ2NtVndiM05wZEc5eWVTQm1jbTl0SUdKbGFXNW5JR1oxYkd4NUlHUmxiR1YwWldRdUlpd2lZMjl1Wm1sa1pXNWpaU0k2TUM0NU9UUXpPRFk1T0RZNE1EYzFOalUxTENKallYUmxaMjl5ZVNJNklreFBSMGxEWDBKVlJ5SjkiLCJicmFuY2giOiJhdXRvLXByLTljYjA4YTNjLWN1cnNvci1idWdib3QifSwiaWF0IjoxNzQ5NzY3Mzg0LCJleHAiOjE3NTAzNzIxODR9.XFPDoK-iXUh1ewanhjCgX7mSJYNOZMo90jPnCtpLFfuyHcNOZL33N_jB4jcwNrCewdybFxzbF0G_cfVhjhtn9ES9Dsw8qwf93Jlz_HEgQIgvaxMTMd3pFThs_WWclbUD7usI22bAHKZxt7OAvJo5EScmtzlGfm6X-ByX7QAwvBkVLQ0aWyTUhGRR3Tw6CNBydZTMEDDfn7Gn_42OHftw-Qbr7Kh8kdMuZBDUczgN5qFOLDwST-cgAPKag7w_OGLwnURbHorcTDuxJHULAaDPPRkfxlhc6eoXLlGUsv7rGCxUw0TgUYlq_hlNUhWG1gEad5ljZEPQwuU5S5DjZg5iLg\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/go-gitea_gitea_4216/pull/2#pullrequestreview-2922809432",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/go-gitea_gitea_4216/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/go-gitea_gitea_4216/pull/2#pullrequestreview-2922809432"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/go-gitea_gitea_4216/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T22:29:44Z",
+        "commit_id": "44520b6f11e97c2351cf649e8dbcacf9eba40186"
+      }
+    ]
+  }
+}

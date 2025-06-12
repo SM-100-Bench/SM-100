@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/tsenart/vegeta/commit/6fbe391628eeeae1adf39522a55078797e6e7f2e",
+    "commit_sha": "174d804f4a9bdcf95b1dc8d08cfed7cfac3ab135",
+    "repo_identifier": "tsenart_vegeta_6fbe391628eeeae1adf39522a55078797e6e7f2e",
+    "timestamp": "2025-06-12T21:46:50Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/tsenart_vegeta_6fbe391628eeeae1adf39522a55078797e6e7f2e/issues/comments/2968227672",
+        "html_url": "https://github.com/SM-100-Bench/tsenart_vegeta_6fbe391628eeeae1adf39522a55078797e6e7f2e/pull/10#issuecomment-2968227672",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/tsenart_vegeta_6fbe391628eeeae1adf39522a55078797e6e7f2e/issues/10",
+        "id": 2968227672,
+        "node_id": "IC_kwDOOiBk8c6w649Y",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T21:38:01Z",
+        "updated_at": "2025-06-12T21:38:01Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/tsenart_vegeta_6fbe391628eeeae1adf39522a55078797e6e7f2e/issues/comments/2968227672/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922746339,
+        "node_id": "PRR_kwDOOiBk8c6uNZHj",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: DNS Caching Causes Data Races and IPv6 Issues</h3></summary>\n\nThe `DNSCaching` option introduces two bugs:\n\n1.  **Data Race:** The `DialContext` closure reuses a single `math/rand.Rand` instance for `rng.Shuffle`. Since `DialContext` is called concurrently, this leads to data races and potential panics due to `math/rand.Rand` not being goroutine-safe.\n2.  **IPv6-only Host Unreachability:** The IP filtering logic in `DialContext` incorrectly discards all IPv6 addresses if no IPv4 address is present. This leaves the IP list empty, causing the function to return a `nil` connection with a `nil` error, which violates the `net.DialContext` contract. As a result, requests to IPv6-only hosts fail or cause panics in the HTTP transport.\n\n<p></p>\n\n<details>\n<summary><code>lib/attack.go#L298-L364</code></summary>\n\nhttps://github.com/SM-100-Bench/tsenart_vegeta_6fbe391628eeeae1adf39522a55078797e6e7f2e/blob/caccf30841f810c2efebdd3d2fc6f08bdf2ea250/lib/attack.go#L298-L364\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpzYVdJdllYUjBZV05yTG1kdklpd2ljM1JoY25STWFXNWxJam95T1Rnc0ltVnVaRXhwYm1VaU9qTTJOQ3dpWTI5a1pVeHBibVZ6SWpwYlhYMWRMQ0pwWkNJNkltUTVZamxoWVdKakxUWXdOMlF0TkRaaU1DMDVaRGcxTFRSa05UWmpPRE5tTW1Vek55SXNJbVJsYzJOeWFYQjBhVzl1SWpvaVZHaGxJR0JFVGxORFlXTm9hVzVuWUNCdmNIUnBiMjRnYVc1MGNtOWtkV05sY3lCMGQyOGdZblZuY3pwY2JseHVNUzRnSUNvcVJHRjBZU0JTWVdObE9pb3FJRlJvWlNCZ1JHbGhiRU52Ym5SbGVIUmdJR05zYjNOMWNtVWdjbVYxYzJWeklHRWdjMmx1WjJ4bElHQnRZWFJvTDNKaGJtUXVVbUZ1WkdBZ2FXNXpkR0Z1WTJVZ1ptOXlJR0J5Ym1jdVUyaDFabVpzWldBdUlGTnBibU5sSUdCRWFXRnNRMjl1ZEdWNGRHQWdhWE1nWTJGc2JHVmtJR052Ym1OMWNuSmxiblJzZVN3Z2RHaHBjeUJzWldGa2N5QjBieUJrWVhSaElISmhZMlZ6SUdGdVpDQndiM1JsYm5ScFlXd2djR0Z1YVdOeklHUjFaU0IwYnlCZ2JXRjBhQzl5WVc1a0xsSmhibVJnSUc1dmRDQmlaV2x1WnlCbmIzSnZkWFJwYm1VdGMyRm1aUzVjYmpJdUlDQXFLa2xRZGpZdGIyNXNlU0JJYjNOMElGVnVjbVZoWTJoaFltbHNhWFI1T2lvcUlGUm9aU0JKVUNCbWFXeDBaWEpwYm1jZ2JHOW5hV01nYVc0Z1lFUnBZV3hEYjI1MFpYaDBZQ0JwYm1OdmNuSmxZM1JzZVNCa2FYTmpZWEprY3lCaGJHd2dTVkIyTmlCaFpHUnlaWE56WlhNZ2FXWWdibThnU1ZCMk5DQmhaR1J5WlhOeklHbHpJSEJ5WlhObGJuUXVJRlJvYVhNZ2JHVmhkbVZ6SUhSb1pTQkpVQ0JzYVhOMElHVnRjSFI1TENCallYVnphVzVuSUhSb1pTQm1kVzVqZEdsdmJpQjBieUJ5WlhSMWNtNGdZU0JnYm1sc1lDQmpiMjV1WldOMGFXOXVJSGRwZEdnZ1lTQmdibWxzWUNCbGNuSnZjaXdnZDJocFkyZ2dkbWx2YkdGMFpYTWdkR2hsSUdCdVpYUXVSR2xoYkVOdmJuUmxlSFJnSUdOdmJuUnlZV04wTGlCQmN5QmhJSEpsYzNWc2RDd2djbVZ4ZFdWemRITWdkRzhnU1ZCMk5pMXZibXg1SUdodmMzUnpJR1poYVd3Z2IzSWdZMkYxYzJVZ2NHRnVhV056SUdsdUlIUm9aU0JJVkZSUUlIUnlZVzV6Y0c5eWRDNGlMQ0pqYjI1bWFXUmxibU5sSWpveExDSmpZWFJsWjI5eWVTSTZJa3hQUjBsRFgwSlZSeUo5IiwiYnJhbmNoIjoiYXV0by1wci0xNzRkODA0Zi1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc2NDgwNiwiZXhwIjoxNzUwMzY5NjA2fQ.njuTKf4fW5ASyU6XB_-W8W8DrT6q8bEDZPlwa0HrTHnQVSirmL2u9smC8HN3zKEqvZfIuxr-YscB1lHeHWzs9sEuac6KP2KzGo8lIvGCz_jGNpBgxlEgMd_hsKVK60L9w12ZjIVBFkz0B5wzRrXK0qmxoMp3AxJF0YiFt_BIZMxDzHrfU8OIXM0JWAizu7vKhEvECMlWDOEhHu36yuuEBxy8sn0nVuFrexbvdGQZ8Y1Acqw4rgleSXYxSiLj2aThFdpIBbZlut4mE80JkLqbJ8ivjqeTSK2E6niSxXlK8lqhRPKI08x1jUxgAE9rzjbwX67WfXitGAE9aYloFZjirQ\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/tsenart_vegeta_6fbe391628eeeae1adf39522a55078797e6e7f2e/pull/10#pullrequestreview-2922746339",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/tsenart_vegeta_6fbe391628eeeae1adf39522a55078797e6e7f2e/pulls/10",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/tsenart_vegeta_6fbe391628eeeae1adf39522a55078797e6e7f2e/pull/10#pullrequestreview-2922746339"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/tsenart_vegeta_6fbe391628eeeae1adf39522a55078797e6e7f2e/pulls/10"
+          }
+        },
+        "submitted_at": "2025-06-12T21:46:46Z",
+        "commit_id": "caccf30841f810c2efebdd3d2fc6f08bdf2ea250"
+      }
+    ]
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/photoprism/photoprism/pull/2449",
+    "commit_sha": "8c589e3649fd842d7203d1d86e207acdb1e4f741",
+    "repo_identifier": "photoprism_photoprism_2449",
+    "timestamp": "2025-06-12T23:22:41Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/photoprism_photoprism_2449/issues/comments/2968409863",
+        "html_url": "https://github.com/SM-100-Bench/photoprism_photoprism_2449/pull/2#issuecomment-2968409863",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/photoprism_photoprism_2449/issues/2",
+        "id": 2968409863,
+        "node_id": "IC_kwDOOiCJNc6w7lcH",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T23:15:26Z",
+        "updated_at": "2025-06-12T23:15:26Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/photoprism_photoprism_2449/issues/comments/2968409863/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922878838,
+        "node_id": "PRR_kwDOOiCJNc6uN5d2",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: FFmpeg Command Fails NVIDIA Hardware Encoding</h3></summary>\n\nNVIDIA hardware-accelerated video transcoding fails because the FFmpeg command includes invalid options for the `h264_nvenc` encoder.\n\nSpecifically:\n*   The global option `-pixel_format` is unrecognized; the correct option is `-pix_fmt` (which is already provided).\n*   The `-preset` value `15` is invalid for the `h264_nvenc` encoder, which expects named presets (e.g., `p1-p7`, `default`).\n\nThese invalid arguments cause FFmpeg to terminate with errors like \"Unrecognized option\" or \"Invalid preset\", forcing a fallback to software encoding and negating the intended benefit of NVIDIA hardware acceleration.\n\n<p></p>\n\n<details>\n<summary><code>internal/photoprism/convert_avc.go#L116-L134</code></summary>\n\nhttps://github.com/SM-100-Bench/photoprism_photoprism_2449/blob/6f3588e19b3da42f14bfadb7886169e79ca97632/internal/photoprism/convert_avc.go#L116-L134\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpwYm5SbGNtNWhiQzl3YUc5MGIzQnlhWE50TDJOdmJuWmxjblJmWVhaakxtZHZJaXdpYzNSaGNuUk1hVzVsSWpveE1UWXNJbVZ1WkV4cGJtVWlPakV6TkN3aVkyOWtaVXhwYm1WeklqcGJYWDFkTENKcFpDSTZJbVJsTWpVNFl6Z3pMV0kyTWpJdE5EQTFaUzA1TWpneUxUZzRPRFl6TlRVMU1qZGpPU0lzSW1SbGMyTnlhWEIwYVc5dUlqb2lUbFpKUkVsQklHaGhjbVIzWVhKbExXRmpZMlZzWlhKaGRHVmtJSFpwWkdWdklIUnlZVzV6WTI5a2FXNW5JR1poYVd4eklHSmxZMkYxYzJVZ2RHaGxJRVpHYlhCbFp5QmpiMjF0WVc1a0lHbHVZMngxWkdWeklHbHVkbUZzYVdRZ2IzQjBhVzl1Y3lCbWIzSWdkR2hsSUdCb01qWTBYMjUyWlc1allDQmxibU52WkdWeUxseHVYRzVUY0dWamFXWnBZMkZzYkhrNlhHNHFJQ0FnVkdobElHZHNiMkpoYkNCdmNIUnBiMjRnWUMxd2FYaGxiRjltYjNKdFlYUmdJR2x6SUhWdWNtVmpiMmR1YVhwbFpEc2dkR2hsSUdOdmNuSmxZM1FnYjNCMGFXOXVJR2x6SUdBdGNHbDRYMlp0ZEdBZ0tIZG9hV05vSUdseklHRnNjbVZoWkhrZ2NISnZkbWxrWldRcExseHVLaUFnSUZSb1pTQmdMWEJ5WlhObGRHQWdkbUZzZFdVZ1lERTFZQ0JwY3lCcGJuWmhiR2xrSUdadmNpQjBhR1VnWUdneU5qUmZiblpsYm1OZ0lHVnVZMjlrWlhJc0lIZG9hV05vSUdWNGNHVmpkSE1nYm1GdFpXUWdjSEpsYzJWMGN5QW9aUzVuTGl3Z1lIQXhMWEEzWUN3Z1lHUmxabUYxYkhSZ0tTNWNibHh1VkdobGMyVWdhVzUyWVd4cFpDQmhjbWQxYldWdWRITWdZMkYxYzJVZ1JrWnRjR1ZuSUhSdklIUmxjbTFwYm1GMFpTQjNhWFJvSUdWeWNtOXljeUJzYVd0bElGd2lWVzV5WldOdloyNXBlbVZrSUc5d2RHbHZibHdpSUc5eUlGd2lTVzUyWVd4cFpDQndjbVZ6WlhSY0lpd2dabTl5WTJsdVp5QmhJR1poYkd4aVlXTnJJSFJ2SUhOdlpuUjNZWEpsSUdWdVkyOWthVzVuSUdGdVpDQnVaV2RoZEdsdVp5QjBhR1VnYVc1MFpXNWtaV1FnWW1WdVpXWnBkQ0J2WmlCT1ZrbEVTVUVnYUdGeVpIZGhjbVVnWVdOalpXeGxjbUYwYVc5dUxpSXNJbU52Ym1acFpHVnVZMlVpT2pBdU9EYzBNVFkyTkRNMU16QTVNREU0Tnl3aVkyRjBaV2R2Y25raU9pSk1UMGRKUTE5Q1ZVY2lmUSIsImJyYW5jaCI6ImF1dG8tcHItOGM1ODllMzYtY3Vyc29yLWJ1Z2JvdCJ9LCJpYXQiOjE3NDk3NzA1MzUsImV4cCI6MTc1MDM3NTMzNX0.NT1xtY9ahqbyj3LL6WXRGAG_cAqchbI_gViSf-vsVYcuqYIUjEYrfUxY2lIwvq78JLU3sqIlIM5tjQ_3hfiS8ZkA2zL13ppjzvWYI3mJeX-sM5SrPg4w0wo7KQ-l2a3smF5uQyJh3g9NBnG1fUZxxgPVacNfBBRIu1aAlEiXRAbks7jpR2MXSGujH2C1XHw-WkIcAERt-QfRuY3LZrUJy4j-I1o7eR-98tSL1jeijG28lr4YtAftfowkY6bSOZ68REbJFZu9yMJUHmF1Mq9GiDXQbHlc7OjxQFXFypNBeZwXZHopNNSwAAEIeyFjQlkvuILiWiaxJ3stfz922-JdZA\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/photoprism_photoprism_2449/pull/2#pullrequestreview-2922878838",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/photoprism_photoprism_2449/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/photoprism_photoprism_2449/pull/2#pullrequestreview-2922878838"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/photoprism_photoprism_2449/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T23:22:16Z",
+        "commit_id": "6f3588e19b3da42f14bfadb7886169e79ca97632"
+      }
+    ]
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/mozilla/bleach/commit/eb8aebd45737ffba8abd23ba88b14dede47f35af",
+    "commit_sha": "73dfef1d3b96c2e432660d8d2f2e9d0eaa230e36",
+    "repo_identifier": "mozilla_bleach_eb8aebd45737ffba8abd23ba88b14dede47f35af",
+    "timestamp": "2025-06-12T21:11:56Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/mozilla_bleach_eb8aebd45737ffba8abd23ba88b14dede47f35af/issues/comments/2968153333",
+        "html_url": "https://github.com/SM-100-Bench/mozilla_bleach_eb8aebd45737ffba8abd23ba88b14dede47f35af/pull/2#issuecomment-2968153333",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/mozilla_bleach_eb8aebd45737ffba8abd23ba88b14dede47f35af/issues/2",
+        "id": 2968153333,
+        "node_id": "IC_kwDOOiBa5M6w6mz1",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T21:05:10Z",
+        "updated_at": "2025-06-12T21:05:10Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/mozilla_bleach_eb8aebd45737ffba8abd23ba88b14dede47f35af/issues/comments/2968153333/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922668469,
+        "node_id": "PRR_kwDOOiBa5M6uNGG1",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: Entity Conversion Lacks Validation</h3></summary>\n\nThe newly introduced `convert_entity()` function, used in `sanitize_uri_value` for URI attributes, lacks input validation. This can crash `Cleaner.clean()` with uncaught exceptions, leading to a denial-of-service:\n\n*   `ValueError` or `OverflowError` occurs when converting oversized or negative numeric HTML entities (e.g., `&#9999999999;`) due to values exceeding the valid Unicode range (0x10FFFF).\n*   `KeyError` or `ValueError` occurs for unknown or malformed named entities (e.g., `&bogus;`, `&g;`) or malformed numeric entities (e.g., `&#x;`).\n\nThese exceptions propagate through `convert_entities()`, `sanitize_uri_value()`, and `allow_token()`. This is a regression, as previous versions left such entities untouched.\n\n<p></p>\n\n<details>\n<summary><code>bleach/sanitizer.py#L85-L104</code></summary>\n\nhttps://github.com/SM-100-Bench/mozilla_bleach_eb8aebd45737ffba8abd23ba88b14dede47f35af/blob/9ec3a7caa914f4160934d469993163ece27b1e28/bleach/sanitizer.py#L85-L104\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUppYkdWaFkyZ3ZjMkZ1YVhScGVtVnlMbkI1SWl3aWMzUmhjblJNYVc1bElqbzROU3dpWlc1a1RHbHVaU0k2TVRBMExDSmpiMlJsVEdsdVpYTWlPbHRkZlYwc0ltbGtJam9pTURWa01EWTRaR1F0T1Rjek1pMDBNbVZpTFRrell6Z3ROREV4TnpJd09UQXhNbUUxSWl3aVpHVnpZM0pwY0hScGIyNGlPaUpVYUdVZ2JtVjNiSGtnYVc1MGNtOWtkV05sWkNCZ1kyOXVkbVZ5ZEY5bGJuUnBkSGtvS1dBZ1puVnVZM1JwYjI0c0lIVnpaV1FnYVc0Z1lITmhibWwwYVhwbFgzVnlhVjkyWVd4MVpXQWdabTl5SUZWU1NTQmhkSFJ5YVdKMWRHVnpMQ0JzWVdOcmN5QnBibkIxZENCMllXeHBaR0YwYVc5dUxpQlVhR2x6SUdOaGJpQmpjbUZ6YUNCZ1EyeGxZVzVsY2k1amJHVmhiaWdwWUNCM2FYUm9JSFZ1WTJGMVoyaDBJR1Y0WTJWd2RHbHZibk1zSUd4bFlXUnBibWNnZEc4Z1lTQmtaVzVwWVd3dGIyWXRjMlZ5ZG1salpUcGNibHh1S2lBZ0lHQldZV3gxWlVWeWNtOXlZQ0J2Y2lCZ1QzWmxjbVpzYjNkRmNuSnZjbUFnYjJOamRYSnpJSGRvWlc0Z1kyOXVkbVZ5ZEdsdVp5QnZkbVZ5YzJsNlpXUWdiM0lnYm1WbllYUnBkbVVnYm5WdFpYSnBZeUJJVkUxTUlHVnVkR2wwYVdWeklDaGxMbWN1TENCZ0ppTTVPVGs1T1RrNU9UazVPMkFwSUdSMVpTQjBieUIyWVd4MVpYTWdaWGhqWldWa2FXNW5JSFJvWlNCMllXeHBaQ0JWYm1samIyUmxJSEpoYm1kbElDZ3dlREV3UmtaR1Jpa3VYRzRxSUNBZ1lFdGxlVVZ5Y205eVlDQnZjaUJnVm1Gc2RXVkZjbkp2Y21BZ2IyTmpkWEp6SUdadmNpQjFibXR1YjNkdUlHOXlJRzFoYkdadmNtMWxaQ0J1WVcxbFpDQmxiblJwZEdsbGN5QW9aUzVuTGl3Z1lDWmliMmQxY3p0Z0xDQmdKbWM3WUNrZ2IzSWdiV0ZzWm05eWJXVmtJRzUxYldWeWFXTWdaVzUwYVhScFpYTWdLR1V1Wnk0c0lHQW1JM2c3WUNrdVhHNWNibFJvWlhObElHVjRZMlZ3ZEdsdmJuTWdjSEp2Y0dGbllYUmxJSFJvY205MVoyZ2dZR052Ym5abGNuUmZaVzUwYVhScFpYTW9LV0FzSUdCellXNXBkR2w2WlY5MWNtbGZkbUZzZFdVb0tXQXNJR0Z1WkNCZ1lXeHNiM2RmZEc5clpXNG9LV0F1SUZSb2FYTWdhWE1nWVNCeVpXZHlaWE56YVc5dUxDQmhjeUJ3Y21WMmFXOTFjeUIyWlhKemFXOXVjeUJzWldaMElITjFZMmdnWlc1MGFYUnBaWE1nZFc1MGIzVmphR1ZrTGlJc0ltTnZibVpwWkdWdVkyVWlPakF1T0RZMk1ETTRPRE0wTWprMk9UazJOeXdpWTJGMFpXZHZjbmtpT2lKVFJVTlZVa2xVV1Y5SlUxTlZSU0o5IiwiYnJhbmNoIjoiYXV0by1wci03M2RmZWYxZC1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc2MjcwNSwiZXhwIjoxNzUwMzY3NTA1fQ.N9IzDgxbOTWtiAJpumggOLAHNg9-vJUc4JW9IbFEKb-J8LIHCDMmtbJoca5NxCuT_DIzw3IeBfEdKMSrNSMLzYsWI_TiZ5l6Jh8e-wdjOusHjT_Ca8TbPVA-HfFfZ3AVteuCTPP4wqa24Q_ZbdVf8wmW0jHyet2peocNUE1Ug1ailYGhgYPzTZHYfEKgUbYRH5Nc6nsu8_SDIxFEq5zy3lIbYIVeMwO1dP8Zr5OPJSoBBDKyAu7vXcCTY4dlcTMUTEWKMyuDVXrOzr0y3TwnJWUuCEgRwJ4FMWg4D7N6K14F3iwnGszRXqg0B8b5ZjdlfWAiCkZIwDn5yF7APDnHsg\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: URL Parsing Fails on Implicit HTTP</h3></summary>\n\nsanitize_uri_value is supposed to treat URLs without an explicit scheme (e.g. \u201cexample.com:8000\u201d, \u201clocalhost:8000\u201d) as implicit HTTP when \"http\" is in allowed_protocols.  \nHowever urlparse regards text before the first \u2018:\u2019 as a scheme if it looks like one, so urlparse('example.com:8000') and urlparse('localhost:8000') return a non-empty scheme (\u201cexample.com\u201d, \u201clocalhost\u201d).  \nBecause parsed.scheme is not empty, the code enters the first branch (lines 575-582) and immediately rejects the URL when the pseudo-scheme is not in allowed_protocols, never reaching the fallback that treats it as implicit HTTP.  \nResult: legitimate URLs that the new tests expect to pass will be stripped, breaking intended behaviour and leaving the security fix incomplete.\n\n<p></p>\n\n<details>\n<summary><code>bleach/sanitizer.py#L567-L596</code></summary>\n\nhttps://github.com/SM-100-Bench/mozilla_bleach_eb8aebd45737ffba8abd23ba88b14dede47f35af/blob/9ec3a7caa914f4160934d469993163ece27b1e28/bleach/sanitizer.py#L567-L596\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUppYkdWaFkyZ3ZjMkZ1YVhScGVtVnlMbkI1SWl3aWMzUmhjblJNYVc1bElqbzFOamNzSW1WdVpFeHBibVVpT2pVNU5pd2lZMjlrWlV4cGJtVnpJanBiWFgxZExDSnBaQ0k2SWpaaFptWTFOVFZqTFRNME5qRXROR0ZpTVMwNE9EYzBMV0kyWkRObU1UVXlOekU1TUNJc0ltUmxjMk55YVhCMGFXOXVJam9pYzJGdWFYUnBlbVZmZFhKcFgzWmhiSFZsSUdseklITjFjSEJ2YzJWa0lIUnZJSFJ5WldGMElGVlNUSE1nZDJsMGFHOTFkQ0JoYmlCbGVIQnNhV05wZENCelkyaGxiV1VnS0dVdVp5NGc0b0NjWlhoaGJYQnNaUzVqYjIwNk9EQXdNT0tBblN3ZzRvQ2NiRzlqWVd4b2IzTjBPamd3TUREaWdKMHBJR0Z6SUdsdGNHeHBZMmwwSUVoVVZGQWdkMmhsYmlCY0ltaDBkSEJjSWlCcGN5QnBiaUJoYkd4dmQyVmtYM0J5YjNSdlkyOXNjeTRnSUZ4dVNHOTNaWFpsY2lCMWNteHdZWEp6WlNCeVpXZGhjbVJ6SUhSbGVIUWdZbVZtYjNKbElIUm9aU0JtYVhKemRDRGlnSmc2NG9DWklHRnpJR0VnYzJOb1pXMWxJR2xtSUdsMElHeHZiMnR6SUd4cGEyVWdiMjVsTENCemJ5QjFjbXh3WVhKelpTZ25aWGhoYlhCc1pTNWpiMjA2T0RBd01DY3BJR0Z1WkNCMWNteHdZWEp6WlNnbmJHOWpZV3hvYjNOME9qZ3dNREFuS1NCeVpYUjFjbTRnWVNCdWIyNHRaVzF3ZEhrZ2MyTm9aVzFsSUNqaWdKeGxlR0Z0Y0d4bExtTnZiZUtBblN3ZzRvQ2NiRzlqWVd4b2IzTjA0b0NkS1M0Z0lGeHVRbVZqWVhWelpTQndZWEp6WldRdWMyTm9aVzFsSUdseklHNXZkQ0JsYlhCMGVTd2dkR2hsSUdOdlpHVWdaVzUwWlhKeklIUm9aU0JtYVhKemRDQmljbUZ1WTJnZ0tHeHBibVZ6SURVM05TMDFPRElwSUdGdVpDQnBiVzFsWkdsaGRHVnNlU0J5WldwbFkzUnpJSFJvWlNCVlVrd2dkMmhsYmlCMGFHVWdjSE5sZFdSdkxYTmphR1Z0WlNCcGN5QnViM1FnYVc0Z1lXeHNiM2RsWkY5d2NtOTBiMk52YkhNc0lHNWxkbVZ5SUhKbFlXTm9hVzVuSUhSb1pTQm1ZV3hzWW1GamF5QjBhR0YwSUhSeVpXRjBjeUJwZENCaGN5QnBiWEJzYVdOcGRDQklWRlJRTGlBZ1hHNVNaWE4xYkhRNklHeGxaMmwwYVcxaGRHVWdWVkpNY3lCMGFHRjBJSFJvWlNCdVpYY2dkR1Z6ZEhNZ1pYaHdaV04wSUhSdklIQmhjM01nZDJsc2JDQmlaU0J6ZEhKcGNIQmxaQ3dnWW5KbFlXdHBibWNnYVc1MFpXNWtaV1FnWW1Wb1lYWnBiM1Z5SUdGdVpDQnNaV0YyYVc1bklIUm9aU0J6WldOMWNtbDBlU0JtYVhnZ2FXNWpiMjF3YkdWMFpTNGlMQ0pqYjI1bWFXUmxibU5sSWpvd0xqUTROVFF4TWpReU16TTFOVGc0TXpjMUxDSmpZWFJsWjI5eWVTSTZJa3hQUjBsRFgwSlZSeUo5IiwiYnJhbmNoIjoiYXV0by1wci03M2RmZWYxZC1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc2MjcwNSwiZXhwIjoxNzUwMzY3NTA1fQ.fq9cHYOSqI-ytjyCHt2IxmpBHn9GYtA527JS81tiF50XG0Sb0-tFC5qAM59BHfrLm4SLikQfgoNjJTZDMKP2HF-e_AlBn2E-nCAEYqfZi5MdFefnRfXGXI49qVPS7pknQ7hF_3DF3hWGW1IpoCefHUhzgCrVnTuzXLaVqqJ8PaHbHSmRg33m0nhBulAA0B8yZjznWNg_rUQlDbxwj429H5h8l6ReAPynkMxee9u9K2oVu9wLeu7kkEkAmUv7cJJ98GK8Gd8RqpbRk87vzx9mfEDFsy1VgDVUHGs1TNS7Qaf9ob8d6mRdAwDV63lika25HDBzxnBIgNJm7PSaznuOTg\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/mozilla_bleach_eb8aebd45737ffba8abd23ba88b14dede47f35af/pull/2#pullrequestreview-2922668469",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/mozilla_bleach_eb8aebd45737ffba8abd23ba88b14dede47f35af/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/mozilla_bleach_eb8aebd45737ffba8abd23ba88b14dede47f35af/pull/2#pullrequestreview-2922668469"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/mozilla_bleach_eb8aebd45737ffba8abd23ba88b14dede47f35af/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T21:11:46Z",
+        "commit_id": "9ec3a7caa914f4160934d469993163ece27b1e28"
+      }
+    ]
+  }
+}

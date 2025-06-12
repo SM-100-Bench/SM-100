@@ -1,0 +1,59 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/ajaxorg/ace/pull/5790",
+    "commit_sha": "f4d0e33dac270ce21df09a96a39f50e16d6354db",
+    "repo_identifier": "ajaxorg_ace_5790",
+    "timestamp": "2025-06-12T22:28:47Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/ajaxorg_ace_5790/issues/comments/2968273741",
+        "html_url": "https://github.com/SM-100-Bench/ajaxorg_ace_5790/pull/2#issuecomment-2968273741",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/ajaxorg_ace_5790/issues/2",
+        "id": 2968273741,
+        "node_id": "IC_kwDOOiBoec6w7ENN",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T21:58:43Z",
+        "updated_at": "2025-06-12T21:58:43Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/ajaxorg_ace_5790/issues/comments/2968273741/reactions",
+          "total_count": 1,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 1
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/encode/starlette/pull/813",
+    "commit_sha": "860fdf6c8b0eb88b9668153fdf2bf0352ec3152a",
+    "repo_identifier": "encode_starlette_813",
+    "timestamp": "2025-06-12T21:48:19Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/encode_starlette_813/issues/comments/2968235478",
+        "html_url": "https://github.com/SM-100-Bench/encode_starlette_813/pull/2#issuecomment-2968235478",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/encode_starlette_813/issues/2",
+        "id": 2968235478,
+        "node_id": "IC_kwDOOiBlNs6w663W",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T21:42:06Z",
+        "updated_at": "2025-06-12T21:42:06Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/encode_starlette_813/issues/comments/2968235478/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922748652,
+        "node_id": "PRR_kwDOOiBlNs6uNZrs",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug</h3></summary>\n\nThe `WSGIMiddleware` contains multiple bugs affecting exception handling and resource management:\n\n*   **Incorrect Exception Re-raising:** When re-raising exceptions provided via `exc_info` from the WSGI app, the code incorrectly calls `with_traceback` on the exception class instead of the instance, and with an incorrect number of arguments. This results in an `AttributeError` or `TypeError`, masking the original exception.\n*   **Sender Task Leak:** If the wrapped WSGI application raises an exception before the main WSGI task completes, the `sender` task's termination signal is skipped. This leaves the `sender` task pending indefinitely, causing resource leaks and \"Task was destroyed but it is pending!\" warnings. This cleanup should be in a `finally` block.\n*   **PEP 3333 Violation:** Exceptions provided via `exc_info` are unconditionally re-raised after the WSGI app finishes. According to PEP 3333, `exc_info` should only be re-raised if HTTP headers have already been sent; otherwise, it must be ignored. This can incorrectly turn valid WSGI error handling into server-side 500s.\n\n<p></p>\n\n<details>\n<summary><code>starlette/middleware/wsgi.py#L77-L96</code></summary>\n\nhttps://github.com/SM-100-Bench/encode_starlette_813/blob/475be7dd83a1b70913964583fdfc7e06dc9959fe/starlette/middleware/wsgi.py#L77-L96\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp6ZEdGeWJHVjBkR1V2Yldsa1pHeGxkMkZ5WlM5M2MyZHBMbkI1SWl3aWMzUmhjblJNYVc1bElqbzNOeXdpWlc1a1RHbHVaU0k2T1RZc0ltTnZaR1ZNYVc1bGN5STZXMTE5WFN3aWFXUWlPaUprTURjd04yVXhaUzFqWXpFNUxUUXpZbVl0WW1aaVpDMDFaVGt3TW1SbVkyUmpORGdpTENKa1pYTmpjbWx3ZEdsdmJpSTZJbFJvWlNCZ1YxTkhTVTFwWkdSc1pYZGhjbVZnSUdOdmJuUmhhVzV6SUcxMWJIUnBjR3hsSUdKMVozTWdZV1ptWldOMGFXNW5JR1Y0WTJWd2RHbHZiaUJvWVc1a2JHbHVaeUJoYm1RZ2NtVnpiM1Z5WTJVZ2JXRnVZV2RsYldWdWREcGNibHh1S2lBZ0lDb3FTVzVqYjNKeVpXTjBJRVY0WTJWd2RHbHZiaUJTWlMxeVlXbHphVzVuT2lvcUlGZG9aVzRnY21VdGNtRnBjMmx1WnlCbGVHTmxjSFJwYjI1eklIQnliM1pwWkdWa0lIWnBZU0JnWlhoalgybHVabTlnSUdaeWIyMGdkR2hsSUZkVFIwa2dZWEJ3TENCMGFHVWdZMjlrWlNCcGJtTnZjbkpsWTNSc2VTQmpZV3hzY3lCZ2QybDBhRjkwY21GalpXSmhZMnRnSUc5dUlIUm9aU0JsZUdObGNIUnBiMjRnWTJ4aGMzTWdhVzV6ZEdWaFpDQnZaaUIwYUdVZ2FXNXpkR0Z1WTJVc0lHRnVaQ0IzYVhSb0lHRnVJR2x1WTI5eWNtVmpkQ0J1ZFcxaVpYSWdiMllnWVhKbmRXMWxiblJ6TGlCVWFHbHpJSEpsYzNWc2RITWdhVzRnWVc0Z1lFRjBkSEpwWW5WMFpVVnljbTl5WUNCdmNpQmdWSGx3WlVWeWNtOXlZQ3dnYldGemEybHVaeUIwYUdVZ2IzSnBaMmx1WVd3Z1pYaGpaWEIwYVc5dUxseHVLaUFnSUNvcVUyVnVaR1Z5SUZSaGMyc2dUR1ZoYXpvcUtpQkpaaUIwYUdVZ2QzSmhjSEJsWkNCWFUwZEpJR0Z3Y0d4cFkyRjBhVzl1SUhKaGFYTmxjeUJoYmlCbGVHTmxjSFJwYjI0Z1ltVm1iM0psSUhSb1pTQnRZV2x1SUZkVFIwa2dkR0Z6YXlCamIyMXdiR1YwWlhNc0lIUm9aU0JnYzJWdVpHVnlZQ0IwWVhOckozTWdkR1Z5YldsdVlYUnBiMjRnYzJsbmJtRnNJR2x6SUhOcmFYQndaV1F1SUZSb2FYTWdiR1ZoZG1WeklIUm9aU0JnYzJWdVpHVnlZQ0IwWVhOcklIQmxibVJwYm1jZ2FXNWtaV1pwYm1sMFpXeDVMQ0JqWVhWemFXNW5JSEpsYzI5MWNtTmxJR3hsWVd0eklHRnVaQ0JjSWxSaGMyc2dkMkZ6SUdSbGMzUnliM2xsWkNCaWRYUWdhWFFnYVhNZ2NHVnVaR2x1WnlGY0lpQjNZWEp1YVc1bmN5NGdWR2hwY3lCamJHVmhiblZ3SUhOb2IzVnNaQ0JpWlNCcGJpQmhJR0JtYVc1aGJHeDVZQ0JpYkc5amF5NWNiaW9nSUNBcUtsQkZVQ0F6TXpNeklGWnBiMnhoZEdsdmJqb3FLaUJGZUdObGNIUnBiMjV6SUhCeWIzWnBaR1ZrSUhacFlTQmdaWGhqWDJsdVptOWdJR0Z5WlNCMWJtTnZibVJwZEdsdmJtRnNiSGtnY21VdGNtRnBjMlZrSUdGbWRHVnlJSFJvWlNCWFUwZEpJR0Z3Y0NCbWFXNXBjMmhsY3k0Z1FXTmpiM0prYVc1bklIUnZJRkJGVUNBek16TXpMQ0JnWlhoalgybHVabTlnSUhOb2IzVnNaQ0J2Ym14NUlHSmxJSEpsTFhKaGFYTmxaQ0JwWmlCSVZGUlFJR2hsWVdSbGNuTWdhR0YyWlNCaGJISmxZV1I1SUdKbFpXNGdjMlZ1ZERzZ2IzUm9aWEozYVhObExDQnBkQ0J0ZFhOMElHSmxJR2xuYm05eVpXUXVJRlJvYVhNZ1kyRnVJR2x1WTI5eWNtVmpkR3g1SUhSMWNtNGdkbUZzYVdRZ1YxTkhTU0JsY25KdmNpQm9ZVzVrYkdsdVp5QnBiblJ2SUhObGNuWmxjaTF6YVdSbElEVXdNSE11SWl3aVkyOXVabWxrWlc1alpTSTZNQzQzTlRZeE56Y3dNVFk1TWpjeU16azFMQ0pqWVhSbFoyOXllU0k2SWt4UFIwbERYMEpWUnlKOSIsImJyYW5jaCI6ImF1dG8tcHItODYwZmRmNmMtY3Vyc29yLWJ1Z2JvdCJ9LCJpYXQiOjE3NDk3NjQ4OTMsImV4cCI6MTc1MDM2OTY5M30.Q1qhqk-J56bSmLPeBi-tOPCjXWkNK990RishgyT2JdNfSNu-EN_MqHJCUe8gP01qhvzQhuvksZiGF5_9nwV3ridajPxV6OFFbLpnkZ85gKHODWBYldHVGJIoKUQEcDS_NW2eYb8lSHJ3pwyUU_olFFJuZsMS_KOtQG06xvp_cAWNi9sTZ0RsyJqHanI0V4dCEBxzvXrQwIMBi74_fL6fHVDqm2dCIwoHqkCqmQsFFZDmI3AX5XuNhhl7VO1t0HgrY4yxmPOb64t1TJMGqHR00E3UnT1no99h0HiDvNP2QGJ3QnJqHWYxFZNS2aizQK8t_X8g5T-4rSSOVmFtLCYS_w\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: WSGIMiddleware Violates Specification, Causes Errors</h3></summary>\n\nThe `WSGIMiddleware` violates the WSGI specification in two ways:\n1.  The `start_response` callable does not return the mandatory `write()` callable, causing `TypeError` crashes in WSGI applications that attempt to use it.\n2.  It fails to call the `close()` method on the WSGI application's response iterable, which can lead to resource leaks.\n\n<p></p>\n\n<details>\n<summary><code>starlette/middleware/wsgi.py#L107-L140</code></summary>\n\nhttps://github.com/SM-100-Bench/encode_starlette_813/blob/475be7dd83a1b70913964583fdfc7e06dc9959fe/starlette/middleware/wsgi.py#L107-L140\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp6ZEdGeWJHVjBkR1V2Yldsa1pHeGxkMkZ5WlM5M2MyZHBMbkI1SWl3aWMzUmhjblJNYVc1bElqb3hNRGNzSW1WdVpFeHBibVVpT2pFME1Dd2lZMjlrWlV4cGJtVnpJanBiWFgxZExDSnBaQ0k2SW1NME1UbGpOMlZsTFRWaE5ERXRORGM0WWkwNFptTXlMVGcxTlRVNE9HTTFaV015T0NJc0ltUmxjMk55YVhCMGFXOXVJam9pVkdobElHQlhVMGRKVFdsa1pHeGxkMkZ5WldBZ2RtbHZiR0YwWlhNZ2RHaGxJRmRUUjBrZ2MzQmxZMmxtYVdOaGRHbHZiaUJwYmlCMGQyOGdkMkY1Y3pwY2JqRXVJQ0JVYUdVZ1lITjBZWEowWDNKbGMzQnZibk5sWUNCallXeHNZV0pzWlNCa2IyVnpJRzV2ZENCeVpYUjFjbTRnZEdobElHMWhibVJoZEc5eWVTQmdkM0pwZEdVb0tXQWdZMkZzYkdGaWJHVXNJR05oZFhOcGJtY2dZRlI1Y0dWRmNuSnZjbUFnWTNKaGMyaGxjeUJwYmlCWFUwZEpJR0Z3Y0d4cFkyRjBhVzl1Y3lCMGFHRjBJR0YwZEdWdGNIUWdkRzhnZFhObElHbDBMbHh1TWk0Z0lFbDBJR1poYVd4eklIUnZJR05oYkd3Z2RHaGxJR0JqYkc5elpTZ3BZQ0J0WlhSb2IyUWdiMjRnZEdobElGZFRSMGtnWVhCd2JHbGpZWFJwYjI0bmN5QnlaWE53YjI1elpTQnBkR1Z5WVdKc1pTd2dkMmhwWTJnZ1kyRnVJR3hsWVdRZ2RHOGdjbVZ6YjNWeVkyVWdiR1ZoYTNNdUlpd2lZMjl1Wm1sa1pXNWpaU0k2TUM0Mk1qSTBPRFV6TURBd01UQXdOek15TENKallYUmxaMjl5ZVNJNklreFBSMGxEWDBKVlJ5SjkiLCJicmFuY2giOiJhdXRvLXByLTg2MGZkZjZjLWN1cnNvci1idWdib3QifSwiaWF0IjoxNzQ5NzY0ODkzLCJleHAiOjE3NTAzNjk2OTN9.QrgGqRBrKK75GF_P0CYPxM0d-zwJY7tZMaTc-N0iAQu_634PYXLA9lUV8ajY_f1yC0KWH5qTApu7os0BI21jkNz1H9eHAu_Nic4M0wqHYxc_TlCWT-4Jb5a1zgroY2zGFjah4jRgmRyEpZHUyFYSoanO9vUXeUm9dyFG3MmOIum5_z4wu5qZCFKN3i4gkCGa4eyJFHfkpEH3PMo7fQjQOo7mmgF93YvX39vV-h-08YjhZ1JB-4PQ57j_IZMsHo6diDH9KdVamKTjcY_xnxGPKJCG8NWEW0J5tlUyF69ECgyz4xdWZy0M4Mm60P3GoliT15HKSUT0ABhDS9OaOB5YeQ\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: WSGI Environment Violates String Requirement</h3></summary>\n\nThe `build_environ` function incorrectly sets `environ[\"SERVER_PORT\"]` as an integer. This violates the WSGI specification, which requires all environ values to be strings. Consequently, WSGI applications expecting `SERVER_PORT` to be a string (e.g., for string concatenation or URL construction) will fail or behave unexpectedly.\n\n<p></p>\n\n<details>\n<summary><code>starlette/middleware/wsgi.py#L28-L31</code></summary>\n\nhttps://github.com/SM-100-Bench/encode_starlette_813/blob/475be7dd83a1b70913964583fdfc7e06dc9959fe/starlette/middleware/wsgi.py#L28-L31\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp6ZEdGeWJHVjBkR1V2Yldsa1pHeGxkMkZ5WlM5M2MyZHBMbkI1SWl3aWMzUmhjblJNYVc1bElqb3lPQ3dpWlc1a1RHbHVaU0k2TXpFc0ltTnZaR1ZNYVc1bGN5STZXMTE5WFN3aWFXUWlPaUl4TmpneFpqRTJOeTB3T0dZM0xUUXlNakV0WVdNNFl5MWtNREEwWW1FNVlUTXhaV0VpTENKa1pYTmpjbWx3ZEdsdmJpSTZJbFJvWlNCZ1luVnBiR1JmWlc1MmFYSnZibUFnWm5WdVkzUnBiMjRnYVc1amIzSnlaV04wYkhrZ2MyVjBjeUJnWlc1MmFYSnZibHRjSWxORlVsWkZVbDlRVDFKVVhDSmRZQ0JoY3lCaGJpQnBiblJsWjJWeUxpQlVhR2x6SUhacGIyeGhkR1Z6SUhSb1pTQlhVMGRKSUhOd1pXTnBabWxqWVhScGIyNHNJSGRvYVdOb0lISmxjWFZwY21WeklHRnNiQ0JsYm5acGNtOXVJSFpoYkhWbGN5QjBieUJpWlNCemRISnBibWR6TGlCRGIyNXpaWEYxWlc1MGJIa3NJRmRUUjBrZ1lYQndiR2xqWVhScGIyNXpJR1Y0Y0dWamRHbHVaeUJnVTBWU1ZrVlNYMUJQVWxSZ0lIUnZJR0psSUdFZ2MzUnlhVzVuSUNobExtY3VMQ0JtYjNJZ2MzUnlhVzVuSUdOdmJtTmhkR1Z1WVhScGIyNGdiM0lnVlZKTUlHTnZibk4wY25WamRHbHZiaWtnZDJsc2JDQm1ZV2xzSUc5eUlHSmxhR0YyWlNCMWJtVjRjR1ZqZEdWa2JIa3VJaXdpWTI5dVptbGtaVzVqWlNJNk1DNDBPRGc1T1RneE1qa3pNVE0zTlRJNU55d2lZMkYwWldkdmNua2lPaUpNVDBkSlExOUNWVWNpZlEiLCJicmFuY2giOiJhdXRvLXByLTg2MGZkZjZjLWN1cnNvci1idWdib3QifSwiaWF0IjoxNzQ5NzY0ODkzLCJleHAiOjE3NTAzNjk2OTN9.k0ghH5roF_bvqsXcj0CtF3QrCDvxjvr2-3DlqzOGVfZ6Sp1VBJUSaBzXCyGTnavqK3M1wGlr1wgB_rcU8VXYkdhT7kLfzTXPLVfrQ386FptjKf6ca3xw_S-U89qehCrlWBNnPR-RLx6HS2uzeJskhNCFI1f6gAw64TUfgVMI-k9GXGaN-L6Et2q80pL8zDWwvbhGqJHil3J0b9X1mMWkTbK6pRqQoJG9I4ZeBrt0_2iP_ZG806wRnidS1GSznj6De0z5SXXBrNTYL01weVXLs0MQMe6w4rr-dmhtOVFABFjb0z9bNNkQzXyyT-dL3n6dGBgDpKy42GsBuo1Bb4skFA\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: WSGIMiddleware Misconfigures Error Output</h3></summary>\n\nThe `build_environ` function in `WSGIMiddleware` incorrectly sets the `wsgi.errors` key to `sys.stdout`. According to the WSGI specification (PEP 3333), this should be `sys.stderr`. This misdirects error output to standard output, potentially mixing it with application data or silently discarding it, which can break tooling and application expectations.\n\n<p></p>\n\n<details>\n<summary><code>starlette/middleware/wsgi.py#L21-L23</code></summary>\n\nhttps://github.com/SM-100-Bench/encode_starlette_813/blob/475be7dd83a1b70913964583fdfc7e06dc9959fe/starlette/middleware/wsgi.py#L21-L23\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp6ZEdGeWJHVjBkR1V2Yldsa1pHeGxkMkZ5WlM5M2MyZHBMbkI1SWl3aWMzUmhjblJNYVc1bElqb3lNU3dpWlc1a1RHbHVaU0k2TWpNc0ltTnZaR1ZNYVc1bGN5STZXMTE5WFN3aWFXUWlPaUkwTkdFM1lUY3lNUzA1TWpGaUxUUXpPVEl0WWpNeFlpMW1ORFV4TXpka1kyRTVZV1lpTENKa1pYTmpjbWx3ZEdsdmJpSTZJbFJvWlNCZ1luVnBiR1JmWlc1MmFYSnZibUFnWm5WdVkzUnBiMjRnYVc0Z1lGZFRSMGxOYVdSa2JHVjNZWEpsWUNCcGJtTnZjbkpsWTNSc2VTQnpaWFJ6SUhSb1pTQmdkM05uYVM1bGNuSnZjbk5nSUd0bGVTQjBieUJnYzNsekxuTjBaRzkxZEdBdUlFRmpZMjl5WkdsdVp5QjBieUIwYUdVZ1YxTkhTU0J6Y0dWamFXWnBZMkYwYVc5dUlDaFFSVkFnTXpNek15a3NJSFJvYVhNZ2MyaHZkV3hrSUdKbElHQnplWE11YzNSa1pYSnlZQzRnVkdocGN5QnRhWE5rYVhKbFkzUnpJR1Z5Y205eUlHOTFkSEIxZENCMGJ5QnpkR0Z1WkdGeVpDQnZkWFJ3ZFhRc0lIQnZkR1Z1ZEdsaGJHeDVJRzFwZUdsdVp5QnBkQ0IzYVhSb0lHRndjR3hwWTJGMGFXOXVJR1JoZEdFZ2IzSWdjMmxzWlc1MGJIa2daR2x6WTJGeVpHbHVaeUJwZEN3Z2QyaHBZMmdnWTJGdUlHSnlaV0ZySUhSdmIyeHBibWNnWVc1a0lHRndjR3hwWTJGMGFXOXVJR1Y0Y0dWamRHRjBhVzl1Y3k0aUxDSmpiMjVtYVdSbGJtTmxJam93TGpNNE1ERTJOakExTWpFNU5UZ3dOeklzSW1OaGRHVm5iM0o1SWpvaVRFOUhTVU5mUWxWSEluMCIsImJyYW5jaCI6ImF1dG8tcHItODYwZmRmNmMtY3Vyc29yLWJ1Z2JvdCJ9LCJpYXQiOjE3NDk3NjQ4OTMsImV4cCI6MTc1MDM2OTY5M30.VjU-r6LvcQhUBInCV5ke-i-RzF5JqjwLIpLs7ObvFkryMmeScSIRbHdqcbccfefFfw__qVptaxFeLWHqSkYNvPndD4kic7VNlwsIla8pennRKx37aWCqB8-wF0uNcqn_cAVP2wc9bOi6FmCI8Fb1zIbHc55LXj8bL0X8Aj7hpVUVe7DHGloqI4k8hVEiBY7MZhK49AlhO2yemGi_40g-Cq9OflHYbTv_3d1gMxRnNSCYQRN7KR5g7yKR1ouYf1V3iRUHDXAmCnbx0CGzdAQXpy-qhMb4YV7gI8N4_uAYYmXzMuGKCAcIujQHbLC7YnZkMP46M1QaUHnuO5ysVYqosw\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/encode_starlette_813/pull/2#pullrequestreview-2922748652",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/encode_starlette_813/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/encode_starlette_813/pull/2#pullrequestreview-2922748652"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/encode_starlette_813/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T21:48:13Z",
+        "commit_id": "475be7dd83a1b70913964583fdfc7e06dc9959fe"
+      }
+    ]
+  }
+}

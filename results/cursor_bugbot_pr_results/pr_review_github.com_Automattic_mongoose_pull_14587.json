@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/Automattic/mongoose/pull/14587",
+    "commit_sha": "17c31b7e2874fb1b425ffcbd4ab7d665608d1eb8",
+    "repo_identifier": "Automattic_mongoose_14587",
+    "timestamp": "2025-06-12T22:03:29Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/Automattic_mongoose_14587/issues/comments/2968271813",
+        "html_url": "https://github.com/SM-100-Bench/Automattic_mongoose_14587/pull/2#issuecomment-2968271813",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/Automattic_mongoose_14587/issues/2",
+        "id": 2968271813,
+        "node_id": "IC_kwDOOiBnlM6w7DvF",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T21:57:44Z",
+        "updated_at": "2025-06-12T21:57:44Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/Automattic_mongoose_14587/issues/comments/2968271813/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922774187,
+        "node_id": "PRR_kwDOOiBnlM6uNf6r",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: Mongoose Validation Errors Silently Dropped</h3></summary>\n\nThe new early-return for `validOps.length === 0` incorrectly reports success when all supplied operations fail Mongoose validation. This causes `validationErrors` to be silently dropped, masking failures that were previously returned to the caller.\n\n<p></p>\n\n<details>\n<summary><code>lib/model.js#L3790-L3803</code></summary>\n\nhttps://github.com/SM-100-Bench/Automattic_mongoose_14587/blob/4fad847f9a54521f9660b19c370cb2371f1b9a8e/lib/model.js#L3790-L3803\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpzYVdJdmJXOWtaV3d1YW5NaUxDSnpkR0Z5ZEV4cGJtVWlPak0zT1RBc0ltVnVaRXhwYm1VaU9qTTRNRE1zSW1OdlpHVk1hVzVsY3lJNlcxMTlYU3dpYVdRaU9pSmlZelF3T0dReFppMWxNRE0yTFRRM1l6Y3RPR0l6TXkwM01XTmxNV1pqT1dFMk5EQWlMQ0prWlhOamNtbHdkR2x2YmlJNklsUm9aU0J1WlhjZ1pXRnliSGt0Y21WMGRYSnVJR1p2Y2lCZ2RtRnNhV1JQY0hNdWJHVnVaM1JvSUQwOVBTQXdZQ0JwYm1OdmNuSmxZM1JzZVNCeVpYQnZjblJ6SUhOMVkyTmxjM01nZDJobGJpQmhiR3dnYzNWd2NHeHBaV1FnYjNCbGNtRjBhVzl1Y3lCbVlXbHNJRTF2Ym1kdmIzTmxJSFpoYkdsa1lYUnBiMjR1SUZSb2FYTWdZMkYxYzJWeklHQjJZV3hwWkdGMGFXOXVSWEp5YjNKellDQjBieUJpWlNCemFXeGxiblJzZVNCa2NtOXdjR1ZrTENCdFlYTnJhVzVuSUdaaGFXeDFjbVZ6SUhSb1lYUWdkMlZ5WlNCd2NtVjJhVzkxYzJ4NUlISmxkSFZ5Ym1Wa0lIUnZJSFJvWlNCallXeHNaWEl1SWl3aVkyOXVabWxrWlc1alpTSTZNU3dpWTJGMFpXZHZjbmtpT2lKTVQwZEpRMTlDVlVjaWZRIiwiYnJhbmNoIjoiYXV0by1wci0xN2MzMWI3ZS1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc2NTc5NCwiZXhwIjoxNzUwMzcwNTk0fQ.R3L2y6jfmv2E4JaG90aseeD0QmbElBYf8oOhSVNjGRcKlbeYQ_mlXhWUrmSSzNwMj1JwfVnz3SOtEGYSks8ijVn-EJ9x5YmuJ9ifg7wzbrhmQ1k1JRxyZUgsCwve-xHmFrmLeOkg0YCf3eip8u_wGD-AwYzDHYRYz8DplSV9za6XkUwzu-6KHWENNyAGUS1LyZYaP7P4ut37A1Fd7Rl8TgwQJEnXjt_QaZR3s2mvjPuVrdf_D7eSqzgmaBNFWPDItSP1F9BoaTAUoopI2w9MMU8q5R9qxphZ4JM_tdgJ4qN92hhG_mg2bkJJZt7mlvScEQ_RdRvwXOKs6rWP9DyCRA\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/Automattic_mongoose_14587/pull/2#pullrequestreview-2922774187",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/Automattic_mongoose_14587/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/Automattic_mongoose_14587/pull/2#pullrequestreview-2922774187"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/Automattic_mongoose_14587/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T22:03:14Z",
+        "commit_id": "4fad847f9a54521f9660b19c370cb2371f1b9a8e"
+      }
+    ]
+  }
+}

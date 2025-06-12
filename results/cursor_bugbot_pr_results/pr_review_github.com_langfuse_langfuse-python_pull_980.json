@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/langfuse/langfuse-python/pull/980",
+    "commit_sha": "1219b7e83bd824acbdca07c8b4ac6a539c239335",
+    "repo_identifier": "langfuse_langfuse-python_980",
+    "timestamp": "2025-06-12T21:32:43Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/langfuse_langfuse-python_980/issues/comments/2968190000",
+        "html_url": "https://github.com/SM-100-Bench/langfuse_langfuse-python_980/pull/7#issuecomment-2968190000",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/langfuse_langfuse-python_980/issues/7",
+        "id": 2968190000,
+        "node_id": "IC_kwDOOiBey86w6vww",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T21:22:20Z",
+        "updated_at": "2025-06-12T21:22:20Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/langfuse_langfuse-python_980/issues/comments/2968190000/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922720481,
+        "node_id": "PRR_kwDOOiBey86uNSzh",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: Shared Mutable Default List Causes Instance State Issues</h3></summary>\n\nThe `DatasetClient.runs` attribute is now defined as a class-level mutable default list (`[]`). The corresponding instance-level assignment (`self.runs = dataset.runs`) was removed from `__init__`. As a result, all `DatasetClient` instances share the same `runs` list object, allowing mutations on one instance to silently affect others. Furthermore, `dataset_client.runs` will always be an empty list, breaking previous behavior where it contained actual run names.\n\n<p></p>\n\n<details>\n<summary><code>langfuse/client.py#L2824-L2877</code></summary>\n\nhttps://github.com/SM-100-Bench/langfuse_langfuse-python_980/blob/74d102d1ca81e0e9942c22d9d8b43afd6b5676e5/langfuse/client.py#L2824-L2877\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpzWVc1blpuVnpaUzlqYkdsbGJuUXVjSGtpTENKemRHRnlkRXhwYm1VaU9qSTRNalFzSW1WdVpFeHBibVVpT2pJNE56Y3NJbU52WkdWTWFXNWxjeUk2VzExOVhTd2lhV1FpT2lJd09UQmxPRGM0TVMxaVl6ZzVMVFEwWlRNdE9EUmtaaTFqTVdKbE9UTXpNVEE0WXpraUxDSmtaWE5qY21sd2RHbHZiaUk2SWxSb1pTQmdSR0YwWVhObGRFTnNhV1Z1ZEM1eWRXNXpZQ0JoZEhSeWFXSjFkR1VnYVhNZ2JtOTNJR1JsWm1sdVpXUWdZWE1nWVNCamJHRnpjeTFzWlhabGJDQnRkWFJoWW14bElHUmxabUYxYkhRZ2JHbHpkQ0FvWUZ0ZFlDa3VJRlJvWlNCamIzSnlaWE53YjI1a2FXNW5JR2x1YzNSaGJtTmxMV3hsZG1Wc0lHRnpjMmxuYm0xbGJuUWdLR0J6Wld4bUxuSjFibk1nUFNCa1lYUmhjMlYwTG5KMWJuTmdLU0IzWVhNZ2NtVnRiM1psWkNCbWNtOXRJR0JmWDJsdWFYUmZYMkF1SUVGeklHRWdjbVZ6ZFd4MExDQmhiR3dnWUVSaGRHRnpaWFJEYkdsbGJuUmdJR2x1YzNSaGJtTmxjeUJ6YUdGeVpTQjBhR1VnYzJGdFpTQmdjblZ1YzJBZ2JHbHpkQ0J2WW1wbFkzUXNJR0ZzYkc5M2FXNW5JRzExZEdGMGFXOXVjeUJ2YmlCdmJtVWdhVzV6ZEdGdVkyVWdkRzhnYzJsc1pXNTBiSGtnWVdabVpXTjBJRzkwYUdWeWN5NGdSblZ5ZEdobGNtMXZjbVVzSUdCa1lYUmhjMlYwWDJOc2FXVnVkQzV5ZFc1ellDQjNhV3hzSUdGc2QyRjVjeUJpWlNCaGJpQmxiWEIwZVNCc2FYTjBMQ0JpY21WaGEybHVaeUJ3Y21WMmFXOTFjeUJpWldoaGRtbHZjaUIzYUdWeVpTQnBkQ0JqYjI1MFlXbHVaV1FnWVdOMGRXRnNJSEoxYmlCdVlXMWxjeTRpTENKamIyNW1hV1JsYm1ObElqb3hMQ0pqWVhSbFoyOXllU0k2SWt4UFIwbERYMEpWUnlKOSIsImJyYW5jaCI6ImF1dG8tcHItMTIxOWI3ZTgtY3Vyc29yLWJ1Z2JvdCJ9LCJpYXQiOjE3NDk3NjM5NTMsImV4cCI6MTc1MDM2ODc1M30.PuzATqtRhfj7NqOIA7w7RcDBR4qPHhvC8-q8DLvYa1WZ8nI5aJr3_8VqpvJIlaB5PcUXR8adt0PWtdyVuV6ZxnWf4bMNX9M9hQnaeyTTEohlmXKOkYJMZkoZUEVHzw_nrtxx0D4A2Vkt29RKDAzp7BLv8tyO_JE57KFUTW0vC50-ia8bVGz461ZATS43r5rRZ9DGCiPsseb19ivUVsexb_uLrQH8F0zGslm8lg7FbbLFj9AgiBXdt9aKcdSAw6I6FskNHKFkBvr6v3_O9zUEZdW2GeYHncaIBYkUbyXjVftPNvkN1rURYma0BPGGsngU7q2qYz372RoEBXZZ2qVq2Q\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: API Path Error in Dataset Retrieval</h3></summary>\n\nThe `DatasetsClient.get_run` and `AsyncDatasetsClient.get_run` methods incorrectly use the old API path `/api/public/datasets/{name}/runs/{run}` instead of the new `/api/public/v2/datasets/{name}/runs/{run}`. This causes requests to retrieve individual dataset runs to fail with a 404 Not Found error.\n\n<p></p>\n\n<details>\n<summary><code>langfuse/api/resources/datasets/client.py#L344-L349</code></summary>\n\nhttps://github.com/SM-100-Bench/langfuse_langfuse-python_980/blob/74d102d1ca81e0e9942c22d9d8b43afd6b5676e5/langfuse/api/resources/datasets/client.py#L344-L349\n\n</details>\n\n<details>\n<summary><code>langfuse/api/resources/datasets/client.py#L818-L823</code></summary>\n\nhttps://github.com/SM-100-Bench/langfuse_langfuse-python_980/blob/74d102d1ca81e0e9942c22d9d8b43afd6b5676e5/langfuse/api/resources/datasets/client.py#L818-L823\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpzWVc1blpuVnpaUzloY0drdmNtVnpiM1Z5WTJWekwyUmhkR0Z6WlhSekwyTnNhV1Z1ZEM1d2VTSXNJbk4wWVhKMFRHbHVaU0k2TXpRMExDSmxibVJNYVc1bElqb3pORGtzSW1OdlpHVk1hVzVsY3lJNlcxMTlMSHNpWm1sc1pTSTZJbXhoYm1kbWRYTmxMMkZ3YVM5eVpYTnZkWEpqWlhNdlpHRjBZWE5sZEhNdlkyeHBaVzUwTG5CNUlpd2ljM1JoY25STWFXNWxJam80TVRnc0ltVnVaRXhwYm1VaU9qZ3lNeXdpWTI5a1pVeHBibVZ6SWpwYlhYMWRMQ0pwWkNJNkltTTRNelJrTmpkbExUZzBZalV0TkdFeE5pMDVOR1JpTFdWaFlURmxOREk0TW1ObE15SXNJbVJsYzJOeWFYQjBhVzl1SWpvaVZHaGxJR0JFWVhSaGMyVjBjME5zYVdWdWRDNW5aWFJmY25WdVlDQmhibVFnWUVGemVXNWpSR0YwWVhObGRITkRiR2xsYm5RdVoyVjBYM0oxYm1BZ2JXVjBhRzlrY3lCcGJtTnZjbkpsWTNSc2VTQjFjMlVnZEdobElHOXNaQ0JCVUVrZ2NHRjBhQ0JnTDJGd2FTOXdkV0pzYVdNdlpHRjBZWE5sZEhNdmUyNWhiV1Y5TDNKMWJuTXZlM0oxYm4xZ0lHbHVjM1JsWVdRZ2IyWWdkR2hsSUc1bGR5QmdMMkZ3YVM5d2RXSnNhV012ZGpJdlpHRjBZWE5sZEhNdmUyNWhiV1Y5TDNKMWJuTXZlM0oxYm4xZ0xpQlVhR2x6SUdOaGRYTmxjeUJ5WlhGMVpYTjBjeUIwYnlCeVpYUnlhV1YyWlNCcGJtUnBkbWxrZFdGc0lHUmhkR0Z6WlhRZ2NuVnVjeUIwYnlCbVlXbHNJSGRwZEdnZ1lTQTBNRFFnVG05MElFWnZkVzVrSUdWeWNtOXlMaUlzSW1OdmJtWnBaR1Z1WTJVaU9qQXVNemc0T1RZeU16azVPRE01TWpNNExDSmpZWFJsWjI5eWVTSTZJa3hQUjBsRFgwSlZSeUo5IiwiYnJhbmNoIjoiYXV0by1wci0xMjE5YjdlOC1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc2Mzk1MywiZXhwIjoxNzUwMzY4NzUzfQ.Q0w43evVv3Ur5o2aD1rtyiCrE903929H2dcdIwhnZHjh53C73hSNAd8SRJeWPDuBzwCz_rYFQfFQNoR3ZHQiZR7yrwjX0sYPtVjTUZ5BwZN4o2ys0JobedT1kqXfPoKDY45ajKwoTqKLkIlpMZYso7Qf9xDm4RklVpVyMa0VXWd3RvNLveuPCQKaFXLdUyfTmiTe9nbPS1uXRBUcqmVghXHQxk2Emjl7fUmCBB0-F7Y_lIVWEQcOytZy6qGwhNeP5Iv5f3jx8my7EfaeF3MVu84GR2vPNn7_p3sMlynXJkmV8BTV8xDcrUMWpx7dQAduhJbQy7KF3RFD2B-Uu5S-bQ\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: DatasetsClient Methods Target Incorrect API Endpoint</h3></summary>\n\nThe `DatasetsClient.get_runs()` (sync) and `AsyncDatasetsClient.get_runs()` (async) methods, used for listing all dataset runs, incorrectly target the `api/public/datasets/{name}/runs` endpoint. They should instead use the `api/public/v2/datasets/{name}/runs` path to align with the v2 API and avoid future failures.\n\n<p></p>\n\n<details>\n<summary><code>langfuse/api/resources/datasets/client.py#L437-L444</code></summary>\n\nhttps://github.com/SM-100-Bench/langfuse_langfuse-python_980/blob/74d102d1ca81e0e9942c22d9d8b43afd6b5676e5/langfuse/api/resources/datasets/client.py#L437-L444\n\n</details>\n\n<details>\n<summary><code>langfuse/api/resources/datasets/client.py#L911-L918</code></summary>\n\nhttps://github.com/SM-100-Bench/langfuse_langfuse-python_980/blob/74d102d1ca81e0e9942c22d9d8b43afd6b5676e5/langfuse/api/resources/datasets/client.py#L911-L918\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpzWVc1blpuVnpaUzloY0drdmNtVnpiM1Z5WTJWekwyUmhkR0Z6WlhSekwyTnNhV1Z1ZEM1d2VTSXNJbk4wWVhKMFRHbHVaU0k2TkRNM0xDSmxibVJNYVc1bElqbzBORFFzSW1OdlpHVk1hVzVsY3lJNlcxMTlMSHNpWm1sc1pTSTZJbXhoYm1kbWRYTmxMMkZ3YVM5eVpYTnZkWEpqWlhNdlpHRjBZWE5sZEhNdlkyeHBaVzUwTG5CNUlpd2ljM1JoY25STWFXNWxJam81TVRFc0ltVnVaRXhwYm1VaU9qa3hPQ3dpWTI5a1pVeHBibVZ6SWpwYlhYMWRMQ0pwWkNJNkltVTBabU5oT0RVM0xXTTJNMlV0TkdZMk15MDVZakkyTFRRNE1HSmlZalJoWVRZM015SXNJbVJsYzJOeWFYQjBhVzl1SWpvaVZHaGxJR0JFWVhSaGMyVjBjME5zYVdWdWRDNW5aWFJmY25WdWN5Z3BZQ0FvYzNsdVl5a2dZVzVrSUdCQmMzbHVZMFJoZEdGelpYUnpRMnhwWlc1MExtZGxkRjl5ZFc1ektDbGdJQ2hoYzNsdVl5a2diV1YwYUc5a2N5d2dkWE5sWkNCbWIzSWdiR2x6ZEdsdVp5QmhiR3dnWkdGMFlYTmxkQ0J5ZFc1ekxDQnBibU52Y25KbFkzUnNlU0IwWVhKblpYUWdkR2hsSUdCaGNHa3ZjSFZpYkdsakwyUmhkR0Z6WlhSekwzdHVZVzFsZlM5eWRXNXpZQ0JsYm1Sd2IybHVkQzRnVkdobGVTQnphRzkxYkdRZ2FXNXpkR1ZoWkNCMWMyVWdkR2hsSUdCaGNHa3ZjSFZpYkdsakwzWXlMMlJoZEdGelpYUnpMM3R1WVcxbGZTOXlkVzV6WUNCd1lYUm9JSFJ2SUdGc2FXZHVJSGRwZEdnZ2RHaGxJSFl5SUVGUVNTQmhibVFnWVhadmFXUWdablYwZFhKbElHWmhhV3gxY21WekxpSXNJbU52Ym1acFpHVnVZMlVpT2pBdU16WTFNekUxTkRVeU1qVXdOVEl4TXpjc0ltTmhkR1ZuYjNKNUlqb2lURTlIU1VOZlFsVkhJbjAiLCJicmFuY2giOiJhdXRvLXByLTEyMTliN2U4LWN1cnNvci1idWdib3QifSwiaWF0IjoxNzQ5NzYzOTUzLCJleHAiOjE3NTAzNjg3NTN9.AeDFigao9KmNcO7HXpXB2_PPkuhG-TPOiwUgHUuepBNxMLa1RBdHxNcaxT4KLjA_74nrQVjCrIsqSVeYkArr_hgaf2q8ZB60S1Jzhp7Zg4SyRmg0vPXTTAYb6b3HekYG1zm-ppurvkaLrq04wfGeU5Q7c67GuaERDvTfprrxxf1t1khWY_0uXtOlRS7cvrdLyVRFuJT0Zm_6N5mOcFBVakdHNFFUH-4M9kv4HzHBeCZhB8T-FDpnXmu13DsGckj65hyLYA0qviHusith4LnWPEbRNs4_0fIs35tyMCkUtNM8H1pJT7wl0uGGT7PYyPlfc8xgr_pmH_0Tnv-IFVMgBQ\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/langfuse_langfuse-python_980/pull/7#pullrequestreview-2922720481",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/langfuse_langfuse-python_980/pulls/7",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/langfuse_langfuse-python_980/pull/7#pullrequestreview-2922720481"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/langfuse_langfuse-python_980/pulls/7"
+          }
+        },
+        "submitted_at": "2025-06-12T21:32:33Z",
+        "commit_id": "74d102d1ca81e0e9942c22d9d8b43afd6b5676e5"
+      }
+    ]
+  }
+}

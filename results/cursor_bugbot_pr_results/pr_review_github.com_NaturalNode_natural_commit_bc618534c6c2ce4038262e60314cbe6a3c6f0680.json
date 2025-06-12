@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/NaturalNode/natural/commit/bc618534c6c2ce4038262e60314cbe6a3c6f0680",
+    "commit_sha": "4af93abe0a9e77b3757b638140b4051118344f98",
+    "repo_identifier": "NaturalNode_natural_bc618534c6c2ce4038262e60314cbe6a3c6f0680",
+    "timestamp": "2025-06-12T21:28:03Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/NaturalNode_natural_bc618534c6c2ce4038262e60314cbe6a3c6f0680/issues/comments/2968190045",
+        "html_url": "https://github.com/SM-100-Bench/NaturalNode_natural_bc618534c6c2ce4038262e60314cbe6a3c6f0680/pull/2#issuecomment-2968190045",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/NaturalNode_natural_bc618534c6c2ce4038262e60314cbe6a3c6f0680/issues/2",
+        "id": 2968190045,
+        "node_id": "IC_kwDOOiBfMs6w6vxd",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T21:22:21Z",
+        "updated_at": "2025-06-12T21:22:21Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/NaturalNode_natural_bc618534c6c2ce4038262e60314cbe6a3c6f0680/issues/comments/2968190045/reactions",
+          "total_count": 1,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 1
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922712864,
+        "node_id": "PRR_kwDOOiBfMs6uNQ8g",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: Sentiment Analysis Flaws: Negation and Normalization</h3></summary>\n\nThe `SentimentAnalyzer` incorrectly calculates sentiment due to two issues:\n\n1.  **Negation scope:** The `negator` flag, set to -1 when a negation word is encountered, is never reset. This causes all subsequent sentiment-bearing words in a sentence to be incorrectly negated (e.g., \"not good but great\" scores negatively, and \"not not good\" fails to neutralize).\n2.  **Score normalization:** The final sentiment score is divided by the total number of words (`words.length`) instead of the count of words that actually contributed to the sentiment (`nrHits`). This dilutes scores in longer sentences with neutral words and makes the sentiment heavily length-dependent.\n\n<p></p>\n\n<details>\n<summary><code>lib/natural/sentiment/SentimentAnalyzer.js#L81-L109</code></summary>\n\nhttps://github.com/SM-100-Bench/NaturalNode_natural_bc618534c6c2ce4038262e60314cbe6a3c6f0680/blob/647b46132cfe1e284bb8586ad6a171d95f752836/lib/natural/sentiment/SentimentAnalyzer.js#L81-L109\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpzYVdJdmJtRjBkWEpoYkM5elpXNTBhVzFsYm5RdlUyVnVkR2x0Wlc1MFFXNWhiSGw2WlhJdWFuTWlMQ0p6ZEdGeWRFeHBibVVpT2pneExDSmxibVJNYVc1bElqb3hNRGtzSW1OdlpHVk1hVzVsY3lJNlcxMTlYU3dpYVdRaU9pSTFZbVpsWW1ZMU5TMWxOekprTFRRM00yRXRZV0l3TXkwNU1tTTVPV1kzTm1aaVpHSWlMQ0prWlhOamNtbHdkR2x2YmlJNklsUm9aU0JnVTJWdWRHbHRaVzUwUVc1aGJIbDZaWEpnSUdsdVkyOXljbVZqZEd4NUlHTmhiR04xYkdGMFpYTWdjMlZ1ZEdsdFpXNTBJR1IxWlNCMGJ5QjBkMjhnYVhOemRXVnpPbHh1WEc0eExpQWdLaXBPWldkaGRHbHZiaUJ6WTI5d1pUb3FLaUJVYUdVZ1lHNWxaMkYwYjNKZ0lHWnNZV2NzSUhObGRDQjBieUF0TVNCM2FHVnVJR0VnYm1WbllYUnBiMjRnZDI5eVpDQnBjeUJsYm1OdmRXNTBaWEpsWkN3Z2FYTWdibVYyWlhJZ2NtVnpaWFF1SUZSb2FYTWdZMkYxYzJWeklHRnNiQ0J6ZFdKelpYRjFaVzUwSUhObGJuUnBiV1Z1ZEMxaVpXRnlhVzVuSUhkdmNtUnpJR2x1SUdFZ2MyVnVkR1Z1WTJVZ2RHOGdZbVVnYVc1amIzSnlaV04wYkhrZ2JtVm5ZWFJsWkNBb1pTNW5MaXdnWENKdWIzUWdaMjl2WkNCaWRYUWdaM0psWVhSY0lpQnpZMjl5WlhNZ2JtVm5ZWFJwZG1Wc2VTd2dZVzVrSUZ3aWJtOTBJRzV2ZENCbmIyOWtYQ0lnWm1GcGJITWdkRzhnYm1WMWRISmhiR2w2WlNrdVhHNHlMaUFnS2lwVFkyOXlaU0J1YjNKdFlXeHBlbUYwYVc5dU9pb3FJRlJvWlNCbWFXNWhiQ0J6Wlc1MGFXMWxiblFnYzJOdmNtVWdhWE1nWkdsMmFXUmxaQ0JpZVNCMGFHVWdkRzkwWVd3Z2JuVnRZbVZ5SUc5bUlIZHZjbVJ6SUNoZ2QyOXlaSE11YkdWdVozUm9ZQ2tnYVc1emRHVmhaQ0J2WmlCMGFHVWdZMjkxYm5RZ2IyWWdkMjl5WkhNZ2RHaGhkQ0JoWTNSMVlXeHNlU0JqYjI1MGNtbGlkWFJsWkNCMGJ5QjBhR1VnYzJWdWRHbHRaVzUwSUNoZ2JuSklhWFJ6WUNrdUlGUm9hWE1nWkdsc2RYUmxjeUJ6WTI5eVpYTWdhVzRnYkc5dVoyVnlJSE5sYm5SbGJtTmxjeUIzYVhSb0lHNWxkWFJ5WVd3Z2QyOXlaSE1nWVc1a0lHMWhhMlZ6SUhSb1pTQnpaVzUwYVcxbGJuUWdhR1ZoZG1sc2VTQnNaVzVuZEdndFpHVndaVzVrWlc1MExpSXNJbU52Ym1acFpHVnVZMlVpT2pBdU5EZzRNelkyTWpRMU9UYzNNemc0TVN3aVkyRjBaV2R2Y25raU9pSk1UMGRKUTE5Q1ZVY2lmUSIsImJyYW5jaCI6ImF1dG8tcHItNGFmOTNhYmUtY3Vyc29yLWJ1Z2JvdCJ9LCJpYXQiOjE3NDk3NjM2ODIsImV4cCI6MTc1MDM2ODQ4Mn0.Od1_UQZvx4ZSADVrjCPnnMlxhnZyIlVUZsI62zXzFEa_7pcohVvxibKtT-1gHxLUwEpoGSguLFXd1tvNjDA9QbWTY0_uasz-2jA0dcxibwkBn21aV0OXoWdi0QrymX4uZ9c83LSewCaza2AymWDAFylMNZU5OLWXxbbfuZx3RK0fmlfK9fPlICgWe8Ml88sO7CJ2xrhW2j8sPgdIeKtI4B8f55ezX7kQ2f2jZVMuLCpi8FhwGQg9MUn6LhxiNoN6ABHv6_4HCkrwtEGvVeEtmsKtms33i0f9DKEWYXTp7ciBZdthm-WxpUSg_nQP6DvCGUqTK7ze-SKKY779gRMfIQ\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Callback Timing Issue Causes Empty Output</h3></summary>\n\nDue to the asynchronous nature of `parseString()`, the subsequent code that builds `listTrimmed` and writes `senticon_ca.json` executes before the `parseString` callback populates the `list` variable. This results in an empty `listTrimmed` and an empty `senticon_ca.json` file, rendering any dependent processing incorrect.\n\n<p></p>\n\n<details>\n<summary><code>lib/natural/sentiment/tools/sentimentXmlParser.js#L8-L30</code></summary>\n\nhttps://github.com/SM-100-Bench/NaturalNode_natural_bc618534c6c2ce4038262e60314cbe6a3c6f0680/blob/647b46132cfe1e284bb8586ad6a171d95f752836/lib/natural/sentiment/tools/sentimentXmlParser.js#L8-L30\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpzYVdJdmJtRjBkWEpoYkM5elpXNTBhVzFsYm5RdmRHOXZiSE12YzJWdWRHbHRaVzUwV0cxc1VHRnljMlZ5TG1weklpd2ljM1JoY25STWFXNWxJam80TENKbGJtUk1hVzVsSWpvek1Dd2lZMjlrWlV4cGJtVnpJanBiWFgxZExDSnBaQ0k2SWpoaE1qSTFOMk5oTFRrME1XVXROREUwWWkwNE9URmlMVEkyWVRReVkyTmhabU5sTmlJc0ltUmxjMk55YVhCMGFXOXVJam9pUkhWbElIUnZJSFJvWlNCaGMzbHVZMmh5YjI1dmRYTWdibUYwZFhKbElHOW1JR0J3WVhKelpWTjBjbWx1WnlncFlDd2dkR2hsSUhOMVluTmxjWFZsYm5RZ1kyOWtaU0IwYUdGMElHSjFhV3hrY3lCZ2JHbHpkRlJ5YVcxdFpXUmdJR0Z1WkNCM2NtbDBaWE1nWUhObGJuUnBZMjl1WDJOaExtcHpiMjVnSUdWNFpXTjFkR1Z6SUdKbFptOXlaU0IwYUdVZ1lIQmhjbk5sVTNSeWFXNW5ZQ0JqWVd4c1ltRmpheUJ3YjNCMWJHRjBaWE1nZEdobElHQnNhWE4wWUNCMllYSnBZV0pzWlM0Z1ZHaHBjeUJ5WlhOMWJIUnpJR2x1SUdGdUlHVnRjSFI1SUdCc2FYTjBWSEpwYlcxbFpHQWdZVzVrSUdGdUlHVnRjSFI1SUdCelpXNTBhV052Ymw5allTNXFjMjl1WUNCbWFXeGxMQ0J5Wlc1a1pYSnBibWNnWVc1NUlHUmxjR1Z1WkdWdWRDQndjbTlqWlhOemFXNW5JR2x1WTI5eWNtVmpkQzRpTENKamIyNW1hV1JsYm1ObElqb3dMak0zTlRJd016TXlNVGs1TURJMU16azNMQ0pqWVhSbFoyOXllU0k2SWt4UFIwbERYMEpWUnlKOSIsImJyYW5jaCI6ImF1dG8tcHItNGFmOTNhYmUtY3Vyc29yLWJ1Z2JvdCJ9LCJpYXQiOjE3NDk3NjM2ODIsImV4cCI6MTc1MDM2ODQ4Mn0.ilfwO7IcvFAT0L8YXIukOKTKHvnnpo48PQGYUaH7hUGyhyQ3wvm4WBj2abMrgXfjvSSiFwe83rodY6a-qHTnHWQF1Zgq5Y95nET-2E-U4F7qTbNgaVTCiY_aWdUCfpPxNICHckHnQaLuelnTvtGE-yTUFhx_2Jlw_jZ1Ou8B4HmH8GqdwVd56H5CdMGLSkwBi4zuDm5VUwV7mESgQ8IFVODlyzHwukhVHxZAUY0u2h5SVzXufabwY3rc5r4WWmXCC02qlGdgcmqCJBlUu-vss8itbikXQlpq9rUh7f5w8y4C8Xiu4JYyIFcF971DckOJNvqnpo8P59sT-xM1g9754A\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/NaturalNode_natural_bc618534c6c2ce4038262e60314cbe6a3c6f0680/pull/2#pullrequestreview-2922712864",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/NaturalNode_natural_bc618534c6c2ce4038262e60314cbe6a3c6f0680/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/NaturalNode_natural_bc618534c6c2ce4038262e60314cbe6a3c6f0680/pull/2#pullrequestreview-2922712864"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/NaturalNode_natural_bc618534c6c2ce4038262e60314cbe6a3c6f0680/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T21:28:03Z",
+        "commit_id": "647b46132cfe1e284bb8586ad6a171d95f752836"
+      }
+    ]
+  }
+}

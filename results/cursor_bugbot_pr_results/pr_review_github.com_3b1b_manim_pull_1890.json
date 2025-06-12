@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/3b1b/manim/pull/1890",
+    "commit_sha": "1b009a4b035244bd6a0b48bc4dc945fd3b4236ef",
+    "repo_identifier": "3b1b_manim_1890",
+    "timestamp": "2025-06-12T21:49:24Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/3b1b_manim_1890/issues/comments/2968238955",
+        "html_url": "https://github.com/SM-100-Bench/3b1b_manim_1890/pull/2#issuecomment-2968238955",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/3b1b_manim_1890/issues/2",
+        "id": 2968238955,
+        "node_id": "IC_kwDOOiBlcc6w67tr",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T21:44:12Z",
+        "updated_at": "2025-06-12T21:44:12Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/3b1b_manim_1890/issues/comments/2968238955/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922749850,
+        "node_id": "PRR_kwDOOiBlcc6uNZ-a",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: Mobject Copying Fails with Non-Picklable Attributes</h3></summary>\n\nThe `Mobject.copy()` method now relies on `pickle.loads(pickle.dumps(self))`. This change causes `copy()` to fail at runtime for `Mobject` instances containing non-picklable attributes, such as lambda-based updaters, `moderngl` / OpenGL handles within `ShaderWrapper`, or `EventDispatcher` references. `pickle.dumps` raises a `PicklingError` or `AttributeError` in these common scenarios, breaking features like `replicate()`, animations, `save_state()`, `restore()`, `generate_target()`, and `push_self_into_submobjects()`, which previously worked with the custom copying logic.\n\n<p></p>\n\n<details>\n<summary><code>manimlib/mobject/mobject.py#L479-L485</code></summary>\n\nhttps://github.com/SM-100-Bench/3b1b_manim_1890/blob/d138e774b540be7642ece45734143ee3c9594c24/manimlib/mobject/mobject.py#L479-L485\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp0WVc1cGJXeHBZaTl0YjJKcVpXTjBMMjF2WW1wbFkzUXVjSGtpTENKemRHRnlkRXhwYm1VaU9qUTNPU3dpWlc1a1RHbHVaU0k2TkRnMUxDSmpiMlJsVEdsdVpYTWlPbHRkZlYwc0ltbGtJam9pT1RrNE9URTFZMlV0TlRjME5pMDBaamRpTFdFeU5Ua3RZell4TmpReU5qWm1NVEZrSWl3aVpHVnpZM0pwY0hScGIyNGlPaUpVYUdVZ1lFMXZZbXBsWTNRdVkyOXdlU2dwWUNCdFpYUm9iMlFnYm05M0lISmxiR2xsY3lCdmJpQmdjR2xqYTJ4bExteHZZV1J6S0hCcFkydHNaUzVrZFcxd2N5aHpaV3htS1NsZ0xpQlVhR2x6SUdOb1lXNW5aU0JqWVhWelpYTWdZR052Y0hrb0tXQWdkRzhnWm1GcGJDQmhkQ0J5ZFc1MGFXMWxJR1p2Y2lCZ1RXOWlhbVZqZEdBZ2FXNXpkR0Z1WTJWeklHTnZiblJoYVc1cGJtY2dibTl1TFhCcFkydHNZV0pzWlNCaGRIUnlhV0oxZEdWekxDQnpkV05vSUdGeklHeGhiV0prWVMxaVlYTmxaQ0IxY0dSaGRHVnljeXdnWUcxdlpHVnlibWRzWUNBdklFOXdaVzVIVENCb1lXNWtiR1Z6SUhkcGRHaHBiaUJnVTJoaFpHVnlWM0poY0hCbGNtQXNJRzl5SUdCRmRtVnVkRVJwYzNCaGRHTm9aWEpnSUhKbFptVnlaVzVqWlhNdUlHQndhV05yYkdVdVpIVnRjSE5nSUhKaGFYTmxjeUJoSUdCUWFXTnJiR2x1WjBWeWNtOXlZQ0J2Y2lCZ1FYUjBjbWxpZFhSbFJYSnliM0pnSUdsdUlIUm9aWE5sSUdOdmJXMXZiaUJ6WTJWdVlYSnBiM01zSUdKeVpXRnJhVzVuSUdabFlYUjFjbVZ6SUd4cGEyVWdZSEpsY0d4cFkyRjBaU2dwWUN3Z1lXNXBiV0YwYVc5dWN5d2dZSE5oZG1WZmMzUmhkR1VvS1dBc0lHQnlaWE4wYjNKbEtDbGdMQ0JnWjJWdVpYSmhkR1ZmZEdGeVoyVjBLQ2xnTENCaGJtUWdZSEIxYzJoZmMyVnNabDlwYm5SdlgzTjFZbTF2WW1wbFkzUnpLQ2xnTENCM2FHbGphQ0J3Y21WMmFXOTFjMng1SUhkdmNtdGxaQ0IzYVhSb0lIUm9aU0JqZFhOMGIyMGdZMjl3ZVdsdVp5QnNiMmRwWXk0aUxDSmpiMjVtYVdSbGJtTmxJam93TGprNU1qUTNNemd3TnpFd05qSXdOalFzSW1OaGRHVm5iM0o1SWpvaVRFOUhTVU5mUWxWSEluMCIsImJyYW5jaCI6ImF1dG8tcHItMWIwMDlhNGItY3Vyc29yLWJ1Z2JvdCJ9LCJpYXQiOjE3NDk3NjQ5NDQsImV4cCI6MTc1MDM2OTc0NH0.GwHFGU1nuLEMsK43Uim5OGLMWwYGpd3BCJTJ9vRdAAUZ4iwFpQMc7jEutnv40LlyRVKT9rUQol2Akz2qrPFKx64YdCGNwbz275XHa3wTIhyJjymoFa3FUr1iqmkkCxNDebtA4AnH5aRkjBpulkcD7cpu9FSiqGnTX9_WboSfUtpKcnWkwi2w6Jtoz-sNYkYoo57oZiDB-FDgAt4wkp9INi6Y7txy3RYvRv_au5Efy5Ac0v4dBIt-vzKwi_p-bvL8DLs8HE3hyUPylblaWkUMllJl1vnhrF60CiwmmfZFlOFat2RS-R4Qscp08K50Amo4CIh52CEOskS3woX48xgOcQ\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/3b1b_manim_1890/pull/2#pullrequestreview-2922749850",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/3b1b_manim_1890/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/3b1b_manim_1890/pull/2#pullrequestreview-2922749850"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/3b1b_manim_1890/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T21:49:04Z",
+        "commit_id": "d138e774b540be7642ece45734143ee3c9594c24"
+      }
+    ]
+  }
+}

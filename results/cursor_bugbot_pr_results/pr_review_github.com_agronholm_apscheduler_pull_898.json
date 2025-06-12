@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/agronholm/apscheduler/pull/898",
+    "commit_sha": "efe16602580d47ef5cb9787f977a65a5791ea024",
+    "repo_identifier": "agronholm_apscheduler_898",
+    "timestamp": "2025-06-12T21:59:12Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/agronholm_apscheduler_898/issues/comments/2968235526",
+        "html_url": "https://github.com/SM-100-Bench/agronholm_apscheduler_898/pull/2#issuecomment-2968235526",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/agronholm_apscheduler_898/issues/2",
+        "id": 2968235526,
+        "node_id": "IC_kwDOOiBlSs6w664G",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T21:42:08Z",
+        "updated_at": "2025-06-12T21:42:08Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/agronholm_apscheduler_898/issues/comments/2968235526/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922767884,
+        "node_id": "PRR_kwDOOiBlSs6uNeYM",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: Timezone Argument Mismatch in Calendar Trigger</h3></summary>\n\nThe `CalendarIntervalTrigger` constructor incorrectly passes the raw `timezone` argument (which can be a string like 'local') to the `tzinfo` parameter of `datetime.time()`. This raises a `TypeError` because `tzinfo` expects a `tzinfo` object, not a string. The already-converted `self.timezone` (a `tzinfo` object) should be used instead.\n\n<p></p>\n\n<details>\n<summary><code>apscheduler/triggers/calendarinterval.py#L57-L70</code></summary>\n\nhttps://github.com/SM-100-Bench/agronholm_apscheduler_898/blob/4a44d2ff372a7b0909cdee187a222330b897bbd8/apscheduler/triggers/calendarinterval.py#L57-L70\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpoY0hOamFHVmtkV3hsY2k5MGNtbG5aMlZ5Y3k5allXeGxibVJoY21sdWRHVnlkbUZzTG5CNUlpd2ljM1JoY25STWFXNWxJam8xTnl3aVpXNWtUR2x1WlNJNk56QXNJbU52WkdWTWFXNWxjeUk2VzExOVhTd2lhV1FpT2lJMk5qRmxZekU0TWkwd1ptUm1MVFF5TW1RdE9ESmlNUzB3T1dObU4yVm1ZVFZpTlRZaUxDSmtaWE5qY21sd2RHbHZiaUk2SWxSb1pTQmdRMkZzWlc1a1lYSkpiblJsY25aaGJGUnlhV2RuWlhKZ0lHTnZibk4wY25WamRHOXlJR2x1WTI5eWNtVmpkR3g1SUhCaGMzTmxjeUIwYUdVZ2NtRjNJR0IwYVcxbGVtOXVaV0FnWVhKbmRXMWxiblFnS0hkb2FXTm9JR05oYmlCaVpTQmhJSE4wY21sdVp5QnNhV3RsSUNkc2IyTmhiQ2NwSUhSdklIUm9aU0JnZEhwcGJtWnZZQ0J3WVhKaGJXVjBaWElnYjJZZ1lHUmhkR1YwYVcxbExuUnBiV1VvS1dBdUlGUm9hWE1nY21GcGMyVnpJR0VnWUZSNWNHVkZjbkp2Y21BZ1ltVmpZWFZ6WlNCZ2RIcHBibVp2WUNCbGVIQmxZM1J6SUdFZ1lIUjZhVzVtYjJBZ2IySnFaV04wTENCdWIzUWdZU0J6ZEhKcGJtY3VJRlJvWlNCaGJISmxZV1I1TFdOdmJuWmxjblJsWkNCZ2MyVnNaaTUwYVcxbGVtOXVaV0FnS0dFZ1lIUjZhVzVtYjJBZ2IySnFaV04wS1NCemFHOTFiR1FnWW1VZ2RYTmxaQ0JwYm5OMFpXRmtMaUlzSW1OdmJtWnBaR1Z1WTJVaU9qRXNJbU5oZEdWbmIzSjVJam9pVEU5SFNVTmZRbFZISW4wIiwiYnJhbmNoIjoiYXV0by1wci1lZmUxNjYwMi1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc2NTUzNCwiZXhwIjoxNzUwMzcwMzM0fQ.P9i-XmlG7yhjA5sE6H6tEB417gbBo5oNDDpFJgTC23xCfgaEOK4Op7fp5TnQ0PDRknYny-VTv4x2SKlAzU6PBdnbtyhLR3526krDQiMII3YxRKbU532Iw04gnKwbQv0WLc-ghotDDfM6NPBZ0h3wKhfySiAzR-i_lS0n-JIt-xlYXsMMqy0rxfGL4dK2AdmgFD6cyv95aa4dp-gEL0C3HUePcMk3gFESjzEAEEQczIzgdEMxBbOCZVYv-U8iNtSC6-PzlZQdGvqJMVMUxh99qbRteGSixib4owrmwvorGLxjWSsicwD-QSaUQ3TXF1_3Opw37eL0814xt7Rb1RS_UA\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Debug Statements Clutter CronTrigger Logs</h3></summary>\n\nTwo debug `print()` statements (`print('incrementing', ...)` and `print(f'{field.name}: current value = ..., next_value = ...')`) were left in `CronTrigger`'s `_increment_field_value()` and `next()` methods. These statements produce unwanted output to stdout every time the trigger calculates the next fire time, cluttering application logs and degrading performance.\n\n<p></p>\n\n<details>\n<summary><code>apscheduler/triggers/cron/__init__.py#L117-L165</code></summary>\n\nhttps://github.com/SM-100-Bench/agronholm_apscheduler_898/blob/4a44d2ff372a7b0909cdee187a222330b897bbd8/apscheduler/triggers/cron/__init__.py#L117-L165\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpoY0hOamFHVmtkV3hsY2k5MGNtbG5aMlZ5Y3k5amNtOXVMMTlmYVc1cGRGOWZMbkI1SWl3aWMzUmhjblJNYVc1bElqb3hNVGNzSW1WdVpFeHBibVVpT2pFMk5Td2lZMjlrWlV4cGJtVnpJanBiWFgxZExDSnBaQ0k2SWpGbVpXRXpaVEZrTFRWaVl6WXROR1V4WXkxaU5qQmlMV1ppTldFeU0ySmpOMlJrTXlJc0ltUmxjMk55YVhCMGFXOXVJam9pVkhkdklHUmxZblZuSUdCd2NtbHVkQ2dwWUNCemRHRjBaVzFsYm5SeklDaGdjSEpwYm5Rb0oybHVZM0psYldWdWRHbHVaeWNzSUM0dUxpbGdJR0Z1WkNCZ2NISnBiblFvWmlkN1ptbGxiR1F1Ym1GdFpYMDZJR04xY25KbGJuUWdkbUZzZFdVZ1BTQXVMaTRzSUc1bGVIUmZkbUZzZFdVZ1BTQXVMaTRuS1dBcElIZGxjbVVnYkdWbWRDQnBiaUJnUTNKdmJsUnlhV2RuWlhKZ0ozTWdZRjlwYm1OeVpXMWxiblJmWm1sbGJHUmZkbUZzZFdVb0tXQWdZVzVrSUdCdVpYaDBLQ2xnSUcxbGRHaHZaSE11SUZSb1pYTmxJSE4wWVhSbGJXVnVkSE1nY0hKdlpIVmpaU0IxYm5kaGJuUmxaQ0J2ZFhSd2RYUWdkRzhnYzNSa2IzVjBJR1YyWlhKNUlIUnBiV1VnZEdobElIUnlhV2RuWlhJZ1kyRnNZM1ZzWVhSbGN5QjBhR1VnYm1WNGRDQm1hWEpsSUhScGJXVXNJR05zZFhSMFpYSnBibWNnWVhCd2JHbGpZWFJwYjI0Z2JHOW5jeUJoYm1RZ1pHVm5jbUZrYVc1bklIQmxjbVp2Y20xaGJtTmxMaUlzSW1OdmJtWnBaR1Z1WTJVaU9qQXVPRGcyTkRZek9ESXlOamcyTVRZNE9Td2lZMkYwWldkdmNua2lPaUpCUTBOSlJFVk9WRUZNVEZsZlEwOU5UVWxVVkVWRVgwTlBSRVVpZlEiLCJicmFuY2giOiJhdXRvLXByLWVmZTE2NjAyLWN1cnNvci1idWdib3QifSwiaWF0IjoxNzQ5NzY1NTM0LCJleHAiOjE3NTAzNzAzMzR9.ThTQFNJGvtKcuo2k81gSeA89aV5TScmfOjx6Q-xdJHQYSi5PZmn4aJEnOxRdOnWenPAheD0QnPPRn3LDIrPq3Ui7d4OQQ8l8IVrBYAUOWIax-7aUyoSdCHu6kF4GinLjSCtyvkYAXRS35u2jqT9ZZ-uMjPe6kCMD6hot972tgvg0h8EfnwJ5i67Wo4brmWmrvDsS12BcLY5pd7Bnpo-ncftVV015Ba-WJ9_27um8a8CMjw-QB_EFHT-rGun26wMsqNrFhaz89zfAUXeAEP9nLNVMl_ZwgQO5o2rmwQ98JNfaYabKK_QCduuUnwtXOy3E6O5OQUgBBoQ7D5FN_RlBZg\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Timezone Serialization Fails for DST</h3></summary>\n\nBoth `DateTrigger` and `IntervalTrigger` fail to serialize the original `ZoneInfo` timezone. After deserialization, `unmarshal_date()` reconstructs datetimes with fixed-offset timezones, losing DST rules. This silently breaks correct scheduling for jobs spanning DST transitions after a serialize/deserialize cycle.\n\n<p></p>\n\n<details>\n<summary><code>apscheduler/triggers/interval.py#L66-L75</code></summary>\n\nhttps://github.com/SM-100-Bench/agronholm_apscheduler_898/blob/4a44d2ff372a7b0909cdee187a222330b897bbd8/apscheduler/triggers/interval.py#L66-L75\n\n</details>\n\n<details>\n<summary><code>apscheduler/triggers/date.py#L32-L42</code></summary>\n\nhttps://github.com/SM-100-Bench/agronholm_apscheduler_898/blob/4a44d2ff372a7b0909cdee187a222330b897bbd8/apscheduler/triggers/date.py#L32-L42\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpoY0hOamFHVmtkV3hsY2k5MGNtbG5aMlZ5Y3k5cGJuUmxjblpoYkM1d2VTSXNJbk4wWVhKMFRHbHVaU0k2TmpZc0ltVnVaRXhwYm1VaU9qYzFMQ0pqYjJSbFRHbHVaWE1pT2x0ZGZTeDdJbVpwYkdVaU9pSmhjSE5qYUdWa2RXeGxjaTkwY21sbloyVnljeTlrWVhSbExuQjVJaXdpYzNSaGNuUk1hVzVsSWpvek1pd2laVzVrVEdsdVpTSTZORElzSW1OdlpHVk1hVzVsY3lJNlcxMTlYU3dpYVdRaU9pSmpNakF5TVdOaFpDMDVaakprTFRSaVlXUXRPRE5oWVMwNE9HTmpOVEZqWXpReU1qWWlMQ0prWlhOamNtbHdkR2x2YmlJNklrSnZkR2dnWUVSaGRHVlVjbWxuWjJWeVlDQmhibVFnWUVsdWRHVnlkbUZzVkhKcFoyZGxjbUFnWm1GcGJDQjBieUJ6WlhKcFlXeHBlbVVnZEdobElHOXlhV2RwYm1Gc0lHQmFiMjVsU1c1bWIyQWdkR2x0WlhwdmJtVXVJRUZtZEdWeUlHUmxjMlZ5YVdGc2FYcGhkR2x2Yml3Z1lIVnViV0Z5YzJoaGJGOWtZWFJsS0NsZ0lISmxZMjl1YzNSeWRXTjBjeUJrWVhSbGRHbHRaWE1nZDJsMGFDQm1hWGhsWkMxdlptWnpaWFFnZEdsdFpYcHZibVZ6TENCc2IzTnBibWNnUkZOVUlISjFiR1Z6TGlCVWFHbHpJSE5wYkdWdWRHeDVJR0p5WldGcmN5QmpiM0p5WldOMElITmphR1ZrZFd4cGJtY2dabTl5SUdwdlluTWdjM0JoYm01cGJtY2dSRk5VSUhSeVlXNXphWFJwYjI1eklHRm1kR1Z5SUdFZ2MyVnlhV0ZzYVhwbEwyUmxjMlZ5YVdGc2FYcGxJR041WTJ4bExpSXNJbU52Ym1acFpHVnVZMlVpT2pBdU16ZzJOVEF3TURrNU56SXdORFl6TWpNc0ltTmhkR1ZuYjNKNUlqb2lURTlIU1VOZlFsVkhJbjAiLCJicmFuY2giOiJhdXRvLXByLWVmZTE2NjAyLWN1cnNvci1idWdib3QifSwiaWF0IjoxNzQ5NzY1NTM0LCJleHAiOjE3NTAzNzAzMzR9.k5z_wcBt0djxzSuVKZkGQTt-qJUa97xY103Y2hswO3WMv_5x92RsGXk4Km9lAJDXqFc0xEXCm7dwbEofI-wh954laUcoQFQ65WhEj_DnIcSKf9Mu5ortxcFm-d_ddisNKOsq11eRKJNGxDQ3Xr6KY3EDlsHVF-VbiNSUUuWp393k8Ox2jOHLY5kjCsVR2UyY5GA2-IlBHqvhpc2Sj7FBoR7e6m8y6qeypotCWWNUADyhIAsoRNMD70dxsKk-4Qr2h4_Xf1iCeSOPcBgXGuOQ-qMSOSUFaxyIL6sTX3cKrexN2nRuzpaF-3JtSTRFN3p2Q4iLeYge7CCz84Vdwffwtg\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/agronholm_apscheduler_898/pull/2#pullrequestreview-2922767884",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/agronholm_apscheduler_898/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/agronholm_apscheduler_898/pull/2#pullrequestreview-2922767884"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/agronholm_apscheduler_898/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T21:58:54Z",
+        "commit_id": "4a44d2ff372a7b0909cdee187a222330b897bbd8"
+      }
+    ]
+  }
+}

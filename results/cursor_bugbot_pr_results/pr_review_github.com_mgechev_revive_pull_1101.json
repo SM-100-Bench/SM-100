@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/mgechev/revive/pull/1101",
+    "commit_sha": "56702bd8d7e6ea3e1b8d4e6ca377b1da8d89cb8a",
+    "repo_identifier": "mgechev_revive_1101",
+    "timestamp": "2025-06-12T21:38:00Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/mgechev_revive_1101/issues/comments/2968215367",
+        "html_url": "https://github.com/SM-100-Bench/mgechev_revive_1101/pull/3#issuecomment-2968215367",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/mgechev_revive_1101/issues/3",
+        "id": 2968215367,
+        "node_id": "IC_kwDOOiBkSM6w619H",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T21:33:51Z",
+        "updated_at": "2025-06-12T21:33:51Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/mgechev_revive_1101/issues/comments/2968215367/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922729731,
+        "node_id": "PRR_kwDOOiBkSM6uNVED",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: Go Module Detection Fails on Windows</h3></summary>\n\nThe `detectGoMod` function, and its helper `retrieveModFile`, introduce two bugs:\n\n1.  **Nil-pointer panic:** `detectGoMod` unconditionally dereferences `modAst.Go` to access `modAst.Go.Version`. If the `go.mod` file lacks a \"go\" directive (valid for older modules), `modAst.Go` is nil, causing a nil-pointer dereference panic and crashing the linter, unlike the previous implementation which returned a recoverable error.\n2.  **Cross-platform path issues:** `retrieveModFile` uses the `path` package (`path.Dir`, `path.Join`) instead of `path/filepath` for filesystem path manipulation. This prevents correct `go.mod` detection on Windows and other non-POSIX platforms, as `path` does not handle OS-native separators (e.g., backslashes), leading to module detection failures.\n\n<p></p>\n\n<details>\n<summary><code>lint/linter.go#L8-L194</code></summary>\n\nhttps://github.com/SM-100-Bench/mgechev_revive_1101/blob/9c630951b1e1b4297ee15b3d4d97db4e9b991243/lint/linter.go#L8-L194\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpzYVc1MEwyeHBiblJsY2k1bmJ5SXNJbk4wWVhKMFRHbHVaU0k2T0N3aVpXNWtUR2x1WlNJNk1UazBMQ0pqYjJSbFRHbHVaWE1pT2x0ZGZWMHNJbWxrSWpvaVpUVTNOekE0WW1RdE1EZ3hNQzAwWlRCbUxUZ3lNemN0T1dVd01URmxPRGM1WlRreklpd2laR1Z6WTNKcGNIUnBiMjRpT2lKVWFHVWdZR1JsZEdWamRFZHZUVzlrWUNCbWRXNWpkR2x2Yml3Z1lXNWtJR2wwY3lCb1pXeHdaWElnWUhKbGRISnBaWFpsVFc5a1JtbHNaV0FzSUdsdWRISnZaSFZqWlNCMGQyOGdZblZuY3pwY2JseHVNUzRnSUNvcVRtbHNMWEJ2YVc1MFpYSWdjR0Z1YVdNNktpb2dZR1JsZEdWamRFZHZUVzlrWUNCMWJtTnZibVJwZEdsdmJtRnNiSGtnWkdWeVpXWmxjbVZ1WTJWeklHQnRiMlJCYzNRdVIyOWdJSFJ2SUdGalkyVnpjeUJnYlc5a1FYTjBMa2R2TGxabGNuTnBiMjVnTGlCSlppQjBhR1VnWUdkdkxtMXZaR0FnWm1sc1pTQnNZV05yY3lCaElGd2laMjljSWlCa2FYSmxZM1JwZG1VZ0tIWmhiR2xrSUdadmNpQnZiR1JsY2lCdGIyUjFiR1Z6S1N3Z1lHMXZaRUZ6ZEM1SGIyQWdhWE1nYm1sc0xDQmpZWFZ6YVc1bklHRWdibWxzTFhCdmFXNTBaWElnWkdWeVpXWmxjbVZ1WTJVZ2NHRnVhV01nWVc1a0lHTnlZWE5vYVc1bklIUm9aU0JzYVc1MFpYSXNJSFZ1YkdsclpTQjBhR1VnY0hKbGRtbHZkWE1nYVcxd2JHVnRaVzUwWVhScGIyNGdkMmhwWTJnZ2NtVjBkWEp1WldRZ1lTQnlaV052ZG1WeVlXSnNaU0JsY25KdmNpNWNiakl1SUNBcUtrTnliM056TFhCc1lYUm1iM0p0SUhCaGRHZ2dhWE56ZFdWek9pb3FJR0J5WlhSeWFXVjJaVTF2WkVacGJHVmdJSFZ6WlhNZ2RHaGxJR0J3WVhSb1lDQndZV05yWVdkbElDaGdjR0YwYUM1RWFYSmdMQ0JnY0dGMGFDNUtiMmx1WUNrZ2FXNXpkR1ZoWkNCdlppQmdjR0YwYUM5bWFXeGxjR0YwYUdBZ1ptOXlJR1pwYkdWemVYTjBaVzBnY0dGMGFDQnRZVzVwY0hWc1lYUnBiMjR1SUZSb2FYTWdjSEpsZG1WdWRITWdZMjl5Y21WamRDQmdaMjh1Ylc5a1lDQmtaWFJsWTNScGIyNGdiMjRnVjJsdVpHOTNjeUJoYm1RZ2IzUm9aWElnYm05dUxWQlBVMGxZSUhCc1lYUm1iM0p0Y3l3Z1lYTWdZSEJoZEdoZ0lHUnZaWE1nYm05MElHaGhibVJzWlNCUFV5MXVZWFJwZG1VZ2MyVndZWEpoZEc5eWN5QW9aUzVuTGl3Z1ltRmphM05zWVhOb1pYTXBMQ0JzWldGa2FXNW5JSFJ2SUcxdlpIVnNaU0JrWlhSbFkzUnBiMjRnWm1GcGJIVnlaWE11SWl3aVkyOXVabWxrWlc1alpTSTZNU3dpWTJGMFpXZHZjbmtpT2lKTVQwZEpRMTlDVlVjaWZRIiwiYnJhbmNoIjoiYXV0by1wci01NjcwMmJkOC1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc2NDI2OCwiZXhwIjoxNzUwMzY5MDY4fQ.Go6rF-3vjTKWwFvmcRlCeaYJUKYDSm4nCifNBiP6HrrX-nFJTbDUXp_8DcqWim98xGffTZWqxJ44GSrVSvtifhSIvU68UCKyBKI3F1bI2UJhbV1-oSAh1QHaE4H_n8oiJ6tRmaQl7cWP7IiOuJ6ZsaULgOZEmlPpqjoOCB1oW7M8EskwGq5a86qDDto1ZbXJXAaVzXmKdS6CNop-KboHu8TpNGZ0sCmk4V0DLrr4-KDpiVc_-Tb_5OVnkqYP4jaerJ1g-ypn6uxyqstSvv_BE2jvy236dpdJ2NcV6mThADYMCqI0oLg6ZDav_hrlBYDZpQ3LKmck3FlrloObZi67cg\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Windows Path Handling Regression</h3></summary>\n\nThe `retrieveModFile` function incorrectly uses `path.Join` and `path.Dir` (POSIX-style) instead of `filepath.Join` and `filepath.Dir` to locate `go.mod`. On Windows, `path.Dir` misinterprets paths with backslashes (`\\`), causing the `go.mod` search to prematurely fail. This regression makes the linter unusable on Windows projects.\n\n<p></p>\n\n<details>\n<summary><code>lint/linter.go#L184-L190</code></summary>\n\nhttps://github.com/SM-100-Bench/mgechev_revive_1101/blob/9c630951b1e1b4297ee15b3d4d97db4e9b991243/lint/linter.go#L184-L190\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpzYVc1MEwyeHBiblJsY2k1bmJ5SXNJbk4wWVhKMFRHbHVaU0k2TVRnMExDSmxibVJNYVc1bElqb3hPVEFzSW1OdlpHVk1hVzVsY3lJNlcxMTlYU3dpYVdRaU9pSTVNR0ZsTkdOaU5DMDRORGRpTFRSaFpXRXRZV1prWXkwMk9EazVaakk1WVRFMk5qQWlMQ0prWlhOamNtbHdkR2x2YmlJNklsUm9aU0JnY21WMGNtbGxkbVZOYjJSR2FXeGxZQ0JtZFc1amRHbHZiaUJwYm1OdmNuSmxZM1JzZVNCMWMyVnpJR0J3WVhSb0xrcHZhVzVnSUdGdVpDQmdjR0YwYUM1RWFYSmdJQ2hRVDFOSldDMXpkSGxzWlNrZ2FXNXpkR1ZoWkNCdlppQmdabWxzWlhCaGRHZ3VTbTlwYm1BZ1lXNWtJR0JtYVd4bGNHRjBhQzVFYVhKZ0lIUnZJR3h2WTJGMFpTQmdaMjh1Ylc5a1lDNGdUMjRnVjJsdVpHOTNjeXdnWUhCaGRHZ3VSR2x5WUNCdGFYTnBiblJsY25CeVpYUnpJSEJoZEdoeklIZHBkR2dnWW1GamEzTnNZWE5vWlhNZ0tHQmNYR0FwTENCallYVnphVzVuSUhSb1pTQmdaMjh1Ylc5a1lDQnpaV0Z5WTJnZ2RHOGdjSEpsYldGMGRYSmxiSGtnWm1GcGJDNGdWR2hwY3lCeVpXZHlaWE56YVc5dUlHMWhhMlZ6SUhSb1pTQnNhVzUwWlhJZ2RXNTFjMkZpYkdVZ2IyNGdWMmx1Wkc5M2N5QndjbTlxWldOMGN5NGlMQ0pqYjI1bWFXUmxibU5sSWpvd0xqTTJNVEE0TkRFeU1UazFOemsyTnpjMExDSmpZWFJsWjI5eWVTSTZJa3hQUjBsRFgwSlZSeUo5IiwiYnJhbmNoIjoiYXV0by1wci01NjcwMmJkOC1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc2NDI2OCwiZXhwIjoxNzUwMzY5MDY4fQ.ZHkdJLNExncX5CqU9eyweJhsoDa0X2K9Ddr-Azvyla0b1zu_FYZ5uD0Q4a8bNnLuuzKMe3teYcGm7Wr2NdiV3eTH0S1g0Ha9E6A14tjVS8dc0e3PJc7tfzf5DUmhRLb_yPE_FqP9BmYo4M6KxT5BhQX3vQL7CzqD_ci6NhKpew64azdoOAnLVYKAnuRHBdaiFrwejjr56orvY0Ma4fY9K0AQ4kY-RhJPnb_jm1RLwOVbX5ct-yxFF9y3tabqYTiBt-NXxFmC82MSzaI2XjqVtOF7-eyRcuIyzAwaUoa9TodSaLmRTu9OfH-vCwfDgaCNw7m2Hj0Senmcc0kPlimDVw\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/mgechev_revive_1101/pull/3#pullrequestreview-2922729731",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/mgechev_revive_1101/pulls/3",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/mgechev_revive_1101/pull/3#pullrequestreview-2922729731"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/mgechev_revive_1101/pulls/3"
+          }
+        },
+        "submitted_at": "2025-06-12T21:37:48Z",
+        "commit_id": "9c630951b1e1b4297ee15b3d4d97db4e9b991243"
+      }
+    ]
+  }
+}

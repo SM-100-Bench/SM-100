@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/pocketbase/pocketbase/commit/c862ac6e45b2ef5351e048a2eeecb3687938b054",
+    "commit_sha": "cb3936a4994cfc7dd32f0535f88cfae567be0195",
+    "repo_identifier": "pocketbase_pocketbase_c862ac6e45b2ef5351e048a2eeecb3687938b054",
+    "timestamp": "2025-06-12T21:42:06Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/pocketbase_pocketbase_c862ac6e45b2ef5351e048a2eeecb3687938b054/issues/comments/2968214396",
+        "html_url": "https://github.com/SM-100-Bench/pocketbase_pocketbase_c862ac6e45b2ef5351e048a2eeecb3687938b054/pull/2#issuecomment-2968214396",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/pocketbase_pocketbase_c862ac6e45b2ef5351e048a2eeecb3687938b054/issues/2",
+        "id": 2968214396,
+        "node_id": "IC_kwDOOiBjvM6w61t8",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T21:33:18Z",
+        "updated_at": "2025-06-12T21:33:18Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/pocketbase_pocketbase_c862ac6e45b2ef5351e048a2eeecb3687938b054/issues/comments/2968214396/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922738455,
+        "node_id": "PRR_kwDOOiBjvM6uNXMX",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: Error Propagation Direction Reversed</h3></summary>\n\nThe `syncRecordErrorEventWithModelErrorEvent` and `syncCollectionErrorEventWithModelErrorEvent` functions are intended to propagate the final `Error` state from a `ModelErrorEvent` to its corresponding `RecordErrorEvent` or `CollectionErrorEvent`. However, they incorrectly assign `me.Error = re.Error` (and `me.Error = ce.Error`). This copies the error in the reverse direction, overwriting any updates to the `ModelErrorEvent`'s error and leaving the `RecordErrorEvent` or `CollectionErrorEvent` with an outdated error value, thus breaking error synchronization.\n\n<p></p>\n\n<details>\n<summary><code>core/events.go#L261-L266</code></summary>\n\nhttps://github.com/SM-100-Bench/pocketbase_pocketbase_c862ac6e45b2ef5351e048a2eeecb3687938b054/blob/f635078229618a7101c35d114b98fd439d9f65df/core/events.go#L261-L266\n\n</details>\n\n<details>\n<summary><code>core/events.go#L338-L342</code></summary>\n\nhttps://github.com/SM-100-Bench/pocketbase_pocketbase_c862ac6e45b2ef5351e048a2eeecb3687938b054/blob/f635078229618a7101c35d114b98fd439d9f65df/core/events.go#L338-L342\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpqYjNKbEwyVjJaVzUwY3k1bmJ5SXNJbk4wWVhKMFRHbHVaU0k2TWpZeExDSmxibVJNYVc1bElqb3lOallzSW1OdlpHVk1hVzVsY3lJNlcxMTlMSHNpWm1sc1pTSTZJbU52Y21VdlpYWmxiblJ6TG1kdklpd2ljM1JoY25STWFXNWxJam96TXpnc0ltVnVaRXhwYm1VaU9qTTBNaXdpWTI5a1pVeHBibVZ6SWpwYlhYMWRMQ0pwWkNJNkltUTBOR0V3T1dVeUxUZGtNMk10TkRjMU15MDRZekpoTFdabE1EY3pNR05qWkRVd05DSXNJbVJsYzJOeWFYQjBhVzl1SWpvaVZHaGxJR0J6ZVc1alVtVmpiM0prUlhKeWIzSkZkbVZ1ZEZkcGRHaE5iMlJsYkVWeWNtOXlSWFpsYm5SZ0lHRnVaQ0JnYzNsdVkwTnZiR3hsWTNScGIyNUZjbkp2Y2tWMlpXNTBWMmwwYUUxdlpHVnNSWEp5YjNKRmRtVnVkR0FnWm5WdVkzUnBiMjV6SUdGeVpTQnBiblJsYm1SbFpDQjBieUJ3Y205d1lXZGhkR1VnZEdobElHWnBibUZzSUdCRmNuSnZjbUFnYzNSaGRHVWdabkp2YlNCaElHQk5iMlJsYkVWeWNtOXlSWFpsYm5SZ0lIUnZJR2wwY3lCamIzSnlaWE53YjI1a2FXNW5JR0JTWldOdmNtUkZjbkp2Y2tWMlpXNTBZQ0J2Y2lCZ1EyOXNiR1ZqZEdsdmJrVnljbTl5UlhabGJuUmdMaUJJYjNkbGRtVnlMQ0IwYUdWNUlHbHVZMjl5Y21WamRHeDVJR0Z6YzJsbmJpQmdiV1V1UlhKeWIzSWdQU0J5WlM1RmNuSnZjbUFnS0dGdVpDQmdiV1V1UlhKeWIzSWdQU0JqWlM1RmNuSnZjbUFwTGlCVWFHbHpJR052Y0dsbGN5QjBhR1VnWlhKeWIzSWdhVzRnZEdobElISmxkbVZ5YzJVZ1pHbHlaV04wYVc5dUxDQnZkbVZ5ZDNKcGRHbHVaeUJoYm5rZ2RYQmtZWFJsY3lCMGJ5QjBhR1VnWUUxdlpHVnNSWEp5YjNKRmRtVnVkR0FuY3lCbGNuSnZjaUJoYm1RZ2JHVmhkbWx1WnlCMGFHVWdZRkpsWTI5eVpFVnljbTl5UlhabGJuUmdJRzl5SUdCRGIyeHNaV04wYVc5dVJYSnliM0pGZG1WdWRHQWdkMmwwYUNCaGJpQnZkWFJrWVhSbFpDQmxjbkp2Y2lCMllXeDFaU3dnZEdoMWN5QmljbVZoYTJsdVp5Qmxjbkp2Y2lCemVXNWphSEp2Ym1sNllYUnBiMjR1SWl3aVkyOXVabWxrWlc1alpTSTZNU3dpWTJGMFpXZHZjbmtpT2lKTVQwZEpRMTlDVlVjaWZRIiwiYnJhbmNoIjoiYXV0by1wci1jYjM5MzZhNC1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc2NDUwMiwiZXhwIjoxNzUwMzY5MzAyfQ.eUtpJunYoVh7gHlReJTGwB8G_UKgCoxKmtsA27QjyBAVOQfgjgKrwq3nMImK-2JpzbKCXOATmrCb8JdooxkeG45WEV43OJOruG4E1oIH3fOahHg_9lgpkMUjJ1ne13Y-8_KT5p4C1KDSMivoa2uOyyURx8rOkdtUJ3YvuP3RkUwemkhBKlplO-r3fWivboaUuYemN42DcFKhZZVDe5DPP2u1oQO7cDy85VTmzq5jnMYvvFqMGNuD3lR9H2YIVd7oJ0YRVPuNQA-8c6D4srQKYapsWDHAuUJAErmImve-uy6coLLQs1DH1YrPwsjbzx1B_jRT-Ziwn1_rQmPlkoHZ_Q\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Error Synchronization Reversed in Event Handling</h3></summary>\n\nThe `syncCollectionErrorEventWithModelErrorEvent` function incorrectly assigns `me.Error = ce.Error` instead of `ce.Error = me.Error`. This reversed assignment prevents `CollectionErrorEvent.Error` from being synchronized with the `ModelErrorEvent.Error`, leaving it stale. It also overwrites `ModelErrorEvent.Error` with the outdated `ce.Error`, causing loss of error information and providing incorrect data to downstream collection-level error hooks.\n\n<p></p>\n\n<details>\n<summary><code>core/events.go#L338-L343</code></summary>\n\nhttps://github.com/SM-100-Bench/pocketbase_pocketbase_c862ac6e45b2ef5351e048a2eeecb3687938b054/blob/f635078229618a7101c35d114b98fd439d9f65df/core/events.go#L338-L343\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpqYjNKbEwyVjJaVzUwY3k1bmJ5SXNJbk4wWVhKMFRHbHVaU0k2TXpNNExDSmxibVJNYVc1bElqb3pORE1zSW1OdlpHVk1hVzVsY3lJNlcxMTlYU3dpYVdRaU9pSXdOakkzTXprNU1TMWhZVGMyTFRReVpqUXRZVEEwWkMxa1l6TTJNelk1Tnprek5XTWlMQ0prWlhOamNtbHdkR2x2YmlJNklsUm9aU0JnYzNsdVkwTnZiR3hsWTNScGIyNUZjbkp2Y2tWMlpXNTBWMmwwYUUxdlpHVnNSWEp5YjNKRmRtVnVkR0FnWm5WdVkzUnBiMjRnYVc1amIzSnlaV04wYkhrZ1lYTnphV2R1Y3lCZ2JXVXVSWEp5YjNJZ1BTQmpaUzVGY25KdmNtQWdhVzV6ZEdWaFpDQnZaaUJnWTJVdVJYSnliM0lnUFNCdFpTNUZjbkp2Y21BdUlGUm9hWE1nY21WMlpYSnpaV1FnWVhOemFXZHViV1Z1ZENCd2NtVjJaVzUwY3lCZ1EyOXNiR1ZqZEdsdmJrVnljbTl5UlhabGJuUXVSWEp5YjNKZ0lHWnliMjBnWW1WcGJtY2djM2x1WTJoeWIyNXBlbVZrSUhkcGRHZ2dkR2hsSUdCTmIyUmxiRVZ5Y205eVJYWmxiblF1UlhKeWIzSmdMQ0JzWldGMmFXNW5JR2wwSUhOMFlXeGxMaUJKZENCaGJITnZJRzkyWlhKM2NtbDBaWE1nWUUxdlpHVnNSWEp5YjNKRmRtVnVkQzVGY25KdmNtQWdkMmwwYUNCMGFHVWdiM1YwWkdGMFpXUWdZR05sTGtWeWNtOXlZQ3dnWTJGMWMybHVaeUJzYjNOeklHOW1JR1Z5Y205eUlHbHVabTl5YldGMGFXOXVJR0Z1WkNCd2NtOTJhV1JwYm1jZ2FXNWpiM0p5WldOMElHUmhkR0VnZEc4Z1pHOTNibk4wY21WaGJTQmpiMnhzWldOMGFXOXVMV3hsZG1Wc0lHVnljbTl5SUdodmIydHpMaUlzSW1OdmJtWnBaR1Z1WTJVaU9qQXVPRFkxTnpnME9EQXpOelV3TURreU9Td2lZMkYwWldkdmNua2lPaUpNVDBkSlExOUNWVWNpZlEiLCJicmFuY2giOiJhdXRvLXByLWNiMzkzNmE0LWN1cnNvci1idWdib3QifSwiaWF0IjoxNzQ5NzY0NTAyLCJleHAiOjE3NTAzNjkzMDJ9.PnrOP2sNoshmEd6L747ipzuhxZPwjmZ-JE2XlNQSn3jy2zmGdG1w-ciFf0ZTVij2gh1AkzZwme8j2-NjNJrb59dHXmUBqiekSrgwda0t3MBSWNCirht7dmD_HJ1XEeLCxEosNNVDgohz1fCAUbzZRgZJ_vENQqvtChBNhAhS7YUTIwIMFhm032qBTD3_VshN3Qor5G24aphsxGXM3fhCB-wRI5nDdwFGiW1wVWpc9HfXfO2VpWW0-yPamMUNR-Ijh8JqNQp8_DSfz0JYzqKyPETyJ3MiF5_1zYmbXL079xUqBQZ7m7EL-b3FuoCd_oi7M7GdbQNIkJMPXCbz8SSgoQ\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/pocketbase_pocketbase_c862ac6e45b2ef5351e048a2eeecb3687938b054/pull/2#pullrequestreview-2922738455",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/pocketbase_pocketbase_c862ac6e45b2ef5351e048a2eeecb3687938b054/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/pocketbase_pocketbase_c862ac6e45b2ef5351e048a2eeecb3687938b054/pull/2#pullrequestreview-2922738455"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/pocketbase_pocketbase_c862ac6e45b2ef5351e048a2eeecb3687938b054/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T21:41:42Z",
+        "commit_id": "f635078229618a7101c35d114b98fd439d9f65df"
+      }
+    ]
+  }
+}

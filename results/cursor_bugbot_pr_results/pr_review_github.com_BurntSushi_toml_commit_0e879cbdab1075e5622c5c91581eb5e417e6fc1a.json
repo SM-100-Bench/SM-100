@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/BurntSushi/toml/commit/0e879cbdab1075e5622c5c91581eb5e417e6fc1a",
+    "commit_sha": "4223137ff1f96bc65e65b11b6deff32052b127bb",
+    "repo_identifier": "BurntSushi_toml_0e879cbdab1075e5622c5c91581eb5e417e6fc1a",
+    "timestamp": "2025-06-12T21:18:11Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/BurntSushi_toml_0e879cbdab1075e5622c5c91581eb5e417e6fc1a/issues/comments/2968160118",
+        "html_url": "https://github.com/SM-100-Bench/BurntSushi_toml_0e879cbdab1075e5622c5c91581eb5e417e6fc1a/pull/2#issuecomment-2968160118",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/BurntSushi_toml_0e879cbdab1075e5622c5c91581eb5e417e6fc1a/issues/2",
+        "id": 2968160118,
+        "node_id": "IC_kwDOOiBbrs6w6od2",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T21:07:49Z",
+        "updated_at": "2025-06-12T21:07:49Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/BurntSushi_toml_0e879cbdab1075e5622c5c91581eb5e417e6fc1a/issues/comments/2968160118/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922679944,
+        "node_id": "PRR_kwDOOiBbrs6uNI6I",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: Key Mutation via Shared Backing Array</h3></summary>\n\nThe `Key.add` function now re-uses the backing array when `cap(k) > len(k)` by calling `append(k, piece)`. This causes the returned `Key` slice to share the underlying array with the original `k` (e.g., `p.context`). Subsequent appends to the original `k` overwrite elements in this shared array, silently mutating previously stored `Key` instances (e.g., in `MetaData.ordered` or used as map keys). This corrupts metadata, causing recorded key names to change unexpectedly (e.g., \"a.b.c.x\" becoming \"a.b.c.y\"). The previous implementation always copied the slice, preventing this aliasing.\n\n<p></p>\n\n<details>\n<summary><code>meta.go#L135-L144</code></summary>\n\nhttps://github.com/SM-100-Bench/BurntSushi_toml_0e879cbdab1075e5622c5c91581eb5e417e6fc1a/blob/a380cff6b1cff00d668a98abfe2d45e9dcd97c7b/meta.go#L135-L144\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp0WlhSaExtZHZJaXdpYzNSaGNuUk1hVzVsSWpveE16VXNJbVZ1WkV4cGJtVWlPakUwTkN3aVkyOWtaVXhwYm1WeklqcGJYWDFkTENKcFpDSTZJbVk0WlRVME5EVXhMVEkwWTJRdE5EYzBaUzFpT1Raa0xXRXdaRGcxTkdReFlqQmxZeUlzSW1SbGMyTnlhWEIwYVc5dUlqb2lWR2hsSUdCTFpYa3VZV1JrWUNCbWRXNWpkR2x2YmlCdWIzY2djbVV0ZFhObGN5QjBhR1VnWW1GamEybHVaeUJoY25KaGVTQjNhR1Z1SUdCallYQW9heWtnUGlCc1pXNG9heWxnSUdKNUlHTmhiR3hwYm1jZ1lHRndjR1Z1WkNockxDQndhV1ZqWlNsZ0xpQlVhR2x6SUdOaGRYTmxjeUIwYUdVZ2NtVjBkWEp1WldRZ1lFdGxlV0FnYzJ4cFkyVWdkRzhnYzJoaGNtVWdkR2hsSUhWdVpHVnliSGxwYm1jZ1lYSnlZWGtnZDJsMGFDQjBhR1VnYjNKcFoybHVZV3dnWUd0Z0lDaGxMbWN1TENCZ2NDNWpiMjUwWlhoMFlDa3VJRk4xWW5ObGNYVmxiblFnWVhCd1pXNWtjeUIwYnlCMGFHVWdiM0pwWjJsdVlXd2dZR3RnSUc5MlpYSjNjbWwwWlNCbGJHVnRaVzUwY3lCcGJpQjBhR2x6SUhOb1lYSmxaQ0JoY25KaGVTd2djMmxzWlc1MGJIa2diWFYwWVhScGJtY2djSEpsZG1sdmRYTnNlU0J6ZEc5eVpXUWdZRXRsZVdBZ2FXNXpkR0Z1WTJWeklDaGxMbWN1TENCcGJpQmdUV1YwWVVSaGRHRXViM0prWlhKbFpHQWdiM0lnZFhObFpDQmhjeUJ0WVhBZ2EyVjVjeWt1SUZSb2FYTWdZMjl5Y25Wd2RITWdiV1YwWVdSaGRHRXNJR05oZFhOcGJtY2djbVZqYjNKa1pXUWdhMlY1SUc1aGJXVnpJSFJ2SUdOb1lXNW5aU0IxYm1WNGNHVmpkR1ZrYkhrZ0tHVXVaeTRzSUZ3aVlTNWlMbU11ZUZ3aUlHSmxZMjl0YVc1bklGd2lZUzVpTG1NdWVWd2lLUzRnVkdobElIQnlaWFpwYjNWeklHbHRjR3hsYldWdWRHRjBhVzl1SUdGc2QyRjVjeUJqYjNCcFpXUWdkR2hsSUhOc2FXTmxMQ0J3Y21WMlpXNTBhVzVuSUhSb2FYTWdZV3hwWVhOcGJtY3VJaXdpWTI5dVptbGtaVzVqWlNJNk1DNDROamN6Tnprek16UTVNekl3TURJMkxDSmpZWFJsWjI5eWVTSTZJa3hQUjBsRFgwSlZSeUo5IiwiYnJhbmNoIjoiYXV0by1wci00MjIzMTM3Zi1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc2MzA3MiwiZXhwIjoxNzUwMzY3ODcyfQ.UmnOMyRcIAsgwvfSelM6p2LYjnXiKpsyq7Xnf3wMOiGBxUY6lzgnFXgOEJJYjcH6zhdXHYbSuqDzgpdr86IiBebkuajM9asqp4WJ7NROWW66rBywEFgbatKRgHf5L1hCZSHIUPGNRNb-VQ-RRP5k6_srL2iHTdKXG2BIAw9xpf1vOMGzXsTEYEIxvONNgd9vxKQPCQFCcSoaxLSErHQl-rzOt_Lmo40p61RM1mVh8oz1tvbVoJ0HBxQPBolNtGPnbJyU6EdcMqwOCIZ9fhhKPlygXlDWaC6Ql6ue3DZ5YzBsbUojrMVYOC1yvfq7aBXjA6mI7sERjO3mUizh7tyyBg\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/BurntSushi_toml_0e879cbdab1075e5622c5c91581eb5e417e6fc1a/pull/2#pullrequestreview-2922679944",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/BurntSushi_toml_0e879cbdab1075e5622c5c91581eb5e417e6fc1a/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/BurntSushi_toml_0e879cbdab1075e5622c5c91581eb5e417e6fc1a/pull/2#pullrequestreview-2922679944"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/BurntSushi_toml_0e879cbdab1075e5622c5c91581eb5e417e6fc1a/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T21:17:52Z",
+        "commit_id": "a380cff6b1cff00d668a98abfe2d45e9dcd97c7b"
+      }
+    ]
+  }
+}

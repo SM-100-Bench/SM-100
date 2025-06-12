@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/root-gg/plik/pull/490",
+    "commit_sha": "5bbdfe776c9e96280648fe0d27476174057ffdb4",
+    "repo_identifier": "root-gg_plik_490",
+    "timestamp": "2025-06-12T23:15:25Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/root-gg_plik_490/issues/comments/2968398257",
+        "html_url": "https://github.com/SM-100-Bench/root-gg_plik_490/pull/2#issuecomment-2968398257",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/root-gg_plik_490/issues/2",
+        "id": 2968398257,
+        "node_id": "IC_kwDOOiCDtc6w7imx",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T23:08:10Z",
+        "updated_at": "2025-06-12T23:08:10Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/root-gg_plik_490/issues/comments/2968398257/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922869897,
+        "node_id": "PRR_kwDOOiCDtc6uN3SJ",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: CLI User Creation Fails With Explicit Password</h3></summary>\n\nWhen creating a local user via the CLI (`plikd user create`) with an explicitly provided `--password`, the supplied password is not copied into the `params.Password` field. As a result, `common.CreateUserFromParams` receives an empty password, leading to a \"password is too short (min 8 chars)\" error and preventing user creation. This issue only affects users providing a password, while auto-generated passwords still work.\n\n<p></p>\n\n<details>\n<summary><code>server/cmd/user.go#L125-L160</code></summary>\n\nhttps://github.com/SM-100-Bench/root-gg_plik_490/blob/09b54764e1394a404c4e2733f38f29ae8a3e1f28/server/cmd/user.go#L125-L160\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp6WlhKMlpYSXZZMjFrTDNWelpYSXVaMjhpTENKemRHRnlkRXhwYm1VaU9qRXlOU3dpWlc1a1RHbHVaU0k2TVRZd0xDSmpiMlJsVEdsdVpYTWlPbHRkZlYwc0ltbGtJam9pTXprM1pXTmhPRFV0T1RKak5TMDBOREUyTFRoall6Z3RabVE1TURabU1EaGhOR0UwSWl3aVpHVnpZM0pwY0hScGIyNGlPaUpYYUdWdUlHTnlaV0YwYVc1bklHRWdiRzlqWVd3Z2RYTmxjaUIyYVdFZ2RHaGxJRU5NU1NBb1lIQnNhV3RrSUhWelpYSWdZM0psWVhSbFlDa2dkMmwwYUNCaGJpQmxlSEJzYVdOcGRHeDVJSEJ5YjNacFpHVmtJR0F0TFhCaGMzTjNiM0prWUN3Z2RHaGxJSE4xY0hCc2FXVmtJSEJoYzNOM2IzSmtJR2x6SUc1dmRDQmpiM0JwWldRZ2FXNTBieUIwYUdVZ1lIQmhjbUZ0Y3k1UVlYTnpkMjl5WkdBZ1ptbGxiR1F1SUVGeklHRWdjbVZ6ZFd4MExDQmdZMjl0Ylc5dUxrTnlaV0YwWlZWelpYSkdjbTl0VUdGeVlXMXpZQ0J5WldObGFYWmxjeUJoYmlCbGJYQjBlU0J3WVhOemQyOXlaQ3dnYkdWaFpHbHVaeUIwYnlCaElGd2ljR0Z6YzNkdmNtUWdhWE1nZEc5dklITm9iM0owSUNodGFXNGdPQ0JqYUdGeWN5bGNJaUJsY25KdmNpQmhibVFnY0hKbGRtVnVkR2x1WnlCMWMyVnlJR055WldGMGFXOXVMaUJVYUdseklHbHpjM1ZsSUc5dWJIa2dZV1ptWldOMGN5QjFjMlZ5Y3lCd2NtOTJhV1JwYm1jZ1lTQndZWE56ZDI5eVpDd2dkMmhwYkdVZ1lYVjBieTFuWlc1bGNtRjBaV1FnY0dGemMzZHZjbVJ6SUhOMGFXeHNJSGR2Y21zdUlpd2lZMjl1Wm1sa1pXNWpaU0k2TUM0NE56ZzNOamN3TXpNeU1ETTRNemN5TENKallYUmxaMjl5ZVNJNklreFBSMGxEWDBKVlJ5SjkiLCJicmFuY2giOiJhdXRvLXByLTViYmRmZTc3LWN1cnNvci1idWdib3QifSwiaWF0IjoxNzQ5NzcwMTIyLCJleHAiOjE3NTAzNzQ5MjJ9.cOv5sWU1-KhkZ35GLa0KIOgQt1EWRBENSV5BPWh6dJvw3QghOOaLPQxQnK9C7jU6_u-oFkR2_aw3P_64mvmAjhf1HN7AeEyIAw81QjH_5OGZyUTWkyPKG4BaZrNpdME2plixHYChVcppFoR92UWbb8pWU5JYDXhmbZFGWqUWfmBVcPT349hOsFXKBj62ghahPziItY7AXOd-dp-sil9l_h_23svalgG5brG9Zy0Kw1EKtSQJfaFheq-zXUcpCFZ9E4xLJuejLaoodrHOOUnejF1JdSvSHAx8yvyEqIRF17iFerKTnEpKr2lIFxSDyiPH6Ezq-ciU3FwbpTUryiCWyg\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Variable Shadowing Causes Malformed URL Error</h3></summary>\n\nThe `domainAlias` string variable is shadowed by a `*url.URL` variable of the same name within the `DownloadDomainAlias` parsing loop. If `url.Parse` fails, the error message incorrectly uses the shadowed `*url.URL` pointer instead of the original invalid string. This results in the error message printing a pointer value (e.g., \"&{...}\") instead of the actual malformed URL, hindering diagnostics.\n\n<p></p>\n\n<details>\n<summary><code>server/common/config.go#L208-L214</code></summary>\n\nhttps://github.com/SM-100-Bench/root-gg_plik_490/blob/09b54764e1394a404c4e2733f38f29ae8a3e1f28/server/common/config.go#L208-L214\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp6WlhKMlpYSXZZMjl0Ylc5dUwyTnZibVpwWnk1bmJ5SXNJbk4wWVhKMFRHbHVaU0k2TWpBNExDSmxibVJNYVc1bElqb3lNVFFzSW1OdlpHVk1hVzVsY3lJNlcxMTlYU3dpYVdRaU9pSmpaR0ppWW1GbU1pMWtORGhrTFRRMk4yRXRPVFJoWlMxa1pUVTJObUpsT1dJeE1XSWlMQ0prWlhOamNtbHdkR2x2YmlJNklsUm9aU0JnWkc5dFlXbHVRV3hwWVhOZ0lITjBjbWx1WnlCMllYSnBZV0pzWlNCcGN5QnphR0ZrYjNkbFpDQmllU0JoSUdBcWRYSnNMbFZTVEdBZ2RtRnlhV0ZpYkdVZ2IyWWdkR2hsSUhOaGJXVWdibUZ0WlNCM2FYUm9hVzRnZEdobElHQkViM2R1Ykc5aFpFUnZiV0ZwYmtGc2FXRnpZQ0J3WVhKemFXNW5JR3h2YjNBdUlFbG1JR0IxY213dVVHRnljMlZnSUdaaGFXeHpMQ0IwYUdVZ1pYSnliM0lnYldWemMyRm5aU0JwYm1OdmNuSmxZM1JzZVNCMWMyVnpJSFJvWlNCemFHRmtiM2RsWkNCZ0tuVnliQzVWVWt4Z0lIQnZhVzUwWlhJZ2FXNXpkR1ZoWkNCdlppQjBhR1VnYjNKcFoybHVZV3dnYVc1MllXeHBaQ0J6ZEhKcGJtY3VJRlJvYVhNZ2NtVnpkV3gwY3lCcGJpQjBhR1VnWlhKeWIzSWdiV1Z6YzJGblpTQndjbWx1ZEdsdVp5QmhJSEJ2YVc1MFpYSWdkbUZzZFdVZ0tHVXVaeTRzSUZ3aUpuc3VMaTU5WENJcElHbHVjM1JsWVdRZ2IyWWdkR2hsSUdGamRIVmhiQ0J0WVd4bWIzSnRaV1FnVlZKTUxDQm9hVzVrWlhKcGJtY2daR2xoWjI1dmMzUnBZM011SWl3aVkyOXVabWxrWlc1alpTSTZNQzR6T0RnNE5qZzFORGN4TVRjMU1EQTNMQ0pqWVhSbFoyOXllU0k2SWt4UFIwbERYMEpWUnlKOSIsImJyYW5jaCI6ImF1dG8tcHItNWJiZGZlNzctY3Vyc29yLWJ1Z2JvdCJ9LCJpYXQiOjE3NDk3NzAxMjIsImV4cCI6MTc1MDM3NDkyMn0.EfUbyDkVVqzLW80-fQoSUj_ga4Aah-0d59iXOQimp0NuNuQ4T76aJNCTWHOT6u8BzQPejUV5UWJpUsl-ZNtm7L6oQWQZXxr70cWA483Vd4c5OezyQPtnxSxDodjx3uPvztLObJua8VJV3NzbCXerCg3HCarIOqfcQwevrP9Eucs1L8yNlLBQg0nz58jlpcOpKMGl_60pFx2tYBCq66YZ2iHMndGThrmwcnkCPXAw5bMftHx_5ZafLteeEhFwnuf9zwlMKIHep3Cvs7ltdS_ShmU4Tw_AQIcgYR3yzqlB7si0wLgVurq8CCNFi6mjlMaweNVj8tAVh9DkeUMNafaTmg\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/root-gg_plik_490/pull/2#pullrequestreview-2922869897",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/root-gg_plik_490/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/root-gg_plik_490/pull/2#pullrequestreview-2922869897"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/root-gg_plik_490/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T23:15:22Z",
+        "commit_id": "09b54764e1394a404c4e2733f38f29ae8a3e1f28"
+      }
+    ]
+  }
+}

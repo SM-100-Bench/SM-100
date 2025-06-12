@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/gradio-app/gradio/pull/1562",
+    "commit_sha": "7924ac5829f41f15592b86ff7c9456c7196ee55a",
+    "repo_identifier": "gradio-app_gradio_1562",
+    "timestamp": "2025-06-12T21:33:16Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/gradio-app_gradio_1562/issues/comments/2968200589",
+        "html_url": "https://github.com/SM-100-Bench/gradio-app_gradio_1562/pull/2#issuecomment-2968200589",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/gradio-app_gradio_1562/issues/2",
+        "id": 2968200589,
+        "node_id": "IC_kwDOOiBfmM6w6yWN",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T21:27:34Z",
+        "updated_at": "2025-06-12T21:27:34Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/gradio-app_gradio_1562/issues/comments/2968200589/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922721221,
+        "node_id": "PRR_kwDOOiBfmM6uNS_F",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: Audio Preparation Flag Not Set</h3></summary>\n\nThe `prepare_audio()` function fails to set the `inited` flag to `true`. As a result, every call to `record()` re-invokes `prepare_audio()`, creating new `MediaRecorder` instances and `getUserMedia` streams. This leads to duplicated event listeners, resource leaks (e.g., microphone streams), repeated microphone permission prompts, and can cause multiple parallel recordings and duplicated 'change' events.\n\n<p></p>\n\n<details>\n<summary><code>ui/packages/audio/src/Audio.svelte#L17-L63</code></summary>\n\nhttps://github.com/SM-100-Bench/gradio-app_gradio_1562/blob/e315b16d759f386754742d6ad46616470d174206/ui/packages/audio/src/Audio.svelte#L17-L63\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUoxYVM5d1lXTnJZV2RsY3k5aGRXUnBieTl6Y21NdlFYVmthVzh1YzNabGJIUmxJaXdpYzNSaGNuUk1hVzVsSWpveE55d2laVzVrVEdsdVpTSTZOak1zSW1OdlpHVk1hVzVsY3lJNlcxMTlYU3dpYVdRaU9pSmhNVE5tTmpFNE1DMHhaak01TFRRME1XTXRPV00zWXkwMk5UQmpNV013TVdSa1ltWWlMQ0prWlhOamNtbHdkR2x2YmlJNklsUm9aU0JnY0hKbGNHRnlaVjloZFdScGJ5Z3BZQ0JtZFc1amRHbHZiaUJtWVdsc2N5QjBieUJ6WlhRZ2RHaGxJR0JwYm1sMFpXUmdJR1pzWVdjZ2RHOGdZSFJ5ZFdWZ0xpQkJjeUJoSUhKbGMzVnNkQ3dnWlhabGNua2dZMkZzYkNCMGJ5QmdjbVZqYjNKa0tDbGdJSEpsTFdsdWRtOXJaWE1nWUhCeVpYQmhjbVZmWVhWa2FXOG9LV0FzSUdOeVpXRjBhVzVuSUc1bGR5QmdUV1ZrYVdGU1pXTnZjbVJsY21BZ2FXNXpkR0Z1WTJWeklHRnVaQ0JnWjJWMFZYTmxjazFsWkdsaFlDQnpkSEpsWVcxekxpQlVhR2x6SUd4bFlXUnpJSFJ2SUdSMWNHeHBZMkYwWldRZ1pYWmxiblFnYkdsemRHVnVaWEp6TENCeVpYTnZkWEpqWlNCc1pXRnJjeUFvWlM1bkxpd2diV2xqY205d2FHOXVaU0J6ZEhKbFlXMXpLU3dnY21Wd1pXRjBaV1FnYldsamNtOXdhRzl1WlNCd1pYSnRhWE56YVc5dUlIQnliMjF3ZEhNc0lHRnVaQ0JqWVc0Z1kyRjFjMlVnYlhWc2RHbHdiR1VnY0dGeVlXeHNaV3dnY21WamIzSmthVzVuY3lCaGJtUWdaSFZ3YkdsallYUmxaQ0FuWTJoaGJtZGxKeUJsZG1WdWRITXVJaXdpWTI5dVptbGtaVzVqWlNJNk1Td2lZMkYwWldkdmNua2lPaUpNVDBkSlExOUNWVWNpZlEiLCJicmFuY2giOiJhdXRvLXByLTc5MjRhYzU4LWN1cnNvci1idWdib3QifSwiaWF0IjoxNzQ5NzYzOTgzLCJleHAiOjE3NTAzNjg3ODN9.CTx7kMq0t8BA-BDFmYhQHZnw-CPjXHtfzebv70ZXs3KcuEKQt0_oQB3bHQP5h2ntgQfjq1XklwNordl7inT8b0Fx_FrzQaHMuq_jixSBsgL4JSo3VArEHoAzGQwZzYEmidURe4Qd_E8bJn45VL-xEOY_NCdGVnH8J6gwHaBzCCslVhq9tfkYwoKwtc44VJHi-h14CNHcxmEP-vILgVQUPWs_ZHc78wWI9C0GpjZzhYQ2IohZ_6nCmROamNkTxU8FZQmBIPKRjXC1UzFwcOja8qMfoMxvSdU9WX3BkJ5IWMCsvr7UG0K5D1JjNDLvwBAXMWemaQMVUnoxSevd5LMkdA\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: File Upload Event Dispatching Issues</h3></summary>\n\nThe `Upload` component's `loadFiles` function has two issues:\n\n1.  When `single_file` is true, only the first selected file is processed, but the `load` event dispatch condition `all_file_data.length === files.length` still checks against the original total number of selected files. If multiple files are selected, this condition is never met, preventing the `load` event from dispatching and causing uploads to silently fail.\n2.  For multi-file uploads, `FileReader.onloadend` callbacks are asynchronous. The `load` event is dispatched when `all_file_data.length` equals `files.length`. If files finish loading out of order, this can lead to premature dispatch of the `load` event with an incomplete or partially-undefined array.\n\n<p></p>\n\n<details>\n<summary><code>ui/packages/upload/src/Upload.svelte#L29-L55</code></summary>\n\nhttps://github.com/SM-100-Bench/gradio-app_gradio_1562/blob/e315b16d759f386754742d6ad46616470d174206/ui/packages/upload/src/Upload.svelte#L29-L55\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUoxYVM5d1lXTnJZV2RsY3k5MWNHeHZZV1F2YzNKakwxVndiRzloWkM1emRtVnNkR1VpTENKemRHRnlkRXhwYm1VaU9qSTVMQ0psYm1STWFXNWxJam8xTlN3aVkyOWtaVXhwYm1WeklqcGJYWDFkTENKcFpDSTZJamRoTW1abE9UVTVMV0ZtTW1RdE5EQm1OUzFpTVRBMkxUZzRNR0l6WlRrek9HWXpZeUlzSW1SbGMyTnlhWEIwYVc5dUlqb2lWR2hsSUdCVmNHeHZZV1JnSUdOdmJYQnZibVZ1ZENkeklHQnNiMkZrUm1sc1pYTmdJR1oxYm1OMGFXOXVJR2hoY3lCMGQyOGdhWE56ZFdWek9seHVYRzR4TGlBZ1YyaGxiaUJnYzJsdVoyeGxYMlpwYkdWZ0lHbHpJSFJ5ZFdVc0lHOXViSGtnZEdobElHWnBjbk4wSUhObGJHVmpkR1ZrSUdacGJHVWdhWE1nY0hKdlkyVnpjMlZrTENCaWRYUWdkR2hsSUdCc2IyRmtZQ0JsZG1WdWRDQmthWE53WVhSamFDQmpiMjVrYVhScGIyNGdZR0ZzYkY5bWFXeGxYMlJoZEdFdWJHVnVaM1JvSUQwOVBTQm1hV3hsY3k1c1pXNW5kR2hnSUhOMGFXeHNJR05vWldOcmN5QmhaMkZwYm5OMElIUm9aU0J2Y21sbmFXNWhiQ0IwYjNSaGJDQnVkVzFpWlhJZ2IyWWdjMlZzWldOMFpXUWdabWxzWlhNdUlFbG1JRzExYkhScGNHeGxJR1pwYkdWeklHRnlaU0J6Wld4bFkzUmxaQ3dnZEdocGN5QmpiMjVrYVhScGIyNGdhWE1nYm1WMlpYSWdiV1YwTENCd2NtVjJaVzUwYVc1bklIUm9aU0JnYkc5aFpHQWdaWFpsYm5RZ1puSnZiU0JrYVhOd1lYUmphR2x1WnlCaGJtUWdZMkYxYzJsdVp5QjFjR3h2WVdSeklIUnZJSE5wYkdWdWRHeDVJR1poYVd3dVhHNHlMaUFnUm05eUlHMTFiSFJwTFdacGJHVWdkWEJzYjJGa2N5d2dZRVpwYkdWU1pXRmtaWEl1YjI1c2IyRmtaVzVrWUNCallXeHNZbUZqYTNNZ1lYSmxJR0Z6ZVc1amFISnZibTkxY3k0Z1ZHaGxJR0JzYjJGa1lDQmxkbVZ1ZENCcGN5QmthWE53WVhSamFHVmtJSGRvWlc0Z1lHRnNiRjltYVd4bFgyUmhkR0V1YkdWdVozUm9ZQ0JsY1hWaGJITWdZR1pwYkdWekxteGxibWQwYUdBdUlFbG1JR1pwYkdWeklHWnBibWx6YUNCc2IyRmthVzVuSUc5MWRDQnZaaUJ2Y21SbGNpd2dkR2hwY3lCallXNGdiR1ZoWkNCMGJ5QndjbVZ0WVhSMWNtVWdaR2x6Y0dGMFkyZ2diMllnZEdobElHQnNiMkZrWUNCbGRtVnVkQ0IzYVhSb0lHRnVJR2x1WTI5dGNHeGxkR1VnYjNJZ2NHRnlkR2xoYkd4NUxYVnVaR1ZtYVc1bFpDQmhjbkpoZVM0aUxDSmpiMjVtYVdSbGJtTmxJam93TGpjMU1qWXpORGszTURReU9EWTRNelVzSW1OaGRHVm5iM0o1SWpvaVRFOUhTVU5mUWxWSEluMCIsImJyYW5jaCI6ImF1dG8tcHItNzkyNGFjNTgtY3Vyc29yLWJ1Z2JvdCJ9LCJpYXQiOjE3NDk3NjM5ODMsImV4cCI6MTc1MDM2ODc4M30.IgBNYyuyAtKLsuVgGkk7W3YQW7R0Vt4GG_BBzMJuWcMea0lz4AVoPFWne6Zzpdh7_1-4uGac5Mf_kNk9bldKVKPJEgWOiJw8mtX-24rvlTSg4J_kztqAFCudLdrtPG_ctYwMeeXar6aCbEuCWFXUm_qgywaOANxyeMtIzLrrF8l6Q7Q1YQQbks4HYbIi3ugevAaQFghQPn8clBk1RbX8N9mWyV_vkYHd89nyFcSKX58MfI7uJwIxUJAPBXaotbNF9FyzZPfM18aDGQ50ZU-bjpvUEe1y1ITDd2B4KwODsmx7XEwqOtE8GmmrHjJgbZ1ZrOha0lgffhZTN38avKJAOA\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Audio Player Fails to Reset Properly</h3></summary>\n\nThe `clear()` function incorrectly sets the `src` property to an empty string (`\"\"`) instead of `null`. Since the component's UI logic relies on `src === null` to display the initial upload/record interface, this causes the component to remain in the \"audio loaded\" state, showing an empty audio player instead of reverting to the upload/record prompt.\n\n<p></p>\n\n<details>\n<summary><code>ui/packages/audio/src/Audio.svelte#L74-L80</code></summary>\n\nhttps://github.com/SM-100-Bench/gradio-app_gradio_1562/blob/e315b16d759f386754742d6ad46616470d174206/ui/packages/audio/src/Audio.svelte#L74-L80\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUoxYVM5d1lXTnJZV2RsY3k5aGRXUnBieTl6Y21NdlFYVmthVzh1YzNabGJIUmxJaXdpYzNSaGNuUk1hVzVsSWpvM05Dd2laVzVrVEdsdVpTSTZPREFzSW1OdlpHVk1hVzVsY3lJNlcxMTlYU3dpYVdRaU9pSTBPR1ZsWmpZM1pTMDJPV05sTFRRd1pqa3RZbVl5T1MwNU1HVXpZakJrTXpNd016Z2lMQ0prWlhOamNtbHdkR2x2YmlJNklsUm9aU0JnWTJ4bFlYSW9LV0FnWm5WdVkzUnBiMjRnYVc1amIzSnlaV04wYkhrZ2MyVjBjeUIwYUdVZ1lITnlZMkFnY0hKdmNHVnlkSGtnZEc4Z1lXNGdaVzF3ZEhrZ2MzUnlhVzVuSUNoZ1hDSmNJbUFwSUdsdWMzUmxZV1FnYjJZZ1lHNTFiR3hnTGlCVGFXNWpaU0IwYUdVZ1kyOXRjRzl1Wlc1MEozTWdWVWtnYkc5bmFXTWdjbVZzYVdWeklHOXVJR0J6Y21NZ1BUMDlJRzUxYkd4Z0lIUnZJR1JwYzNCc1lYa2dkR2hsSUdsdWFYUnBZV3dnZFhCc2IyRmtMM0psWTI5eVpDQnBiblJsY21aaFkyVXNJSFJvYVhNZ1kyRjFjMlZ6SUhSb1pTQmpiMjF3YjI1bGJuUWdkRzhnY21WdFlXbHVJR2x1SUhSb1pTQmNJbUYxWkdsdklHeHZZV1JsWkZ3aUlITjBZWFJsTENCemFHOTNhVzVuSUdGdUlHVnRjSFI1SUdGMVpHbHZJSEJzWVhsbGNpQnBibk4wWldGa0lHOW1JSEpsZG1WeWRHbHVaeUIwYnlCMGFHVWdkWEJzYjJGa0wzSmxZMjl5WkNCd2NtOXRjSFF1SWl3aVkyOXVabWxrWlc1alpTSTZNQzQyTWpFM05ERTVOREkzT1RrMk1EQTJMQ0pqWVhSbFoyOXllU0k2SWt4UFIwbERYMEpWUnlKOSIsImJyYW5jaCI6ImF1dG8tcHItNzkyNGFjNTgtY3Vyc29yLWJ1Z2JvdCJ9LCJpYXQiOjE3NDk3NjM5ODMsImV4cCI6MTc1MDM2ODc4M30.bK6v3eggc1w3KOk7TfPVYx6YiqX_5yP6rANWurcneTFwz8z-6nUBv39RS48MdMz76e8Z2twuA_hp0l0i3zaL0QMxbsAjnB1Wb3R4kVxtjxtFBgekaMiV4HUWi0UZFOid-DQxzpqjyC-CCYA18lqvXreXK--xZbU_nPTKMuct1UQoJ9tkCcQ49SqinHkbUXcWMS4vukqSqaoe2unQZg7cECHqhQULs8E_aTEEpigGv20oUgvRJGahZ2-ws-7NUmFETUSvIDORM_AoIXwzzednEk-rUR_LUG9FyXXHg8A-TaI8vgjMFTmGYERwZ_HQxOSGFMiXPrgmwv3j8STdglKAaw\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/gradio-app_gradio_1562/pull/2#pullrequestreview-2922721221",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/gradio-app_gradio_1562/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/gradio-app_gradio_1562/pull/2#pullrequestreview-2922721221"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/gradio-app_gradio_1562/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T21:33:03Z",
+        "commit_id": "e315b16d759f386754742d6ad46616470d174206"
+      }
+    ]
+  }
+}

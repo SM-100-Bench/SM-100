@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/sphinx-doc/sphinx/pull/8957",
+    "commit_sha": "1f23a5c369ba58c6ec5ab806e25c63dd615327dd",
+    "repo_identifier": "sphinx-doc_sphinx_8957",
+    "timestamp": "2025-06-12T23:07:09Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/sphinx-doc_sphinx_8957/issues/comments/2968373590",
+        "html_url": "https://github.com/SM-100-Bench/sphinx-doc_sphinx_8957/pull/2#issuecomment-2968373590",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/sphinx-doc_sphinx_8957/issues/2",
+        "id": 2968373590,
+        "node_id": "IC_kwDOOiCBms6w7clW",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T22:55:44Z",
+        "updated_at": "2025-06-12T22:55:44Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/sphinx-doc_sphinx_8957/issues/comments/2968373590/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922861256,
+        "node_id": "PRR_kwDOOiCBms6uN1LI",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: Parallel Warnings Not Captured</h3></summary>\n\nWarnings generated during parallel document writing in `_write_parallel()` are silently discarded. Although `process_warnings` is intended to collect them from worker processes, the parent's `warnings` list is not correctly populated, preventing their final emission via `self.warn()`. This is a regression from the previous implementation, which emitted warnings directly from workers, causing users to miss important build diagnostics.\n\n<p></p>\n\n<details>\n<summary><code>sphinx/builders/__init__.py#L348-L378</code></summary>\n\nhttps://github.com/SM-100-Bench/sphinx-doc_sphinx_8957/blob/610398f990fddab896dc05438ffc66472fdb32fa/sphinx/builders/__init__.py#L348-L378\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp6Y0docGJuZ3ZZblZwYkdSbGNuTXZYMTlwYm1sMFgxOHVjSGtpTENKemRHRnlkRXhwYm1VaU9qTTBPQ3dpWlc1a1RHbHVaU0k2TXpjNExDSmpiMlJsVEdsdVpYTWlPbHRkZlYwc0ltbGtJam9pTlRJM1kyVXhOVFV0T1RFNU5DMDBOV1V4TFdGa1l6QXRNemd3TURFNU56VXdaREUwSWl3aVpHVnpZM0pwY0hScGIyNGlPaUpYWVhKdWFXNW5jeUJuWlc1bGNtRjBaV1FnWkhWeWFXNW5JSEJoY21Gc2JHVnNJR1J2WTNWdFpXNTBJSGR5YVhScGJtY2dhVzRnWUY5M2NtbDBaVjl3WVhKaGJHeGxiQ2dwWUNCaGNtVWdjMmxzWlc1MGJIa2daR2x6WTJGeVpHVmtMaUJCYkhSb2IzVm5hQ0JnY0hKdlkyVnpjMTkzWVhKdWFXNW5jMkFnYVhNZ2FXNTBaVzVrWldRZ2RHOGdZMjlzYkdWamRDQjBhR1Z0SUdaeWIyMGdkMjl5YTJWeUlIQnliMk5sYzNObGN5d2dkR2hsSUhCaGNtVnVkQ2R6SUdCM1lYSnVhVzVuYzJBZ2JHbHpkQ0JwY3lCdWIzUWdZMjl5Y21WamRHeDVJSEJ2Y0hWc1lYUmxaQ3dnY0hKbGRtVnVkR2x1WnlCMGFHVnBjaUJtYVc1aGJDQmxiV2x6YzJsdmJpQjJhV0VnWUhObGJHWXVkMkZ5YmlncFlDNGdWR2hwY3lCcGN5QmhJSEpsWjNKbGMzTnBiMjRnWm5KdmJTQjBhR1VnY0hKbGRtbHZkWE1nYVcxd2JHVnRaVzUwWVhScGIyNHNJSGRvYVdOb0lHVnRhWFIwWldRZ2QyRnlibWx1WjNNZ1pHbHlaV04wYkhrZ1puSnZiU0IzYjNKclpYSnpMQ0JqWVhWemFXNW5JSFZ6WlhKeklIUnZJRzFwYzNNZ2FXMXdiM0owWVc1MElHSjFhV3hrSUdScFlXZHViM04wYVdOekxpSXNJbU52Ym1acFpHVnVZMlVpT2pBdU9UazJOVGszTXpBM01UTXpPVGN4T1N3aVkyRjBaV2R2Y25raU9pSk1UMGRKUTE5Q1ZVY2lmUSIsImJyYW5jaCI6ImF1dG8tcHItMWYyM2E1YzMtY3Vyc29yLWJ1Z2JvdCJ9LCJpYXQiOjE3NDk3Njk2MjQsImV4cCI6MTc1MDM3NDQyNH0.laAAHp26u386ZIzowTxew1dV2UxCRMeBGdsIG7u7T-XRwYw2HJOm8AH3z8LuO6qWBF5BeBkgd4aN4sjUcy9G7sKjszR5q1YoXolBG2zc8j23cVt3up3eTfHjbyhCLXVGI06Tu1Hs3pRoA16fU-DPCUbViiIxjFrPJiK68Um0OzmGXhtTyG3wFOmliS1CTXnWb36hK5qaGBx3_-9bp0D75fbqMwjWEiipJJdeKa6NVpBCuWbYk6HSUu9t_6zZGnnKhp16E5hELNR9XhqGH1SXZ8FYv0gMcnW5esA1NRKROSWsLIF_GiGcBV9OGJHuAXS8p8hPMRKTywaCOFCla-dEWQ\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/sphinx-doc_sphinx_8957/pull/2#pullrequestreview-2922861256",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/sphinx-doc_sphinx_8957/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/sphinx-doc_sphinx_8957/pull/2#pullrequestreview-2922861256"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/sphinx-doc_sphinx_8957/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T23:07:04Z",
+        "commit_id": "610398f990fddab896dc05438ffc66472fdb32fa"
+      }
+    ]
+  }
+}

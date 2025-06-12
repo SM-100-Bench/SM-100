@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/usememos/memos/pull/875",
+    "commit_sha": "65cc19c12efa392f792f6bb154b4838547e0af5e",
+    "repo_identifier": "usememos_memos_875",
+    "timestamp": "2025-06-12T21:03:04Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/usememos_memos_875/issues/comments/2968136418",
+        "html_url": "https://github.com/SM-100-Bench/usememos_memos_875/pull/2#issuecomment-2968136418",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/usememos_memos_875/issues/2",
+        "id": 2968136418,
+        "node_id": "IC_kwDOOiBSLs6w6iri",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T20:58:23Z",
+        "updated_at": "2025-06-12T20:58:23Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/usememos_memos_875/issues/comments/2968136418/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922648102,
+        "node_id": "PRR_kwDOOiBSLs6uNBIm",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: Highlighting Function Fails Due to Escaping Errors</h3></summary>\n\nThe `highlightWithWord` function is broken due to two incorrect uses of `lodash.escape()`:\n\n*   **Keyword Regex Interpretation:** The `keyword` is HTML-escaped instead of regex-escaped. Regex metacharacters (e.g., `.`, `*`, `(`, `[`) are no longer escaped, leading to unintended matches or runtime `SyntaxError` exceptions when used in `new RegExp()`.\n*   **HTML Structure Loss:** The input `html` is HTML-escaped before DOM insertion, converting tags (e.g., `<p>`) to entities (e.g., `&lt;p&gt;`). This destroys the HTML structure, causing the highlighter to operate on plain text and return a string with encoded tags, losing original formatting and breaking rendering.\n\nThese issues together break the core highlighting functionality and can cause application crashes.\n\n<p></p>\n\n<details>\n<summary><code>web/src/labs/highlighter/index.ts#L1-L24</code></summary>\n\nhttps://github.com/SM-100-Bench/usememos_memos_875/blob/bf2d130cda90121f78d5a98abb8b15887dbdabe6/web/src/labs/highlighter/index.ts#L1-L24\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUozWldJdmMzSmpMMnhoWW5NdmFHbG5hR3hwWjJoMFpYSXZhVzVrWlhndWRITWlMQ0p6ZEdGeWRFeHBibVVpT2pFc0ltVnVaRXhwYm1VaU9qSTBMQ0pqYjJSbFRHbHVaWE1pT2x0ZGZWMHNJbWxrSWpvaU1tWTVaVFUzTW1RdE5HSTNZUzAwWVRNNExXSmtOek10TmpVeFpqRXdNV0k1WmpZd0lpd2laR1Z6WTNKcGNIUnBiMjRpT2lKVWFHVWdZR2hwWjJoc2FXZG9kRmRwZEdoWGIzSmtZQ0JtZFc1amRHbHZiaUJwY3lCaWNtOXJaVzRnWkhWbElIUnZJSFIzYnlCcGJtTnZjbkpsWTNRZ2RYTmxjeUJ2WmlCZ2JHOWtZWE5vTG1WelkyRndaU2dwWURwY2JseHVLaUFnSUNvcVMyVjVkMjl5WkNCU1pXZGxlQ0JKYm5SbGNuQnlaWFJoZEdsdmJqb3FLaUJVYUdVZ1lHdGxlWGR2Y21SZ0lHbHpJRWhVVFV3dFpYTmpZWEJsWkNCcGJuTjBaV0ZrSUc5bUlISmxaMlY0TFdWelkyRndaV1F1SUZKbFoyVjRJRzFsZEdGamFHRnlZV04wWlhKeklDaGxMbWN1TENCZ0xtQXNJR0FxWUN3Z1lDaGdMQ0JnVzJBcElHRnlaU0J1YnlCc2IyNW5aWElnWlhOallYQmxaQ3dnYkdWaFpHbHVaeUIwYnlCMWJtbHVkR1Z1WkdWa0lHMWhkR05vWlhNZ2IzSWdjblZ1ZEdsdFpTQmdVM2x1ZEdGNFJYSnliM0pnSUdWNFkyVndkR2x2Ym5NZ2QyaGxiaUIxYzJWa0lHbHVJR0J1WlhjZ1VtVm5SWGh3S0NsZ0xseHVLaUFnSUNvcVNGUk5UQ0JUZEhKMVkzUjFjbVVnVEc5emN6b3FLaUJVYUdVZ2FXNXdkWFFnWUdoMGJXeGdJR2x6SUVoVVRVd3RaWE5qWVhCbFpDQmlaV1p2Y21VZ1JFOU5JR2x1YzJWeWRHbHZiaXdnWTI5dWRtVnlkR2x1WnlCMFlXZHpJQ2hsTG1jdUxDQmdQSEEtWUNrZ2RHOGdaVzUwYVhScFpYTWdLR1V1Wnk0c0lHQW1iSFE3Y0NabmREdGdLUzRnVkdocGN5QmtaWE4wY205NWN5QjBhR1VnU0ZSTlRDQnpkSEoxWTNSMWNtVXNJR05oZFhOcGJtY2dkR2hsSUdocFoyaHNhV2RvZEdWeUlIUnZJRzl3WlhKaGRHVWdiMjRnY0d4aGFXNGdkR1Y0ZENCaGJtUWdjbVYwZFhKdUlHRWdjM1J5YVc1bklIZHBkR2dnWlc1amIyUmxaQ0IwWVdkekxDQnNiM05wYm1jZ2IzSnBaMmx1WVd3Z1ptOXliV0YwZEdsdVp5QmhibVFnWW5KbFlXdHBibWNnY21WdVpHVnlhVzVuTGx4dVhHNVVhR1Z6WlNCcGMzTjFaWE1nZEc5blpYUm9aWElnWW5KbFlXc2dkR2hsSUdOdmNtVWdhR2xuYUd4cFoyaDBhVzVuSUdaMWJtTjBhVzl1WVd4cGRIa2dZVzVrSUdOaGJpQmpZWFZ6WlNCaGNIQnNhV05oZEdsdmJpQmpjbUZ6YUdWekxpSXNJbU52Ym1acFpHVnVZMlVpT2pFc0ltTmhkR1ZuYjNKNUlqb2lURTlIU1VOZlFsVkhJbjAiLCJicmFuY2giOiJhdXRvLXByLTY1Y2MxOWMxLWN1cnNvci1idWdib3QifSwiaWF0IjoxNzQ5NzYyMTY5LCJleHAiOjE3NTAzNjY5Njl9.hDuxDVLvnemzjJxXl34zuH4C9Hdm9DOLwYJ-dm7nX4un7-TDHQwGUkDVjOepO-bmfzFU5P5VtO2TKQ3m-51qAvTLtO35ywkkL-3DrqpOqEF43B3pxg3MUS_2yI0zilLo7h_vdutH6-u3gDokAERk3atGhm3SHFCsThalgBtkkbK7FSkXTsnFUYhzAjOsCK0IQkG2vPuNbxskh7paS1SPMOexnfgCtPrCGpgn5Cx-8iJI32hDB-wGYf1MwJnHUYDw5TUtW9p5RnwRuKC8bcaZYLxs4w6UN5Vx1XzbOpYGgEPnsiG0sTE-SWo_Qz4ygCS1SqcaO4yqV_APu_BEQSnc7g\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/usememos_memos_875/pull/2#pullrequestreview-2922648102",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/usememos_memos_875/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/usememos_memos_875/pull/2#pullrequestreview-2922648102"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/usememos_memos_875/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T21:02:49Z",
+        "commit_id": "bf2d130cda90121f78d5a98abb8b15887dbdabe6"
+      }
+    ]
+  }
+}

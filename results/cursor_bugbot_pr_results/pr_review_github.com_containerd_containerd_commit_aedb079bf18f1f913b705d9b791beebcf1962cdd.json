@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/containerd/containerd/commit/aedb079bf18f1f913b705d9b791beebcf1962cdd",
+    "commit_sha": "421a4b568ce8ac8f30c8b6b44e785a4063128482",
+    "repo_identifier": "containerd_containerd_aedb079bf18f1f913b705d9b791beebcf1962cdd",
+    "timestamp": "2025-06-12T21:19:43Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/containerd_containerd_aedb079bf18f1f913b705d9b791beebcf1962cdd/issues/comments/2968161110",
+        "html_url": "https://github.com/SM-100-Bench/containerd_containerd_aedb079bf18f1f913b705d9b791beebcf1962cdd/pull/29#issuecomment-2968161110",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/containerd_containerd_aedb079bf18f1f913b705d9b791beebcf1962cdd/issues/29",
+        "id": 2968161110,
+        "node_id": "IC_kwDOOiBbwM6w6otW",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T21:08:18Z",
+        "updated_at": "2025-06-12T21:08:18Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/containerd_containerd_aedb079bf18f1f913b705d9b791beebcf1962cdd/issues/comments/2968161110/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922683783,
+        "node_id": "PRR_kwDOOiBbwM6uNJ2H",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: Exec Process Exit Handling Error</h3></summary>\n\nWhen an exec process fails to start but `container.Start()` returns an error after the process has already been spawned, the `s.runningExecs[container]` counter is double-decremented. This occurs once in the `Start()` error path and again in `handleProcessExit()` when the exec's exit event is processed. This double-decrement can make the counter negative, leading to two critical issues in `handleInitExit()`:\n1.  A runtime panic when creating a channel with a negative buffer size.\n2.  A permanent hang, as `handleInitExit()` waits for the counter to reach exactly zero, preventing the container's init `TaskExit` event from being published and blocking container teardown.\nThis bug is introduced by the current commit.\n\n<p></p>\n\n<details>\n<summary><code>cmd/containerd-shim-runc-v2/task/service.go#L290-L302</code></summary>\n\nhttps://github.com/SM-100-Bench/containerd_containerd_aedb079bf18f1f913b705d9b791beebcf1962cdd/blob/81c5e3ad7abef7eac5c029596c6de6073ef4fc69/cmd/containerd-shim-runc-v2/task/service.go#L290-L302\n\n</details>\n\n<details>\n<summary><code>cmd/containerd-shim-runc-v2/task/service.go#L718-L725</code></summary>\n\nhttps://github.com/SM-100-Bench/containerd_containerd_aedb079bf18f1f913b705d9b791beebcf1962cdd/blob/81c5e3ad7abef7eac5c029596c6de6073ef4fc69/cmd/containerd-shim-runc-v2/task/service.go#L718-L725\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpqYldRdlkyOXVkR0ZwYm1WeVpDMXphR2x0TFhKMWJtTXRkakl2ZEdGemF5OXpaWEoyYVdObExtZHZJaXdpYzNSaGNuUk1hVzVsSWpveU9UQXNJbVZ1WkV4cGJtVWlPak13TWl3aVkyOWtaVXhwYm1WeklqcGJYWDBzZXlKbWFXeGxJam9pWTIxa0wyTnZiblJoYVc1bGNtUXRjMmhwYlMxeWRXNWpMWFl5TDNSaGMyc3ZjMlZ5ZG1salpTNW5ieUlzSW5OMFlYSjBUR2x1WlNJNk56RTRMQ0psYm1STWFXNWxJam8zTWpVc0ltTnZaR1ZNYVc1bGN5STZXMTE5WFN3aWFXUWlPaUpsTVRWbVlUUXdOUzB4TlRFMExUUTJOamd0WWpnMU55MDFZV0UxTkRnM1pUZ3hNVGdpTENKa1pYTmpjbWx3ZEdsdmJpSTZJbGRvWlc0Z1lXNGdaWGhsWXlCd2NtOWpaWE56SUdaaGFXeHpJSFJ2SUhOMFlYSjBJR0oxZENCZ1kyOXVkR0ZwYm1WeUxsTjBZWEowS0NsZ0lISmxkSFZ5Ym5NZ1lXNGdaWEp5YjNJZ1lXWjBaWElnZEdobElIQnliMk5sYzNNZ2FHRnpJR0ZzY21WaFpIa2dZbVZsYmlCemNHRjNibVZrTENCMGFHVWdZSE11Y25WdWJtbHVaMFY0WldOelcyTnZiblJoYVc1bGNsMWdJR052ZFc1MFpYSWdhWE1nWkc5MVlteGxMV1JsWTNKbGJXVnVkR1ZrTGlCVWFHbHpJRzlqWTNWeWN5QnZibU5sSUdsdUlIUm9aU0JnVTNSaGNuUW9LV0FnWlhKeWIzSWdjR0YwYUNCaGJtUWdZV2RoYVc0Z2FXNGdZR2hoYm1Sc1pWQnliMk5sYzNORmVHbDBLQ2xnSUhkb1pXNGdkR2hsSUdWNFpXTW5jeUJsZUdsMElHVjJaVzUwSUdseklIQnliMk5sYzNObFpDNGdWR2hwY3lCa2IzVmliR1V0WkdWamNtVnRaVzUwSUdOaGJpQnRZV3RsSUhSb1pTQmpiM1Z1ZEdWeUlHNWxaMkYwYVhabExDQnNaV0ZrYVc1bklIUnZJSFIzYnlCamNtbDBhV05oYkNCcGMzTjFaWE1nYVc0Z1lHaGhibVJzWlVsdWFYUkZlR2wwS0NsZ09seHVNUzRnSUVFZ2NuVnVkR2x0WlNCd1lXNXBZeUIzYUdWdUlHTnlaV0YwYVc1bklHRWdZMmhoYm01bGJDQjNhWFJvSUdFZ2JtVm5ZWFJwZG1VZ1luVm1abVZ5SUhOcGVtVXVYRzR5TGlBZ1FTQndaWEp0WVc1bGJuUWdhR0Z1Wnl3Z1lYTWdZR2hoYm1Sc1pVbHVhWFJGZUdsMEtDbGdJSGRoYVhSeklHWnZjaUIwYUdVZ1kyOTFiblJsY2lCMGJ5QnlaV0ZqYUNCbGVHRmpkR3g1SUhwbGNtOHNJSEJ5WlhabGJuUnBibWNnZEdobElHTnZiblJoYVc1bGNpZHpJR2x1YVhRZ1lGUmhjMnRGZUdsMFlDQmxkbVZ1ZENCbWNtOXRJR0psYVc1bklIQjFZbXhwYzJobFpDQmhibVFnWW14dlkydHBibWNnWTI5dWRHRnBibVZ5SUhSbFlYSmtiM2R1TGx4dVZHaHBjeUJpZFdjZ2FYTWdhVzUwY205a2RXTmxaQ0JpZVNCMGFHVWdZM1Z5Y21WdWRDQmpiMjF0YVhRdUlpd2lZMjl1Wm1sa1pXNWpaU0k2TVN3aVkyRjBaV2R2Y25raU9pSk1UMGRKUTE5Q1ZVY2lmUSIsImJyYW5jaCI6ImF1dG8tcHItNDIxYTRiNTYtY3Vyc29yLWJ1Z2JvdCJ9LCJpYXQiOjE3NDk3NjMxNzgsImV4cCI6MTc1MDM2Nzk3OH0.gfoHxfh7vIE7wnwPnB3npjskprKCypVxe5orWhvOoT2W1Ww72meyzSSnNDfdJBkxK2GQXhP7axoh-5fcprEqLcJxvLIE0kzOcvRq0WjG3q99Wav80iAlPIF6rd4RvvRHMi3m6jJhFUNbgm4bK5bZs1vWcAl68emgJcWc13qob3x2hir_GcvKERyLio7-Nptd1HOKB8bsE4Of_6nzJlHE24uz6T98LQRuQRmoPSSIyXUDEVd1qET9N82vwQforuQJtXj_wp3qJPsmEUXTT4jXRN0ZS2QIozMuEdd7B_fKGiJn-IkTXkU_jyR4h_LdxyyXsCxubPvDP8MjvoV7Hxk5cA\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/containerd_containerd_aedb079bf18f1f913b705d9b791beebcf1962cdd/pull/29#pullrequestreview-2922683783",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/containerd_containerd_aedb079bf18f1f913b705d9b791beebcf1962cdd/pulls/29",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/containerd_containerd_aedb079bf18f1f913b705d9b791beebcf1962cdd/pull/29#pullrequestreview-2922683783"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/containerd_containerd_aedb079bf18f1f913b705d9b791beebcf1962cdd/pulls/29"
+          }
+        },
+        "submitted_at": "2025-06-12T21:19:39Z",
+        "commit_id": "81c5e3ad7abef7eac5c029596c6de6073ef4fc69"
+      }
+    ]
+  }
+}

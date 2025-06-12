@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/badges/shields/pull/1223",
+    "commit_sha": "446d4ce21e1f115b47ab7213e00fd3ea3b400689",
+    "repo_identifier": "badges_shields_1223",
+    "timestamp": "2025-06-12T21:17:39Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/badges_shields_1223/issues/comments/2968168466",
+        "html_url": "https://github.com/SM-100-Bench/badges_shields_1223/pull/2#issuecomment-2968168466",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/badges_shields_1223/issues/2",
+        "id": 2968168466,
+        "node_id": "IC_kwDOOxEnls6w6qgS",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T21:11:57Z",
+        "updated_at": "2025-06-12T21:11:57Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/badges_shields_1223/issues/comments/2968168466/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922678605,
+        "node_id": "PRR_kwDOOxEnls6uNIlN",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: Cache Key Collision from Static String</h3></summary>\n\nThe `cacheIndex` is incorrectly constructed using the literal string \"match[0]\". Because the `match[0]` variable is not interpolated, all requests share the same cache key prefix. This causes different badge URLs to collide in the cache, leading to incorrect or stale data being served.\n\n<p></p>\n\n<details>\n<summary><code>lib/request-handler.js#L93-L101</code></summary>\n\nhttps://github.com/SM-100-Bench/badges_shields_1223/blob/df171b81fd7c3d488d09a8d60f589d85e9fc0c45/lib/request-handler.js#L93-L101\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpzYVdJdmNtVnhkV1Z6ZEMxb1lXNWtiR1Z5TG1weklpd2ljM1JoY25STWFXNWxJam81TXl3aVpXNWtUR2x1WlNJNk1UQXhMQ0pqYjJSbFRHbHVaWE1pT2x0ZGZWMHNJbWxrSWpvaU5XWXpPVFptTW1ZdE9UQmxNaTAwWkdReExUZzBZV1V0TXpSaU1EWmxORFl3WldFd0lpd2laR1Z6WTNKcGNIUnBiMjRpT2lKVWFHVWdZR05oWTJobFNXNWtaWGhnSUdseklHbHVZMjl5Y21WamRHeDVJR052Ym5OMGNuVmpkR1ZrSUhWemFXNW5JSFJvWlNCc2FYUmxjbUZzSUhOMGNtbHVaeUJjSW0xaGRHTm9XekJkWENJdUlFSmxZMkYxYzJVZ2RHaGxJR0J0WVhSamFGc3dYV0FnZG1GeWFXRmliR1VnYVhNZ2JtOTBJR2x1ZEdWeWNHOXNZWFJsWkN3Z1lXeHNJSEpsY1hWbGMzUnpJSE5vWVhKbElIUm9aU0J6WVcxbElHTmhZMmhsSUd0bGVTQndjbVZtYVhndUlGUm9hWE1nWTJGMWMyVnpJR1JwWm1abGNtVnVkQ0JpWVdSblpTQlZVa3h6SUhSdklHTnZiR3hwWkdVZ2FXNGdkR2hsSUdOaFkyaGxMQ0JzWldGa2FXNW5JSFJ2SUdsdVkyOXljbVZqZENCdmNpQnpkR0ZzWlNCa1lYUmhJR0psYVc1bklITmxjblpsWkM0aUxDSmpiMjVtYVdSbGJtTmxJam94TENKallYUmxaMjl5ZVNJNklreFBSMGxEWDBKVlJ5SjkiLCJicmFuY2giOiJhdXRvLXByLTQ0NmQ0Y2UyLWN1cnNvci1idWdib3QifSwiaWF0IjoxNzQ5NzYzMDQzLCJleHAiOjE3NTAzNjc4NDN9.hDGwd7MsG0iRMJWBHraCTqFIbiG7yj3P88sSlC-0UEC8rpp_PNhTUrZDqvigTYSDjdnwtWVYC61hvI-TYICTF6W48E3U3lWDtNUENLRn-GjQQbttK06Ovdxvaj3Od_iUqVuWJDM8Xi30CA0uMCbrNJ8UKMPDCCbVUalwoYMcSOvSpFBSi3axUroGT3uCYXa20faV6JtJ4ldoCDLOxQfq_p7G8daAowjvBZi2_DgaJPMUmc4AY5VmdPmQjrfNGx1l1k6PBcVI_7P_SfIp6IS6kfqUdW7vPbKAzfQxi2lnrj9jk3vK-xbmhP-0AfyOR-hXQeTIUZxbTCfjutrDj1MogQ\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Missing Request Argument Breaks Handlers</h3></summary>\n\nThe `handleRequest` function now invokes service handlers with only three arguments, omitting the fourth `request` argument. This causes `request` to be `undefined` within handlers, shadowing the globally-required `request` module. As existing vendor handlers rely on this argument for outbound HTTP calls, it leads to runtime failures and breaks many badges.\n\n<p></p>\n\n<details>\n<summary><code>lib/request-handler.js#L165-L167</code></summary>\n\nhttps://github.com/SM-100-Bench/badges_shields_1223/blob/df171b81fd7c3d488d09a8d60f589d85e9fc0c45/lib/request-handler.js#L165-L167\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpzYVdJdmNtVnhkV1Z6ZEMxb1lXNWtiR1Z5TG1weklpd2ljM1JoY25STWFXNWxJam94TmpVc0ltVnVaRXhwYm1VaU9qRTJOeXdpWTI5a1pVeHBibVZ6SWpwYlhYMWRMQ0pwWkNJNklqazJNbVEzTldSaUxUaGtZMll0TkRVd055MDRaamt6TFRjeU1UaGhNVEJpWXpCak15SXNJbVJsYzJOeWFYQjBhVzl1SWpvaVZHaGxJR0JvWVc1a2JHVlNaWEYxWlhOMFlDQm1kVzVqZEdsdmJpQnViM2NnYVc1MmIydGxjeUJ6WlhKMmFXTmxJR2hoYm1Sc1pYSnpJSGRwZEdnZ2IyNXNlU0IwYUhKbFpTQmhjbWQxYldWdWRITXNJRzl0YVhSMGFXNW5JSFJvWlNCbWIzVnlkR2dnWUhKbGNYVmxjM1JnSUdGeVozVnRaVzUwTGlCVWFHbHpJR05oZFhObGN5QmdjbVZ4ZFdWemRHQWdkRzhnWW1VZ1lIVnVaR1ZtYVc1bFpHQWdkMmwwYUdsdUlHaGhibVJzWlhKekxDQnphR0ZrYjNkcGJtY2dkR2hsSUdkc2IySmhiR3g1TFhKbGNYVnBjbVZrSUdCeVpYRjFaWE4wWUNCdGIyUjFiR1V1SUVGeklHVjRhWE4wYVc1bklIWmxibVJ2Y2lCb1lXNWtiR1Z5Y3lCeVpXeDVJRzl1SUhSb2FYTWdZWEpuZFcxbGJuUWdabTl5SUc5MWRHSnZkVzVrSUVoVVZGQWdZMkZzYkhNc0lHbDBJR3hsWVdSeklIUnZJSEoxYm5ScGJXVWdabUZwYkhWeVpYTWdZVzVrSUdKeVpXRnJjeUJ0WVc1NUlHSmhaR2RsY3k0aUxDSmpiMjVtYVdSbGJtTmxJam93TGpNMk56UXpNamcxTlRBNE5EQTROVFFzSW1OaGRHVm5iM0o1SWpvaVRFOUhTVU5mUWxWSEluMCIsImJyYW5jaCI6ImF1dG8tcHItNDQ2ZDRjZTItY3Vyc29yLWJ1Z2JvdCJ9LCJpYXQiOjE3NDk3NjMwNDMsImV4cCI6MTc1MDM2Nzg0M30.Zk-cntIq8Gu5WLQRIbyVq6IUNpkrJ1wDoOe9lSLTkQcqBxl9tuVT6ItuOa35W79F18SQqwN5tIxZlFBGP9VdtH7PrADcPrYkY0g5K7EUPcxWama8MFAxfmMraccYLW5DDUuprlilLWuGQR7zNwq-dD_-rXQPC3DWZSBr3hYou2h4dTWrhHpIR4JMWnz-Qd2TwMProY1sbxKMYHGpbxN5SdjGB37hsr6ahybnVq9ScGWvzKBzW3rNAXLSPBxB3LIfyh0maXzXfRhWi729J0MIdgnzs0wURGE9EptnQBhlq2WmDNQS5Z3UbXEzqccH-M1EO1Yq7jbwYumyBve7kaVd9g\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/badges_shields_1223/pull/2#pullrequestreview-2922678605",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/badges_shields_1223/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/badges_shields_1223/pull/2#pullrequestreview-2922678605"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/badges_shields_1223/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T21:17:23Z",
+        "commit_id": "df171b81fd7c3d488d09a8d60f589d85e9fc0c45"
+      }
+    ]
+  }
+}

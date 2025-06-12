@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/curlconverter/curlconverter/commit/982cf32cefc95b7b08319205a85364174db11962",
+    "commit_sha": "f7f7d8917737612fc17261bdb1952d66b548db8f",
+    "repo_identifier": "curlconverter_curlconverter_982cf32cefc95b7b08319205a85364174db11962",
+    "timestamp": "2025-06-12T21:22:19Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/curlconverter_curlconverter_982cf32cefc95b7b08319205a85364174db11962/issues/comments/2968172526",
+        "html_url": "https://github.com/SM-100-Bench/curlconverter_curlconverter_982cf32cefc95b7b08319205a85364174db11962/pull/2#issuecomment-2968172526",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/curlconverter_curlconverter_982cf32cefc95b7b08319205a85364174db11962/issues/2",
+        "id": 2968172526,
+        "node_id": "IC_kwDOOiBdd86w6rfu",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T21:14:01Z",
+        "updated_at": "2025-06-12T21:14:01Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/curlconverter_curlconverter_982cf32cefc95b7b08319205a85364174db11962/issues/comments/2968172526/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922693914,
+        "node_id": "PRR_kwDOOiBdd86uNMUa",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: Python Generator File Handling Issues</h3></summary>\n\nThe Python generator has two bugs:\n1.  It uses `String.prototype.startsWith` (an ES6 method) to detect `@file` syntax. On Node.js versions prior to 4.0, this throws a `TypeError`, crashing conversions when `request.data` is present.\n2.  The generated Python code opens files in text mode (`open(filePath)`) instead of binary mode (`open(filePath, 'rb')`). This can corrupt binary data or cause `UnicodeDecodeError` for file uploads.\n\n<p></p>\n\n<details>\n<summary><code>generators/python.js#L23-L30</code></summary>\n\nhttps://github.com/SM-100-Bench/curlconverter_curlconverter_982cf32cefc95b7b08319205a85364174db11962/blob/c54986cfa4faf009fe89560383bee5eb6fe1c3f3/generators/python.js#L23-L30\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpuWlc1bGNtRjBiM0p6TDNCNWRHaHZiaTVxY3lJc0luTjBZWEowVEdsdVpTSTZNak1zSW1WdVpFeHBibVVpT2pNd0xDSmpiMlJsVEdsdVpYTWlPbHRkZlYwc0ltbGtJam9pTVRBNU1XRXpaRFl0WmpKaVlTMDBaRFV6TFdFNE5EVXRaVGhqTnpBMFlqWTRaV1l6SWl3aVpHVnpZM0pwY0hScGIyNGlPaUpVYUdVZ1VIbDBhRzl1SUdkbGJtVnlZWFJ2Y2lCb1lYTWdkSGR2SUdKMVozTTZYRzR4TGlBZ1NYUWdkWE5sY3lCZ1UzUnlhVzVuTG5CeWIzUnZkSGx3WlM1emRHRnlkSE5YYVhSb1lDQW9ZVzRnUlZNMklHMWxkR2h2WkNrZ2RHOGdaR1YwWldOMElHQkFabWxzWldBZ2MzbHVkR0Y0TGlCUGJpQk9iMlJsTG1weklIWmxjbk5wYjI1eklIQnlhVzl5SUhSdklEUXVNQ3dnZEdocGN5QjBhSEp2ZDNNZ1lTQmdWSGx3WlVWeWNtOXlZQ3dnWTNKaGMyaHBibWNnWTI5dWRtVnljMmx2Ym5NZ2QyaGxiaUJnY21WeGRXVnpkQzVrWVhSaFlDQnBjeUJ3Y21WelpXNTBMbHh1TWk0Z0lGUm9aU0JuWlc1bGNtRjBaV1FnVUhsMGFHOXVJR052WkdVZ2IzQmxibk1nWm1sc1pYTWdhVzRnZEdWNGRDQnRiMlJsSUNoZ2IzQmxiaWhtYVd4bFVHRjBhQ2xnS1NCcGJuTjBaV0ZrSUc5bUlHSnBibUZ5ZVNCdGIyUmxJQ2hnYjNCbGJpaG1hV3hsVUdGMGFDd2dKM0ppSnlsZ0tTNGdWR2hwY3lCallXNGdZMjl5Y25Wd2RDQmlhVzVoY25rZ1pHRjBZU0J2Y2lCallYVnpaU0JnVlc1cFkyOWtaVVJsWTI5a1pVVnljbTl5WUNCbWIzSWdabWxzWlNCMWNHeHZZV1J6TGlJc0ltTnZibVpwWkdWdVkyVWlPakVzSW1OaGRHVm5iM0o1SWpvaVVFOVVSVTVVU1VGTVgwVkVSMFZmUTBGVFJTSjkiLCJicmFuY2giOiJhdXRvLXByLWY3ZjdkODkxLWN1cnNvci1idWdib3QifSwiaWF0IjoxNzQ5NzYzMzE3LCJleHAiOjE3NTAzNjgxMTd9.Ee-rWGa81a6hTb-WiQOoZ9Z1edu2fARsuR8dQE2IbwBa-5bAlNYXCnHKeKJkjN4sU6KeMjLMSAGgo4jBdXEYG8QOAq2-nBhtmr0UL7x8YwIIV7129HUuUMeABkQKGZ2nYyydlm8W4eH_t0IEv2Js2v3-CCTUrTSdF6Nqp7Sp-SJyZbTup-lKQ_vxKhLlEs5L10X-U4vrS3cbVA3cYf0Gs8WdXgip2X_PirBDVRashb2eqIRr8vLcGkBXVyGhv2Iu3aFAiA5Btpp36mhPYUItXhxQmBrdCH8yJgYCPhHR0iDYRj1NWfXkuM2Kue2b3pcj6gayZe9uJ-D7B8hZDGZqSw\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/curlconverter_curlconverter_982cf32cefc95b7b08319205a85364174db11962/pull/2#pullrequestreview-2922693914",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/curlconverter_curlconverter_982cf32cefc95b7b08319205a85364174db11962/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/curlconverter_curlconverter_982cf32cefc95b7b08319205a85364174db11962/pull/2#pullrequestreview-2922693914"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/curlconverter_curlconverter_982cf32cefc95b7b08319205a85364174db11962/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T21:21:57Z",
+        "commit_id": "c54986cfa4faf009fe89560383bee5eb6fe1c3f3"
+      }
+    ]
+  }
+}

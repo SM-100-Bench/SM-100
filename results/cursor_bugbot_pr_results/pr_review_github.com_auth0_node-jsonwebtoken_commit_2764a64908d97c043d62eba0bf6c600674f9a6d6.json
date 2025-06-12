@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/auth0/node-jsonwebtoken/commit/2764a64908d97c043d62eba0bf6c600674f9a6d6",
+    "commit_sha": "53c3987b3cc34e95eb396b26fc9b051276e2f6f9",
+    "repo_identifier": "auth0_node-jsonwebtoken_2764a64908d97c043d62eba0bf6c600674f9a6d6",
+    "timestamp": "2025-06-12T21:27:33Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/auth0_node-jsonwebtoken_2764a64908d97c043d62eba0bf6c600674f9a6d6/issues/comments/2968192182",
+        "html_url": "https://github.com/SM-100-Bench/auth0_node-jsonwebtoken_2764a64908d97c043d62eba0bf6c600674f9a6d6/pull/2#issuecomment-2968192182",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/auth0_node-jsonwebtoken_2764a64908d97c043d62eba0bf6c600674f9a6d6/issues/2",
+        "id": 2968192182,
+        "node_id": "IC_kwDOOiBfZs6w6wS2",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T21:23:23Z",
+        "updated_at": "2025-06-12T21:23:23Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/auth0_node-jsonwebtoken_2764a64908d97c043d62eba0bf6c600674f9a6d6/issues/comments/2968192182/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922709884,
+        "node_id": "PRR_kwDOOiBfZs6uNQN8",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: JWT Payload Overwritten by Undefined Options</h3></summary>\n\nThe `forEach` loop that maps options to JWT claims (e.g., `audience` to `aud`, `issuer` to `iss`) unconditionally assigns `payload[claim] = options[key]`. If the caller does not provide a specific option (making `options[key]` `undefined`), any existing corresponding claim in the payload (e.g., `payload.aud`) is overwritten with `undefined`. This silently removes valid `aud`, `iss`, `sub`, or `jti` claims from the generated JWT, which is a regression from previous behavior. The assignment should only occur when `options[key]` is defined.\n\n<p></p>\n\n<details>\n<summary><code>sign.js#L75-L82</code></summary>\n\nhttps://github.com/SM-100-Bench/auth0_node-jsonwebtoken_2764a64908d97c043d62eba0bf6c600674f9a6d6/blob/a7c42dd0d100e6e68489a38e755406f8e25ff383/sign.js#L75-L82\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp6YVdkdUxtcHpJaXdpYzNSaGNuUk1hVzVsSWpvM05Td2laVzVrVEdsdVpTSTZPRElzSW1OdlpHVk1hVzVsY3lJNlcxMTlYU3dpYVdRaU9pSmhOelEzWlRRNE9TMHdNekprTFRRME1Ua3RPREJoT0MweE16TXlOamt4WkRnM05tTWlMQ0prWlhOamNtbHdkR2x2YmlJNklsUm9aU0JnWm05eVJXRmphR0FnYkc5dmNDQjBhR0YwSUcxaGNITWdiM0IwYVc5dWN5QjBieUJLVjFRZ1kyeGhhVzF6SUNobExtY3VMQ0JnWVhWa2FXVnVZMlZnSUhSdklHQmhkV1JnTENCZ2FYTnpkV1Z5WUNCMGJ5QmdhWE56WUNrZ2RXNWpiMjVrYVhScGIyNWhiR3g1SUdGemMybG5ibk1nWUhCaGVXeHZZV1JiWTJ4aGFXMWRJRDBnYjNCMGFXOXVjMXRyWlhsZFlDNGdTV1lnZEdobElHTmhiR3hsY2lCa2IyVnpJRzV2ZENCd2NtOTJhV1JsSUdFZ2MzQmxZMmxtYVdNZ2IzQjBhVzl1SUNodFlXdHBibWNnWUc5d2RHbHZibk5iYTJWNVhXQWdZSFZ1WkdWbWFXNWxaR0FwTENCaGJua2daWGhwYzNScGJtY2dZMjl5Y21WemNHOXVaR2x1WnlCamJHRnBiU0JwYmlCMGFHVWdjR0Y1Ykc5aFpDQW9aUzVuTGl3Z1lIQmhlV3h2WVdRdVlYVmtZQ2tnYVhNZ2IzWmxjbmR5YVhSMFpXNGdkMmwwYUNCZ2RXNWtaV1pwYm1Wa1lDNGdWR2hwY3lCemFXeGxiblJzZVNCeVpXMXZkbVZ6SUhaaGJHbGtJR0JoZFdSZ0xDQmdhWE56WUN3Z1lITjFZbUFzSUc5eUlHQnFkR2xnSUdOc1lXbHRjeUJtY205dElIUm9aU0JuWlc1bGNtRjBaV1FnU2xkVUxDQjNhR2xqYUNCcGN5QmhJSEpsWjNKbGMzTnBiMjRnWm5KdmJTQndjbVYyYVc5MWN5QmlaV2hoZG1sdmNpNGdWR2hsSUdGemMybG5ibTFsYm5RZ2MyaHZkV3hrSUc5dWJIa2diMk5qZFhJZ2QyaGxiaUJnYjNCMGFXOXVjMXRyWlhsZFlDQnBjeUJrWldacGJtVmtMaUlzSW1OdmJtWnBaR1Z1WTJVaU9qQXVPVGsxTVRJek5qRTRNREUxTXpZM0xDSmpZWFJsWjI5eWVTSTZJa3hQUjBsRFgwSlZSeUo5IiwiYnJhbmNoIjoiYXV0by1wci01M2MzOTg3Yi1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc2MzYzMywiZXhwIjoxNzUwMzY4NDMzfQ.S28kYvLSZVMoGsWwfEDIgQaWKYqmscrSinu3m4bo6eSqG6iwUSiDT01nnU6mM5ol2XuaLewrFK0Ksk-sDO7dM_evWmPLfI-0T16VS_aHUq_Mq_uccOFfsVOLsgQCzX9jLutM_4Ed1sQebkPYZmB3haSwCc7Oh6ww0FhJUyqzUufE4dnjUYYwcb9iFubPOAEo6PS4tQN0A2ZbkLQISuohMg_ebPF3eWOTDg6ggwuLB2LCNPkKSXou9U4PPE8KMWpIcLkhbeSsZ8Xf_-gSGX3VlFSkJ2BskER45LGvH7r1Dme2EYxfFkKF-0z1Up8iycKKuOzNQUdW77c1wYbE3GX3lg\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: JWT Signing Schema Validation Issues</h3></summary>\n\nThe `sign_options_schema` (Joi validation) is configured incorrectly. It silently accepts unknown or deprecated options (e.g., `expiresInSeconds`, `notBeforeInMinutes`) because it's missing `unknown(false)`. Additionally, it rejects the `alg` option, which is a documented alias for `algorithm`. This causes `jwt.sign` calls using `{ alg: '...' }` to fail validation with `\"alg\" is not allowed`, leading to the default `HS256` algorithm being used instead of the specified one, contradicting documentation and breaking backward compatibility.\n\n<p></p>\n\n<details>\n<summary><code>sign.js#L5-L17</code></summary>\n\nhttps://github.com/SM-100-Bench/auth0_node-jsonwebtoken_2764a64908d97c043d62eba0bf6c600674f9a6d6/blob/a7c42dd0d100e6e68489a38e755406f8e25ff383/sign.js#L5-L17\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp6YVdkdUxtcHpJaXdpYzNSaGNuUk1hVzVsSWpvMUxDSmxibVJNYVc1bElqb3hOeXdpWTI5a1pVeHBibVZ6SWpwYlhYMWRMQ0pwWkNJNkltSXhOekkyWm1WbExUTmhaVEl0TkRJMU5pMDRZakUwTFRVNE1qZzRaakJrTlRVek1TSXNJbVJsYzJOeWFYQjBhVzl1SWpvaVZHaGxJR0J6YVdkdVgyOXdkR2x2Ym5OZmMyTm9aVzFoWUNBb1NtOXBJSFpoYkdsa1lYUnBiMjRwSUdseklHTnZibVpwWjNWeVpXUWdhVzVqYjNKeVpXTjBiSGt1SUVsMElITnBiR1Z1ZEd4NUlHRmpZMlZ3ZEhNZ2RXNXJibTkzYmlCdmNpQmtaWEJ5WldOaGRHVmtJRzl3ZEdsdmJuTWdLR1V1Wnk0c0lHQmxlSEJwY21WelNXNVRaV052Ym1SellDd2dZRzV2ZEVKbFptOXlaVWx1VFdsdWRYUmxjMkFwSUdKbFkyRjFjMlVnYVhRbmN5QnRhWE56YVc1bklHQjFibXR1YjNkdUtHWmhiSE5sS1dBdUlFRmtaR2wwYVc5dVlXeHNlU3dnYVhRZ2NtVnFaV04wY3lCMGFHVWdZR0ZzWjJBZ2IzQjBhVzl1TENCM2FHbGphQ0JwY3lCaElHUnZZM1Z0Wlc1MFpXUWdZV3hwWVhNZ1ptOXlJR0JoYkdkdmNtbDBhRzFnTGlCVWFHbHpJR05oZFhObGN5QmdhbmQwTG5OcFoyNWdJR05oYkd4eklIVnphVzVuSUdCN0lHRnNaem9nSnk0dUxpY2dmV0FnZEc4Z1ptRnBiQ0IyWVd4cFpHRjBhVzl1SUhkcGRHZ2dZRndpWVd4blhDSWdhWE1nYm05MElHRnNiRzkzWldSZ0xDQnNaV0ZrYVc1bklIUnZJSFJvWlNCa1pXWmhkV3gwSUdCSVV6STFObUFnWVd4bmIzSnBkR2h0SUdKbGFXNW5JSFZ6WldRZ2FXNXpkR1ZoWkNCdlppQjBhR1VnYzNCbFkybG1hV1ZrSUc5dVpTd2dZMjl1ZEhKaFpHbGpkR2x1WnlCa2IyTjFiV1Z1ZEdGMGFXOXVJR0Z1WkNCaWNtVmhhMmx1WnlCaVlXTnJkMkZ5WkNCamIyMXdZWFJwWW1sc2FYUjVMaUlzSW1OdmJtWnBaR1Z1WTJVaU9qQXVORGcyTURFek1qQTNNRFU1T1RBd09Dd2lZMkYwWldkdmNua2lPaUpNVDBkSlExOUNWVWNpZlEiLCJicmFuY2giOiJhdXRvLXByLTUzYzM5ODdiLWN1cnNvci1idWdib3QifSwiaWF0IjoxNzQ5NzYzNjMzLCJleHAiOjE3NTAzNjg0MzN9.llYcQVpjfW4jMbuwE38x5lS14488oN7VM-gzul8HxejUiJ4h5pOsgM8DnW2r95Ytp0inPsd6Ry4kNfVbZK0c9R6motGhEX8SbBdX-cqPMJcxDnqvj-kS4Jc58gmgH3PLxI9MCNwInPUrJREXQ0qAr5BkbKU-AfipyD3gD_yfYyjIzn97cLu3SeF76UZxCm8e0phHFgSq_EoMMCYtAcFEB6hpNnQbEI_6Mu63F-ozn76j-5HNj4gz9Aprn_gspcC5AJrCjVxxSxnMgb6S4bRa3rOmR_J3cCBgGN91oGd3_CnM_Xomn-8eLTk02uU4_IODLk2wLPBdWARRUEbB5tR1hA\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/auth0_node-jsonwebtoken_2764a64908d97c043d62eba0bf6c600674f9a6d6/pull/2#pullrequestreview-2922709884",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/auth0_node-jsonwebtoken_2764a64908d97c043d62eba0bf6c600674f9a6d6/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/auth0_node-jsonwebtoken_2764a64908d97c043d62eba0bf6c600674f9a6d6/pull/2#pullrequestreview-2922709884"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/auth0_node-jsonwebtoken_2764a64908d97c043d62eba0bf6c600674f9a6d6/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T21:27:13Z",
+        "commit_id": "a7c42dd0d100e6e68489a38e755406f8e25ff383"
+      }
+    ]
+  }
+}

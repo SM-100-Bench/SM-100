@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/polonel/trudesk/commit/d107f12e71c0fe1e7ac0fdc7463f59c4965a42cd",
+    "commit_sha": "04727c3a42abe8373b69fcb8a1d49bd1ba50f6eb",
+    "repo_identifier": "polonel_trudesk_d107f12e71c0fe1e7ac0fdc7463f59c4965a42cd",
+    "timestamp": "2025-06-12T21:07:46Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/polonel_trudesk_d107f12e71c0fe1e7ac0fdc7463f59c4965a42cd/issues/comments/2968146938",
+        "html_url": "https://github.com/SM-100-Bench/polonel_trudesk_d107f12e71c0fe1e7ac0fdc7463f59c4965a42cd/pull/2#issuecomment-2968146938",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/polonel_trudesk_d107f12e71c0fe1e7ac0fdc7463f59c4965a42cd/issues/2",
+        "id": 2968146938,
+        "node_id": "IC_kwDOOiBXO86w6lP6",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T21:03:05Z",
+        "updated_at": "2025-06-12T21:03:05Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/polonel_trudesk_d107f12e71c0fe1e7ac0fdc7463f59c4965a42cd/issues/comments/2968146938/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922658202,
+        "node_id": "PRR_kwDOOiBXO86uNDma",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: Ticket Authorization Fails for All Users</h3></summary>\n\nThe authorization check for viewing a single ticket, `_.any(ticket.group.members, user._id)`, is flawed. The `user._id` (an ObjectId) is incorrectly passed as the predicate argument to `_.any`, causing the function to always return `false`. Consequently, all users, including legitimate group members, are incorrectly redirected from the ticket view.\n\n<p></p>\n\n<details>\n<summary><code>src/controllers/tickets.js#L149-L156</code></summary>\n\nhttps://github.com/SM-100-Bench/polonel_trudesk_d107f12e71c0fe1e7ac0fdc7463f59c4965a42cd/blob/c8af4c351a2d04271745bd7f7abfe55a64d1f6c2/src/controllers/tickets.js#L149-L156\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp6Y21NdlkyOXVkSEp2Ykd4bGNuTXZkR2xqYTJWMGN5NXFjeUlzSW5OMFlYSjBUR2x1WlNJNk1UUTVMQ0psYm1STWFXNWxJam94TlRZc0ltTnZaR1ZNYVc1bGN5STZXMTE5WFN3aWFXUWlPaUptTWpNNU9UUXhNeTB5TW1JeExUUmxOV1F0T0dZNU9DMWtNRFl4WXpnMlpqVXdOREVpTENKa1pYTmpjbWx3ZEdsdmJpSTZJbFJvWlNCaGRYUm9iM0pwZW1GMGFXOXVJR05vWldOcklHWnZjaUIyYVdWM2FXNW5JR0VnYzJsdVoyeGxJSFJwWTJ0bGRDd2dZRjh1WVc1NUtIUnBZMnRsZEM1bmNtOTFjQzV0WlcxaVpYSnpMQ0IxYzJWeUxsOXBaQ2xnTENCcGN5Qm1iR0YzWldRdUlGUm9aU0JnZFhObGNpNWZhV1JnSUNoaGJpQlBZbXBsWTNSSlpDa2dhWE1nYVc1amIzSnlaV04wYkhrZ2NHRnpjMlZrSUdGeklIUm9aU0J3Y21Wa2FXTmhkR1VnWVhKbmRXMWxiblFnZEc4Z1lGOHVZVzU1WUN3Z1kyRjFjMmx1WnlCMGFHVWdablZ1WTNScGIyNGdkRzhnWVd4M1lYbHpJSEpsZEhWeWJpQmdabUZzYzJWZ0xpQkRiMjV6WlhGMVpXNTBiSGtzSUdGc2JDQjFjMlZ5Y3l3Z2FXNWpiSFZrYVc1bklHeGxaMmwwYVcxaGRHVWdaM0p2ZFhBZ2JXVnRZbVZ5Y3l3Z1lYSmxJR2x1WTI5eWNtVmpkR3g1SUhKbFpHbHlaV04wWldRZ1puSnZiU0IwYUdVZ2RHbGphMlYwSUhacFpYY3VJaXdpWTI5dVptbGtaVzVqWlNJNk1Td2lZMkYwWldkdmNua2lPaUpNVDBkSlExOUNWVWNpZlEiLCJicmFuY2giOiJhdXRvLXByLTA0NzI3YzNhLWN1cnNvci1idWdib3QifSwiaWF0IjoxNzQ5NzYyNDYxLCJleHAiOjE3NTAzNjcyNjF9.WGkj6qB1lELbBCDPVrJgQ-EV9lC5N3e-CyHVSa7NJVAFAuGGQZtUnx04ASizLqW0MNNiqreqi3eNmF_pk4wKmkLjZ8Vu-F66rVGJDH7ODZM_dwtpnviuiKpcYZfCNiw6IbOY13h8b6MbH2jRZu-0h_8AnhWEX5XUvV0gsfA1hzjh5210DVrwuU3M4k4wd2sog5QAgN33mm6L5UpXNT0SJOcDFxwESlnkXSQcPeEgMErD29NBhkLo51IoRFNTcIhoI0tx6CcEbaClgAQHgyOG2oeAtwUMBByYV7-liRsk7YediTPG-plvUP0VNgILFnql1geoGcr94--1slU1No9HOg\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Image Upload Path Mismatch</h3></summary>\n\nNewly uploaded profile images are broken because `accountsController.uploadImage` saves the image path with an extension in the database, while the Multer `rename` function in `src/routes/index.js` saves the file to disk without an extension. This mismatch results in broken image links.\n\n<p></p>\n\n<details>\n<summary><code>src/controllers/accounts.js#L197-L206</code></summary>\n\nhttps://github.com/SM-100-Bench/polonel_trudesk_d107f12e71c0fe1e7ac0fdc7463f59c4965a42cd/blob/c8af4c351a2d04271745bd7f7abfe55a64d1f6c2/src/controllers/accounts.js#L197-L206\n\n</details>\n\n<details>\n<summary><code>src/routes/index.js#L59-L62</code></summary>\n\nhttps://github.com/SM-100-Bench/polonel_trudesk_d107f12e71c0fe1e7ac0fdc7463f59c4965a42cd/blob/c8af4c351a2d04271745bd7f7abfe55a64d1f6c2/src/routes/index.js#L59-L62\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp6Y21NdlkyOXVkSEp2Ykd4bGNuTXZZV05qYjNWdWRITXVhbk1pTENKemRHRnlkRXhwYm1VaU9qRTVOeXdpWlc1a1RHbHVaU0k2TWpBMkxDSmpiMlJsVEdsdVpYTWlPbHRkZlN4N0ltWnBiR1VpT2lKemNtTXZjbTkxZEdWekwybHVaR1Y0TG1weklpd2ljM1JoY25STWFXNWxJam8xT1N3aVpXNWtUR2x1WlNJNk5qSXNJbU52WkdWTWFXNWxjeUk2VzExOVhTd2lhV1FpT2lKak9HRmlabU0zWmkxa1lUYzJMVFF4TTJJdFltVTBZeTB6WXpVMk1qWXdOakppTmpFaUxDSmtaWE5qY21sd2RHbHZiaUk2SWs1bGQyeDVJSFZ3Ykc5aFpHVmtJSEJ5YjJacGJHVWdhVzFoWjJWeklHRnlaU0JpY205clpXNGdZbVZqWVhWelpTQmdZV05qYjNWdWRITkRiMjUwY205c2JHVnlMblZ3Ykc5aFpFbHRZV2RsWUNCellYWmxjeUIwYUdVZ2FXMWhaMlVnY0dGMGFDQjNhWFJvSUdGdUlHVjRkR1Z1YzJsdmJpQnBiaUIwYUdVZ1pHRjBZV0poYzJVc0lIZG9hV3hsSUhSb1pTQk5kV3gwWlhJZ1lISmxibUZ0WldBZ1puVnVZM1JwYjI0Z2FXNGdZSE55WXk5eWIzVjBaWE12YVc1a1pYZ3Vhbk5nSUhOaGRtVnpJSFJvWlNCbWFXeGxJSFJ2SUdScGMyc2dkMmwwYUc5MWRDQmhiaUJsZUhSbGJuTnBiMjR1SUZSb2FYTWdiV2x6YldGMFkyZ2djbVZ6ZFd4MGN5QnBiaUJpY205clpXNGdhVzFoWjJVZ2JHbHVhM011SWl3aVkyOXVabWxrWlc1alpTSTZNQzQyTXpBeU1qTTJNekkzTkRJd01UTXhMQ0pqWVhSbFoyOXllU0k2SWt4UFIwbERYMEpWUnlKOSIsImJyYW5jaCI6ImF1dG8tcHItMDQ3MjdjM2EtY3Vyc29yLWJ1Z2JvdCJ9LCJpYXQiOjE3NDk3NjI0NjEsImV4cCI6MTc1MDM2NzI2MX0.QXABx74HkqHSwdnNDW9TPhcVdpL9ervxnQN6Hc5721FrPpqGbPs2207C5PLvkXb0DxU8hV5TQzYkC-2kv-R-uZ2gFlNYFebTmp4dgDieeEFOyNJHaii3P2XRppttVP3aLapomXyWR6110eYnp_WPE7b_mtvg4DydqTVAvLT1SxL-WydUnqCemgyj1fCAraZrGJkuWxXbfkSE671DJUvqt0fJb4v_HVMILz4B90MF4pBtnBAVx7_IYTVtSK0JXpbkx3--j5XKyLthdOSYHcUssZsqlvWCs0nfmmdNMEwczkxMe_ZqZmuf4-vMFsfubg5sWfCS2_Tt67Nwvr46kROZGg\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Form Submission Broken by Missing Event Argument</h3></summary>\n\nThe `submitForm` function now unconditionally calls `$event.preventDefault()`. However, many existing calls do not pass the `$event` argument, causing it to be undefined. This results in a TypeError (\"Cannot read property \u2018preventDefault\u2019 of undefined\") and breaks form submission.\n\n<p></p>\n\n<details>\n<summary><code>public/js/angularjs/controllers.js#L3-L9</code></summary>\n\nhttps://github.com/SM-100-Bench/polonel_trudesk_d107f12e71c0fe1e7ac0fdc7463f59c4965a42cd/blob/c8af4c351a2d04271745bd7f7abfe55a64d1f6c2/public/js/angularjs/controllers.js#L3-L9\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp3ZFdKc2FXTXZhbk12WVc1bmRXeGhjbXB6TDJOdmJuUnliMnhzWlhKekxtcHpJaXdpYzNSaGNuUk1hVzVsSWpvekxDSmxibVJNYVc1bElqbzVMQ0pqYjJSbFRHbHVaWE1pT2x0ZGZWMHNJbWxrSWpvaVpXTm1PREJqTURjdFptVXlZaTAwTkdNNUxXSXdNbUl0TTJOak9XSXdOV0ZsTUdNNUlpd2laR1Z6WTNKcGNIUnBiMjRpT2lKVWFHVWdZSE4xWW0xcGRFWnZjbTFnSUdaMWJtTjBhVzl1SUc1dmR5QjFibU52Ym1ScGRHbHZibUZzYkhrZ1kyRnNiSE1nWUNSbGRtVnVkQzV3Y21WMlpXNTBSR1ZtWVhWc2RDZ3BZQzRnU0c5M1pYWmxjaXdnYldGdWVTQmxlR2x6ZEdsdVp5QmpZV3hzY3lCa2J5QnViM1FnY0dGemN5QjBhR1VnWUNSbGRtVnVkR0FnWVhKbmRXMWxiblFzSUdOaGRYTnBibWNnYVhRZ2RHOGdZbVVnZFc1a1pXWnBibVZrTGlCVWFHbHpJSEpsYzNWc2RITWdhVzRnWVNCVWVYQmxSWEp5YjNJZ0tGd2lRMkZ1Ym05MElISmxZV1FnY0hKdmNHVnlkSGtnNG9DWWNISmxkbVZ1ZEVSbFptRjFiSFRpZ0prZ2IyWWdkVzVrWldacGJtVmtYQ0lwSUdGdVpDQmljbVZoYTNNZ1ptOXliU0J6ZFdKdGFYTnphVzl1TGlJc0ltTnZibVpwWkdWdVkyVWlPakF1TmpJM05EVTVPVE0yTlRZME1Ua3lNaXdpWTJGMFpXZHZjbmtpT2lKTVQwZEpRMTlDVlVjaWZRIiwiYnJhbmNoIjoiYXV0by1wci0wNDcyN2MzYS1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc2MjQ2MSwiZXhwIjoxNzUwMzY3MjYxfQ.as0Ya-RCFeYQKAsi0qODi-Y4_EmL0aeRPw_dlqM0kswCiUdekhWnbAmFOlyDu_l2Qdl4LnfetCS6sOdc0jtUvnkX_33dKfRto0_rBA5iqnK0of1AlZAe0oBxe4eHZPXEfbkouwsJqsIGX4LukyDifzeNhb3KZ0a6sAha5BrEqn0HnlEe6QQkteKBTUqHBSR1EdPuZh1M865tjtqzitl-dBSfJC08fAuPbWg2Lg_W0olqpRFtenjQlnQbkrVSuQVSUzu4cKGTG7jFp0qVN-8D7q8LlBaSlHQbZAsjIFsSAozupiysnkiC6m0iqz5P_3MAKjZ6ixfCbG4qJ9-9u7tVcQ\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Image Upload Route Mismatch</h3></summary>\n\nThe image upload form in `editAccount.hbs` posts to `/account/uploadimage`, but the corresponding backend route is `/accounts/uploadimage`. This singular/plural mismatch causes a 404 error, preventing profile images from being uploaded.\n\n<p></p>\n\n<details>\n<summary><code>src/views/subviews/editAccount.hbs#L17-L23</code></summary>\n\nhttps://github.com/SM-100-Bench/polonel_trudesk_d107f12e71c0fe1e7ac0fdc7463f59c4965a42cd/blob/c8af4c351a2d04271745bd7f7abfe55a64d1f6c2/src/views/subviews/editAccount.hbs#L17-L23\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp6Y21NdmRtbGxkM012YzNWaWRtbGxkM012WldScGRFRmpZMjkxYm5RdWFHSnpJaXdpYzNSaGNuUk1hVzVsSWpveE55d2laVzVrVEdsdVpTSTZNak1zSW1OdlpHVk1hVzVsY3lJNlcxMTlYU3dpYVdRaU9pSTBOV0ZrTnpReU9TMDFNV014TFRSa016TXRPREUzWWkwMk16ZGtPR05rWWpBeU5Ua2lMQ0prWlhOamNtbHdkR2x2YmlJNklsUm9aU0JwYldGblpTQjFjR3h2WVdRZ1ptOXliU0JwYmlCZ1pXUnBkRUZqWTI5MWJuUXVhR0p6WUNCd2IzTjBjeUIwYnlCZ0wyRmpZMjkxYm5RdmRYQnNiMkZrYVcxaFoyVmdMQ0JpZFhRZ2RHaGxJR052Y25KbGMzQnZibVJwYm1jZ1ltRmphMlZ1WkNCeWIzVjBaU0JwY3lCZ0wyRmpZMjkxYm5SekwzVndiRzloWkdsdFlXZGxZQzRnVkdocGN5QnphVzVuZFd4aGNpOXdiSFZ5WVd3Z2JXbHpiV0YwWTJnZ1kyRjFjMlZ6SUdFZ05EQTBJR1Z5Y205eUxDQndjbVYyWlc1MGFXNW5JSEJ5YjJacGJHVWdhVzFoWjJWeklHWnliMjBnWW1WcGJtY2dkWEJzYjJGa1pXUXVJaXdpWTI5dVptbGtaVzVqWlNJNk1DNHpOalk0TkRjeE1qUTNNVGMxT1RZMU5pd2lZMkYwWldkdmNua2lPaUpNVDBkSlExOUNWVWNpZlEiLCJicmFuY2giOiJhdXRvLXByLTA0NzI3YzNhLWN1cnNvci1idWdib3QifSwiaWF0IjoxNzQ5NzYyNDYxLCJleHAiOjE3NTAzNjcyNjF9.k3ZqaT35-SLuPaVLZZJh8_i0WVGbQn-52I1jFlDo2NoxABuMVzhYmtwVtwXUvYbgmqDT31FdFvKBq0gQroRcaqPj5yKJbLi9ATvCeqhMQvoQlQ7LIVL8o3TXIoJ_CNebH8gHB9DlzaF3K4B9mmKWppElLCOPTJmHpQQNjU2HyqmAqOjSxn39apweXQayygUHi-1FBD4TCAo7UdZa1ikeORQBJBRWIAYcT9-nc2pftIVLb89nrYfaNpKk8EwfDiffrKvTrWfI1soC3JC681Cyi1TRkKxifOll2pIjpRzobARBeTJ6_Naae0roaB9pwetDr6l22UhP4VZ-arHq_DJwKw\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/polonel_trudesk_d107f12e71c0fe1e7ac0fdc7463f59c4965a42cd/pull/2#pullrequestreview-2922658202",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/polonel_trudesk_d107f12e71c0fe1e7ac0fdc7463f59c4965a42cd/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/polonel_trudesk_d107f12e71c0fe1e7ac0fdc7463f59c4965a42cd/pull/2#pullrequestreview-2922658202"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/polonel_trudesk_d107f12e71c0fe1e7ac0fdc7463f59c4965a42cd/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T21:07:41Z",
+        "commit_id": "c8af4c351a2d04271745bd7f7abfe55a64d1f6c2"
+      }
+    ]
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/psf/requests/pull/6028",
+    "commit_sha": "ef59aa0227bf463f0ed3d752b26db9b3acc64afb",
+    "repo_identifier": "psf_requests_6028",
+    "timestamp": "2025-06-12T23:08:09Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/psf_requests_6028/issues/comments/2968359062",
+        "html_url": "https://github.com/SM-100-Bench/psf_requests_6028/pull/2#issuecomment-2968359062",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/psf_requests_6028/issues/2",
+        "id": 2968359062,
+        "node_id": "IC_kwDOOiCA_c6w7ZCW",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T22:47:57Z",
+        "updated_at": "2025-06-12T22:47:57Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/psf_requests_6028/issues/comments/2968359062/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922862317,
+        "node_id": "PRR_kwDOOiCA_c6uN1bt",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug</h3></summary>\n\nThe `prepend_scheme_if_needed` function was refactored to use `urllib3.util.parse_url` instead of `urllib.parse.urlparse`. This change introduces several regressions:\n\n*   **`TypeError` or malformed URLs:** `urlunparse` now receives `None` for certain URL components (e.g., `netloc` after internal swap for empty/invalid URLs, or `query`/`fragment` when absent) where `urlparse` previously returned empty strings. This causes `TypeError` or results in literal `?None#None` in the output URL.\n*   **Data Loss:**\n    *   **Semicolon parameters:** The `params` field is hardcoded to an empty string, stripping path parameters (e.g., `;v=1`) from URLs.\n    *   **Authentication credentials:** `urllib3.util.Url.netloc` does not include authentication information (`user:pass@`), causing credentials to be stripped from scheme-less URLs.\n\n<p></p>\n\n<details>\n<summary><code>requests/utils.py#L966-L984</code></summary>\n\nhttps://github.com/SM-100-Bench/psf_requests_6028/blob/6d9b5da1bc0c3b8568405c1012f1c483d896c6c6/requests/utils.py#L966-L984\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp5WlhGMVpYTjBjeTkxZEdsc2N5NXdlU0lzSW5OMFlYSjBUR2x1WlNJNk9UWTJMQ0psYm1STWFXNWxJam81T0RRc0ltTnZaR1ZNYVc1bGN5STZXMTE5WFN3aWFXUWlPaUl3TW1Rd09HUTJOQzFoTkdGbExUUTVaV1F0T1RjNU5DMWpZamRrTkdabU1EQXlPR1lpTENKa1pYTmpjbWx3ZEdsdmJpSTZJbFJvWlNCZ2NISmxjR1Z1WkY5elkyaGxiV1ZmYVdaZmJtVmxaR1ZrWUNCbWRXNWpkR2x2YmlCM1lYTWdjbVZtWVdOMGIzSmxaQ0IwYnlCMWMyVWdZSFZ5Ykd4cFlqTXVkWFJwYkM1d1lYSnpaVjkxY214Z0lHbHVjM1JsWVdRZ2IyWWdZSFZ5Ykd4cFlpNXdZWEp6WlM1MWNteHdZWEp6WldBdUlGUm9hWE1nWTJoaGJtZGxJR2x1ZEhKdlpIVmpaWE1nYzJWMlpYSmhiQ0J5WldkeVpYTnphVzl1Y3pwY2JseHVLaUFnSUNvcVlGUjVjR1ZGY25KdmNtQWdiM0lnYldGc1ptOXliV1ZrSUZWU1RITTZLaW9nWUhWeWJIVnVjR0Z5YzJWZ0lHNXZkeUJ5WldObGFYWmxjeUJnVG05dVpXQWdabTl5SUdObGNuUmhhVzRnVlZKTUlHTnZiWEJ2Ym1WdWRITWdLR1V1Wnk0c0lHQnVaWFJzYjJOZ0lHRm1kR1Z5SUdsdWRHVnlibUZzSUhOM1lYQWdabTl5SUdWdGNIUjVMMmx1ZG1Gc2FXUWdWVkpNY3l3Z2IzSWdZSEYxWlhKNVlDOWdabkpoWjIxbGJuUmdJSGRvWlc0Z1lXSnpaVzUwS1NCM2FHVnlaU0JnZFhKc2NHRnljMlZnSUhCeVpYWnBiM1Z6YkhrZ2NtVjBkWEp1WldRZ1pXMXdkSGtnYzNSeWFXNW5jeTRnVkdocGN5QmpZWFZ6WlhNZ1lGUjVjR1ZGY25KdmNtQWdiM0lnY21WemRXeDBjeUJwYmlCc2FYUmxjbUZzSUdBX1RtOXVaU05PYjI1bFlDQnBiaUIwYUdVZ2IzVjBjSFYwSUZWU1RDNWNiaW9nSUNBcUtrUmhkR0VnVEc5emN6b3FLbHh1SUNBZ0lDb2dJQ0FxS2xObGJXbGpiMnh2YmlCd1lYSmhiV1YwWlhKek9pb3FJRlJvWlNCZ2NHRnlZVzF6WUNCbWFXVnNaQ0JwY3lCb1lYSmtZMjlrWldRZ2RHOGdZVzRnWlcxd2RIa2djM1J5YVc1bkxDQnpkSEpwY0hCcGJtY2djR0YwYUNCd1lYSmhiV1YwWlhKeklDaGxMbWN1TENCZ08zWTlNV0FwSUdaeWIyMGdWVkpNY3k1Y2JpQWdJQ0FxSUNBZ0tpcEJkWFJvWlc1MGFXTmhkR2x2YmlCamNtVmtaVzUwYVdGc2N6b3FLaUJnZFhKc2JHbGlNeTUxZEdsc0xsVnliQzV1WlhSc2IyTmdJR1J2WlhNZ2JtOTBJR2x1WTJ4MVpHVWdZWFYwYUdWdWRHbGpZWFJwYjI0Z2FXNW1iM0p0WVhScGIyNGdLR0IxYzJWeU9uQmhjM05BWUNrc0lHTmhkWE5wYm1jZ1kzSmxaR1Z1ZEdsaGJITWdkRzhnWW1VZ2MzUnlhWEJ3WldRZ1puSnZiU0J6WTJobGJXVXRiR1Z6Y3lCVlVreHpMaUlzSW1OdmJtWnBaR1Z1WTJVaU9qQXVPVGsxTlRJNU5UTXdPRE16TlRFM01Td2lZMkYwWldkdmNua2lPaUpNVDBkSlExOUNWVWNpZlEiLCJicmFuY2giOiJhdXRvLXByLWVmNTlhYTAyLWN1cnNvci1idWdib3QifSwiaWF0IjoxNzQ5NzY5Njg3LCJleHAiOjE3NTAzNzQ0ODd9.Y9aQUIi5PJAKpBQyBTD-eXUFzylaTQftRIUiKNs_gaHqNseFheTXbVHZrilql2AfZFX2tdIVTXv7dOchfDAc5YqvuO6B4nPJZj0HsJ6jHjb6A2u6BMUvaNJan_Uoj492fbNfGRAa2eNgPdexM7G3XIcpQEyqdUHkL9w5BvcH5TON1z7vS6ZyNAfH4PCCtu5PuAdOqw2Jdtkga_S8BF_owl9PK-W_FiFSWFMGfrsStIe784PNe3YubCgW-dzEzDcanjMYBeF4mydZJp-bfNuhqNtB6LFRZyRJEflDdSSeUotgln4iN3oPNvOC-kj-BSuJu_wdL5ZPdBiEmdAxjIus0Q\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/psf_requests_6028/pull/2#pullrequestreview-2922862317",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/psf_requests_6028/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/psf_requests_6028/pull/2#pullrequestreview-2922862317"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/psf_requests_6028/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T23:08:07Z",
+        "commit_id": "6d9b5da1bc0c3b8568405c1012f1c483d896c6c6"
+      }
+    ]
+  }
+}

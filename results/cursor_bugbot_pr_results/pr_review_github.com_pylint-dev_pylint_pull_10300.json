@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/pylint-dev/pylint/pull/10300",
+    "commit_sha": "66ffcbc4c59e41327be1a2b5ef65727bf0314aa9",
+    "repo_identifier": "pylint-dev_pylint_10300",
+    "timestamp": "2025-06-12T22:55:43Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/pylint-dev_pylint_10300/issues/comments/2968361862",
+        "html_url": "https://github.com/SM-100-Bench/pylint-dev_pylint_10300/pull/18#issuecomment-2968361862",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/pylint-dev_pylint_10300/issues/18",
+        "id": 2968361862,
+        "node_id": "IC_kwDOOiCBWM6w7ZuG",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T22:49:30Z",
+        "updated_at": "2025-06-12T22:49:30Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/pylint-dev_pylint_10300/issues/comments/2968361862/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922842439,
+        "node_id": "PRR_kwDOOiCBWM6uNwlH",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: F-string Formatting Error in Confidence Levels</h3></summary>\n\nIn `cb_list_confidence_levels`, the conversion to an f-string `print(f\"%-18s: {level}\")` is incorrect. The `%-18s:` part is treated as a literal string, and the entire `level` tuple (e.g., `(\"HIGH\", \"High confidence\")`) is printed directly. This breaks the `--list-confidence-levels` CLI option, producing unreadable output like `%-18s: ('HIGH', 'High confidence')` instead of the intended aligned two-column format.\n\n<p></p>\n\n<details>\n<summary><code>pylint/lint/run.py#L39-L43</code></summary>\n\nhttps://github.com/SM-100-Bench/pylint-dev_pylint_10300/blob/6f0109b1da6bd4419acc08cf563daa3a58316c03/pylint/lint/run.py#L39-L43\n\n</details>\n\n<details>\n<summary><code>pylint/lint/run.py#L57-L61</code></summary>\n\nhttps://github.com/SM-100-Bench/pylint-dev_pylint_10300/blob/6f0109b1da6bd4419acc08cf563daa3a58316c03/pylint/lint/run.py#L57-L61\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp3ZVd4cGJuUXZiR2x1ZEM5eWRXNHVjSGtpTENKemRHRnlkRXhwYm1VaU9qTTVMQ0psYm1STWFXNWxJam8wTXl3aVkyOWtaVXhwYm1WeklqcGJYWDBzZXlKbWFXeGxJam9pY0hsc2FXNTBMMnhwYm5RdmNuVnVMbkI1SWl3aWMzUmhjblJNYVc1bElqbzFOeXdpWlc1a1RHbHVaU0k2TmpFc0ltTnZaR1ZNYVc1bGN5STZXMTE5WFN3aWFXUWlPaUl5WkRaaE5XVTBOaTFpTUdaaExUUTVPVFl0T0RWbU55MWxPR1ptTldReU9EUmxaR1VpTENKa1pYTmpjbWx3ZEdsdmJpSTZJa2x1SUdCallsOXNhWE4wWDJOdmJtWnBaR1Z1WTJWZmJHVjJaV3h6WUN3Z2RHaGxJR052Ym5abGNuTnBiMjRnZEc4Z1lXNGdaaTF6ZEhKcGJtY2dZSEJ5YVc1MEtHWmNJaVV0TVRoek9pQjdiR1YyWld4OVhDSXBZQ0JwY3lCcGJtTnZjbkpsWTNRdUlGUm9aU0JnSlMweE9ITTZZQ0J3WVhKMElHbHpJSFJ5WldGMFpXUWdZWE1nWVNCc2FYUmxjbUZzSUhOMGNtbHVaeXdnWVc1a0lIUm9aU0JsYm5ScGNtVWdZR3hsZG1Wc1lDQjBkWEJzWlNBb1pTNW5MaXdnWUNoY0lraEpSMGhjSWl3Z1hDSklhV2RvSUdOdmJtWnBaR1Z1WTJWY0lpbGdLU0JwY3lCd2NtbHVkR1ZrSUdScGNtVmpkR3g1TGlCVWFHbHpJR0p5WldGcmN5QjBhR1VnWUMwdGJHbHpkQzFqYjI1bWFXUmxibU5sTFd4bGRtVnNjMkFnUTB4SklHOXdkR2x2Yml3Z2NISnZaSFZqYVc1bklIVnVjbVZoWkdGaWJHVWdiM1YwY0hWMElHeHBhMlVnWUNVdE1UaHpPaUFvSjBoSlIwZ25MQ0FuU0dsbmFDQmpiMjVtYVdSbGJtTmxKeWxnSUdsdWMzUmxZV1FnYjJZZ2RHaGxJR2x1ZEdWdVpHVmtJR0ZzYVdkdVpXUWdkSGR2TFdOdmJIVnRiaUJtYjNKdFlYUXVJaXdpWTI5dVptbGtaVzVqWlNJNk1Td2lZMkYwWldkdmNua2lPaUpNVDBkSlExOUNWVWNpZlEiLCJicmFuY2giOiJhdXRvLXByLTY2ZmZjYmM0LWN1cnNvci1idWdib3QifSwiaWF0IjoxNzQ5NzY4OTE4LCJleHAiOjE3NTAzNzM3MTh9.bNDS9qx_wPxm8rEl3f70y0F1NP3Um0OXK5az-tKq_lONPie-LMtDG3smNDYn24yNDhLvBMIGfa0lgBBLQ-O-zqoPZV_OSFeX67Ml5_mzAjDMsVhU2pNakEcsNQU_hFJpHh0xwDH_2GaKYH8V93PhoQrBQtCKAir27LxdnqcfLavaZwSlCUTewRDS10il02j2LAa86obtUCgBG26N2rTk8e9oaNfoeKo3v501QjUZrm7OT0MJ8UsSLCsyj3dFarnR1uzzs-bhkPXty1TXEGMR6d8QbNZcoEPtUJEh9VM9DWU4kddioIi_SkQvjKiMlABCLTagfb6LFTgiaOWN_Mdv6g\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/pylint-dev_pylint_10300/pull/18#pullrequestreview-2922842439",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/pylint-dev_pylint_10300/pulls/18",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/pylint-dev_pylint_10300/pull/18#pullrequestreview-2922842439"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/pylint-dev_pylint_10300/pulls/18"
+          }
+        },
+        "submitted_at": "2025-06-12T22:55:18Z",
+        "commit_id": "6f0109b1da6bd4419acc08cf563daa3a58316c03"
+      }
+    ]
+  }
+}

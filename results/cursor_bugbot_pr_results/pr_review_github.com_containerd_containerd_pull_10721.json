@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/containerd/containerd/pull/10721",
+    "commit_sha": "0ee2433c940dafcba2bbd866c057b08a9cb2b2d4",
+    "repo_identifier": "containerd_containerd_10721",
+    "timestamp": "2025-06-12T22:43:15Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/containerd_containerd_10721/issues/comments/2968323936",
+        "html_url": "https://github.com/SM-100-Bench/containerd_containerd_10721/pull/23#issuecomment-2968323936",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/containerd_containerd_10721/issues/23",
+        "id": 2968323936,
+        "node_id": "IC_kwDOOiB6_M6w7Qdg",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T22:27:43Z",
+        "updated_at": "2025-06-12T22:27:43Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/containerd_containerd_10721/issues/comments/2968323936/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922825318,
+        "node_id": "PRR_kwDOOiB6_M6uNsZm",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: Nil Cleanup Function Causes Panic</h3></summary>\n\nThe `defer userNsCleanUp()` call is unconditional. However, `prepareIDMappedOverlay` can return a `nil` cleanup function on error (e.g., if no `lowerdir` option is found for overlay mounts) or if no id-mapped mount is created. Deferring a `nil` function causes a panic, which masks the original error and turns a recoverable failure into an unexpected crash.\n\n<p></p>\n\n<details>\n<summary><code>mount/mount_linux.go#L102-L124</code></summary>\n\nhttps://github.com/SM-100-Bench/containerd_containerd_10721/blob/276e9c462c893229144fee77363d2aa169c8b5c9/mount/mount_linux.go#L102-L124\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp0YjNWdWRDOXRiM1Z1ZEY5c2FXNTFlQzVuYnlJc0luTjBZWEowVEdsdVpTSTZNVEF5TENKbGJtUk1hVzVsSWpveE1qUXNJbU52WkdWTWFXNWxjeUk2VzExOVhTd2lhV1FpT2lJMk5tUmtPVEk1TlMweFlUWTJMVFF3TmpVdE9Ua3dPQzA0TXpWa05XUmpNREU0Tm1NaUxDSmtaWE5qY21sd2RHbHZiaUk2SWxSb1pTQmdaR1ZtWlhJZ2RYTmxjazV6UTJ4bFlXNVZjQ2dwWUNCallXeHNJR2x6SUhWdVkyOXVaR2wwYVc5dVlXd3VJRWh2ZDJWMlpYSXNJR0J3Y21Wd1lYSmxTVVJOWVhCd1pXUlBkbVZ5YkdGNVlDQmpZVzRnY21WMGRYSnVJR0VnWUc1cGJHQWdZMnhsWVc1MWNDQm1kVzVqZEdsdmJpQnZiaUJsY25KdmNpQW9aUzVuTGl3Z2FXWWdibThnWUd4dmQyVnlaR2x5WUNCdmNIUnBiMjRnYVhNZ1ptOTFibVFnWm05eUlHOTJaWEpzWVhrZ2JXOTFiblJ6S1NCdmNpQnBaaUJ1YnlCcFpDMXRZWEJ3WldRZ2JXOTFiblFnYVhNZ1kzSmxZWFJsWkM0Z1JHVm1aWEp5YVc1bklHRWdZRzVwYkdBZ1puVnVZM1JwYjI0Z1kyRjFjMlZ6SUdFZ2NHRnVhV01zSUhkb2FXTm9JRzFoYzJ0eklIUm9aU0J2Y21sbmFXNWhiQ0JsY25KdmNpQmhibVFnZEhWeWJuTWdZU0J5WldOdmRtVnlZV0pzWlNCbVlXbHNkWEpsSUdsdWRHOGdZVzRnZFc1bGVIQmxZM1JsWkNCamNtRnphQzRpTENKamIyNW1hV1JsYm1ObElqb3dMamcyTWpNeE1qUTJOVEkwTVRNM016RXNJbU5oZEdWbmIzSjVJam9pVEU5SFNVTmZRbFZISW4wIiwiYnJhbmNoIjoiYXV0by1wci0wZWUyNDMzYy1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc2ODE2NSwiZXhwIjoxNzUwMzcyOTY1fQ.dt0AoN_hv40skTKewlFOVGv9q-KaPdvO1tLNktNLrz8_zgtXDhJykABciURX_jh1zPharrOA5y-MoGKV3lDIW3_HDaYYAsdoXEAaWU_3CM0-1bILDAuMq8ekn2HW2sKV3mSnZpAhwYhw5CHdPawXz4gUtUP4uL9MDN0IyXxb4S4NH67moINpo2DfCl4-kdy5ioyUV3Sz_4c6H7f3WOkwgT1UBCxRjkxwA6Wo3i1JILaVoDMX_u9egx3TUlelVVgNQo_h08tMHGOclk75ytYTVcU3lgyGBjQfxUFr_OKewaA9KtyZ0G20CKyKqZBq8sEPCQX5k3V3WWzvYXElNd9pLg\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Incorrect Directory File Descriptor in IDMapMount</h3></summary>\n\nThe `IDMapMount` function incorrectly passes `-int(unix.EBADF)` (-9) as the `dir-fd` argument to `unix.OpenTree` and `unix.MoveMount`. These syscalls require `unix.AT_FDCWD` (-100) to specify the current working directory. Using the incorrect value causes the syscalls to fail with `EBADF`, leading to all ID-mapped mount attempts failing.\n\n<p></p>\n\n<details>\n<summary><code>mount/mount_idmapped_linux.go#L59-L88</code></summary>\n\nhttps://github.com/SM-100-Bench/containerd_containerd_10721/blob/276e9c462c893229144fee77363d2aa169c8b5c9/mount/mount_idmapped_linux.go#L59-L88\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp0YjNWdWRDOXRiM1Z1ZEY5cFpHMWhjSEJsWkY5c2FXNTFlQzVuYnlJc0luTjBZWEowVEdsdVpTSTZOVGtzSW1WdVpFeHBibVVpT2pnNExDSmpiMlJsVEdsdVpYTWlPbHRkZlYwc0ltbGtJam9pWkRrMlptWXpZMk10TVRJM05TMDBPRFl3TFRneU1EVXRZakk1WWpVMVpUZGlOakV6SWl3aVpHVnpZM0pwY0hScGIyNGlPaUpVYUdVZ1lFbEVUV0Z3VFc5MWJuUmdJR1oxYm1OMGFXOXVJR2x1WTI5eWNtVmpkR3g1SUhCaGMzTmxjeUJnTFdsdWRDaDFibWw0TGtWQ1FVUkdLV0FnS0MwNUtTQmhjeUIwYUdVZ1lHUnBjaTFtWkdBZ1lYSm5kVzFsYm5RZ2RHOGdZSFZ1YVhndVQzQmxibFJ5WldWZ0lHRnVaQ0JnZFc1cGVDNU5iM1psVFc5MWJuUmdMaUJVYUdWelpTQnplWE5qWVd4c2N5QnlaWEYxYVhKbElHQjFibWw0TGtGVVgwWkVRMWRFWUNBb0xURXdNQ2tnZEc4Z2MzQmxZMmxtZVNCMGFHVWdZM1Z5Y21WdWRDQjNiM0pyYVc1bklHUnBjbVZqZEc5eWVTNGdWWE5wYm1jZ2RHaGxJR2x1WTI5eWNtVmpkQ0IyWVd4MVpTQmpZWFZ6WlhNZ2RHaGxJSE41YzJOaGJHeHpJSFJ2SUdaaGFXd2dkMmwwYUNCZ1JVSkJSRVpnTENCc1pXRmthVzVuSUhSdklHRnNiQ0JKUkMxdFlYQndaV1FnYlc5MWJuUWdZWFIwWlcxd2RITWdabUZwYkdsdVp5NGlMQ0pqYjI1bWFXUmxibU5sSWpvd0xqVXdNVGt3TXpVMk16TTRNRGMxTmprc0ltTmhkR1ZuYjNKNUlqb2lURTlIU1VOZlFsVkhJbjAiLCJicmFuY2giOiJhdXRvLXByLTBlZTI0MzNjLWN1cnNvci1idWdib3QifSwiaWF0IjoxNzQ5NzY4MTY1LCJleHAiOjE3NTAzNzI5NjV9.XMvwb9LpJO7l-JEA3OZBGO4XA_6IK0RnYu-10s_Bn7plmuEXxLR9mJat7XBZStbdtOnrEB1MRM_IKUomJTr3qZPuwucM2e3nYVZTSgp3DDKONssTQOTZsWVGtT0scMlmMgEMhlL1pRwxA4hiH8CU-cJE6zONkfBf-Jf1ldeotKPLY1d41wx8bFDaNev1z_yKsn6ttG6V86TRikBIw7FETUjHwrobmIzDIe86rxQcJYsrEpmrZsF1WFtSgnG3dE6SiVWku5Mm_d0Zjlq1EBJ0Ywk7Pikteu0j4uMn25Arvgr2Bs3w2XpQPykFT1oTb0yD6s0lH-4j8qTAcuT8JguzwA\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: OverlayFS Mount Probe Fails Incorrectly</h3></summary>\n\nThe `SupportsIDMappedMounts` function incorrectly probes kernel support for idmapped overlayfs mounts. It attempts to mount an overlayfs with `upperdir` and `workdir` while passing the `MS_RDONLY` flag. Overlayfs rejects read-only mounts when `upperdir` or `workdir` are specified, returning `EINVAL`. This causes the probe to always fail, leading to the incorrect conclusion that idmapped mounts are unsupported and preventing the feature from being enabled.\n\n<p></p>\n\n<details>\n<summary><code>snapshots/overlay/overlayutils/check.go#L267-L276</code></summary>\n\nhttps://github.com/SM-100-Bench/containerd_containerd_10721/blob/276e9c462c893229144fee77363d2aa169c8b5c9/snapshots/overlay/overlayutils/check.go#L267-L276\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp6Ym1Gd2MyaHZkSE12YjNabGNteGhlUzl2ZG1WeWJHRjVkWFJwYkhNdlkyaGxZMnN1WjI4aUxDSnpkR0Z5ZEV4cGJtVWlPakkyTnl3aVpXNWtUR2x1WlNJNk1qYzJMQ0pqYjJSbFRHbHVaWE1pT2x0ZGZWMHNJbWxrSWpvaVl6WmlaVE5rT0RjdE56RXhPQzAwTTJFMUxUaGhORGt0WmpVME1ESTJOR1l4T1RsaUlpd2laR1Z6WTNKcGNIUnBiMjRpT2lKVWFHVWdZRk4xY0hCdmNuUnpTVVJOWVhCd1pXUk5iM1Z1ZEhOZ0lHWjFibU4wYVc5dUlHbHVZMjl5Y21WamRHeDVJSEJ5YjJKbGN5QnJaWEp1Wld3Z2MzVndjRzl5ZENCbWIzSWdhV1J0WVhCd1pXUWdiM1psY214aGVXWnpJRzF2ZFc1MGN5NGdTWFFnWVhSMFpXMXdkSE1nZEc4Z2JXOTFiblFnWVc0Z2IzWmxjbXhoZVdaeklIZHBkR2dnWUhWd2NHVnlaR2x5WUNCaGJtUWdZSGR2Y210a2FYSmdJSGRvYVd4bElIQmhjM05wYm1jZ2RHaGxJR0JOVTE5U1JFOU9URmxnSUdac1lXY3VJRTkyWlhKc1lYbG1jeUJ5WldwbFkzUnpJSEpsWVdRdGIyNXNlU0J0YjNWdWRITWdkMmhsYmlCZ2RYQndaWEprYVhKZ0lHOXlJR0IzYjNKclpHbHlZQ0JoY21VZ2MzQmxZMmxtYVdWa0xDQnlaWFIxY201cGJtY2dZRVZKVGxaQlRHQXVJRlJvYVhNZ1kyRjFjMlZ6SUhSb1pTQndjbTlpWlNCMGJ5QmhiSGRoZVhNZ1ptRnBiQ3dnYkdWaFpHbHVaeUIwYnlCMGFHVWdhVzVqYjNKeVpXTjBJR052Ym1Oc2RYTnBiMjRnZEdoaGRDQnBaRzFoY0hCbFpDQnRiM1Z1ZEhNZ1lYSmxJSFZ1YzNWd2NHOXlkR1ZrSUdGdVpDQndjbVYyWlc1MGFXNW5JSFJvWlNCbVpXRjBkWEpsSUdaeWIyMGdZbVZwYm1jZ1pXNWhZbXhsWkM0aUxDSmpiMjVtYVdSbGJtTmxJam93TGpNMk9EYzNNakl3TkRrNU1qY3lNelUyTENKallYUmxaMjl5ZVNJNklreFBSMGxEWDBKVlJ5SjkiLCJicmFuY2giOiJhdXRvLXByLTBlZTI0MzNjLWN1cnNvci1idWdib3QifSwiaWF0IjoxNzQ5NzY4MTY1LCJleHAiOjE3NTAzNzI5NjV9.N2pQFwicc_dAcPlVR026ig-A381Wt4bwSbiTCIN2bx0xPTIVfaGxQAjNm0DqyFOpzyv86RcGrdmDTeYO4BpEajW36zRDCscBbE4qspZQhyiB12jv-xHmKjzxkE0BTZHZP-539-Y2r1EFyT8tjNoiKMlqanVV5GFvatGiEsalRoiHJs28r6YTWMpu7SdWNZPuBAfpqjcYtBEa8eWfvDuMPrZzTZFx1HQFnwigjxTQB48nfQIgGkD8THHE-ZRlAoVDaeOhIRjzAnzrauXs9FtpggLAJ1oCAkfap7-KaThJNc_iTCHlRnp4Sti7Reqz_cBZba866tYRzHtqIvTTUNBQZA\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/containerd_containerd_10721/pull/23#pullrequestreview-2922825318",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/containerd_containerd_10721/pulls/23",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/containerd_containerd_10721/pull/23#pullrequestreview-2922825318"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/containerd_containerd_10721/pulls/23"
+          }
+        },
+        "submitted_at": "2025-06-12T22:42:46Z",
+        "commit_id": "276e9c462c893229144fee77363d2aa169c8b5c9"
+      }
+    ]
+  }
+}

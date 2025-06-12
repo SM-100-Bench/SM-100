@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/prevwong/craft.js/pull/131",
+    "commit_sha": "a3666c0597376e14331ec1cf4a7c27ec456c8eef",
+    "repo_identifier": "prevwong_craft.js_131",
+    "timestamp": "2025-06-12T22:02:59Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/prevwong_craft.js_131/issues/comments/2968277874",
+        "html_url": "https://github.com/SM-100-Bench/prevwong_craft.js_131/pull/3#issuecomment-2968277874",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/prevwong_craft.js_131/issues/3",
+        "id": 2968277874,
+        "node_id": "IC_kwDOOiBpJM6w7FNy",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T22:00:54Z",
+        "updated_at": "2025-06-12T22:00:54Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/prevwong_craft.js_131/issues/comments/2968277874/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922773323,
+        "node_id": "PRR_kwDOOiBpJM6uNftL",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: Serialize Fails on Falsy Props</h3></summary>\n\nThe new `if (!prop)` guard in `serializeComp` incorrectly omits legitimate falsy prop values (e.g., `false`, `0`, `''`, `NaN`) from the serialized output. This alters component behavior and produces an incorrect representation, as the guard was intended to skip only `null` or `undefined` values.\n\n<p></p>\n\n<details>\n<summary><code>packages/core/src/utils/serializeNode.tsx#L19-L24</code></summary>\n\nhttps://github.com/SM-100-Bench/prevwong_craft.js_131/blob/d8f9644546a422f52b48682c2453a497972da757/packages/core/src/utils/serializeNode.tsx#L19-L24\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp3WVdOcllXZGxjeTlqYjNKbEwzTnlZeTkxZEdsc2N5OXpaWEpwWVd4cGVtVk9iMlJsTG5SemVDSXNJbk4wWVhKMFRHbHVaU0k2TVRrc0ltVnVaRXhwYm1VaU9qSTBMQ0pqYjJSbFRHbHVaWE1pT2x0ZGZWMHNJbWxrSWpvaU1qUTBOalF5TmpBdE1tVm1ZeTAwWlRRM0xXSTBaRFF0WVRNM05UQTBOVFk0WkRGbElpd2laR1Z6WTNKcGNIUnBiMjRpT2lKVWFHVWdibVYzSUdCcFppQW9JWEJ5YjNBcFlDQm5kV0Z5WkNCcGJpQmdjMlZ5YVdGc2FYcGxRMjl0Y0dBZ2FXNWpiM0p5WldOMGJIa2diMjFwZEhNZ2JHVm5hWFJwYldGMFpTQm1ZV3h6ZVNCd2NtOXdJSFpoYkhWbGN5QW9aUzVuTGl3Z1lHWmhiSE5sWUN3Z1lEQmdMQ0JnSnlkZ0xDQmdUbUZPWUNrZ1puSnZiU0IwYUdVZ2MyVnlhV0ZzYVhwbFpDQnZkWFJ3ZFhRdUlGUm9hWE1nWVd4MFpYSnpJR052YlhCdmJtVnVkQ0JpWldoaGRtbHZjaUJoYm1RZ2NISnZaSFZqWlhNZ1lXNGdhVzVqYjNKeVpXTjBJSEpsY0hKbGMyVnVkR0YwYVc5dUxDQmhjeUIwYUdVZ1ozVmhjbVFnZDJGeklHbHVkR1Z1WkdWa0lIUnZJSE5yYVhBZ2IyNXNlU0JnYm5Wc2JHQWdiM0lnWUhWdVpHVm1hVzVsWkdBZ2RtRnNkV1Z6TGlJc0ltTnZibVpwWkdWdVkyVWlPakF1T1RreU1EUTNPRGczT0RFeU5EYzJOeXdpWTJGMFpXZHZjbmtpT2lKTVQwZEpRMTlDVlVjaWZRIiwiYnJhbmNoIjoiYXV0by1wci1hMzY2NmMwNS1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc2NTc1NCwiZXhwIjoxNzUwMzcwNTU0fQ.Et5RlErPETBXfX4GCyYwd-4XCrgapu8B5VyriQlMtfIyRvH2QHULh4ZbIfw7OO11f7a64XziLqPsMBjnSL8v6D1IZFZLbiguNnqpy_fdcHD3SsLE8egTCKKtE65kcgwt_CyzAeyFjEMbSH5arRtmlJpgWxtSmFxKcT-yxSNZUd91O93IBAsPVBoCWciLZW9z_ML3M06WZAwwD2HpYWlhJ-HeZkdWDcahqSKf9wOQt0RTevMhugGNpvB2IEsqKfKJgoBeinDXlBftZCksi0Z2lD1qjwcczXC9LDAd2PclbRD192jBgUeYWTaBofWzfXD1qzrIqAlRuQYPj-MEqZgcwg\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/prevwong_craft.js_131/pull/3#pullrequestreview-2922773323",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/prevwong_craft.js_131/pulls/3",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/prevwong_craft.js_131/pull/3#pullrequestreview-2922773323"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/prevwong_craft.js_131/pulls/3"
+          }
+        },
+        "submitted_at": "2025-06-12T22:02:35Z",
+        "commit_id": "d8f9644546a422f52b48682c2453a497972da757"
+      }
+    ]
+  }
+}

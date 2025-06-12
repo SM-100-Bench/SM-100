@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/usememos/memos/pull/870",
+    "commit_sha": "d661134b032b873c5ccc7b2fcb8184f3d68486c4",
+    "repo_identifier": "usememos_memos_870",
+    "timestamp": "2025-06-12T21:04:06Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/usememos_memos_870/issues/comments/2968136429",
+        "html_url": "https://github.com/SM-100-Bench/usememos_memos_870/pull/2#issuecomment-2968136429",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/usememos_memos_870/issues/2",
+        "id": 2968136429,
+        "node_id": "IC_kwDOOiBSCc6w6irt",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T20:58:23Z",
+        "updated_at": "2025-06-12T20:58:23Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/usememos_memos_870/issues/comments/2968136429/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922649920,
+        "node_id": "PRR_kwDOOiBSCc6uNBlA",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: SQL Syntax Error in Shortcut Creation</h3></summary>\n\nThe `INSERT` statement in `createShortcut` (line 73) has a trailing comma after `creator_id` in its column list. This invalid SQL causes SQLite to return a \"near \\\")\\\": syntax error\", preventing all shortcut creations.\n\n<p></p>\n\n<details>\n<summary><code>store/shortcut.go#L67-L78</code></summary>\n\nhttps://github.com/SM-100-Bench/usememos_memos_870/blob/c83d2ca54c0091ffc39c4d09b3c55a67f49426a5/store/shortcut.go#L67-L78\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp6ZEc5eVpTOXphRzl5ZEdOMWRDNW5ieUlzSW5OMFlYSjBUR2x1WlNJNk5qY3NJbVZ1WkV4cGJtVWlPamM0TENKamIyUmxUR2x1WlhNaU9sdGRmVjBzSW1sa0lqb2laRFUwWWpnelkyVXRaV1UzTmkwME9XTTRMV0ZrTVRBdFpEZ3lObUpqTW1Ka05tTTFJaXdpWkdWelkzSnBjSFJwYjI0aU9pSlVhR1VnWUVsT1UwVlNWR0FnYzNSaGRHVnRaVzUwSUdsdUlHQmpjbVZoZEdWVGFHOXlkR04xZEdBZ0tHeHBibVVnTnpNcElHaGhjeUJoSUhSeVlXbHNhVzVuSUdOdmJXMWhJR0ZtZEdWeUlHQmpjbVZoZEc5eVgybGtZQ0JwYmlCcGRITWdZMjlzZFcxdUlHeHBjM1F1SUZSb2FYTWdhVzUyWVd4cFpDQlRVVXdnWTJGMWMyVnpJRk5SVEdsMFpTQjBieUJ5WlhSMWNtNGdZU0JjSW01bFlYSWdYRnhjSWlsY1hGd2lPaUJ6ZVc1MFlYZ2daWEp5YjNKY0lpd2djSEpsZG1WdWRHbHVaeUJoYkd3Z2MyaHZjblJqZFhRZ1kzSmxZWFJwYjI1ekxpSXNJbU52Ym1acFpHVnVZMlVpT2pFc0ltTmhkR1ZuYjNKNUlqb2lURTlIU1VOZlFsVkhJbjAiLCJicmFuY2giOiJhdXRvLXByLWQ2NjExMzRiLWN1cnNvci1idWdib3QifSwiaWF0IjoxNzQ5NzYyMjI3LCJleHAiOjE3NTAzNjcwMjd9.Bvn4VwYz9r7sdOw70E1_PjlCP_TpGIjLPeDiA7GcU9tvC0zNYuO_nSPm-1hrI_fnPSyZaVUNRfEnsb4bc_RExVnr7xwkrOgwVIAXE7qfb9rwmOuTI4UL4uu_NztUookZPWOO2Kl08g0TFWbzKAl7iQrmhVLMIlIbpYQIY7hW-f2hQvu8Nw1-v1qpOOhia-TCpbUQZspFgMi5SW1lLuDlsVeMyimWqkVVJkwY4z8vvaM347XRgFatWTmRcn6ww-1wgytYbqjgRkXbtRMDY2oejzbUfKCUSCCHHBlFBDdJbb8QA6Zxv2iJ2oLrMJ1RLxvOHDVRI8HOFA9ikYwhBLYsCA\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Shortcut Deletion Targets Wrong Table</h3></summary>\n\nThe `deleteShortcut` function attempts to delete from the `saved_query` table instead of the `shortcut` table. This prevents any shortcuts from being deleted and causes the function to always return a \"not found\" error, even for existing shortcut IDs.\n\n<p></p>\n\n<details>\n<summary><code>store/shortcut.go#L203-L212</code></summary>\n\nhttps://github.com/SM-100-Bench/usememos_memos_870/blob/c83d2ca54c0091ffc39c4d09b3c55a67f49426a5/store/shortcut.go#L203-L212\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp6ZEc5eVpTOXphRzl5ZEdOMWRDNW5ieUlzSW5OMFlYSjBUR2x1WlNJNk1qQXpMQ0psYm1STWFXNWxJam95TVRJc0ltTnZaR1ZNYVc1bGN5STZXMTE5WFN3aWFXUWlPaUpoTmpsbU9Ua3hZaTB4TWpBd0xUUTBOek10WVRReE1DMDFNbVJrTTJSbE9EUXlZalVpTENKa1pYTmpjbWx3ZEdsdmJpSTZJbFJvWlNCZ1pHVnNaWFJsVTJodmNuUmpkWFJnSUdaMWJtTjBhVzl1SUdGMGRHVnRjSFJ6SUhSdklHUmxiR1YwWlNCbWNtOXRJSFJvWlNCZ2MyRjJaV1JmY1hWbGNubGdJSFJoWW14bElHbHVjM1JsWVdRZ2IyWWdkR2hsSUdCemFHOXlkR04xZEdBZ2RHRmliR1V1SUZSb2FYTWdjSEpsZG1WdWRITWdZVzU1SUhOb2IzSjBZM1YwY3lCbWNtOXRJR0psYVc1bklHUmxiR1YwWldRZ1lXNWtJR05oZFhObGN5QjBhR1VnWm5WdVkzUnBiMjRnZEc4Z1lXeDNZWGx6SUhKbGRIVnliaUJoSUZ3aWJtOTBJR1p2ZFc1a1hDSWdaWEp5YjNJc0lHVjJaVzRnWm05eUlHVjRhWE4wYVc1bklITm9iM0owWTNWMElFbEVjeTRpTENKamIyNW1hV1JsYm1ObElqb3dMamczTkRNM01UUTROVGMxTkRneE5qVXNJbU5oZEdWbmIzSjVJam9pVEU5SFNVTmZRbFZISW4wIiwiYnJhbmNoIjoiYXV0by1wci1kNjYxMTM0Yi1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc2MjIyNywiZXhwIjoxNzUwMzY3MDI3fQ.Z1fwbsmKFISp6HDYx-vNVWN8UK8dveCGZMJTDICtpicULhtt5KnrbveGvDWinFW9EDl8juXAkftimVIAVEWFH0huoFQJr1V5BKEbdmdR13DzKwr1OE8g1vKbWHT5x57__-QATqf8nqLJpzncnBYQIBD2dcE0YPXP_tubQsnxeCtSCWdm3XzEzZ2qerW-J994gpf2TpskcTx7ZecOM6lNOPM8wmd3K0mPoMmSCQkHj2gBoLTJ_7FuSgMAFhNinNtGqhowToabjPTAeRGNNZrL4tiUBDXhm0LCzHcsZoO--nPOSip-KYDyi8nBVXBMG8cDBtZM-65C27Zi7qd6CaXxCA\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Missing Arguments in createUser Function</h3></summary>\n\nThe `createUser` function executes an `INSERT ... VALUES (?, ?, ?)` statement but fails to pass the required arguments (`create.Name`, `create.Password`, `create.OpenId`) to `db.Db.Query`. This causes the statement to always fail at runtime with \"sql: expected 3 arguments, got 0\", preventing user creation.\n\n<p></p>\n\n<details>\n<summary><code>store/user.go#L50-L60</code></summary>\n\nhttps://github.com/SM-100-Bench/usememos_memos_870/blob/c83d2ca54c0091ffc39c4d09b3c55a67f49426a5/store/user.go#L50-L60\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp6ZEc5eVpTOTFjMlZ5TG1kdklpd2ljM1JoY25STWFXNWxJam8xTUN3aVpXNWtUR2x1WlNJNk5qQXNJbU52WkdWTWFXNWxjeUk2VzExOVhTd2lhV1FpT2lKbU1tWmlaalJrWlMweFpUTXpMVFE0WVRrdE9UazNZUzB3Wm1NeU5XVXhZakUwWW1VaUxDSmtaWE5qY21sd2RHbHZiaUk2SWxSb1pTQmdZM0psWVhSbFZYTmxjbUFnWm5WdVkzUnBiMjRnWlhobFkzVjBaWE1nWVc0Z1lFbE9VMFZTVkNBdUxpNGdWa0ZNVlVWVElDZ19MQ0FfTENBX0tXQWdjM1JoZEdWdFpXNTBJR0oxZENCbVlXbHNjeUIwYnlCd1lYTnpJSFJvWlNCeVpYRjFhWEpsWkNCaGNtZDFiV1Z1ZEhNZ0tHQmpjbVZoZEdVdVRtRnRaV0FzSUdCamNtVmhkR1V1VUdGemMzZHZjbVJnTENCZ1kzSmxZWFJsTGs5d1pXNUpaR0FwSUhSdklHQmtZaTVFWWk1UmRXVnllV0F1SUZSb2FYTWdZMkYxYzJWeklIUm9aU0J6ZEdGMFpXMWxiblFnZEc4Z1lXeDNZWGx6SUdaaGFXd2dZWFFnY25WdWRHbHRaU0IzYVhSb0lGd2ljM0ZzT2lCbGVIQmxZM1JsWkNBeklHRnlaM1Z0Wlc1MGN5d2daMjkwSURCY0lpd2djSEpsZG1WdWRHbHVaeUIxYzJWeUlHTnlaV0YwYVc5dUxpSXNJbU52Ym1acFpHVnVZMlVpT2pBdU9EY3lNVEkzTWpFeU5qUTROems1Tml3aVkyRjBaV2R2Y25raU9pSk1UMGRKUTE5Q1ZVY2lmUSIsImJyYW5jaCI6ImF1dG8tcHItZDY2MTEzNGItY3Vyc29yLWJ1Z2JvdCJ9LCJpYXQiOjE3NDk3NjIyMjcsImV4cCI6MTc1MDM2NzAyN30.n31BjqlikA58NluS7dHDLbBKybSRs3Gu-fhiXbt9zWOtwYKg0FRq1tqW7TBsfTVpfJVIywZkD8-d4Rj-uyZBfYhKlbdvjROHi-jPbVq14NrORbz9qknULmN5v9WSJQ5TlshQ1-eqd_6MC9m-z22JHU0yEdlB9Mxx_2Fe_yr_LZ46nPR7lUGPVyxtrqybOGJg11j80zWfwccwjV0h1kwUzuBOwaDnpDZCzB8K3xIlEUQSG3QnEDEJfYYd6wkroinFw6XcMFkyHoPbi3ADJdx72xb8fWd4zs2WEV3zuwOAG1dKt515zuI6fU4vBlqvYIBRCv5b5N8v4-mFx21qeuKz-w\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Pointer Dereferencing Error in SQL Arguments</h3></summary>\n\nThe `patchMemo` function incorrectly appends pointer values (`v`) instead of their dereferenced values (`*v`) for `Content` and `RowStatus` fields to the SQL argument list. This causes the `database/sql` driver to return an \"unsupported type *string\" (or *bool) runtime error, preventing memo updates from succeeding.\n\n<p></p>\n\n<details>\n<summary><code>store/memo.go#L103-L112</code></summary>\n\nhttps://github.com/SM-100-Bench/usememos_memos_870/blob/c83d2ca54c0091ffc39c4d09b3c55a67f49426a5/store/memo.go#L103-L112\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp6ZEc5eVpTOXRaVzF2TG1kdklpd2ljM1JoY25STWFXNWxJam94TURNc0ltVnVaRXhwYm1VaU9qRXhNaXdpWTI5a1pVeHBibVZ6SWpwYlhYMWRMQ0pwWkNJNkltVTRaak01TnpFd0xXTmlNak10TkRFMU1TMDRNakV6TFRWaE5qTTVORGd6WTJZeVpDSXNJbVJsYzJOeWFYQjBhVzl1SWpvaVZHaGxJR0J3WVhSamFFMWxiVzlnSUdaMWJtTjBhVzl1SUdsdVkyOXljbVZqZEd4NUlHRndjR1Z1WkhNZ2NHOXBiblJsY2lCMllXeDFaWE1nS0dCMllDa2dhVzV6ZEdWaFpDQnZaaUIwYUdWcGNpQmtaWEpsWm1WeVpXNWpaV1FnZG1Gc2RXVnpJQ2hnS25aZ0tTQm1iM0lnWUVOdmJuUmxiblJnSUdGdVpDQmdVbTkzVTNSaGRIVnpZQ0JtYVdWc1pITWdkRzhnZEdobElGTlJUQ0JoY21kMWJXVnVkQ0JzYVhOMExpQlVhR2x6SUdOaGRYTmxjeUIwYUdVZ1lHUmhkR0ZpWVhObEwzTnhiR0FnWkhKcGRtVnlJSFJ2SUhKbGRIVnliaUJoYmlCY0luVnVjM1Z3Y0c5eWRHVmtJSFI1Y0dVZ0tuTjBjbWx1WjF3aUlDaHZjaUFxWW05dmJDa2djblZ1ZEdsdFpTQmxjbkp2Y2l3Z2NISmxkbVZ1ZEdsdVp5QnRaVzF2SUhWd1pHRjBaWE1nWm5KdmJTQnpkV05qWldWa2FXNW5MaUlzSW1OdmJtWnBaR1Z1WTJVaU9qQXVOell6T0RZd056QTVNek0xTkRRMExDSmpZWFJsWjI5eWVTSTZJa3hQUjBsRFgwSlZSeUo5IiwiYnJhbmNoIjoiYXV0by1wci1kNjYxMTM0Yi1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc2MjIyNywiZXhwIjoxNzUwMzY3MDI3fQ.PNwLKSxAxCqu7Eud28NAEeiPTf9A0tjFK_MuBPMzcUl5Y0EKa8lPOMUPj1NH8kK4bUk-3XE9iEJcumqbRoCvi9gzmmW0A0gQNOcdQ1bz0nwSP18O6GPw9LyM0fCUSydRlCq4nkQvwT01q_xrF77vaBWeCh78aOC8xYIYitQfD01V5OB33LLBgSoD_F4O16IJ6tFHujyDG5nqqaPOZT8nxV0tp2kbqyLxpcYLOIYxgx6q1RprDiGwuUqrpa6jE3hnukT6fglrQ9kUPgrOlaDyihxeYDj5ozWGQrf_oAXsUpRNGFfEtI3yQ60sxWgpWlrM6lQNIl_yIhAGrtzzM0GmLg\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Missing Comma in SQL Query Causes Syntax Error</h3></summary>\n\nThe `findUserList` function's `SELECT` list is missing a comma between `created_ts` and `updated_ts`. This causes a SQL syntax error (`created_ts updated_ts`) that prevents all user lookups.\n\n<p></p>\n\n<details>\n<summary><code>store/user.go#L128-L149</code></summary>\n\nhttps://github.com/SM-100-Bench/usememos_memos_870/blob/c83d2ca54c0091ffc39c4d09b3c55a67f49426a5/store/user.go#L128-L149\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp6ZEc5eVpTOTFjMlZ5TG1kdklpd2ljM1JoY25STWFXNWxJam94TWpnc0ltVnVaRXhwYm1VaU9qRTBPU3dpWTI5a1pVeHBibVZ6SWpwYlhYMWRMQ0pwWkNJNkltSm1PREV3TW1Jd0xUY3haRGt0TkRBMk5TMDVNalV5TFRnMU9ERXlNMlV6TldObFlpSXNJbVJsYzJOeWFYQjBhVzl1SWpvaVZHaGxJR0JtYVc1a1ZYTmxja3hwYzNSZ0lHWjFibU4wYVc5dUozTWdZRk5GVEVWRFZHQWdiR2x6ZENCcGN5QnRhWE56YVc1bklHRWdZMjl0YldFZ1ltVjBkMlZsYmlCZ1kzSmxZWFJsWkY5MGMyQWdZVzVrSUdCMWNHUmhkR1ZrWDNSellDNGdWR2hwY3lCallYVnpaWE1nWVNCVFVVd2djM2x1ZEdGNElHVnljbTl5SUNoZ1kzSmxZWFJsWkY5MGN5QjFjR1JoZEdWa1gzUnpZQ2tnZEdoaGRDQndjbVYyWlc1MGN5QmhiR3dnZFhObGNpQnNiMjlyZFhCekxpSXNJbU52Ym1acFpHVnVZMlVpT2pBdU56UTJPREkwTWpFeU9UTTFNalkzTlN3aVkyRjBaV2R2Y25raU9pSk1UMGRKUTE5Q1ZVY2lmUSIsImJyYW5jaCI6ImF1dG8tcHItZDY2MTEzNGItY3Vyc29yLWJ1Z2JvdCJ9LCJpYXQiOjE3NDk3NjIyMjcsImV4cCI6MTc1MDM2NzAyN30.AtmMERnd6E-oYXcov8i2k72ghMyJF9-VQYENjsQhZfpClr4t85MSU8-n3mkJtvxE5usW-cKkTxpQz6sM-d7dLCm2trXaioKPPbU1RFaGUXUMx5pXwpgOdlW2PbLHf_XbLd60C_qKsKURqLh3fbCM_J7BYh7RsiurX0lJXamIz5ynkzH1gBBhszEYS87dNtfis0mwU0If9HCw-l9vO4ZfN06a6yax0POjyykf1xqgbNpoeuzBNkcJWKOKNAfo4OL7sskxwe04E33DdGmF5L2E3mQCS2MljcgTba9rtncbQmJAGU96_r3I-kW7Xhe0tKz3tf3wo-nb-UmM3P4YojlTRg\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Missing Nil Check Causes Panic</h3></summary>\n\nDereferencing `userPatch.ResetOpenId` without a nil check causes a panic when the `resetOpenId` field is omitted from the request payload.\n\n<p></p>\n\n<details>\n<summary><code>server/user.go#L37-L43</code></summary>\n\nhttps://github.com/SM-100-Bench/usememos_memos_870/blob/c83d2ca54c0091ffc39c4d09b3c55a67f49426a5/server/user.go#L37-L43\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp6WlhKMlpYSXZkWE5sY2k1bmJ5SXNJbk4wWVhKMFRHbHVaU0k2TXpjc0ltVnVaRXhwYm1VaU9qUXpMQ0pqYjJSbFRHbHVaWE1pT2x0ZGZWMHNJbWxrSWpvaVpHUTVNR1ZoTVRBdE1XWTFZaTAwTjJKakxUZ3hOR1l0TTJGaU56Z3dNR1JsWm1FMUlpd2laR1Z6WTNKcGNIUnBiMjRpT2lKRVpYSmxabVZ5Wlc1amFXNW5JR0IxYzJWeVVHRjBZMmd1VW1WelpYUlBjR1Z1U1dSZ0lIZHBkR2h2ZFhRZ1lTQnVhV3dnWTJobFkyc2dZMkYxYzJWeklHRWdjR0Z1YVdNZ2QyaGxiaUIwYUdVZ1lISmxjMlYwVDNCbGJrbGtZQ0JtYVdWc1pDQnBjeUJ2YldsMGRHVmtJR1p5YjIwZ2RHaGxJSEpsY1hWbGMzUWdjR0Y1Ykc5aFpDNGlMQ0pqYjI1bWFXUmxibU5sSWpvd0xqTTNOekEwTWpJeU1qWTJPRFV6TkRZMUxDSmpZWFJsWjI5eWVTSTZJbEJQVkVWT1ZFbEJURjlGUkVkRlgwTkJVMFVpZlEiLCJicmFuY2giOiJhdXRvLXByLWQ2NjExMzRiLWN1cnNvci1idWdib3QifSwiaWF0IjoxNzQ5NzYyMjI3LCJleHAiOjE3NTAzNjcwMjd9.O_ET1O27yVlEPAweUda0kVr60nvZW8ix3aXtRyWfLUgOAenjwHN8KeW1gxxEOOTrRGdpwN9XRkQl3Ovy_7r5vfZShWTLiKITNZ71B575v_3CuNBfoK-uLz9zBo_mqMApxblG0AUksVMHPv6kEtN_5OpzKnVs_dVZFOesqDWnvO8B_GoOOhm7upNydAcbstcCuquv3MqiZmk468Y6QHEm1BJDz7e7S61ZXhrxr60Q-vVI2iynB-rV97cHN0sqR0L7mE73k8u6Xz7HpKoBpbUhR2Yyro-rIFZr3vMvUHKkTTBcegWWGy6B3__-GYJSSIxCl9XvQ6pTVa7xqCe3J44pJA\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/usememos_memos_870/pull/2#pullrequestreview-2922649920",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/usememos_memos_870/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/usememos_memos_870/pull/2#pullrequestreview-2922649920"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/usememos_memos_870/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T21:03:48Z",
+        "commit_id": "c83d2ca54c0091ffc39c4d09b3c55a67f49426a5"
+      }
+    ]
+  }
+}

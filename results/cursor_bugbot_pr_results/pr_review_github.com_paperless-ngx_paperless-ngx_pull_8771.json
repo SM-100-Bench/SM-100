@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/paperless-ngx/paperless-ngx/pull/8771",
+    "commit_sha": "0b949a14c07c65a44e4ae2c502863238f45cec94",
+    "repo_identifier": "paperless-ngx_paperless-ngx_8771",
+    "timestamp": "2025-06-12T23:13:35Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/paperless-ngx_paperless-ngx_8771/issues/comments/2968395623",
+        "html_url": "https://github.com/SM-100-Bench/paperless-ngx_paperless-ngx_8771/pull/2#issuecomment-2968395623",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/paperless-ngx_paperless-ngx_8771/issues/2",
+        "id": 2968395623,
+        "node_id": "IC_kwDOOiCCh86w7h9n",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T23:06:20Z",
+        "updated_at": "2025-06-12T23:06:20Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/paperless-ngx_paperless-ngx_8771/issues/comments/2968395623/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922867613,
+        "node_id": "PRR_kwDOOiCCh86uN2ud",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: Filter Setter Issues and Pagination Bug</h3></summary>\n\nThe `nameFilter` setter has two issues:\n1.  It fails to update the `_nameFilter` backing field, causing two-way bound input fields to reset after each keystroke.\n2.  It attempts to use `nameFilterDebounce` before it's initialized in `ngOnInit`, leading to a runtime error if called early (e.g., by `ngModel`).\nFurthermore, changing the `nameFilter` does not reset `this.page` to 1 before `reloadData()` is called. This can result in an empty list being displayed if the user was on a higher page and the filtered results span fewer pages.\n\n<p></p>\n\n<details>\n<summary><code>src-ui/src/app/components/manage/generic-list/generic-list.component.ts#L119-L126</code></summary>\n\nhttps://github.com/SM-100-Bench/paperless-ngx_paperless-ngx_8771/blob/e969a2c57f968138ac618d2a3843ccdf7fd4bb25/src-ui/src/app/components/manage/generic-list/generic-list.component.ts#L119-L126\n\n</details>\n\n<details>\n<summary><code>src-ui/src/app/components/manage/generic-list/generic-list.component.ts#L56-L66</code></summary>\n\nhttps://github.com/SM-100-Bench/paperless-ngx_paperless-ngx_8771/blob/e969a2c57f968138ac618d2a3843ccdf7fd4bb25/src-ui/src/app/components/manage/generic-list/generic-list.component.ts#L56-L66\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp6Y21NdGRXa3ZjM0pqTDJGd2NDOWpiMjF3YjI1bGJuUnpMMjFoYm1GblpTOW5aVzVsY21sakxXeHBjM1F2WjJWdVpYSnBZeTFzYVhOMExtTnZiWEJ2Ym1WdWRDNTBjeUlzSW5OMFlYSjBUR2x1WlNJNk1URTVMQ0psYm1STWFXNWxJam94TWpZc0ltTnZaR1ZNYVc1bGN5STZXMTE5TEhzaVptbHNaU0k2SW5OeVl5MTFhUzl6Y21NdllYQndMMk52YlhCdmJtVnVkSE12YldGdVlXZGxMMmRsYm1WeWFXTXRiR2x6ZEM5blpXNWxjbWxqTFd4cGMzUXVZMjl0Y0c5dVpXNTBMblJ6SWl3aWMzUmhjblJNYVc1bElqbzFOaXdpWlc1a1RHbHVaU0k2TmpZc0ltTnZaR1ZNYVc1bGN5STZXMTE5WFN3aWFXUWlPaUkzT0RrNU1qWmxPUzB4TW1ZeExUUmxNalV0T0RJNE55MWhNekZsTUdJM05EbGlNRFlpTENKa1pYTmpjbWx3ZEdsdmJpSTZJbFJvWlNCZ2JtRnRaVVpwYkhSbGNtQWdjMlYwZEdWeUlHaGhjeUIwZDI4Z2FYTnpkV1Z6T2x4dU1TNGdJRWwwSUdaaGFXeHpJSFJ2SUhWd1pHRjBaU0IwYUdVZ1lGOXVZVzFsUm1sc2RHVnlZQ0JpWVdOcmFXNW5JR1pwWld4a0xDQmpZWFZ6YVc1bklIUjNieTEzWVhrZ1ltOTFibVFnYVc1d2RYUWdabWxsYkdSeklIUnZJSEpsYzJWMElHRm1kR1Z5SUdWaFkyZ2dhMlY1YzNSeWIydGxMbHh1TWk0Z0lFbDBJR0YwZEdWdGNIUnpJSFJ2SUhWelpTQmdibUZ0WlVacGJIUmxja1JsWW05MWJtTmxZQ0JpWldadmNtVWdhWFFuY3lCcGJtbDBhV0ZzYVhwbFpDQnBiaUJnYm1kUGJrbHVhWFJnTENCc1pXRmthVzVuSUhSdklHRWdjblZ1ZEdsdFpTQmxjbkp2Y2lCcFppQmpZV3hzWldRZ1pXRnliSGtnS0dVdVp5NHNJR0o1SUdCdVowMXZaR1ZzWUNrdVhHNUdkWEowYUdWeWJXOXlaU3dnWTJoaGJtZHBibWNnZEdobElHQnVZVzFsUm1sc2RHVnlZQ0JrYjJWeklHNXZkQ0J5WlhObGRDQmdkR2hwY3k1d1lXZGxZQ0IwYnlBeElHSmxabTl5WlNCZ2NtVnNiMkZrUkdGMFlTZ3BZQ0JwY3lCallXeHNaV1F1SUZSb2FYTWdZMkZ1SUhKbGMzVnNkQ0JwYmlCaGJpQmxiWEIwZVNCc2FYTjBJR0psYVc1bklHUnBjM0JzWVhsbFpDQnBaaUIwYUdVZ2RYTmxjaUIzWVhNZ2IyNGdZU0JvYVdkb1pYSWdjR0ZuWlNCaGJtUWdkR2hsSUdacGJIUmxjbVZrSUhKbGMzVnNkSE1nYzNCaGJpQm1aWGRsY2lCd1lXZGxjeTRpTENKamIyNW1hV1JsYm1ObElqb3dMams1TVRRMU5ETXlNVEUxT1RFM056WXNJbU5oZEdWbmIzSjVJam9pVEU5SFNVTmZRbFZISW4wIiwiYnJhbmNoIjoiYXV0by1wci0wYjk0OWExNC1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc2OTk5NSwiZXhwIjoxNzUwMzc0Nzk1fQ.krPl988MTLRR-qpm-E7Fh9PlQDWy9g5Qo2HybVP1H-eSCQBngc99YL1meRREqdm4r6rbn03hBCkvU_9U--wTY8SI0wo31YwYZ71JPdyKRe_UVkWSmqP15W-RVIj1_ueTjXtOOeIc95CWmom3R1FbXKfXgqbVGqj_1M8LiIw3fLWXEUDgeL7PX05RnGgJs5b54zpLbojJKnKDnvXZA0MDP3zq-zDCpVQFPjK8MxVKzQIgMk-9dxMEgLbGwkZt9N0fsR74_9mSl709i5i1ScDK25mQ9A-9hSqZOlnWRdHyovcOtB6lW9ztfR_-phOwfjwG53NNkuip6iD6UVFpfn5CdQ\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/paperless-ngx_paperless-ngx_8771/pull/2#pullrequestreview-2922867613",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/paperless-ngx_paperless-ngx_8771/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/paperless-ngx_paperless-ngx_8771/pull/2#pullrequestreview-2922867613"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/paperless-ngx_paperless-ngx_8771/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T23:13:16Z",
+        "commit_id": "e969a2c57f968138ac618d2a3843ccdf7fd4bb25"
+      }
+    ]
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/root-gg/plik/pull/518",
+    "commit_sha": "048f401df1a0fc4a5a3620ae71fcf25c700b6a4d",
+    "repo_identifier": "root-gg_plik_518",
+    "timestamp": "2025-06-12T23:11:33Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/root-gg_plik_518/issues/comments/2968397019",
+        "html_url": "https://github.com/SM-100-Bench/root-gg_plik_518/pull/2#issuecomment-2968397019",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/root-gg_plik_518/issues/2",
+        "id": 2968397019,
+        "node_id": "IC_kwDOOiCDh86w7iTb",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T23:07:23Z",
+        "updated_at": "2025-06-12T23:07:23Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/root-gg_plik_518/issues/comments/2968397019/reactions",
+          "total_count": 1,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 1
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922865854,
+        "node_id": "PRR_kwDOOiCDh86uN2S-",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: Mutex Deletion Causes Race Condition</h3></summary>\n\nThe `Unlock` function now immediately deletes the mutex from the global `locks` map. This creates a race condition where a goroutine, previously blocked on a mutex, may attempt to `Unlock` a `nil` entry after the mutex has been deleted, leading to a nil-pointer panic. Additionally, this immediate deletion can break mutual exclusion by allowing new mutexes to be created for the same upload, potentially corrupting metadata files. This regression was introduced by removing the previous time-delayed mutex cleanup.\n\n<p></p>\n\n<details>\n<summary><code>server/metadata_backend/file/file.go#L279-L296</code></summary>\n\nhttps://github.com/SM-100-Bench/root-gg_plik_518/blob/1fed7e6fa5cb12f860b55ccd166edf9b48e1e851/server/metadata_backend/file/file.go#L279-L296\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp6WlhKMlpYSXZiV1YwWVdSaGRHRmZZbUZqYTJWdVpDOW1hV3hsTDJacGJHVXVaMjhpTENKemRHRnlkRXhwYm1VaU9qSTNPU3dpWlc1a1RHbHVaU0k2TWprMkxDSmpiMlJsVEdsdVpYTWlPbHRkZlYwc0ltbGtJam9pTVRGbVpqVTBPR010T1RZNFpTMDBZelUxTFdFeVlUVXRabVkwWW1GbE5XSTBOalJpSWl3aVpHVnpZM0pwY0hScGIyNGlPaUpVYUdVZ1lGVnViRzlqYTJBZ1puVnVZM1JwYjI0Z2JtOTNJR2x0YldWa2FXRjBaV3g1SUdSbGJHVjBaWE1nZEdobElHMTFkR1Y0SUdaeWIyMGdkR2hsSUdkc2IySmhiQ0JnYkc5amEzTmdJRzFoY0M0Z1ZHaHBjeUJqY21WaGRHVnpJR0VnY21GalpTQmpiMjVrYVhScGIyNGdkMmhsY21VZ1lTQm5iM0p2ZFhScGJtVXNJSEJ5WlhacGIzVnpiSGtnWW14dlkydGxaQ0J2YmlCaElHMTFkR1Y0TENCdFlYa2dZWFIwWlcxd2RDQjBieUJnVlc1c2IyTnJZQ0JoSUdCdWFXeGdJR1Z1ZEhKNUlHRm1kR1Z5SUhSb1pTQnRkWFJsZUNCb1lYTWdZbVZsYmlCa1pXeGxkR1ZrTENCc1pXRmthVzVuSUhSdklHRWdibWxzTFhCdmFXNTBaWElnY0dGdWFXTXVJRUZrWkdsMGFXOXVZV3hzZVN3Z2RHaHBjeUJwYlcxbFpHbGhkR1VnWkdWc1pYUnBiMjRnWTJGdUlHSnlaV0ZySUcxMWRIVmhiQ0JsZUdOc2RYTnBiMjRnWW5rZ1lXeHNiM2RwYm1jZ2JtVjNJRzExZEdWNFpYTWdkRzhnWW1VZ1kzSmxZWFJsWkNCbWIzSWdkR2hsSUhOaGJXVWdkWEJzYjJGa0xDQndiM1JsYm5ScFlXeHNlU0JqYjNKeWRYQjBhVzVuSUcxbGRHRmtZWFJoSUdacGJHVnpMaUJVYUdseklISmxaM0psYzNOcGIyNGdkMkZ6SUdsdWRISnZaSFZqWldRZ1lua2djbVZ0YjNacGJtY2dkR2hsSUhCeVpYWnBiM1Z6SUhScGJXVXRaR1ZzWVhsbFpDQnRkWFJsZUNCamJHVmhiblZ3TGlJc0ltTnZibVpwWkdWdVkyVWlPakF1T0RZM09UVXpNVGMxTkRRNE1USXpOeXdpWTJGMFpXZHZjbmtpT2lKTVQwZEpRMTlDVlVjaWZRIiwiYnJhbmNoIjoiYXV0by1wci0wNDhmNDAxZC1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc2OTg5MSwiZXhwIjoxNzUwMzc0NjkxfQ.if8bt2XB6oVK2Ww4XghB4tC-Hv1GPo3TgPBONu9DGlo6h4mTGfq__pOuVFt0nrGq8jCapfkEtOq0vSexbYA6Yma-G2gqzr48J6irU9Ut3paSr7J6_JCXQ6YJMGWBW0mx_IZuXQxT9ncS1Ohg_Pj0jaIhFpNrDOPbkp76w5S74exYjhUJJWWI9mK-_RFifiDt1T1rbATlVZRXkQ7bvm51C6dgIG9Gx3Dkg1XRkay5-sqMyx7C13ZQoS_U0if0dkyA7mBb1Cdo_IJ8cj83VbzkcHOF8jyEjngXMV30XtBCWF5SJWvs1TBS5vGYbEfQpwvXYGt3P51FH9mqlFVGH07Lcw\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/root-gg_plik_518/pull/2#pullrequestreview-2922865854",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/root-gg_plik_518/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/root-gg_plik_518/pull/2#pullrequestreview-2922865854"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/root-gg_plik_518/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T23:11:32Z",
+        "commit_id": "1fed7e6fa5cb12f860b55ccd166edf9b48e1e851"
+      }
+    ]
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/inertiajs/inertia/pull/1985",
+    "commit_sha": "63c24ff5b50d92c5a83b4c7c6b3bd68c7e6e4e2f",
+    "repo_identifier": "inertiajs_inertia_1985",
+    "timestamp": "2025-06-12T21:25:26Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/inertiajs_inertia_1985/issues/comments/2968175826",
+        "html_url": "https://github.com/SM-100-Bench/inertiajs_inertia_1985/pull/2#issuecomment-2968175826",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/inertiajs_inertia_1985/issues/2",
+        "id": 2968175826,
+        "node_id": "IC_kwDOOiBdj86w6sTS",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T21:15:36Z",
+        "updated_at": "2025-06-12T21:15:36Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/inertiajs_inertia_1985/issues/comments/2968175826/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922703857,
+        "node_id": "PRR_kwDOOiBdj86uNOvx",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug</h3></summary>\n\nThe `defaults()` method, introduced in the recent commit, directly reassigns the internal `defaults` variable, which is not a reactive property of the form object. This causes two issues:\n\n1.  **Incorrect `isDirty` state:** The watcher responsible for computing `form.isDirty` is not triggered when `defaults()` is called. Consequently, `form.isDirty` remains in its previous state (e.g., `true`) even when the form's current data matches the newly set defaults, incorrectly indicating the form is dirty.\n2.  **Shallow copy of defaults:** When `defaults()` is called without arguments, it performs a shallow copy of the current form data. Nested objects are copied by reference, meaning subsequent mutations to these objects on the form will also modify the `defaults` variable. This leads to `reset()` using stale defaults and `isDirty` reporting incorrect states for nested data.\n\nThis bug affects the `useForm` and `form` implementations across `inertia-vue3`, `inertia-vue`, and `inertia-svelte`.\n\n<p></p>\n\n<details>\n<summary><code>packages/inertia-vue3/src/useForm.js#L36-L50</code></summary>\n\nhttps://github.com/SM-100-Bench/inertiajs_inertia_1985/blob/3054368acdad05cfe8c86d6b207947f7f4507090/packages/inertia-vue3/src/useForm.js#L36-L50\n\n</details>\n\n<details>\n<summary><code>packages/inertia-vue/src/form.js#L36-L49</code></summary>\n\nhttps://github.com/SM-100-Bench/inertiajs_inertia_1985/blob/3054368acdad05cfe8c86d6b207947f7f4507090/packages/inertia-vue/src/form.js#L36-L49\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp3WVdOcllXZGxjeTlwYm1WeWRHbGhMWFoxWlRNdmMzSmpMM1Z6WlVadmNtMHVhbk1pTENKemRHRnlkRXhwYm1VaU9qTTJMQ0psYm1STWFXNWxJam8xTUN3aVkyOWtaVXhwYm1WeklqcGJYWDBzZXlKbWFXeGxJam9pY0dGamEyRm5aWE12YVc1bGNuUnBZUzEyZFdVdmMzSmpMMlp2Y20wdWFuTWlMQ0p6ZEdGeWRFeHBibVVpT2pNMkxDSmxibVJNYVc1bElqbzBPU3dpWTI5a1pVeHBibVZ6SWpwYlhYMWRMQ0pwWkNJNklqTXdNelpoWVdZekxXSmlNVEV0TkdZME1TMDVOV1ZtTFdSak9UbGtOVE5qT1Rnd09DSXNJbVJsYzJOeWFYQjBhVzl1SWpvaVZHaGxJR0JrWldaaGRXeDBjeWdwWUNCdFpYUm9iMlFzSUdsdWRISnZaSFZqWldRZ2FXNGdkR2hsSUhKbFkyVnVkQ0JqYjIxdGFYUXNJR1JwY21WamRHeDVJSEpsWVhOemFXZHVjeUIwYUdVZ2FXNTBaWEp1WVd3Z1lHUmxabUYxYkhSellDQjJZWEpwWVdKc1pTd2dkMmhwWTJnZ2FYTWdibTkwSUdFZ2NtVmhZM1JwZG1VZ2NISnZjR1Z5ZEhrZ2IyWWdkR2hsSUdadmNtMGdiMkpxWldOMExpQlVhR2x6SUdOaGRYTmxjeUIwZDI4Z2FYTnpkV1Z6T2x4dVhHNHhMaUFnS2lwSmJtTnZjbkpsWTNRZ1lHbHpSR2x5ZEhsZ0lITjBZWFJsT2lvcUlGUm9aU0IzWVhSamFHVnlJSEpsYzNCdmJuTnBZbXhsSUdadmNpQmpiMjF3ZFhScGJtY2dZR1p2Y20wdWFYTkVhWEowZVdBZ2FYTWdibTkwSUhSeWFXZG5aWEpsWkNCM2FHVnVJR0JrWldaaGRXeDBjeWdwWUNCcGN5QmpZV3hzWldRdUlFTnZibk5sY1hWbGJuUnNlU3dnWUdadmNtMHVhWE5FYVhKMGVXQWdjbVZ0WVdsdWN5QnBiaUJwZEhNZ2NISmxkbWx2ZFhNZ2MzUmhkR1VnS0dVdVp5NHNJR0IwY25WbFlDa2daWFpsYmlCM2FHVnVJSFJvWlNCbWIzSnRKM01nWTNWeWNtVnVkQ0JrWVhSaElHMWhkR05vWlhNZ2RHaGxJRzVsZDJ4NUlITmxkQ0JrWldaaGRXeDBjeXdnYVc1amIzSnlaV04wYkhrZ2FXNWthV05oZEdsdVp5QjBhR1VnWm05eWJTQnBjeUJrYVhKMGVTNWNiakl1SUNBcUtsTm9ZV3hzYjNjZ1kyOXdlU0J2WmlCa1pXWmhkV3gwY3pvcUtpQlhhR1Z1SUdCa1pXWmhkV3gwY3lncFlDQnBjeUJqWVd4c1pXUWdkMmwwYUc5MWRDQmhjbWQxYldWdWRITXNJR2wwSUhCbGNtWnZjbTF6SUdFZ2MyaGhiR3h2ZHlCamIzQjVJRzltSUhSb1pTQmpkWEp5Wlc1MElHWnZjbTBnWkdGMFlTNGdUbVZ6ZEdWa0lHOWlhbVZqZEhNZ1lYSmxJR052Y0dsbFpDQmllU0J5WldabGNtVnVZMlVzSUcxbFlXNXBibWNnYzNWaWMyVnhkV1Z1ZENCdGRYUmhkR2x2Ym5NZ2RHOGdkR2hsYzJVZ2IySnFaV04wY3lCdmJpQjBhR1VnWm05eWJTQjNhV3hzSUdGc2MyOGdiVzlrYVdaNUlIUm9aU0JnWkdWbVlYVnNkSE5nSUhaaGNtbGhZbXhsTGlCVWFHbHpJR3hsWVdSeklIUnZJR0J5WlhObGRDZ3BZQ0IxYzJsdVp5QnpkR0ZzWlNCa1pXWmhkV3gwY3lCaGJtUWdZR2x6UkdseWRIbGdJSEpsY0c5eWRHbHVaeUJwYm1OdmNuSmxZM1FnYzNSaGRHVnpJR1p2Y2lCdVpYTjBaV1FnWkdGMFlTNWNibHh1VkdocGN5QmlkV2NnWVdabVpXTjBjeUIwYUdVZ1lIVnpaVVp2Y20xZ0lHRnVaQ0JnWm05eWJXQWdhVzF3YkdWdFpXNTBZWFJwYjI1eklHRmpjbTl6Y3lCZ2FXNWxjblJwWVMxMmRXVXpZQ3dnWUdsdVpYSjBhV0V0ZG5WbFlDd2dZVzVrSUdCcGJtVnlkR2xoTFhOMlpXeDBaV0F1SWl3aVkyOXVabWxrWlc1alpTSTZNQzQzTXpnME1UTXdOamc0TkRVME16UTVMQ0pqWVhSbFoyOXllU0k2SWt4UFIwbERYMEpWUnlKOSIsImJyYW5jaCI6ImF1dG8tcHItNjNjMjRmZjUtY3Vyc29yLWJ1Z2JvdCJ9LCJpYXQiOjE3NDk3NjM1MDksImV4cCI6MTc1MDM2ODMwOX0.miDAstFG0ETqMI3BrjvR6kLDKdM0XzJtN7lmMAzSEEhueONRHVuOzgNFKVjoCpSBNewfML7W8aTgG0TVzHuhlgG7Z-0OUVrVBEDjmhI2bnqPrMPvS2u1hDvSAhGU5PUbhOkpv3BApDjlhq7pIqvkDPHaYKF-JQ08YPCONWvR17OD_gPSgeSY33YQSWZykm323ZOZyWaRscvapP3MRR5QwUIE3u_7-XN9QNj2XWvZwbtYjRjXZn4MzMX-jiXm3G4Fr4W74xyfVNinvY33-LhPR1i8kXUdYF8uZgvayrtKHUmB6PwyS2hBTfVf-7GsFuURnIdGXfbALjjg6gOqU3KIog\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Falsely Spread Keys Break Defaults Object</h3></summary>\n\nThe `setDefaults(key, value)` method in `useForm` incorrectly handles falsy `value` arguments (e.g., `false`, `0`, `''`, `null`). The conditional spread `(value ? { [key]: value } : key)` causes the `key` string to be spread into the defaults object when `value` is falsy. This results in properties like `'0', '1', ...` (characters of the key string) instead of the intended `{ [key]: value }`, corrupting the defaults object and breaking subsequent `reset` operations. This bug also affects Svelte, Vue 2, and Vue 3 implementations.\n\n<p></p>\n\n<details>\n<summary><code>packages/inertia-react/src/useForm.js#L146-L156</code></summary>\n\nhttps://github.com/SM-100-Bench/inertiajs_inertia_1985/blob/3054368acdad05cfe8c86d6b207947f7f4507090/packages/inertia-react/src/useForm.js#L146-L156\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUp3WVdOcllXZGxjeTlwYm1WeWRHbGhMWEpsWVdOMEwzTnlZeTkxYzJWR2IzSnRMbXB6SWl3aWMzUmhjblJNYVc1bElqb3hORFlzSW1WdVpFeHBibVVpT2pFMU5pd2lZMjlrWlV4cGJtVnpJanBiWFgxZExDSnBaQ0k2SW1Oak5XTmtORGMxTFRnelltTXRORGN4TWkxaE5HVTVMVGsxTnpJeVpXWTJObVZoTVNJc0ltUmxjMk55YVhCMGFXOXVJam9pVkdobElHQnpaWFJFWldaaGRXeDBjeWhyWlhrc0lIWmhiSFZsS1dBZ2JXVjBhRzlrSUdsdUlHQjFjMlZHYjNKdFlDQnBibU52Y25KbFkzUnNlU0JvWVc1a2JHVnpJR1poYkhONUlHQjJZV3gxWldBZ1lYSm5kVzFsYm5SeklDaGxMbWN1TENCZ1ptRnNjMlZnTENCZ01HQXNJR0FuSjJBc0lHQnVkV3hzWUNrdUlGUm9aU0JqYjI1a2FYUnBiMjVoYkNCemNISmxZV1FnWUNoMllXeDFaU0FfSUhzZ1cydGxlVjA2SUhaaGJIVmxJSDBnT2lCclpYa3BZQ0JqWVhWelpYTWdkR2hsSUdCclpYbGdJSE4wY21sdVp5QjBieUJpWlNCemNISmxZV1FnYVc1MGJ5QjBhR1VnWkdWbVlYVnNkSE1nYjJKcVpXTjBJSGRvWlc0Z1lIWmhiSFZsWUNCcGN5Qm1ZV3h6ZVM0Z1ZHaHBjeUJ5WlhOMWJIUnpJR2x1SUhCeWIzQmxjblJwWlhNZ2JHbHJaU0JnSnpBbkxDQW5NU2NzSUM0dUxtQWdLR05vWVhKaFkzUmxjbk1nYjJZZ2RHaGxJR3RsZVNCemRISnBibWNwSUdsdWMzUmxZV1FnYjJZZ2RHaGxJR2x1ZEdWdVpHVmtJR0I3SUZ0clpYbGRPaUIyWVd4MVpTQjlZQ3dnWTI5eWNuVndkR2x1WnlCMGFHVWdaR1ZtWVhWc2RITWdiMkpxWldOMElHRnVaQ0JpY21WaGEybHVaeUJ6ZFdKelpYRjFaVzUwSUdCeVpYTmxkR0FnYjNCbGNtRjBhVzl1Y3k0Z1ZHaHBjeUJpZFdjZ1lXeHpieUJoWm1abFkzUnpJRk4yWld4MFpTd2dWblZsSURJc0lHRnVaQ0JXZFdVZ015QnBiWEJzWlcxbGJuUmhkR2x2Ym5NdUlpd2lZMjl1Wm1sa1pXNWpaU0k2TUM0ek9EZzRNREk1TVRRM05qWXhNallzSW1OaGRHVm5iM0o1SWpvaVRFOUhTVU5mUWxWSEluMCIsImJyYW5jaCI6ImF1dG8tcHItNjNjMjRmZjUtY3Vyc29yLWJ1Z2JvdCJ9LCJpYXQiOjE3NDk3NjM1MDksImV4cCI6MTc1MDM2ODMwOX0.L73Nlm2AJbp8wh2m2mgRODE6a1vlEieMzImaukrNnK7XdYDWYBKSpIXLbwVDIQAqaFf6hVJyCQDPi9Nff0r0QtmDLpiy_j9PFX7ArYwTdnU24LaJVHoDgb8joTD4QaMBPi83Dtm3LZCSsUF58iULxD7mvegbY4HDiojwmeiWBiKA9l5wX6mtXVDCbPdsH3jUPG7TYshgXTwH7zCkJo9P3Z3zXpEF67XLAay3AsB3ng_GN4eHO4vvEYs1qL23tpmefDTm5lVmpbTJlQ4pn3h9f-yyLp-rWV5719xTeGTMLWLZSZEnlZaRyNQm_gqVGZtc8OqIuiTjDXUYBCf4siFFBg\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/inertiajs_inertia_1985/pull/2#pullrequestreview-2922703857",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/inertiajs_inertia_1985/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/inertiajs_inertia_1985/pull/2#pullrequestreview-2922703857"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/inertiajs_inertia_1985/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T21:25:09Z",
+        "commit_id": "3054368acdad05cfe8c86d6b207947f7f4507090"
+      }
+    ]
+  }
+}

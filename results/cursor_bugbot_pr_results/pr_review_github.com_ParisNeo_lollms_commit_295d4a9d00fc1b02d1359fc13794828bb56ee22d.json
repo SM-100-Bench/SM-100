@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/ParisNeo/lollms/commit/295d4a9d00fc1b02d1359fc13794828bb56ee22d",
+    "commit_sha": "5e60a753c2297167c951fc32cef7daaa3618aa7b",
+    "repo_identifier": "ParisNeo_lollms_295d4a9d00fc1b02d1359fc13794828bb56ee22d",
+    "timestamp": "2025-06-12T22:47:56Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/ParisNeo_lollms_295d4a9d00fc1b02d1359fc13794828bb56ee22d/issues/comments/2968346000",
+        "html_url": "https://github.com/SM-100-Bench/ParisNeo_lollms_295d4a9d00fc1b02d1359fc13794828bb56ee22d/pull/2#issuecomment-2968346000",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/ParisNeo_lollms_295d4a9d00fc1b02d1359fc13794828bb56ee22d/issues/2",
+        "id": 2968346000,
+        "node_id": "IC_kwDOOiB_r86w7V2Q",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T22:38:37Z",
+        "updated_at": "2025-06-12T22:38:37Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/ParisNeo_lollms_295d4a9d00fc1b02d1359fc13794828bb56ee22d/issues/comments/2968346000/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922834095,
+        "node_id": "PRR_kwDOOiB_r86uNuiv",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: Unsafe Code Execution Through Math Object</h3></summary>\n\nThe new `calculate()` function, introduced in this commit, uses `eval()` to process user-supplied expressions. Despite `__builtins__` being set to `None`, the sandbox is insufficient. Attackers can bypass it by exploiting references within exposed `math` objects (e.g., `__globals__`) or by traversing object/type hierarchies (e.g., `().__class__.__mro__`) to regain access to built-in functions. This allows arbitrary code execution and file system access, creating a remote code execution vector via the AI's function-calling interface.\n\n<p></p>\n\n<details>\n<summary><code>lollms/functions/calculator.py#L3-L13</code></summary>\n\nhttps://github.com/SM-100-Bench/ParisNeo_lollms_295d4a9d00fc1b02d1359fc13794828bb56ee22d/blob/feeabee037a31aba5659a51322d8173020802f07/lollms/functions/calculator.py#L3-L13\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpzYjJ4c2JYTXZablZ1WTNScGIyNXpMMk5oYkdOMWJHRjBiM0l1Y0hraUxDSnpkR0Z5ZEV4cGJtVWlPak1zSW1WdVpFeHBibVVpT2pFekxDSmpiMlJsVEdsdVpYTWlPbHRkZlYwc0ltbGtJam9pWWpoak1tVmpaamd0WTJVeE9DMDBPREJsTFdGak1qWXRaRE5tWmpjNVpqQXhOVEU1SWl3aVpHVnpZM0pwY0hScGIyNGlPaUpVYUdVZ2JtVjNJR0JqWVd4amRXeGhkR1VvS1dBZ1puVnVZM1JwYjI0c0lHbHVkSEp2WkhWalpXUWdhVzRnZEdocGN5QmpiMjF0YVhRc0lIVnpaWE1nWUdWMllXd29LV0FnZEc4Z2NISnZZMlZ6Y3lCMWMyVnlMWE4xY0hCc2FXVmtJR1Y0Y0hKbGMzTnBiMjV6TGlCRVpYTndhWFJsSUdCZlgySjFhV3gwYVc1elgxOWdJR0psYVc1bklITmxkQ0IwYnlCZ1RtOXVaV0FzSUhSb1pTQnpZVzVrWW05NElHbHpJR2x1YzNWbVptbGphV1Z1ZEM0Z1FYUjBZV05yWlhKeklHTmhiaUJpZVhCaGMzTWdhWFFnWW5rZ1pYaHdiRzlwZEdsdVp5QnlaV1psY21WdVkyVnpJSGRwZEdocGJpQmxlSEJ2YzJWa0lHQnRZWFJvWUNCdlltcGxZM1J6SUNobExtY3VMQ0JnWDE5bmJHOWlZV3h6WDE5Z0tTQnZjaUJpZVNCMGNtRjJaWEp6YVc1bklHOWlhbVZqZEM5MGVYQmxJR2hwWlhKaGNtTm9hV1Z6SUNobExtY3VMQ0JnS0NrdVgxOWpiR0Z6YzE5ZkxsOWZiWEp2WDE5Z0tTQjBieUJ5WldkaGFXNGdZV05qWlhOeklIUnZJR0oxYVd4MExXbHVJR1oxYm1OMGFXOXVjeTRnVkdocGN5QmhiR3h2ZDNNZ1lYSmlhWFJ5WVhKNUlHTnZaR1VnWlhobFkzVjBhVzl1SUdGdVpDQm1hV3hsSUhONWMzUmxiU0JoWTJObGMzTXNJR055WldGMGFXNW5JR0VnY21WdGIzUmxJR052WkdVZ1pYaGxZM1YwYVc5dUlIWmxZM1J2Y2lCMmFXRWdkR2hsSUVGSkozTWdablZ1WTNScGIyNHRZMkZzYkdsdVp5QnBiblJsY21aaFkyVXVJaXdpWTI5dVptbGtaVzVqWlNJNk1DNDJNalUzTURnMU1qWTRNVEUzT1RnM0xDSmpZWFJsWjI5eWVTSTZJbE5GUTFWU1NWUlpYMGxUVTFWRkluMCIsImJyYW5jaCI6ImF1dG8tcHItNWU2MGE3NTMtY3Vyc29yLWJ1Z2JvdCJ9LCJpYXQiOjE3NDk3Njg0NjYsImV4cCI6MTc1MDM3MzI2Nn0.frysh-AOfZFxKfeB8-V6ArX6Rbqcas1AtfwsiRIaZzy9E5T49qo3tYgCiTHj0mmnbAjsL5Ja3DgnKuq5x_-j3oHZgi_6WBn_tRFv9_3NyJ7kF28xfiVWtj7YXwzndiAvRplxVq-TfbMZCOSyCwTgweHV3m0MvWY4nu3hpLEo6XXhAxnhl8z2m-wzrogONxPcxk8WVZDAVA6yOd479i_-OnAqdhRFbp34rBz-V7DYgDsyxevD5PRL7syLoR0T2jpkJEM3lecvlsD9P95qCtDu6StoH00CBP60x_X96KlQ6iY4Tv29pa6JVvY1mVkDgBm9iEsgCmISHxlrvKxqjRuhMQ\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: Screenshot Functionality Broken in Non-GUI Environments</h3></summary>\n\nThe `take_screenshot_function` now defaults `use_ui` to `True` and no longer exposes it as a configurable parameter. This change forces all screenshot captures to use the Qt GUI path, causing runtime errors (e.g., \"Could not connect to display\" or \"A QApplication instance already exists\") on headless systems or when a `QApplication` already exists. This breaks previously working screenshot functionality in non-GUI environments.\n\n<p></p>\n\n<details>\n<summary><code>lollms/functions/take_screen_shot.py#L73-L81</code></summary>\n\nhttps://github.com/SM-100-Bench/ParisNeo_lollms_295d4a9d00fc1b02d1359fc13794828bb56ee22d/blob/feeabee037a31aba5659a51322d8173020802f07/lollms/functions/take_screen_shot.py#L73-L81\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpzYjJ4c2JYTXZablZ1WTNScGIyNXpMM1JoYTJWZmMyTnlaV1Z1WDNOb2IzUXVjSGtpTENKemRHRnlkRXhwYm1VaU9qY3pMQ0psYm1STWFXNWxJam80TVN3aVkyOWtaVXhwYm1WeklqcGJYWDFkTENKcFpDSTZJbUV4TW1aa01qQTJMVEJsTmpJdE5HSTNNeTA1WmprNUxUTm1OelJoTWpWbU1HSTRNaUlzSW1SbGMyTnlhWEIwYVc5dUlqb2lWR2hsSUdCMFlXdGxYM05qY21WbGJuTm9iM1JmWm5WdVkzUnBiMjVnSUc1dmR5QmtaV1poZFd4MGN5QmdkWE5sWDNWcFlDQjBieUJnVkhKMVpXQWdZVzVrSUc1dklHeHZibWRsY2lCbGVIQnZjMlZ6SUdsMElHRnpJR0VnWTI5dVptbG5kWEpoWW14bElIQmhjbUZ0WlhSbGNpNGdWR2hwY3lCamFHRnVaMlVnWm05eVkyVnpJR0ZzYkNCelkzSmxaVzV6YUc5MElHTmhjSFIxY21WeklIUnZJSFZ6WlNCMGFHVWdVWFFnUjFWSklIQmhkR2dzSUdOaGRYTnBibWNnY25WdWRHbHRaU0JsY25KdmNuTWdLR1V1Wnk0c0lGd2lRMjkxYkdRZ2JtOTBJR052Ym01bFkzUWdkRzhnWkdsemNHeGhlVndpSUc5eUlGd2lRU0JSUVhCd2JHbGpZWFJwYjI0Z2FXNXpkR0Z1WTJVZ1lXeHlaV0ZrZVNCbGVHbHpkSE5jSWlrZ2IyNGdhR1ZoWkd4bGMzTWdjM2x6ZEdWdGN5QnZjaUIzYUdWdUlHRWdZRkZCY0hCc2FXTmhkR2x2Ym1BZ1lXeHlaV0ZrZVNCbGVHbHpkSE11SUZSb2FYTWdZbkpsWVd0eklIQnlaWFpwYjNWemJIa2dkMjl5YTJsdVp5QnpZM0psWlc1emFHOTBJR1oxYm1OMGFXOXVZV3hwZEhrZ2FXNGdibTl1TFVkVlNTQmxiblpwY205dWJXVnVkSE11SWl3aVkyOXVabWxrWlc1alpTSTZNQzQwT0RZek5qVXpNRGt6TXpNek5EWTBNeXdpWTJGMFpXZHZjbmtpT2lKTVQwZEpRMTlDVlVjaWZRIiwiYnJhbmNoIjoiYXV0by1wci01ZTYwYTc1My1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc2ODQ2NiwiZXhwIjoxNzUwMzczMjY2fQ.X5gKNmQZtC5fI07VImctszSW-UAEd1ShOPvDtZVx63jUStCWSPqblBKghBwpi_CPz8qZW3uMdQSkylHw6GVYJgcykuTX13wL_SwTv3wJrkLkQYPx0XJnzLM6EoXJQwJRjq7OVuyt-joXgohgiUTguTLhKc0i4VGaN9p3mucb5MwJZStKvb8nTaLwooQn9-UrBtgmnt0Z2S8L_HKXmTrvFpRkgyJY877SPmYma26yDg2yXLKJEsykdZrAaQzVhpTp-D5ip8qnvO7vDGAcq8YVyvjqCFMqqCYXg3moNJbx2Pg2tDvk-bocOMcNBvN5bcP5eKAXL2AyXgtOj5BeVpqavQ\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/ParisNeo_lollms_295d4a9d00fc1b02d1359fc13794828bb56ee22d/pull/2#pullrequestreview-2922834095",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/ParisNeo_lollms_295d4a9d00fc1b02d1359fc13794828bb56ee22d/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/ParisNeo_lollms_295d4a9d00fc1b02d1359fc13794828bb56ee22d/pull/2#pullrequestreview-2922834095"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/ParisNeo_lollms_295d4a9d00fc1b02d1359fc13794828bb56ee22d/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T22:47:46Z",
+        "commit_id": "feeabee037a31aba5659a51322d8173020802f07"
+      }
+    ]
+  }
+}

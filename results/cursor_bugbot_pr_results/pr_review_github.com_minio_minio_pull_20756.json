@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "original_url": "https://github.com/minio/minio/pull/20756",
+    "commit_sha": "580d9db85e04f1b63cc2909af50f0ed08afa965f",
+    "repo_identifier": "minio_minio_20756",
+    "timestamp": "2025-06-12T23:15:29Z"
+  },
+  "review_data": {
+    "issue_comments": [
+      {
+        "url": "https://api.github.com/repos/SM-100-Bench/minio_minio_20756/issues/comments/2968402891",
+        "html_url": "https://github.com/SM-100-Bench/minio_minio_20756/pull/2#issuecomment-2968402891",
+        "issue_url": "https://api.github.com/repos/SM-100-Bench/minio_minio_20756/issues/2",
+        "id": 2968402891,
+        "node_id": "IC_kwDOOiCG1c6w7jvL",
+        "user": {
+          "login": "kallsyms",
+          "id": 4873259,
+          "node_id": "MDQ6VXNlcjQ4NzMyNTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4873259?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kallsyms",
+          "html_url": "https://github.com/kallsyms",
+          "followers_url": "https://api.github.com/users/kallsyms/followers",
+          "following_url": "https://api.github.com/users/kallsyms/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kallsyms/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kallsyms/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kallsyms/subscriptions",
+          "organizations_url": "https://api.github.com/users/kallsyms/orgs",
+          "repos_url": "https://api.github.com/users/kallsyms/repos",
+          "events_url": "https://api.github.com/users/kallsyms/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kallsyms/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2025-06-12T23:10:18Z",
+        "updated_at": "2025-06-12T23:10:18Z",
+        "author_association": "MEMBER",
+        "body": "bugbot run",
+        "reactions": {
+          "url": "https://api.github.com/repos/SM-100-Bench/minio_minio_20756/issues/comments/2968402891/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "id": 2922869598,
+        "node_id": "PRR_kwDOOiCG1c6uN3Ne",
+        "user": {
+          "login": "cursor-com[bot]",
+          "id": 206951365,
+          "node_id": "BOT_kgDODFXTxQ",
+          "avatar_url": "https://avatars.githubusercontent.com/in/1210556?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cursor-com%5Bbot%5D",
+          "html_url": "https://github.com/apps/cursor-com",
+          "followers_url": "https://api.github.com/users/cursor-com%5Bbot%5D/followers",
+          "following_url": "https://api.github.com/users/cursor-com%5Bbot%5D/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cursor-com%5Bbot%5D/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cursor-com%5Bbot%5D/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cursor-com%5Bbot%5D/subscriptions",
+          "organizations_url": "https://api.github.com/users/cursor-com%5Bbot%5D/orgs",
+          "repos_url": "https://api.github.com/users/cursor-com%5Bbot%5D/repos",
+          "events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cursor-com%5Bbot%5D/received_events",
+          "type": "Bot",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "<details open>\n<summary><h3>Bug: IAM Import Groups Error Handling Flaw</h3></summary>\n\nThe `ImportIAM` handler's \"import groups\" block incorrectly passes a stale or nil `err` variable instead of the actual error (`gerr`) returned by `globalIAMSys.GetGroupDescription` and `globalIAMSys.AddUsersToGroup` to error reporting functions. This suppresses the real cause, leading to misleading or empty error messages and inappropriate API error codes in the response.\n\n<p></p>\n\n<details>\n<summary><code>cmd/admin-handlers-users.go#L1939-L1954</code></summary>\n\nhttps://github.com/SM-100-Bench/minio_minio_20756/blob/67a59f4c09e8f8c2b3d597d16acfd0b869a31350/cmd/admin-handlers-users.go#L1939-L1954\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpqYldRdllXUnRhVzR0YUdGdVpHeGxjbk10ZFhObGNuTXVaMjhpTENKemRHRnlkRXhwYm1VaU9qRTVNemtzSW1WdVpFeHBibVVpT2pFNU5UUXNJbU52WkdWTWFXNWxjeUk2VzExOVhTd2lhV1FpT2lKaE1HRTVNek14T1MwMk9UWmpMVFF6Tm1ZdE9UWTJaaTA1WkRreU1UVmtPREF5TkdZaUxDSmtaWE5qY21sd2RHbHZiaUk2SWxSb1pTQmdTVzF3YjNKMFNVRk5ZQ0JvWVc1a2JHVnlKM01nWENKcGJYQnZjblFnWjNKdmRYQnpYQ0lnWW14dlkyc2dhVzVqYjNKeVpXTjBiSGtnY0dGemMyVnpJR0VnYzNSaGJHVWdiM0lnYm1sc0lHQmxjbkpnSUhaaGNtbGhZbXhsSUdsdWMzUmxZV1FnYjJZZ2RHaGxJR0ZqZEhWaGJDQmxjbkp2Y2lBb1lHZGxjbkpnS1NCeVpYUjFjbTVsWkNCaWVTQmdaMnh2WW1Gc1NVRk5VM2x6TGtkbGRFZHliM1Z3UkdWelkzSnBjSFJwYjI1Z0lHRnVaQ0JnWjJ4dlltRnNTVUZOVTNsekxrRmtaRlZ6WlhKelZHOUhjbTkxY0dBZ2RHOGdaWEp5YjNJZ2NtVndiM0owYVc1bklHWjFibU4wYVc5dWN5NGdWR2hwY3lCemRYQndjbVZ6YzJWeklIUm9aU0J5WldGc0lHTmhkWE5sTENCc1pXRmthVzVuSUhSdklHMXBjMnhsWVdScGJtY2diM0lnWlcxd2RIa2daWEp5YjNJZ2JXVnpjMkZuWlhNZ1lXNWtJR2x1WVhCd2NtOXdjbWxoZEdVZ1FWQkpJR1Z5Y205eUlHTnZaR1Z6SUdsdUlIUm9aU0J5WlhOd2IyNXpaUzRpTENKamIyNW1hV1JsYm1ObElqb3dMall4TWprd05qSXdNVE01TVRNNU16Y3NJbU5oZEdWbmIzSjVJam9pVEU5SFNVTmZRbFZISW4wIiwiYnJhbmNoIjoiYXV0by1wci01ODBkOWRiOC1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc3MDEwNywiZXhwIjoxNzUwMzc0OTA3fQ.LTFUa7V4ZrGvtduugwaugq4j1Jw-_rZgGzVIQyiZh9_akgmLFNrYAfneBbWf0UOPKoO4F2em7m45kjBdJR9XOTZATnCgmpsS1uPd9gBNOO8u6GNR_AFg7C8jKo8ZTs1RwDMLaAWmt7sbp2kSAmxukIeQA2Lzk9UX52TWcK0Xev3pdQG8XaG_WD6Nw768kIqYgjR5x9iqRF10rI5WTY8grFGglOk5VRpC-uNV33aLJcuPr7doCY1PStKdRfDR9kxjMnxzp-aOnt1JrOJhpKylZ5fLIbLc_7X3zJDh2V4DbMfIfzC5Yv5xM4L3_EZTfJWR1xQ8aUTs_-8it9TyTyiGrg\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: IAM Authorization Uses Incorrect Credentials</h3></summary>\n\nIn the `ImportIAM` handler, the authorization check for creating/updating service accounts (`globalIAMSys.IsAllowed`) mistakenly uses the *target* service account's `AccessKey` and `Groups` for permission evaluation. Since the target account either doesn't exist yet or has no policies, this typically results in `ErrAccessDenied` for legitimate administrators. In rare cases, if the target group happens to match a permissive rule, it could also erroneously succeed, bypassing proper authorization. The check should use the *caller's* credentials (`cred.AccessKey`, `cred.Groups`).\n\n<p></p>\n\n<details>\n<summary><code>cmd/admin-handlers-users.go#L1989-L2003</code></summary>\n\nhttps://github.com/SM-100-Bench/minio_minio_20756/blob/67a59f4c09e8f8c2b3d597d16acfd0b869a31350/cmd/admin-handlers-users.go#L1989-L2003\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpqYldRdllXUnRhVzR0YUdGdVpHeGxjbk10ZFhObGNuTXVaMjhpTENKemRHRnlkRXhwYm1VaU9qRTVPRGtzSW1WdVpFeHBibVVpT2pJd01ETXNJbU52WkdWTWFXNWxjeUk2VzExOVhTd2lhV1FpT2lKak1USmhPRE16WXkwNVkyUTJMVFJoWVRJdE9EYzVZaTFsTURFME4yRXlPVGcxTURRaUxDSmtaWE5qY21sd2RHbHZiaUk2SWtsdUlIUm9aU0JnU1cxd2IzSjBTVUZOWUNCb1lXNWtiR1Z5TENCMGFHVWdZWFYwYUc5eWFYcGhkR2x2YmlCamFHVmpheUJtYjNJZ1kzSmxZWFJwYm1jdmRYQmtZWFJwYm1jZ2MyVnlkbWxqWlNCaFkyTnZkVzUwY3lBb1lHZHNiMkpoYkVsQlRWTjVjeTVKYzBGc2JHOTNaV1JnS1NCdGFYTjBZV3RsYm14NUlIVnpaWE1nZEdobElDcDBZWEpuWlhRcUlITmxjblpwWTJVZ1lXTmpiM1Z1ZENkeklHQkJZMk5sYzNOTFpYbGdJR0Z1WkNCZ1IzSnZkWEJ6WUNCbWIzSWdjR1Z5YldsemMybHZiaUJsZG1Gc2RXRjBhVzl1TGlCVGFXNWpaU0IwYUdVZ2RHRnlaMlYwSUdGalkyOTFiblFnWldsMGFHVnlJR1J2WlhOdUozUWdaWGhwYzNRZ2VXVjBJRzl5SUdoaGN5QnVieUJ3YjJ4cFkybGxjeXdnZEdocGN5QjBlWEJwWTJGc2JIa2djbVZ6ZFd4MGN5QnBiaUJnUlhKeVFXTmpaWE56UkdWdWFXVmtZQ0JtYjNJZ2JHVm5hWFJwYldGMFpTQmhaRzFwYm1semRISmhkRzl5Y3k0Z1NXNGdjbUZ5WlNCallYTmxjeXdnYVdZZ2RHaGxJSFJoY21kbGRDQm5jbTkxY0NCb1lYQndaVzV6SUhSdklHMWhkR05vSUdFZ2NHVnliV2x6YzJsMlpTQnlkV3hsTENCcGRDQmpiM1ZzWkNCaGJITnZJR1Z5Y205dVpXOTFjMng1SUhOMVkyTmxaV1FzSUdKNWNHRnpjMmx1WnlCd2NtOXdaWElnWVhWMGFHOXlhWHBoZEdsdmJpNGdWR2hsSUdOb1pXTnJJSE5vYjNWc1pDQjFjMlVnZEdobElDcGpZV3hzWlhJbmN5b2dZM0psWkdWdWRHbGhiSE1nS0dCamNtVmtMa0ZqWTJWemMwdGxlV0FzSUdCamNtVmtMa2R5YjNWd2MyQXBMaUlzSW1OdmJtWnBaR1Z1WTJVaU9qQXVOVEExTmpBMk16WTRNelE1TWpZME9Td2lZMkYwWldkdmNua2lPaUpNVDBkSlExOUNWVWNpZlEiLCJicmFuY2giOiJhdXRvLXByLTU4MGQ5ZGI4LWN1cnNvci1idWdib3QifSwiaWF0IjoxNzQ5NzcwMTA3LCJleHAiOjE3NTAzNzQ5MDd9.nafwcIHd8SrXogPv_qziBAROGat4F0YB7NjaT_nfOq4G5eW1Og9tUrVfOyrPflE86wbXCbvvRgxuSiPdggo5GsgarmBinykcTcAypgc06F1eEbnbUSmRHmdEdQzqFKHOhW2Fo2DKhdKUjWW4ds0qxHj9IIGk0ENK-BGuOUT4uQaVs9vb55wyaww5jG2lJ5rM5AyNG_dyoFe-Rlp_Ez9TAgYg7CkCaWY8LdzgSSJdScootL0or6KT3NxEfPWRXAm48WJsZ0im5ub8yBOJ7v--KtCfhaMtdxKHyT2B1joHm3-wSLtx7K0eTylLa9jOn-juvVgHhpvd7KrWFNwCHHdH9A\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: IAM Import Fails with Nil Claims Map</h3></summary>\n\nThe `ImportIAM` handler can panic when importing service accounts. If the imported service account JSON omits the \"claims\" field or the exported account had no custom claims, `opts.claims` remains a nil map. When LDAP is enabled, subsequent attempts to write to this nil map (e.g., for `ldapUserN` or `ldapUser`) cause an \"assignment to entry in nil map\" runtime panic, crashing the server. The `opts.claims` map must be initialized before use.\n\n<p></p>\n\n<details>\n<summary><code>cmd/admin-handlers-users.go#L2034-L2044</code></summary>\n\nhttps://github.com/SM-100-Bench/minio_minio_20756/blob/67a59f4c09e8f8c2b3d597d16acfd0b869a31350/cmd/admin-handlers-users.go#L2034-L2044\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpqYldRdllXUnRhVzR0YUdGdVpHeGxjbk10ZFhObGNuTXVaMjhpTENKemRHRnlkRXhwYm1VaU9qSXdNelFzSW1WdVpFeHBibVVpT2pJd05EUXNJbU52WkdWTWFXNWxjeUk2VzExOVhTd2lhV1FpT2lKaE5EZG1NMk5rWlMxaU1EZGlMVFJrWXpJdE9UYzJNQzFsT0RJM05HSmtOV1JoT1dZaUxDSmtaWE5qY21sd2RHbHZiaUk2SWxSb1pTQmdTVzF3YjNKMFNVRk5ZQ0JvWVc1a2JHVnlJR05oYmlCd1lXNXBZeUIzYUdWdUlHbHRjRzl5ZEdsdVp5QnpaWEoyYVdObElHRmpZMjkxYm5SekxpQkpaaUIwYUdVZ2FXMXdiM0owWldRZ2MyVnlkbWxqWlNCaFkyTnZkVzUwSUVwVFQwNGdiMjFwZEhNZ2RHaGxJRndpWTJ4aGFXMXpYQ0lnWm1sbGJHUWdiM0lnZEdobElHVjRjRzl5ZEdWa0lHRmpZMjkxYm5RZ2FHRmtJRzV2SUdOMWMzUnZiU0JqYkdGcGJYTXNJR0J2Y0hSekxtTnNZV2x0YzJBZ2NtVnRZV2x1Y3lCaElHNXBiQ0J0WVhBdUlGZG9aVzRnVEVSQlVDQnBjeUJsYm1GaWJHVmtMQ0J6ZFdKelpYRjFaVzUwSUdGMGRHVnRjSFJ6SUhSdklIZHlhWFJsSUhSdklIUm9hWE1nYm1sc0lHMWhjQ0FvWlM1bkxpd2dabTl5SUdCc1pHRndWWE5sY2s1Z0lHOXlJR0JzWkdGd1ZYTmxjbUFwSUdOaGRYTmxJR0Z1SUZ3aVlYTnphV2R1YldWdWRDQjBieUJsYm5SeWVTQnBiaUJ1YVd3Z2JXRndYQ0lnY25WdWRHbHRaU0J3WVc1cFl5d2dZM0poYzJocGJtY2dkR2hsSUhObGNuWmxjaTRnVkdobElHQnZjSFJ6TG1Oc1lXbHRjMkFnYldGd0lHMTFjM1FnWW1VZ2FXNXBkR2xoYkdsNlpXUWdZbVZtYjNKbElIVnpaUzRpTENKamIyNW1hV1JsYm1ObElqb3dMalE1T1RJM01URTFPREkxTXpnM056Y3NJbU5oZEdWbmIzSjVJam9pVEU5SFNVTmZRbFZISW4wIiwiYnJhbmNoIjoiYXV0by1wci01ODBkOWRiOC1jdXJzb3ItYnVnYm90In0sImlhdCI6MTc0OTc3MDEwNywiZXhwIjoxNzUwMzc0OTA3fQ.TcyCUrdTqEW_VZAFG5QvCJQZF0P0PQAf7SV9jdbe67Gx-hMnnTbw0Hr5aTIzf0AxeQFJ0jzYEJoTRGsUUedbGd5U72xYcj_K8HUR177SzVp2a_jrVpet76HepT0gYpXPDSgcermaHdaHaNB6Y9zk2Iidw99EkvXXuEJqUZ6Fip1pKxQOAaIvwM3_RCVnnuR6eD-T5kZMTbrPcHO2S9JVk61mjWasb6L4_wZJXZ0MUve1DCkVGSluXjxvR6CDojTB5PE2W-_87sA7wKZ-cLNpyad_dFLCyOZollQzD4rQ9TrBqqSnv3SbUJvhXrs3CGpwFpk8-9ZVYv0OZJQhGRE6Cw\">Fix in Cursor</a>\n\n</details>\n\n---\n\n<details open>\n<summary><h3>Bug: IAM Import Handler Lacks Proper Authorization</h3></summary>\n\nThe `ImportIAM` handler is vulnerable to privilege escalation due to insufficient authorization. It authenticates requests using `validateAdminSignature` but *fails to authorize* them for the `iampolicy.ImportIAMAction` (unlike `ExportIAM`). This allows any authenticated admin user, even those without explicit `SetPolicy` or `CreateUser` permissions, to import arbitrary IAM data. As a result, the handler can perform privileged operations such as setting/deleting policies, creating/deleting users, and modifying group mappings without proper authorization checks.\n\n<p></p>\n\n<details>\n<summary><code>cmd/admin-handlers-users.go#L1783-L1810</code></summary>\n\nhttps://github.com/SM-100-Bench/minio_minio_20756/blob/67a59f4c09e8f8c2b3d597d16acfd0b869a31350/cmd/admin-handlers-users.go#L1783-L1810\n\n</details>\n\n<a href=\"https://cursor.com/open?data=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImJ1Z2JvdC12MSJ9.eyJ0eXBlIjoiQlVHQk9UX0ZJWF9JTl9DVVJTT1IiLCJkYXRhIjp7ImJ1ZyI6ImV5SnNiMk5oZEdsdmJuTWlPbHQ3SW1acGJHVWlPaUpqYldRdllXUnRhVzR0YUdGdVpHeGxjbk10ZFhObGNuTXVaMjhpTENKemRHRnlkRXhwYm1VaU9qRTNPRE1zSW1WdVpFeHBibVVpT2pFNE1UQXNJbU52WkdWTWFXNWxjeUk2VzExOVhTd2lhV1FpT2lKa05tWmxNRGxrWlMxaFpEazFMVFF3WTJVdE9HTXhaaTB6TmpCak1UY3dPV1k1TnpBaUxDSmtaWE5qY21sd2RHbHZiaUk2SWxSb1pTQmdTVzF3YjNKMFNVRk5ZQ0JvWVc1a2JHVnlJR2x6SUhaMWJHNWxjbUZpYkdVZ2RHOGdjSEpwZG1sc1pXZGxJR1Z6WTJGc1lYUnBiMjRnWkhWbElIUnZJR2x1YzNWbVptbGphV1Z1ZENCaGRYUm9iM0pwZW1GMGFXOXVMaUJKZENCaGRYUm9aVzUwYVdOaGRHVnpJSEpsY1hWbGMzUnpJSFZ6YVc1bklHQjJZV3hwWkdGMFpVRmtiV2x1VTJsbmJtRjBkWEpsWUNCaWRYUWdLbVpoYVd4eklIUnZJR0YxZEdodmNtbDZaU29nZEdobGJTQm1iM0lnZEdobElHQnBZVzF3YjJ4cFkza3VTVzF3YjNKMFNVRk5RV04wYVc5dVlDQW9kVzVzYVd0bElHQkZlSEJ2Y25SSlFVMWdLUzRnVkdocGN5QmhiR3h2ZDNNZ1lXNTVJR0YxZEdobGJuUnBZMkYwWldRZ1lXUnRhVzRnZFhObGNpd2daWFpsYmlCMGFHOXpaU0IzYVhSb2IzVjBJR1Y0Y0d4cFkybDBJR0JUWlhSUWIyeHBZM2xnSUc5eUlHQkRjbVZoZEdWVmMyVnlZQ0J3WlhKdGFYTnphVzl1Y3l3Z2RHOGdhVzF3YjNKMElHRnlZbWwwY21GeWVTQkpRVTBnWkdGMFlTNGdRWE1nWVNCeVpYTjFiSFFzSUhSb1pTQm9ZVzVrYkdWeUlHTmhiaUJ3WlhKbWIzSnRJSEJ5YVhacGJHVm5aV1FnYjNCbGNtRjBhVzl1Y3lCemRXTm9JR0Z6SUhObGRIUnBibWN2WkdWc1pYUnBibWNnY0c5c2FXTnBaWE1zSUdOeVpXRjBhVzVuTDJSbGJHVjBhVzVuSUhWelpYSnpMQ0JoYm1RZ2JXOWthV1o1YVc1bklHZHliM1Z3SUcxaGNIQnBibWR6SUhkcGRHaHZkWFFnY0hKdmNHVnlJR0YxZEdodmNtbDZZWFJwYjI0Z1kyaGxZMnR6TGlJc0ltTnZibVpwWkdWdVkyVWlPakF1TXpnM05EZzFORFV4T0RFek16TXlOVFVzSW1OaGRHVm5iM0o1SWpvaVUwVkRWVkpKVkZsZlNWTlRWVVVpZlEiLCJicmFuY2giOiJhdXRvLXByLTU4MGQ5ZGI4LWN1cnNvci1idWdib3QifSwiaWF0IjoxNzQ5NzcwMTA3LCJleHAiOjE3NTAzNzQ5MDd9.bIq4hGDzXFnzPIjGrmf7vu69FHo6TSH2gZZFzsWBLiCbeO6n96kPO639MaPezMKNQiSpqMXppkWFrzaG6UsPquHFELR9uAk47u2Kh47ZYNdlDqFhlcR88sQx8iWJTj9xxQxbBEr9yYP9DPFgsb3mXmFxGyTJm2R8kGLbAtP6XAlkUYWdxu17Y1jZYEo_Kp5LXvOZm2PJo77xfZvYqk14iPAPtsg0Mqx31c-Z-PtdH3RtkGL3rypi-PORwmFys6Z2-N0IN8uENBIlDjTJ5SCUmkw3JInXAAoRLxK1EAWCSmMVmrhFQTTUbYkxW5E-VGStz2vemLpqndKKnU4jdIy9DA\">Fix in Cursor</a>\n\n</details>\n\n---\n\n\n**BugBot free trial expires on June 19, 2025**\nYou have used $0.00 of your $50.00 spend limit so far. Manage your spend limit in the [Cursor dashboard](https://cursor.com/dashboard?tab=bugbot).\n\n_Was this report helpful? Give feedback by reacting with \ud83d\udc4d or \ud83d\udc4e_\n",
+        "state": "COMMENTED",
+        "html_url": "https://github.com/SM-100-Bench/minio_minio_20756/pull/2#pullrequestreview-2922869598",
+        "pull_request_url": "https://api.github.com/repos/SM-100-Bench/minio_minio_20756/pulls/2",
+        "author_association": "NONE",
+        "_links": {
+          "html": {
+            "href": "https://github.com/SM-100-Bench/minio_minio_20756/pull/2#pullrequestreview-2922869598"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/SM-100-Bench/minio_minio_20756/pulls/2"
+          }
+        },
+        "submitted_at": "2025-06-12T23:15:07Z",
+        "commit_id": "67a59f4c09e8f8c2b3d597d16acfd0b869a31350"
+      }
+    ]
+  }
+}
