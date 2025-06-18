@@ -189,6 +189,68 @@ def check_trigger_comment_exists(
         return False
 
 
+def delete_all_pr_comments(repo_identifier: str, pr_number: int) -> Tuple[int, int]:
+    """
+    Delete all comments on a PR (both issue comments and review comments).
+
+    Args:
+        repo_identifier: Repository identifier
+        pr_number: PR number
+
+    Returns:
+        Tuple of (deleted_issue_comments, deleted_review_comments)
+    """
+    logging.info(f"Deleting all comments on PR #{pr_number}")
+
+    deleted_issue_comments = 0
+    deleted_review_comments = 0
+
+    # Delete issue comments
+    try:
+        api_url = f"{GITHUB_API_BASE}/repos/{SM100_ORG}/{repo_identifier}/issues/{pr_number}/comments"
+        response = requests.get(api_url, headers=HEADERS)
+        if response.status_code == 200:
+            comments = response.json()
+            for comment in comments:
+                comment_id = comment["id"]
+                delete_url = f"{GITHUB_API_BASE}/repos/{SM100_ORG}/{repo_identifier}/issues/comments/{comment_id}"
+                delete_response = requests.delete(delete_url, headers=HEADERS)
+                if delete_response.status_code == 204:
+                    deleted_issue_comments += 1
+                    logging.debug(f"Deleted issue comment {comment_id}")
+                else:
+                    logging.warning(
+                        f"Failed to delete issue comment {comment_id}: {delete_response.status_code}"
+                    )
+    except Exception as e:
+        logging.warning(f"Error deleting issue comments: {e}")
+
+    # Delete review comments
+    try:
+        api_url = f"{GITHUB_API_BASE}/repos/{SM100_ORG}/{repo_identifier}/pulls/{pr_number}/comments"
+        response = requests.get(api_url, headers=HEADERS)
+        if response.status_code == 200:
+            comments = response.json()
+            for comment in comments:
+                comment_id = comment["id"]
+                delete_url = f"{GITHUB_API_BASE}/repos/{SM100_ORG}/{repo_identifier}/pulls/comments/{comment_id}"
+                delete_response = requests.delete(delete_url, headers=HEADERS)
+                if delete_response.status_code == 204:
+                    deleted_review_comments += 1
+                    logging.debug(f"Deleted review comment {comment_id}")
+                else:
+                    logging.warning(
+                        f"Failed to delete review comment {comment_id}: {delete_response.status_code}"
+                    )
+    except Exception as e:
+        logging.warning(f"Error deleting review comments: {e}")
+
+    logging.info(
+        f"Deleted {deleted_issue_comments} issue comments and {deleted_review_comments} review comments from PR #{pr_number}"
+    )
+    return deleted_issue_comments, deleted_review_comments
+
+
 def post_trigger_comment(
     repo_identifier: str, pr_number: int, trigger_phrase: str
 ) -> Optional[Dict]:
@@ -386,6 +448,7 @@ def process_entry(
     trigger_phrase: str,
     output_dir: Path,
     max_wait_minutes: int = 30,
+    clean: bool = False,
 ) -> Tuple[bool, str]:
     """
     Process a single PR or commit URL entry.
@@ -397,6 +460,7 @@ def process_entry(
         trigger_phrase: Phrase to comment to trigger review
         output_dir: Directory to save results
         max_wait_minutes: Maximum time to wait for review activity
+        clean: Whether to delete all previous comments before posting trigger
 
     Returns:
         Tuple of (success, message)
@@ -419,8 +483,19 @@ def process_entry(
         pr_number = auto_pr["number"]
         pr_url = auto_pr["html_url"]
 
-        # Check if trigger comment already exists
-        if check_trigger_comment_exists(repo_identifier, pr_number, trigger_phrase):
+        # Delete all previous comments if clean flag is set
+        if clean:
+            deleted_issue, deleted_review = delete_all_pr_comments(
+                repo_identifier, pr_number
+            )
+            logging.info(
+                f"Cleaned PR #{pr_number}: deleted {deleted_issue} issue comments and {deleted_review} review comments"
+            )
+
+        # Check if trigger comment already exists (only if not cleaning)
+        if not clean and check_trigger_comment_exists(
+            repo_identifier, pr_number, trigger_phrase
+        ):
             logging.info("Trigger comment already exists, skipping comment posting")
             trigger_comment_time = auto_pr[
                 "created_at"
@@ -488,6 +563,11 @@ def main(argv: List[str] | None = None) -> None:
         default=1,
         help="Number of parallel workers for processing reviews (default: 1)",
     )
+    parser.add_argument(
+        "--clean",
+        action="store_true",
+        help="Delete all previous comments on the PR before posting the trigger comment",
+    )
     parser.add_argument("-v", "--verbose", action="count", default=0)
 
     args = parser.parse_args(argv)
@@ -524,6 +604,7 @@ def main(argv: List[str] | None = None) -> None:
                     args.trigger_phrase,
                     args.output_dir,
                     args.max_wait_minutes,
+                    args.clean,
                 )
 
                 if ok:
@@ -554,6 +635,7 @@ def main(argv: List[str] | None = None) -> None:
                     args.trigger_phrase,
                     args.output_dir,
                     args.max_wait_minutes,
+                    args.clean,
                 )
                 future_to_entry[future] = (i + 1, url, commit_sha)
 
